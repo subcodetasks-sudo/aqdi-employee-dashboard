@@ -7,6 +7,7 @@ import HeroContentForm from "@/components/content/home/hero-content-form";
 import OfficialAuthoritiesForm from "@/components/content/home/official-authorities-form";
 import PricingSectionForm from "@/components/content/home/pricing-section-form";
 import Header from "@/components/home/Header";
+import Loader from "@/components/home/loader";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Grid2x2,
@@ -16,6 +17,9 @@ import {
   Sparkles,
   Tags,
 } from "lucide-react";
+import { extractContentSections, CONTENT_PAGE_ENDPOINTS } from "@/src/lib/content-admin";
+import { axiosInstance } from "@/src/utils/axios";
+import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 
 const HOME_CONTENT_TABS = [
@@ -65,6 +69,16 @@ const HOME_CONTENT_TABS = [
 
 export default function ContentHomePage() {
   const [activeTab, setActiveTab] = useState(HOME_CONTENT_TABS[0].value);
+  const { data: responseData, isLoading, isError } = useQuery({
+    queryKey: ["content-page", "home"],
+    queryFn: () =>
+      axiosInstance.get(CONTENT_PAGE_ENDPOINTS.home).then((res) => res?.data),
+  });
+  const sections = extractContentSections(responseData);
+
+  if (isLoading) {
+    return <Loader />;
+  }
 
   return (
     <div className="flex min-h-screen flex-col gap-6 p-6" dir="rtl">
@@ -105,17 +119,47 @@ export default function ContentHomePage() {
           {HOME_CONTENT_TABS.map((tab) => (
             <TabsContent key={tab.value} value={tab.value} className="mt-0">
               {tab.value === "hero" ? (
-                <HeroContentForm />
+                <HeroContentForm
+                  initialData={sections.hero}
+                  saveEndpoint={CONTENT_PAGE_ENDPOINTS.home}
+                  queryKey={["content-page", "home"]}
+                  sectionKey="hero"
+                />
               ) : tab.value === "official-authorities" ? (
-                <OfficialAuthoritiesForm />
+                <OfficialAuthoritiesForm
+                  initialData={sections.official_authorities}
+                  saveEndpoint={CONTENT_PAGE_ENDPOINTS.home}
+                  queryKey={["content-page", "home"]}
+                  sectionKey="official_authorities"
+                />
               ) : tab.value === "features" ? (
-                <FeaturesSectionForm />
+                <FeaturesSectionForm
+                  initialData={sections.features}
+                  saveEndpoint={CONTENT_PAGE_ENDPOINTS.home}
+                  queryKey={["content-page", "home"]}
+                  sectionKey="features"
+                />
               ) : tab.value === "pricing" ? (
-                <PricingSectionForm />
+                <PricingSectionForm
+                  initialData={sections.pricing}
+                  saveEndpoint={CONTENT_PAGE_ENDPOINTS.home}
+                  queryKey={["content-page", "home"]}
+                  sectionKey="pricing"
+                />
               ) : tab.value === "contact" ? (
-                <ContactSectionForm />
+                <ContactSectionForm
+                  initialData={sections.contact}
+                  saveEndpoint={CONTENT_PAGE_ENDPOINTS.home}
+                  queryKey={["content-page", "home"]}
+                  sectionKey="contact"
+                />
               ) : tab.value === "app" ? (
-                <AppSectionForm />
+                <AppSectionForm
+                  initialData={sections.app}
+                  saveEndpoint={CONTENT_PAGE_ENDPOINTS.home}
+                  queryKey={["content-page", "home"]}
+                  sectionKey="app"
+                />
               ) : (
                 <div className="rounded-[24px] border border-[#EEEEEE] bg-[#FCFCFC] p-6">
                   <div className="mb-4 flex items-start justify-between gap-4 max-md:flex-col">
@@ -130,13 +174,11 @@ export default function ContentHomePage() {
                     </span>
                   </div>
 
-                  <div className="rounded-[20px] border border-dashed border-[#D9D9D9] bg-white p-5">
-                    <h3 className="mb-2 text-sm font-bold text-black">قيد التجهيز</h3>
-                    <p className="text-sm leading-7 text-[#7A7A7A]">
-                      سيتم إضافة فورم مستقل لهذا القسم بنفس النمط المستخدم في القسم
-                      الرئيسي.
-                    </p>
-                  </div>
+                  {isError ? (
+                    <div className="rounded-[20px] border border-dashed border-[#D9D9D9] bg-white p-5">
+                      <p className="text-sm leading-7 text-[#7A7A7A]">تعذر تحميل محتوى الصفحة.</p>
+                    </div>
+                  ) : null}
                 </div>
               )}
             </TabsContent>

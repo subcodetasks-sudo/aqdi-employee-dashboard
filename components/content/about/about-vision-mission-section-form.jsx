@@ -13,7 +13,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ImageUp, Loader2, Trash2 } from "lucide-react";
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { createImageAsset, getStringValue } from "@/src/lib/content-admin";
+import { axiosInstance } from "@/src/utils/axios";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -211,33 +214,102 @@ function VisionMissionItem({
   );
 }
 
-export default function AboutVisionMissionSectionForm() {
+export default function AboutVisionMissionSectionForm({
+  initialData,
+  saveEndpoint,
+  queryKey,
+  sectionKey,
+}) {
   const form = useForm({
     defaultValues: DEFAULT_VALUES,
   });
+  const queryClient = useQueryClient();
   const [missionPreview, setMissionPreview] = useState(null);
   const [visionPreview, setVisionPreview] = useState(null);
 
-  const onSubmit = (values) => {
-    const payload = {
-      sectionTitle: values.sectionTitle.trim(),
-      sectionDescription: values.sectionDescription.trim(),
+  useEffect(() => {
+    form.reset({
+      sectionTitle: getStringValue(initialData?.section_title, DEFAULT_VALUES.sectionTitle),
+      sectionDescription: getStringValue(
+        initialData?.section_description,
+        DEFAULT_VALUES.sectionDescription
+      ),
       mission: {
-        badgeText: values.mission.badgeText.trim(),
-        title: values.mission.title.trim(),
-        description: values.mission.description.trim(),
-        imageName: values.mission.image?.name || null,
+        badgeText: getStringValue(
+          initialData?.mission?.badge_text,
+          DEFAULT_VALUES.mission.badgeText
+        ),
+        title: getStringValue(initialData?.mission?.title, DEFAULT_VALUES.mission.title),
+        description: getStringValue(
+          initialData?.mission?.description,
+          DEFAULT_VALUES.mission.description
+        ),
+        image: null,
+        existingImageUrl: getStringValue(initialData?.mission?.image_url),
       },
       vision: {
-        badgeText: values.vision.badgeText.trim(),
-        title: values.vision.title.trim(),
-        description: values.vision.description.trim(),
-        imageName: values.vision.image?.name || null,
+        badgeText: getStringValue(
+          initialData?.vision?.badge_text,
+          DEFAULT_VALUES.vision.badgeText
+        ),
+        title: getStringValue(initialData?.vision?.title, DEFAULT_VALUES.vision.title),
+        description: getStringValue(
+          initialData?.vision?.description,
+          DEFAULT_VALUES.vision.description
+        ),
+        image: null,
+        existingImageUrl: getStringValue(initialData?.vision?.image_url),
       },
-    };
+    });
+    setMissionPreview(createImageAsset(initialData?.mission?.image_url).previewUrl);
+    setVisionPreview(createImageAsset(initialData?.vision?.image_url).previewUrl);
+  }, [form, initialData]);
 
-    console.log("About vision and mission payload:", payload);
-    toast.success("تم تجهيز بيانات قسم الرؤية والرسالة");
+  const { mutate: saveSection, isPending } = useMutation({
+    mutationFn: (payload) =>
+      axiosInstance.post(saveEndpoint, payload, {
+        headers: { "Content-Type": "multipart/form-data" },
+      }),
+    onSuccess: (res) => {
+      toast.success(res?.data?.message || "تم حفظ القسم بنجاح");
+      queryClient.invalidateQueries({ queryKey });
+    },
+    onError: (error) => {
+      toast.error(error?.response?.data?.message || "حدث خطأ أثناء حفظ القسم");
+    },
+  });
+
+  const onSubmit = (values) => {
+    const formData = new FormData();
+    formData.append("vision_mission[section_title]", values.sectionTitle.trim());
+    formData.append("vision_mission[section_description]", values.sectionDescription.trim());
+    formData.append("vision_mission[mission][badge_text]", values.mission.badgeText.trim());
+    formData.append("vision_mission[mission][title]", values.mission.title.trim());
+    formData.append(
+      "vision_mission[mission][description]",
+      values.mission.description.trim()
+    );
+    if (values.mission.image instanceof File) {
+      formData.append("vision_mission[mission][image]", values.mission.image);
+    } else if (!missionPreview && values.mission.existingImageUrl) {
+      formData.append("vision_mission[mission][keep_image]", "0");
+    } else {
+      formData.append("vision_mission[mission][keep_image]", "1");
+    }
+    formData.append("vision_mission[vision][badge_text]", values.vision.badgeText.trim());
+    formData.append("vision_mission[vision][title]", values.vision.title.trim());
+    formData.append(
+      "vision_mission[vision][description]",
+      values.vision.description.trim()
+    );
+    if (values.vision.image instanceof File) {
+      formData.append("vision_mission[vision][image]", values.vision.image);
+    } else if (!visionPreview && values.vision.existingImageUrl) {
+      formData.append("vision_mission[vision][keep_image]", "0");
+    } else {
+      formData.append("vision_mission[vision][keep_image]", "1");
+    }
+    saveSection(formData);
   };
 
   return (
@@ -317,10 +389,10 @@ export default function AboutVisionMissionSectionForm() {
 
           <Button
             type="submit"
-            disabled={form.formState.isSubmitting}
+            disabled={isPending}
             className="h-12 rounded-full bg-brand-hover px-8 text-sm font-bold text-white hover:bg-brand-hover/90"
           >
-            {form.formState.isSubmitting ? (
+            {isPending ? (
               <>
                 <Loader2 className="size-4 animate-spin" />
                 جاري الحفظ...

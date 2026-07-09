@@ -11,9 +11,11 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { ImageUp, Loader2, Plus, Trash2 } from "lucide-react";
-import Image from "next/image";
-import { useEffect, useState } from "react";
+import { Loader2, Plus, Trash2 } from "lucide-react";
+import { useEffect } from "react";
+import { getStringValue } from "@/src/lib/content-admin";
+import { axiosInstance } from "@/src/utils/axios";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -27,47 +29,31 @@ const DEFAULT_VALUES = {
       title: "نحو إدارة واضحة ومسؤولة",
       description:
         "نوفر معلومات واضحة ومحدثة بشكل كامل للجمهور بشفافية لتعزيز قيم المواطنين.",
-      image: null,
     },
     {
       title: "أساس علاقتنا مع المواطن",
       description:
         "يمكنكم تستند إلى مبادئ شفافة ومعلومات دقيقة لخدمتكم بكفاءة.",
-      image: null,
     },
     {
       title: "خدمة فعالة ورؤية واضحة",
       description:
         "نوفر معلومات واضحة ومحدثة بشكل كامل للجمهور بشفافية لتعزيز قيم المواطنين.",
-      image: null,
     },
   ],
 };
 
-const EMPTY_ASSET = {
-  previewUrl: null,
-  name: "",
-};
-
 const INITIAL_CARDS_COUNT = DEFAULT_VALUES.cards.length;
 
-function createEmptyAssets() {
-  return Array.from({ length: INITIAL_CARDS_COUNT }, () => ({
-    image: { ...EMPTY_ASSET },
-  }));
-}
-
-function revokeIfBlob(url) {
-  if (url?.startsWith("blob:")) {
-    URL.revokeObjectURL(url);
-  }
-}
-
-export default function AboutValuesSectionForm() {
+export default function AboutValuesSectionForm({
+  initialData,
+  saveEndpoint,
+  queryKey,
+}) {
   const form = useForm({
     defaultValues: DEFAULT_VALUES,
   });
-  const [cardAssets, setCardAssets] = useState(createEmptyAssets);
+  const queryClient = useQueryClient();
   const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: "cards",
@@ -75,61 +61,58 @@ export default function AboutValuesSectionForm() {
   const cards = form.watch("cards");
 
   useEffect(() => {
-    return () => {
-      cardAssets.forEach((card) => revokeIfBlob(card.image.previewUrl));
-    };
-  }, [cardAssets]);
+    const nextCards = initialData?.cards?.length
+      ? initialData.cards.map((card) => ({
+          id: card.id ?? null,
+          title: getStringValue(card.title),
+          description: getStringValue(card.description),
+        }))
+      : DEFAULT_VALUES.cards;
 
-  const updateCardImage = (cardIndex, file) => {
-    setCardAssets((current) => {
-      const next = [...current];
-      revokeIfBlob(next[cardIndex].image.previewUrl);
-      next[cardIndex] = {
-        image: file
-          ? {
-              previewUrl: URL.createObjectURL(file),
-              name: file.name,
-            }
-          : { ...EMPTY_ASSET },
-      };
-      return next;
+    form.reset({
+      badgeText: getStringValue(initialData?.badge_text, DEFAULT_VALUES.badgeText),
+      mainTitle: getStringValue(initialData?.main_title, DEFAULT_VALUES.mainTitle),
+      description: getStringValue(initialData?.description, DEFAULT_VALUES.description),
+      cards: nextCards,
     });
-  };
-
-  const removeCardImage = (cardIndex) => {
-    form.setValue(`cards.${cardIndex}.image`, null, { shouldValidate: true });
-    updateCardImage(cardIndex, null);
-  };
+  }, [form, initialData]);
 
   const addCard = () => {
     append({
       title: "",
       description: "",
-      image: null,
     });
-    setCardAssets((current) => [...current, { image: { ...EMPTY_ASSET } }]);
   };
 
   const removeCard = (cardIndex) => {
-    revokeIfBlob(cardAssets[cardIndex]?.image?.previewUrl);
     remove(cardIndex);
-    setCardAssets((current) => current.filter((_, index) => index !== cardIndex));
   };
 
-  const onSubmit = (values) => {
-    const payload = {
-      badgeText: values.badgeText.trim(),
-      mainTitle: values.mainTitle.trim(),
-      description: values.description.trim(),
-      cards: values.cards.map((card) => ({
-        title: card.title.trim(),
-        description: card.description.trim(),
-        imageName: card.image?.name || null,
-      })),
-    };
+  const { mutate: saveSection, isPending } = useMutation({
+    mutationFn: (payload) =>
+      axiosInstance.post(saveEndpoint, payload, {
+        headers: { "Content-Type": "multipart/form-data" },
+      }),
+    onSuccess: (res) => {
+      toast.success(res?.data?.message || "تم حفظ القسم بنجاح");
+      queryClient.invalidateQueries({ queryKey });
+    },
+    onError: (error) => {
+      toast.error(error?.response?.data?.message || "حدث خطأ أثناء حفظ القسم");
+    },
+  });
 
-    console.log("About values payload:", payload);
-    toast.success("تم تجهيز بيانات قسم قيم عقدي");
+  const onSubmit = (values) => {
+    const formData = new FormData();
+    formData.append("values[badge_text]", values.badgeText.trim());
+    formData.append("values[main_title]", values.mainTitle.trim());
+    formData.append("values[description]", values.description.trim());
+    values.cards.forEach((card, index) => {
+      if (card.id) formData.append(`values[cards][${index}][id]`, String(card.id));
+      formData.append(`values[cards][${index}][title]`, card.title.trim());
+      formData.append(`values[cards][${index}][description]`, card.description.trim());
+    });
+    saveSection(formData);
   };
 
   return (
@@ -225,7 +208,6 @@ export default function AboutValuesSectionForm() {
                   title: "",
                   description: "",
                 };
-                const imageAsset = cardAssets[cardIndex].image;
                 const cardTitle =
                   cards?.[cardIndex]?.title?.trim() ||
                   defaultCard.title ||
@@ -293,93 +275,6 @@ export default function AboutValuesSectionForm() {
                           </FormItem>
                         )}
                       />
-
-                      <FormField
-                        control={form.control}
-                        name={`cards.${cardIndex}.image`}
-                        rules={{
-                          validate: (value) => {
-                            if (!value) return true;
-                            if (!value.type?.startsWith("image/")) {
-                              return "يجب اختيار ملف صورة فقط";
-                            }
-                            return true;
-                          },
-                        }}
-                        render={({ field: { onChange, value, ...field } }) => (
-                          <FormItem>
-                            <FormLabel className="text-[13px] font-bold text-black">
-                              أيقونة أو صورة البطاقة
-                            </FormLabel>
-                            <FormControl>
-                              <div className="rounded-[20px] border border-dashed border-[#D9D9D9] bg-[#FCFCFC] p-3">
-                                {imageAsset.previewUrl ? (
-                                  <div className="space-y-3">
-                                    <div className="relative h-[180px] w-full overflow-hidden rounded-[18px] border border-[#EEEEEE] bg-white">
-                                      <Image
-                                        src={imageAsset.previewUrl}
-                                        alt={cardTitle}
-                                        fill
-                                        className="object-contain"
-                                      />
-                                    </div>
-
-                                    <div className="flex items-center gap-2 max-md:flex-col max-md:items-stretch">
-                                      <label className="flex h-10 cursor-pointer items-center justify-center gap-2 rounded-full border border-[#D9D9D9] bg-white px-4 text-sm font-bold text-[#4D4D4D] transition-all hover:bg-[#FAFAFA]">
-                                        <ImageUp className="size-4" />
-                                        تغيير
-                                        <input
-                                          type="file"
-                                          accept="image/*"
-                                          className="hidden"
-                                          onChange={(e) => {
-                                            const file = e.target.files?.[0] ?? null;
-                                            onChange(file);
-                                            updateCardImage(cardIndex, file);
-                                            e.target.value = "";
-                                          }}
-                                          {...field}
-                                        />
-                                      </label>
-
-                                      <Button
-                                        type="button"
-                                        variant="ghost"
-                                        onClick={() => removeCardImage(cardIndex)}
-                                        className="rounded-full text-red-500 hover:bg-red-50 hover:text-red-600"
-                                      >
-                                        <Trash2 className="size-4" />
-                                        حذف
-                                      </Button>
-                                    </div>
-                                  </div>
-                                ) : (
-                                  <label className="flex min-h-[120px] cursor-pointer flex-col items-center justify-center gap-2 rounded-[16px] bg-white px-4 py-6 text-center transition-all hover:bg-[#FAFAFA]">
-                                    <ImageUp className="size-5 text-brand-hover" />
-                                    <div>
-                                      <p className="text-sm font-bold text-black">ارفع صورة البطاقة</p>
-                                      <p className="mt-1 text-xs text-[#8A8A8A]">PNG, JPG, WEBP</p>
-                                    </div>
-                                    <input
-                                      type="file"
-                                      accept="image/*"
-                                      className="hidden"
-                                      onChange={(e) => {
-                                        const file = e.target.files?.[0] ?? null;
-                                        onChange(file);
-                                        updateCardImage(cardIndex, file);
-                                        e.target.value = "";
-                                      }}
-                                      {...field}
-                                    />
-                                  </label>
-                                )}
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
                     </div>
                   </div>
                 );
@@ -389,10 +284,10 @@ export default function AboutValuesSectionForm() {
 
           <Button
             type="submit"
-            disabled={form.formState.isSubmitting}
+            disabled={isPending}
             className="h-12 rounded-full bg-brand-hover px-8 text-sm font-bold text-white hover:bg-brand-hover/90"
           >
-            {form.formState.isSubmitting ? (
+            {isPending ? (
               <>
                 <Loader2 className="size-4 animate-spin" />
                 جاري الحفظ...

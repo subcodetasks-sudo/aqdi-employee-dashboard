@@ -14,7 +14,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ImageUp, Loader2, Trash2 } from "lucide-react";
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { getStringValue } from "@/src/lib/content-admin";
+import { axiosInstance } from "@/src/utils/axios";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -26,11 +29,29 @@ const DEFAULT_VALUES = {
   image: undefined,
 };
 
-export default function HeroContentForm() {
+export default function HeroContentForm({
+  initialData,
+  saveEndpoint,
+  queryKey,
+  sectionKey,
+}) {
   const form = useForm({
     defaultValues: DEFAULT_VALUES,
   });
+  const queryClient = useQueryClient();
   const [preview, setPreview] = useState(null);
+  const [removeImage, setRemoveImage] = useState(false);
+
+  useEffect(() => {
+    form.reset({
+      badgeText: getStringValue(initialData?.badge_text, DEFAULT_VALUES.badgeText),
+      mainTitle: getStringValue(initialData?.main_title, DEFAULT_VALUES.mainTitle),
+      description: getStringValue(initialData?.description, DEFAULT_VALUES.description),
+      image: null,
+    });
+    setPreview(initialData?.image_url || null);
+    setRemoveImage(false);
+  }, [form, initialData]);
 
   const updatePreview = (file) => {
     if (!file) {
@@ -43,16 +64,33 @@ export default function HeroContentForm() {
     reader.readAsDataURL(file);
   };
 
-  const onSubmit = (values) => {
-    const payload = {
-      badgeText: values.badgeText.trim(),
-      mainTitle: values.mainTitle.trim(),
-      description: values.description.trim(),
-      imageName: values.image?.name || null,
-    };
+  const { mutate: saveSection, isPending } = useMutation({
+    mutationFn: (payload) =>
+      axiosInstance.post(saveEndpoint, payload, {
+        headers: { "Content-Type": "multipart/form-data" },
+      }),
+    onSuccess: (res) => {
+      toast.success(res?.data?.message || "تم حفظ القسم بنجاح");
+      queryClient.invalidateQueries({ queryKey });
+    },
+    onError: (error) => {
+      toast.error(error?.response?.data?.message || "حدث خطأ أثناء حفظ القسم");
+    },
+  });
 
-    console.log("Hero section payload:", payload);
-    toast.success("تم تجهيز بيانات القسم الرئيسي");
+  const onSubmit = (values) => {
+    const formData = new FormData();
+    formData.append("hero[badge_text]", values.badgeText.trim());
+    formData.append("hero[main_title]", values.mainTitle.trim());
+    formData.append("hero[description]", values.description.trim());
+    if (values.image instanceof File) {
+      formData.append("hero[image]", values.image);
+    } else if (removeImage) {
+      formData.append("hero[keep_image]", "0");
+    } else {
+      formData.append("hero[keep_image]", "1");
+    }
+    saveSection(formData);
   };
 
   return (
@@ -176,6 +214,7 @@ export default function HeroContentForm() {
                                 const file = e.target.files?.[0] ?? null;
                                 onChange(file);
                                 updatePreview(file);
+                                setRemoveImage(false);
                                 e.target.value = "";
                               }}
                               {...field}
@@ -188,6 +227,7 @@ export default function HeroContentForm() {
                             onClick={() => {
                               form.setValue("image", null, { shouldValidate: true });
                               setPreview(null);
+                              setRemoveImage(true);
                             }}
                             className="h-11 rounded-full px-5 text-sm font-bold text-red-500 hover:bg-red-50 hover:text-red-600"
                           >
@@ -213,6 +253,7 @@ export default function HeroContentForm() {
                             const file = e.target.files?.[0] ?? null;
                             onChange(file);
                             updatePreview(file);
+                            setRemoveImage(false);
                             e.target.value = "";
                           }}
                           {...field}
@@ -228,10 +269,10 @@ export default function HeroContentForm() {
 
           <Button
             type="submit"
-            disabled={form.formState.isSubmitting}
+            disabled={isPending}
             className="h-12 rounded-full bg-brand-hover px-8 text-sm font-bold text-white hover:bg-brand-hover/90"
           >
-            {form.formState.isSubmitting ? (
+            {isPending ? (
               <>
                 <Loader2 className="size-4 animate-spin" />
                 جاري الحفظ...

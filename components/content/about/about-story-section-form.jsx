@@ -12,6 +12,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2, Plus, Trash2 } from "lucide-react";
+import { getStringValue } from "@/src/lib/content-admin";
+import { axiosInstance } from "@/src/utils/axios";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -42,15 +46,38 @@ const DEFAULT_VALUES = {
 
 const INITIAL_CARDS_COUNT = DEFAULT_VALUES.cards.length;
 
-export default function AboutStorySectionForm() {
+export default function AboutStorySectionForm({
+  initialData,
+  saveEndpoint,
+  queryKey,
+  sectionKey,
+}) {
   const form = useForm({
     defaultValues: DEFAULT_VALUES,
   });
+  const queryClient = useQueryClient();
   const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: "cards",
   });
   const cards = form.watch("cards");
+
+  useEffect(() => {
+    const nextCards = initialData?.cards?.length
+      ? initialData.cards.map((card) => ({
+          id: card.id ?? null,
+          value: getStringValue(card.value),
+          label: getStringValue(card.label),
+        }))
+      : DEFAULT_VALUES.cards;
+
+    form.reset({
+      badgeText: getStringValue(initialData?.badge_text, DEFAULT_VALUES.badgeText),
+      mainTitle: getStringValue(initialData?.main_title, DEFAULT_VALUES.mainTitle),
+      description: getStringValue(initialData?.description, DEFAULT_VALUES.description),
+      cards: nextCards,
+    });
+  }, [form, initialData]);
 
   const addCard = () => {
     append({
@@ -63,19 +90,30 @@ export default function AboutStorySectionForm() {
     remove(cardIndex);
   };
 
-  const onSubmit = (values) => {
-    const payload = {
-      badgeText: values.badgeText.trim(),
-      mainTitle: values.mainTitle.trim(),
-      description: values.description.trim(),
-      cards: values.cards.map((card) => ({
-        value: card.value.trim(),
-        label: card.label.trim(),
-      })),
-    };
+  const { mutate: saveSection, isPending } = useMutation({
+    mutationFn: (payload) => axiosInstance.post(saveEndpoint, payload),
+    onSuccess: (res) => {
+      toast.success(res?.data?.message || "تم حفظ القسم بنجاح");
+      queryClient.invalidateQueries({ queryKey });
+    },
+    onError: (error) => {
+      toast.error(error?.response?.data?.message || "حدث خطأ أثناء حفظ القسم");
+    },
+  });
 
-    console.log("About story payload:", payload);
-    toast.success("تم تجهيز بيانات قسم قصتنا");
+  const onSubmit = (values) => {
+    saveSection({
+      story: {
+        badge_text: values.badgeText.trim(),
+        main_title: values.mainTitle.trim(),
+        description: values.description.trim(),
+        cards: values.cards.map((card) => ({
+          id: card.id ?? null,
+          value: card.value.trim(),
+          label: card.label.trim(),
+        })),
+      },
+    });
   };
 
   return (
@@ -247,10 +285,10 @@ export default function AboutStorySectionForm() {
 
           <Button
             type="submit"
-            disabled={form.formState.isSubmitting}
+            disabled={isPending}
             className="h-12 rounded-full bg-brand-hover px-8 text-sm font-bold text-white hover:bg-brand-hover/90"
           >
-            {form.formState.isSubmitting ? (
+            {isPending ? (
               <>
                 <Loader2 className="size-4 animate-spin" />
                 جاري الحفظ...

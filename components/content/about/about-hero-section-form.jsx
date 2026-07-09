@@ -13,6 +13,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "lucide-react";
+import { getStringValue } from "@/src/lib/content-admin";
+import { axiosInstance } from "@/src/utils/axios";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -23,20 +27,44 @@ const DEFAULT_VALUES = {
     "تقدم عقاري حلولًا إلكترونية متكاملة لإدارة عقود الإيجار السكنية والتجارية بإجراءات سهلة وآمنة تضمن حقوق جميع الأطراف وتعزز الثقة والحياد.",
 };
 
-export default function AboutHeroSectionForm() {
+export default function AboutHeroSectionForm({
+  initialData,
+  saveEndpoint,
+  queryKey,
+  sectionKey,
+}) {
   const form = useForm({
     defaultValues: DEFAULT_VALUES,
   });
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    form.reset({
+      badgeText: getStringValue(initialData?.badge_text, DEFAULT_VALUES.badgeText),
+      mainTitle: getStringValue(initialData?.main_title, DEFAULT_VALUES.mainTitle),
+      description: getStringValue(initialData?.description, DEFAULT_VALUES.description),
+    });
+  }, [form, initialData]);
+
+  const { mutate: saveSection, isPending } = useMutation({
+    mutationFn: (payload) => axiosInstance.post(saveEndpoint, payload),
+    onSuccess: (res) => {
+      toast.success(res?.data?.message || "تم حفظ القسم بنجاح");
+      queryClient.invalidateQueries({ queryKey });
+    },
+    onError: (error) => {
+      toast.error(error?.response?.data?.message || "حدث خطأ أثناء حفظ القسم");
+    },
+  });
 
   const onSubmit = (values) => {
-    const payload = {
-      badgeText: values.badgeText.trim(),
-      mainTitle: values.mainTitle.trim(),
-      description: values.description.trim(),
-    };
-
-    console.log("About hero payload:", payload);
-    toast.success("تم تجهيز بيانات القسم الرئيسي لصفحة من نحن");
+    saveSection({
+      hero: {
+        badge_text: values.badgeText.trim(),
+        main_title: values.mainTitle.trim(),
+        description: values.description.trim(),
+      },
+    });
   };
 
   return (
@@ -114,10 +142,10 @@ export default function AboutHeroSectionForm() {
 
           <Button
             type="submit"
-            disabled={form.formState.isSubmitting}
+            disabled={isPending}
             className="h-12 rounded-full bg-brand-hover px-8 text-sm font-bold text-white hover:bg-brand-hover/90"
           >
-            {form.formState.isSubmitting ? (
+            {isPending ? (
               <>
                 <Loader2 className="size-4 animate-spin" />
                 جاري الحفظ...

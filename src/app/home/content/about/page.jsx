@@ -6,8 +6,12 @@ import AboutStorySectionForm from "@/components/content/about/about-story-sectio
 import AboutValuesSectionForm from "@/components/content/about/about-values-section-form";
 import AboutVisionMissionSectionForm from "@/components/content/about/about-vision-mission-section-form";
 import Header from "@/components/home/Header";
+import Loader from "@/components/home/loader";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart3, HeartHandshake, LayoutTemplate, Telescope, Users } from "lucide-react";
+import { extractContentSections, CONTENT_PAGE_ENDPOINTS } from "@/src/lib/content-admin";
+import { axiosInstance } from "@/src/utils/axios";
+import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 
 const ABOUT_CONTENT_TABS = [
@@ -40,6 +44,16 @@ const ABOUT_CONTENT_TABS = [
 
 export default function ContentAboutPage() {
   const [activeTab, setActiveTab] = useState(ABOUT_CONTENT_TABS[0].value);
+  const { data: responseData, isLoading } = useQuery({
+    queryKey: ["content-page", "about"],
+    queryFn: () =>
+      axiosInstance.get(CONTENT_PAGE_ENDPOINTS.about).then((res) => res?.data),
+  });
+  const sections = extractContentSections(responseData);
+
+  if (isLoading) {
+    return <Loader />;
+  }
 
   return (
     <div className="flex min-h-screen flex-col gap-6 p-6" dir="rtl">
@@ -80,15 +94,40 @@ export default function ContentAboutPage() {
           {ABOUT_CONTENT_TABS.map((tab) => (
             <TabsContent key={tab.value} value={tab.value} className="mt-0">
               {tab.value === "hero" ? (
-                <AboutHeroSectionForm />
+                <AboutHeroSectionForm
+                  initialData={sections.hero}
+                  saveEndpoint={CONTENT_PAGE_ENDPOINTS.about}
+                  queryKey={["content-page", "about"]}
+                  sectionKey="hero"
+                />
               ) : tab.value === "story" ? (
-                <AboutStorySectionForm />
+                <AboutStorySectionForm
+                  initialData={sections.story}
+                  saveEndpoint={CONTENT_PAGE_ENDPOINTS.about}
+                  queryKey={["content-page", "about"]}
+                  sectionKey="story"
+                />
               ) : tab.value === "vision-mission" ? (
-                <AboutVisionMissionSectionForm />
+                <AboutVisionMissionSectionForm
+                  initialData={sections.vision_mission}
+                  saveEndpoint={CONTENT_PAGE_ENDPOINTS.about}
+                  queryKey={["content-page", "about"]}
+                  sectionKey="vision_mission"
+                />
               ) : tab.value === "beneficiaries" ? (
-                <AboutBeneficiariesSectionForm />
+                <AboutBeneficiariesSectionForm
+                  initialData={sections.beneficiaries}
+                  saveEndpoint={CONTENT_PAGE_ENDPOINTS.about}
+                  queryKey={["content-page", "about"]}
+                  sectionKey="beneficiaries"
+                />
               ) : tab.value === "values" ? (
-                <AboutValuesSectionForm />
+                <AboutValuesSectionForm
+                  initialData={sections.values}
+                  saveEndpoint={CONTENT_PAGE_ENDPOINTS.about}
+                  queryKey={["content-page", "about"]}
+                  sectionKey="values"
+                />
               ) : null}
             </TabsContent>
           ))}

@@ -14,6 +14,13 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { FileText, ImageUp, Loader2, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
+import {
+  createFileAsset,
+  createImageAsset,
+  getStringValue,
+} from "@/src/lib/content-admin";
+import { axiosInstance } from "@/src/utils/axios";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -49,6 +56,11 @@ const EMPTY_ASSET = {
   isPdf: false,
 };
 
+const EMPTY_CARD_ASSET = {
+  image: { ...EMPTY_ASSET },
+  license: { ...EMPTY_ASSET },
+};
+
 function createEmptyAssets() {
   return Array.from({ length: 3 }, () => ({
     image: { ...EMPTY_ASSET },
@@ -62,12 +74,53 @@ function revokeIfBlob(url) {
   }
 }
 
-export default function OfficialAuthoritiesForm() {
+export default function OfficialAuthoritiesForm({
+  initialData,
+  saveEndpoint,
+  queryKey,
+  sectionKey,
+}) {
   const form = useForm({
     defaultValues: DEFAULT_VALUES,
   });
+  const queryClient = useQueryClient();
   const [cardAssets, setCardAssets] = useState(createEmptyAssets);
   const cards = form.watch("cards");
+
+  useEffect(() => {
+    const nextCards = initialData?.cards?.length
+      ? initialData.cards.map((card) => ({
+          id: card.id ?? null,
+          title: getStringValue(card.title),
+          description: getStringValue(card.description),
+          image: null,
+          license: null,
+          existingImageUrl: getStringValue(card.image_url),
+          existingLicenseUrl: getStringValue(card.license_file_url),
+        }))
+      : DEFAULT_VALUES.cards.map((card) => ({
+          ...card,
+          existingImageUrl: "",
+          existingLicenseUrl: "",
+        }));
+
+    form.reset({
+      badgeText: getStringValue(initialData?.badge_text, DEFAULT_VALUES.badgeText),
+      mainTitle: getStringValue(initialData?.main_title, DEFAULT_VALUES.mainTitle),
+      description: getStringValue(initialData?.description, DEFAULT_VALUES.description),
+      cards: nextCards,
+    });
+    setCardAssets(
+      DEFAULT_VALUES.cards.map((_, index) => {
+        const card = nextCards[index];
+
+        return {
+          image: createImageAsset(card?.existingImageUrl),
+          license: createFileAsset(card?.existingLicenseUrl),
+        };
+      })
+    );
+  }, [form, initialData]);
 
   useEffect(() => {
     return () => {
@@ -106,21 +159,53 @@ export default function OfficialAuthoritiesForm() {
     updateCardAsset(cardIndex, type, null);
   };
 
-  const onSubmit = (values) => {
-    const payload = {
-      badgeText: values.badgeText.trim(),
-      mainTitle: values.mainTitle.trim(),
-      description: values.description.trim(),
-      cards: values.cards.map((card) => ({
-        title: card.title.trim(),
-        description: card.description.trim(),
-        imageName: card.image?.name || null,
-        licenseName: card.license?.name || null,
-      })),
-    };
+  const { mutate: saveSection, isPending } = useMutation({
+    mutationFn: (payload) =>
+      axiosInstance.post(saveEndpoint, payload, {
+        headers: { "Content-Type": "multipart/form-data" },
+      }),
+    onSuccess: (res) => {
+      toast.success(res?.data?.message || "تم حفظ القسم بنجاح");
+      queryClient.invalidateQueries({ queryKey });
+    },
+    onError: (error) => {
+      toast.error(error?.response?.data?.message || "حدث خطأ أثناء حفظ القسم");
+    },
+  });
 
-    console.log("Official authorities payload:", payload);
-    toast.success("تم تجهيز بيانات قسم الجهات الرسمية");
+  const onSubmit = (values) => {
+    const formData = new FormData();
+    formData.append("official_authorities[badge_text]", values.badgeText.trim());
+    formData.append("official_authorities[main_title]", values.mainTitle.trim());
+    formData.append("official_authorities[description]", values.description.trim());
+    values.cards.forEach((card, index) => {
+      if (card.id) {
+        formData.append(`official_authorities[cards][${index}][id]`, String(card.id));
+      }
+      formData.append(`official_authorities[cards][${index}][title]`, card.title.trim());
+      formData.append(
+        `official_authorities[cards][${index}][description]`,
+        card.description.trim()
+      );
+      if (card.image instanceof File) {
+        formData.append(`official_authorities[cards][${index}][image]`, card.image);
+      } else if (!cardAssets[index]?.image?.previewUrl && card.existingImageUrl) {
+        formData.append(`official_authorities[cards][${index}][keep_image]`, "0");
+      } else {
+        formData.append(`official_authorities[cards][${index}][keep_image]`, "1");
+      }
+      if (card.license instanceof File) {
+        formData.append(
+          `official_authorities[cards][${index}][license_file]`,
+          card.license
+        );
+      } else if (!cardAssets[index]?.license?.previewUrl && card.existingLicenseUrl) {
+        formData.append(`official_authorities[cards][${index}][keep_license]`, "0");
+      } else {
+        formData.append(`official_authorities[cards][${index}][keep_license]`, "1");
+      }
+    });
+    saveSection(formData);
   };
 
   return (
@@ -203,8 +288,9 @@ export default function OfficialAuthoritiesForm() {
 
             <div className="grid gap-4 xl:grid-cols-2">
               {DEFAULT_VALUES.cards.map((defaultCard, cardIndex) => {
-                const imageAsset = cardAssets[cardIndex].image;
-                const licenseAsset = cardAssets[cardIndex].license;
+                const currentAssets = cardAssets[cardIndex] ?? EMPTY_CARD_ASSET;
+                const imageAsset = currentAssets.image;
+                const licenseAsset = currentAssets.license;
                 const cardTitle =
                   cards?.[cardIndex]?.title?.trim() || defaultCard.title;
 
@@ -463,10 +549,10 @@ export default function OfficialAuthoritiesForm() {
 
           <Button
             type="submit"
-            disabled={form.formState.isSubmitting}
+            disabled={isPending}
             className="h-12 rounded-full bg-brand-hover px-8 text-sm font-bold text-white hover:bg-brand-hover/90"
           >
-            {form.formState.isSubmitting ? (
+            {isPending ? (
               <>
                 <Loader2 className="size-4 animate-spin" />
                 جاري الحفظ...
