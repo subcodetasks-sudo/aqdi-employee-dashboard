@@ -13,6 +13,7 @@ function getApiBaseUrl() {
 
 export const axiosInstance = axios.create({
     baseURL: getApiBaseUrl(),
+    timeout: 15000,
     headers: {
         'Content-Type': 'application/json',
     },
@@ -21,7 +22,7 @@ export const axiosInstance = axios.create({
 axiosInstance.interceptors.request.use((config) => {
     let token = useUserStore.getState().token;
     if (!token && typeof window !== 'undefined') {
-        token = localStorage.getItem('token');
+        token = localStorage.getItem('token') || sessionStorage.getItem('token');
     }
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
@@ -32,7 +33,10 @@ axiosInstance.interceptors.request.use((config) => {
 axiosInstance.interceptors.response.use(
     (response) => response,
     async (error) => {
-        if (error.response?.status === 401) {
+        // Skip the login endpoint itself: a 401 there just means wrong credentials,
+        // not an expired session, so it shouldn't force-logout/redirect.
+        const isLoginRequest = error.config?.url?.includes('/admin/employees/login');
+        if (error.response?.status === 401 && !isLoginRequest) {
             const { logout } = useUserStore.getState();
             await logout();
             if (typeof window !== "undefined") {

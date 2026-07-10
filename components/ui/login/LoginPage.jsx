@@ -42,10 +42,17 @@ export default function LoginPage() {
 
   const {mutate ,isPending}=useMutation({
     mutationFn:async(data)=>{
-      const res = await axiosInstance.post('/admin/employees/login',data)
+      const res = await axiosInstance.post('/admin/employees/login', {
+        email: data.email,
+        password: data.password,
+      })
       return res.data
     },
-    onSuccess: async (response) => {
+    // Only auto-retry genuine connection failures (no response received) -
+    // wrong credentials (4xx with a response) should surface immediately, not retry.
+    retry: (failureCount, error) => !error?.response && failureCount < 2,
+    retryDelay: (attemptIndex) => (attemptIndex === 0 ? 800 : 1500),
+    onSuccess: async (response, variables) => {
       if (response?.success && response?.data?.token) {
         try {
           const userWithPermissions = await enrichUserWithRolePermissions(
@@ -53,8 +60,8 @@ export default function LoginPage() {
             (roleId) => axiosInstance.get(`/admin/roles/${roleId}`).then((res) => res?.data)
           );
           toast.success(response?.message || "تم تسجيل الدخول بنجاح");
-          setAuth(userWithPermissions, userWithPermissions?.token);
-          await setAuthCookie(userWithPermissions?.token);
+          setAuth(userWithPermissions, userWithPermissions?.token, variables.remember);
+          await setAuthCookie(userWithPermissions?.token, variables.remember);
           router.push('/home');
         } catch (error) {
           console.error('Login post-processing error:', error);
@@ -76,11 +83,7 @@ export default function LoginPage() {
     }
   })
   const onSubmit = (formdata) => {
-    const data = {
-      email: formdata.email,
-      password: formdata.password,
-    }
-    mutate(data);
+    mutate(formdata);
   };
 
   return (
