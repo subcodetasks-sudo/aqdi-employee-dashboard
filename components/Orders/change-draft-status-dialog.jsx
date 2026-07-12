@@ -48,6 +48,9 @@ export default function ChangeDraftStatusDialog({ orderId, queryKey }) {
     onSuccess: (res) => {
       toast.success(res?.data?.message || "تم تغيير حالة المسودة");
       invalidateRelated();
+      if (queryKey) {
+        queryClient.invalidateQueries({ queryKey });
+      }
     },
     onError: (res) => {
       toast.error(res?.response?.data?.message || "حدث خطأ أثناء تغيير حالة المسودة");

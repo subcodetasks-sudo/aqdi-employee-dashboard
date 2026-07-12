@@ -36,3 +36,35 @@ export function getDraftOrderStatusColor(row = {}) {
     row?.status?.color
   );
 }
+
+export function getDraftOrderStatusTextColor(row = {}) {
+  return (
+    row?.draft_contract_status?.color_text ??
+    row?.draft_contract_status_color_text ??
+    row?.status?.color_text
+  );
+}
+
+export function getOrderDraftStatusFromDetail(orderData = {}) {
+  const summary = orderData?.contract_summary ?? {};
+  return {
+    id:
+      orderData?.draft_contract_status_id ??
+      orderData?.draft_contract_status?.id ??
+      summary?.draft_contract_status_id ??
+      summary?.draft_contract_status?.id ??
+      null,
+    name: getDraftOrderStatusLabel({ ...summary, ...orderData }),
+    color: getDraftOrderStatusColor({ ...summary, ...orderData }),
+    colorText: getDraftOrderStatusTextColor({ ...summary, ...orderData }),
+  };
+}
+
+export function getOrderDraftContractNumber(orderData = {}) {
+  const summary = orderData?.contract_summary ?? {};
+  return (
+    orderData?.draft_contract_number ??
+    summary?.draft_contract_number ??
+    ""
+  );
+}

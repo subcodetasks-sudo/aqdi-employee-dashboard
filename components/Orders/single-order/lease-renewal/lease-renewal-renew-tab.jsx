@@ -1,20 +1,16 @@
 "use client";
 
-import { useState } from "react";
 import Image from "next/image";
 import { toast } from "sonner";
 import {
-  ChevronLeft,
   Copy,
   Download,
   Edit,
   Eye,
-  FileText,
   Hand,
   ImageIcon,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import LeaseRenewalDraftTransfer from "./lease-renewal-draft-transfer";
 
 const EMPTY_ADDITIONAL_TERMS = "لا توجد شروط أو متغيرات إضافية من العميل";
 const EMPTY_NOTES = "لا توجد ملاحظات";
@@ -40,7 +36,6 @@ const getFileExtension = (url) => {
 };
 
 export default function LeaseRenewalRenewTab({ orderData }) {
-  const [draftNumber, setDraftNumber] = useState("");
   const step3 = orderData?.step3 ?? {};
   const step4 = orderData?.step4 ?? {};
   const orderUuid = orderData?.uuid ?? "410001";
@@ -183,38 +178,12 @@ export default function LeaseRenewalRenewTab({ orderData }) {
             </div>
           </div>
 
-          <div className="bg-[#F4F4F4] rounded-[20px] p-5 flex flex-col gap-4">
-            <div>
-              <p className="text-[13px] font-black text-black mb-2">تحويل الطلب :</p>
-              <button
-                type="button"
-                className="w-full flex items-center justify-between gap-2 px-4 py-3 rounded-2xl bg-[#FFE8EE] border border-[#FFD6E0] text-[#E91E8C] text-[12px] font-bold"
-              >
-                <span className="flex items-center gap-2">
-                  <span>😍</span>
-                  بانتظار إعتماد العقد
-                </span>
-                <ChevronLeft className="size-4 shrink-0" />
-              </button>
-            </div>
-            <div>
-              <p className="text-[13px] font-black text-black mb-2">رقم مسودة العقد :</p>
-              <div className="flex items-center gap-2">
-                <Input
-                  placeholder="أدخل رقم مسودة العقد هنا..."
-                  value={draftNumber}
-                  onChange={(e) => setDraftNumber(e.target.value)}
-                  className="h-11 rounded-xl bg-white border-[#E0E0E0] flex-1 text-right"
-                />
-                <Button
-                  type="button"
-                  className="h-11 px-6 rounded-xl bg-[#0019FF] hover:bg-[#0015CC] font-bold text-white shrink-0"
-                  onClick={() => toast.success("تم الحفظ")}
-                >
-                  حفظ
-                </Button>
-              </div>
-            </div>
+          <div className="bg-[#F4F4F4] rounded-[20px] p-5">
+            <LeaseRenewalDraftTransfer
+              orderId={orderData?.id}
+              orderData={orderData}
+              layout="stacked"
+            />
           </div>
         </div>
 

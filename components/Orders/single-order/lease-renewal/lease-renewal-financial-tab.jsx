@@ -1,10 +1,8 @@
 "use client";
 
-import { useState } from "react";
 import { toast } from "sonner";
-import { Check, ChevronLeft, Copy, Edit, Wallet, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Check, Copy, Edit, Wallet, X } from "lucide-react";
+import LeaseRenewalDraftTransfer from "./lease-renewal-draft-transfer";
 
 const SectionEditHeader = ({ title, showEdit = true }) => (
   <div className="flex items-center justify-between mb-4">
@@ -56,7 +54,6 @@ const PermissionCard = ({ label, active }) =>
   );
 
 export default function LeaseRenewalFinancialTab({ orderData }) {
-  const [draftNumber, setDraftNumber] = useState("");
   const step4 = orderData?.step4 ?? {};
 
   const totalValue =
@@ -128,30 +125,12 @@ export default function LeaseRenewalFinancialTab({ orderData }) {
       {/* Col 4 — تحويل الطلب (leftmost in RTL) */}
       <div className="bg-[#F4F4F4] rounded-[20px] p-4 flex flex-col h-fit">
         <SectionEditHeader title="تحويل الطلب" showEdit={false} />
-        <button
-          type="button"
-          className="w-full flex items-center justify-between gap-2 px-4 py-3 rounded-2xl bg-[#FFE8EE] border border-[#FFD6E0] text-[#E91E8C] text-[12px] font-bold mb-5"
-        >
-          <span className="flex items-center gap-2">
-            <span>🥳</span>
-            بانتظار اعتماد العقد
-          </span>
-          <ChevronLeft className="size-4" />
-        </button>
-        <p className="text-[13px] font-black text-black mb-2 text-right">رقم مسودة العقد</p>
-        <Input
-          placeholder="أدخل رقم مسودة العقد هنا..."
-          value={draftNumber}
-          onChange={(e) => setDraftNumber(e.target.value)}
-          className="h-12 rounded-xl bg-white border-[#E0E0E0] text-right mb-4"
+        <LeaseRenewalDraftTransfer
+          orderId={orderData?.id}
+          orderData={orderData}
+          layout="column"
+          showTransferLabel={false}
         />
-        <Button
-          type="button"
-          className="w-full h-12 rounded-xl bg-[#0019FF] hover:bg-[#0015CC] font-bold text-white "
-          onClick={() => toast.success("تم الحفظ")}
-        >
-          حفظ
-        </Button>
       </div>
     </div>
   );

@@ -3,9 +3,6 @@ import {
   Copy,
   Check,
   Building2,
-  Layers,
-  Ruler,
-  Hash,
   Sparkles,
   ChefHat,
   Bed,
@@ -15,7 +12,6 @@ import {
   Wind,
   Zap,
   Droplets,
-  BedDouble,
   LayoutGrid,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -89,34 +85,9 @@ const DetailCard = ({ label, value, icon, accent = "blue", copyable = false }) =
   );
 };
 
-const StatTile = ({ icon, label, value, gradient }) => (
-  <div
-    className={`relative overflow-hidden rounded-2xl p-4 flex items-center gap-3 text-white shadow-sm ${gradient}`}
-  >
-    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm">
-      {icon}
-    </div>
-    <div className="min-w-0 text-right">
-      <span className="block text-[11px] font-medium text-white/80">{label}</span>
-      <span className="block truncate text-base font-extrabold">{value}</span>
-    </div>
-  </div>
-);
-
 const UnitDetailes = ({ data }) => {
-  const unitNumber = data?.step2?.unit?.unit_number || data?.step2?.unit_number || "---";
   const unitType = data?.step2?.unit_type_name || data?.step2?.unit_type?.name_ar || "---";
   const unitUsage = data?.step2?.unit_usage_name || data?.step2?.unit_usage?.name_ar || "---";
-  const floorNumber = data?.step2?.unit?.floor_number || data?.step2?.floor_number || "---";
-  const unitArea = data?.step2?.unit?.unit_area || data?.step2?.unit_area || "---";
-  const totalRooms = data?.step2?.tootal_rooms || "---";
-
-  const overviewStats = [
-    { label: "رقم الوحدة", value: unitNumber, icon: <Hash size={20} />, gradient: "bg-gradient-to-br from-blue-500 to-blue-600" },
-    { label: "مساحة الوحدة", value: unitArea !== "---" ? `${unitArea} م²` : "---", icon: <Ruler size={20} />, gradient: "bg-gradient-to-br from-emerald-500 to-teal-600" },
-    { label: "رقم الطابق", value: floorNumber, icon: <Layers size={20} />, gradient: "bg-gradient-to-br from-violet-500 to-purple-600" },
-    { label: "عدد الغرف", value: totalRooms, icon: <BedDouble size={20} />, gradient: "bg-gradient-to-br from-orange-400 to-amber-500" },
-  ];
 
   const unitGeneralDetails = [
     { label: "نوع الوحدة", value: unitType, icon: <Building2 size={18} />, accent: "yellow" },
@@ -141,18 +112,13 @@ const UnitDetailes = ({ data }) => {
 
   return (
     <div className="p-4 lg:p-6 space-y-6" dir="rtl">
-      {/* Quick glance overview */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        {overviewStats.map((stat, index) => (
-          <StatTile key={index} {...stat} />
-        ))}
-      </div>
-
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+
+
         <div className="bg-gray-50/70 p-5 lg:p-6 rounded-[28px] border border-gray-100">
-          <ContractStepEditor title="تفاصيل الغرف" step="step2" fields={STEP2_ROOM_FIELDS}>
+          <ContractStepEditor title="تفاصيل الوحدات" step="step2" fields={STEP2_UNIT_FIELDS}>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {roomDetails.map((item, index) => (
+              {unitGeneralDetails.map((item, index) => (
                 <DetailCard key={index} {...item} />
               ))}
             </div>
@@ -160,9 +126,9 @@ const UnitDetailes = ({ data }) => {
         </div>
 
         <div className="bg-gray-50/70 p-5 lg:p-6 rounded-[28px] border border-gray-100">
-          <ContractStepEditor title="تفاصيل الوحدات" step="step2" fields={STEP2_UNIT_FIELDS}>
+          <ContractStepEditor title="تفاصيل الغرف" step="step2" fields={STEP2_ROOM_FIELDS}>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {unitGeneralDetails.map((item, index) => (
+              {roomDetails.map((item, index) => (
                 <DetailCard key={index} {...item} />
               ))}
             </div>
