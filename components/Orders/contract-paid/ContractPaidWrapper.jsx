@@ -7,6 +7,8 @@ import {
   exportContractPaidToExcel,
   extractContractPaidRecord,
   extractPaymentFromResponse,
+  getContractPaidPeriodLabel,
+  getContractPaidTypeLabel,
   normalizeContractPaidList,
 } from "@/components/Orders/contract-paid/contract-paid-utils";
 import PaymentLinkDialog from "@/components/Orders/shared/payment-link-dialog";
@@ -191,6 +193,9 @@ export default function ContractPaidWrapper() {
         { label: "رقم السجل", value: detailRecord.id },
         { label: "رقم العقد", value: detailRecord.contract_uuid },
         { label: "رقم جوال العميل", value: detailRecord.customer_mobile, dir: "ltr" },
+        { label: "نوع العقد", value: getContractPaidTypeLabel(detailRecord) },
+        { label: "مدة العقد", value: getContractPaidPeriodLabel(detailRecord) },
+        { label: "رقم مسودة العقد", value: detailRecord.draft_contract_number, dir: "ltr" },
         { label: "المبلغ", value: detailRecord.amount },
         { label: "اسم الموظف", value: detailRecord.employee_name },
         {
@@ -202,7 +207,7 @@ export default function ContractPaidWrapper() {
         },
         { label: "تاريخ الإنشاء", value: detailRecord.created_at },
         { label: "آخر تحديث", value: detailRecord.updated_at },
-      ].filter((field) => field.value !== undefined && field.value !== null && field.value !== "")
+      ].filter((field) => field.value !== undefined && field.value !== null && field.value !== "" && field.value !== "—")
     : [];
 
   if (isLoading) {
@@ -290,9 +295,13 @@ export default function ContractPaidWrapper() {
               {[
                 "رقــم العقد",
                 "رقــم جوال العميل",
+                "نوع العقد",
+                "مدة العقد",
+                "رقم مسودة العقد",
                 "المبلغ",
                 "الموظف",
                 "حالة الدفع",
+                "الملاحظات",
                 "تاريخ الإنشاء",
                 "الاجـــراءات",
               ].map((header) => (
@@ -308,7 +317,7 @@ export default function ContractPaidWrapper() {
           <tbody>
             {items.length === 0 ? (
               <tr>
-                <td colSpan={7} className="text-center p-8 text-[#A3A3A3] text-sm">
+                <td colSpan={11} className="text-center p-8 text-[#A3A3A3] text-sm">
                   لا توجد سجلات حالياً
                 </td>
               </tr>
@@ -373,6 +382,24 @@ export default function ContractPaidWrapper() {
                       </div>
                     </td>
                     <td className="p-[15px_20px]">
+                      <span className="text-[13px] text-[#4D4D4D] font-medium whitespace-nowrap">
+                        {getContractPaidTypeLabel(row)}
+                      </span>
+                    </td>
+                    <td className="p-[15px_20px]">
+                      <span
+                        className="text-[13px] text-[#4D4D4D] font-medium max-w-[180px] truncate block"
+                        title={getContractPaidPeriodLabel(row)}
+                      >
+                        {getContractPaidPeriodLabel(row)}
+                      </span>
+                    </td>
+                    <td className="p-[15px_20px]">
+                      <span className="text-[13px] text-[#4D4D4D] font-medium" dir="ltr">
+                        {row.draft_contract_number || "---"}
+                      </span>
+                    </td>
+                    <td className="p-[15px_20px]">
                       <div className="flex items-center gap-1.5 text-[#007C13] font-bold text-[13px]">
                         <span>{row.amount ?? "---"}</span>
                         <Image src={greenRial} alt="rial" width={14} height={14} />
@@ -386,27 +413,38 @@ export default function ContractPaidWrapper() {
                     <td className="p-[15px_20px]">
                       <PaymentStatusBadge isPaid={row.is_paid} />
                     </td>
+                    <td className="p-[15px_20px]">
+                      <span
+                        className="text-[13px] text-[#4D4D4D] max-w-[160px] truncate block"
+                        title={row.notes || ""}
+                      >
+                        {row.notes || "—"}
+                      </span>
+                    </td>
                     <td className="p-[15px_20px] text-[13px] text-black font-medium whitespace-nowrap">
                       {row.created_at || "---"}
                     </td>
                     <td className="p-[15px_20px]">
                       {!isPaid ? (
-                        <button
+                        <Button
                           type="button"
+                          size="sm"
                           onClick={(e) => {
                             e.stopPropagation();
                             handleOpenPaymentLink(row);
                           }}
                           disabled={loadingPaymentId === row.id}
-                          className="inline-flex items-center gap-2 h-9 px-4 rounded-full bg-[#0019FF] text-white text-[12px] font-bold hover:bg-[#0015CC] transition-all disabled:opacity-60"
+                          className="h-9 shrink-0 gap-2 whitespace-nowrap rounded-full bg-[#0019FF] px-4 text-[12px] font-bold text-white hover:bg-[#0015CC]"
                         >
                           {loadingPaymentId === row.id ? (
                             <Loader2 className="size-4 animate-spin" />
                           ) : (
-                            <Link2 className="size-4" />
+                            <>
+                              <Link2 className="size-4" />
+                              رابط الدفع
+                            </>
                           )}
-                          رابط الدفع
-                        </button>
+                        </Button>
                       ) : (
                         <span className="text-[12px] text-[#A3A3A3]">—</span>
                       )}

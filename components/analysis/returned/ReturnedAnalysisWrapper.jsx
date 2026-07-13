@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronLeft, ChevronRight, Eye } from "lucide-react";
+import { Eye } from "lucide-react";
 import { toast } from "sonner";
 import Header from "../../home/Header";
 import Loader from "../../home/loader";
@@ -14,6 +14,14 @@ import waIcon from "@/public/images/waIcon.svg";
 import orangerial from "@/public/images/orangerial.svg";
 import { axiosInstance } from "@/src/utils/axios";
 import RefundContractActionsMenu from "./refund-contract-actions-menu";
+import OrdersToolbar from "@/components/Orders/shared/orders-toolbar";
+import OrdersPagination from "@/components/Orders/shared/orders-pagination";
+import { exportRefundContractsToExcel } from "@/components/Orders/shared/orders-export";
+import { useOrdersSelection } from "@/components/Orders/shared/use-orders-selection";
+import {
+  SelectableTableHeaderCheckbox,
+  SelectableTableRowCheckbox,
+} from "@/components/Orders/shared/selectable-table-checkbox";
 import {
   canManageAdminRefund,
   getReturnAnalysisTitle,
@@ -59,10 +67,44 @@ function CustomerRefundBadge({ refunded }) {
   );
 }
 
+function filterRows(rows, query) {
+  if (!query.trim()) return rows;
+  const normalizedQuery = query.toLowerCase().trim();
+  return rows.filter((row) =>
+    [row.orderUuid, row.userMobile, row.contractType, row.employeeName, row.refundAmount]
+      .some((value) =>
+        value != null && String(value).toLowerCase().includes(normalizedQuery)
+      )
+  );
+}
+
+const tableHeaders = [
+  "رقــم الطلب",
+  "رقــم جوال العميل",
+  "نــوع العقــد",
+  "الدفـــع",
+  "المبــلغ المطالــب اســترجاعه",
+  "تم الاستــرجــاع",
+  "رافــع الطلب",
+  "مــوافقة الادارة",
+  "عرض العقــد",
+];
+
 export default function ReturnedAnalysisWrapper({ id }) {
   const router = useRouter();
   const [title, setTitle] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const {
+    selectedOrders,
+    selectedCount,
+    isSelected,
+    toggle,
+    togglePage,
+    clear,
+    getPageSelectionState,
+  } = useOrdersSelection();
 
   useEffect(() => {
     setTitle(getReturnAnalysisTitle(id));
@@ -70,7 +112,13 @@ export default function ReturnedAnalysisWrapper({ id }) {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [id]);
+    clear();
+  }, [id, debouncedSearchQuery, clear]);
+
+  useEffect(() => {
+    const handler = setTimeout(() => setDebouncedSearchQuery(searchQuery), 500);
+    return () => clearTimeout(handler);
+  }, [searchQuery]);
 
   const queryKey = ["refundContracts", id, currentPage];
 
@@ -89,18 +137,27 @@ export default function ReturnedAnalysisWrapper({ id }) {
   const pagination = rawData?.pagination ?? responseData?.pagination;
   const stats = rawData?.stats ?? responseData?.stats;
   const rows = items.map(normalizeRefundContract).filter(Boolean);
+  const filteredRows = useMemo(
+    () => filterRows(rows, debouncedSearchQuery),
+    [rows, debouncedSearchQuery]
+  );
+  const pageSelectionState = getPageSelectionState(filteredRows);
 
-  const tableHeaders = [
-    "رقــم الطلب",
-    "رقــم جوال العميل",
-    "نــوع العقــد",
-    "الدفـــع",
-    "المبــلغ المطالــب اســترجاعه",
-    "تم الاستــرجــاع",
-    "رافــع الطلب",
-    "مــوافقة الادارة",
-    "عرض العقــد",
-  ];
+  const exportConfig = useMemo(
+    () => ({
+      getSelectedOrders: () => selectedOrders,
+      onExport: (exportRows) =>
+        exportRefundContractsToExcel(exportRows, { filename: `تحليل-المسترجع-${id}` }),
+    }),
+    [selectedOrders, id]
+  );
+
+  const handleResetAll = () => {
+    setSearchQuery("");
+    setDebouncedSearchQuery("");
+    setCurrentPage(1);
+    clear();
+  };
 
   if (isLoading) return <Loader />;
 
@@ -141,13 +198,31 @@ export default function ReturnedAnalysisWrapper({ id }) {
         </div>
       )}
 
-      <div className="w-full overflow-x-auto bg-white rounded-[24px] border border-[#E4E4E4] mt-4 shadow-sm">
+      <div className="flex flex-col gap-6 relative z-10">
+        <OrdersToolbar
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          queryKeys={["refundContracts"]}
+          onResetAll={handleResetAll}
+          showStatusField={false}
+          exportConfig={exportConfig}
+          selectedCount={selectedCount}
+          onClearSelection={clear}
+        />
+      </div>
+
+      <div className="w-full overflow-x-auto bg-white rounded-[24px] border border-[#E4E4E4] shadow-sm">
         <table className="w-full border-collapse">
           <thead className="bg-[#FAFAFA]">
             <tr>
-              {tableHeaders.map((header, index) => (
+              <SelectableTableHeaderCheckbox
+                pageSelectionState={pageSelectionState}
+                onTogglePage={togglePage}
+                items={filteredRows}
+              />
+              {tableHeaders.map((header) => (
                 <th
-                  key={index}
+                  key={header}
                   className="text-right p-[15px_20px] text-[#A3A3A3] text-[13px] font-medium border-b border-[#E4E4E4] whitespace-nowrap"
                 >
                   {header}
@@ -156,8 +231,8 @@ export default function ReturnedAnalysisWrapper({ id }) {
             </tr>
           </thead>
           <tbody>
-            {rows.length > 0 ? (
-              rows.map((row) => {
+            {filteredRows.length > 0 ? (
+              filteredRows.map((row) => {
                 const isHousing =
                   row.contractTypeKey === "housing" ||
                   row.contractType === "سكنـي" ||
@@ -168,8 +243,13 @@ export default function ReturnedAnalysisWrapper({ id }) {
                     key={row.id}
                     className="border-b border-[#F5F5F5] last:border-0 hover:bg-[#fafafa] transition-all"
                   >
+                    <SelectableTableRowCheckbox
+                      row={row}
+                      isSelected={isSelected}
+                      onToggleRow={toggle}
+                    />
                     <td className="p-[15px_20px]">
-                      <div className="flex items-center justify-center gap-2 px-3 py-1.5 bg-[#f9f9f9]  w-fit mx-auto border border-[#eee]">
+                      <div className="flex items-center justify-center gap-2 px-3 py-1.5 bg-[#f9f9f9] w-fit mx-auto border border-[#eee]">
                         <span className="text-black text-[12px] font-bold">{row.orderUuid}</span>
                         <button
                           type="button"
@@ -279,7 +359,7 @@ export default function ReturnedAnalysisWrapper({ id }) {
             ) : (
               <tr>
                 <td
-                  colSpan={tableHeaders.length}
+                  colSpan={tableHeaders.length + 1}
                   className="text-center p-8 text-[#A3A3A3] text-sm"
                 >
                   لا توجد طلبات استرجاع متوفرة حالياً
@@ -290,55 +370,11 @@ export default function ReturnedAnalysisWrapper({ id }) {
         </table>
       </div>
 
-      {pagination && pagination.last_page > 1 && (
-        <div className="flex items-center justify-center gap-2.5 mt-4" dir="rtl">
-          <button
-            type="button"
-            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-            disabled={currentPage <= 1}
-            className="w-9 h-9 rounded-full border border-[#E4E4E4] flex items-center justify-center text-[#A3A3A3] hover:bg-brand-main hover:text-white transition-all disabled:opacity-40"
-          >
-            <ChevronRight className="size-4" />
-          </button>
-          {Array.from({ length: pagination.last_page }, (_, i) => i + 1)
-            .filter(
-              (page) =>
-                page === 1 ||
-                page === pagination.last_page ||
-                Math.abs(page - currentPage) <= 1
-            )
-            .map((page, index, arr) => {
-              const prev = arr[index - 1];
-              const showEllipsis = prev && page - prev > 1;
-              return (
-                <React.Fragment key={page}>
-                  {showEllipsis ? (
-                    <span className="text-[#A3A3A3] px-1">...</span>
-                  ) : null}
-                  <button
-                    type="button"
-                    onClick={() => setCurrentPage(page)}
-                    className={`w-9 h-9 rounded-full flex items-center justify-center text-[13px] font-medium transition-all ${
-                      currentPage === page
-                        ? "bg-brand-main text-white shadow-lg shadow-brand-main/20"
-                        : "border border-[#E4E4E4] text-[#A3A3A3] hover:bg-[#f5f5f5]"
-                    }`}
-                  >
-                    {page}
-                  </button>
-                </React.Fragment>
-              );
-            })}
-          <button
-            type="button"
-            onClick={() => setCurrentPage((p) => Math.min(pagination.last_page, p + 1))}
-            disabled={currentPage >= pagination.last_page}
-            className="w-9 h-9 rounded-full border border-[#E4E4E4] flex items-center justify-center text-[#A3A3A3] hover:bg-brand-main hover:text-white transition-all disabled:opacity-40"
-          >
-            <ChevronLeft className="size-4" />
-          </button>
-        </div>
-      )}
+      <OrdersPagination
+        pagination={pagination}
+        currentPage={currentPage}
+        onPageChange={setCurrentPage}
+      />
     </div>
   );
 }

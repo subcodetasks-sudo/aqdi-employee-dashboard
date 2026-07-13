@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Header from "@/components/home/Header";
 import PopupContractsTab from "@/components/contract-settings/popup-contracts/popup-contracts-tab";
+import PaymentMessagesTab from "@/components/contract-settings/payment-messages/payment-messages-tab";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FileText, Settings2 } from "lucide-react";
 
@@ -13,8 +14,8 @@ const CONTRACT_SETTINGS_TABS = [
     icon: FileText,
   },
   {
-    value: "general",
-    label: "إعدادات عامة",
+    value: "payment-messages",
+    label: "إعدادات رسايل الدفع",
     icon: Settings2,
   },
 ];
@@ -56,13 +57,8 @@ export default function ContractSettingsPage() {
           <PopupContractsTab />
         </TabsContent>
 
-        <TabsContent value="general" className="mt-0">
-          <div className="rounded-[24px] border border-[#EEEEEE] bg-[#FCFCFC] p-6">
-            <h2 className="text-lg font-bold text-black">إعدادات عامة</h2>
-            <p className="mt-2 text-sm leading-7 text-[#707070]">
-              سيتم إضافة محتوى هذا التبويب قريباً.
-            </p>
-          </div>
+        <TabsContent value="payment-messages" className="mt-0">
+          <PaymentMessagesTab />
         </TabsContent>
       </Tabs>
     </div>

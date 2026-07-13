@@ -34,16 +34,37 @@ export function extractPaymentFromResponse(response) {
   };
 }
 
+export function getContractPaidTypeLabel(row) {
+  if (row?.contract_type_label) return row.contract_type_label;
+  if (row?.contract_type === "commercial") return "تجاري";
+  if (row?.contract_type === "housing") return "سكني";
+  return "—";
+}
+
+export function getContractPaidPeriodLabel(row) {
+  return (
+    row?.contract_period?.period ||
+    row?.contract_period?.note ||
+    row?.contract_period_label ||
+    "—"
+  );
+}
+
 export function mapContractPaidToExportRow(row) {
   const isPaid = row?.is_paid === true || row?.is_paid === 1;
 
   return {
     "رقم العقد": row?.contract_uuid ?? "",
     "رقم جوال العميل": row?.customer_mobile ?? "",
+    "نوع العقد": getContractPaidTypeLabel(row),
+    "مدة العقد": getContractPaidPeriodLabel(row),
+    "رقم مسودة العقد": row?.draft_contract_number ?? "",
     المبلغ: row?.amount ?? "",
     الموظف: row?.employee_name ?? "",
     "حالة الدفع": isPaid ? "تم الدفع" : "لم يتم الدفع",
+    الملاحظات: row?.notes ?? "",
     "تاريخ الإنشاء": row?.created_at ?? "",
+    "آخر تحديث": row?.updated_at ?? "",
   };
 }
 

@@ -26,13 +26,19 @@ const tabStyle =
 function OrderDetailsContent() {
   const { orderData, isLoading, isError } = useSingleOrderContext();
   const { id } = useParams();
-  const { setOrderId, setCommentPanelOpen } = useSidebarStore();
+  const { setOrderId, setDisplayedPart, setSidebarOpen } = useSidebarStore();
 
   useEffect(() => {
     setOrderId(id);
-    setCommentPanelOpen(true);
-    return () => setCommentPanelOpen(false);
-  }, [id, setOrderId, setCommentPanelOpen]);
+    setSidebarOpen(true);
+    setDisplayedPart("comments");
+    return () => {
+      setOrderId(null);
+      if (useSidebarStore.getState().displayedPart === "comments") {
+        setDisplayedPart("default");
+      }
+    };
+  }, [id, setOrderId, setDisplayedPart, setSidebarOpen]);
 
   const isLeaseRenewal =
     orderData?.contract_summary?.instrument_type_key === "lease_renewal";

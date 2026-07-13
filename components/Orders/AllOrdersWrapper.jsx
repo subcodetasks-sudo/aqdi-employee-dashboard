@@ -17,6 +17,7 @@ import {
 import { exportOrdersToExcel } from "./shared/orders-export";
 import { useOrdersSelection } from "./shared/use-orders-selection";
 import { filterOrdersPageStatusItems } from "@/src/lib/orders-page-statuses";
+import { useOrderStatusCounts } from "./shared/use-order-status-counts";
 
 export default function AllOrdersWrapper() {
   const [activeFilter, setActiveFilter] = useState("");
@@ -70,28 +71,13 @@ export default function AllOrdersWrapper() {
     [statusItems]
   );
 
-  const countsById = useMemo(
-    () =>
-      ordersPageStatusItems.reduce((acc, item) => {
-        acc[item.id] =
-          item.orders_count ??
-          item.count ??
-          item.total ??
-          item.contracts_count ??
-          0;
-        return acc;
-      }, {}),
-    [ordersPageStatusItems]
-  );
-
-  const { data: allTotal = 0 } = useQuery({
-    queryKey: ["orders-all-total"],
-    queryFn: async () => {
-      const response = await axiosInstance("/admin/orders?page=1&per_page=1");
-      return response?.data?.data?.pagination?.total ?? 0;
-    },
-    staleTime: 5 * 60 * 1000,
-    retry: false,
+  const {
+    allTotal,
+    byId: countsById,
+    isLoading: countsLoading,
+  } = useOrderStatusCounts(ordersPageStatusItems, {
+    baseUrl: "/admin/orders",
+    statusParam: "contract_status_id",
   });
 
   const { data, isLoading } = useQuery({
@@ -124,7 +110,7 @@ export default function AllOrdersWrapper() {
 
   const pageSelectionState = getPageSelectionState(filteredOrders);
 
-  if (isLoading || statusLoading) {
+  if (isLoading || statusLoading || countsLoading) {
     return <Loader />;
   }
 

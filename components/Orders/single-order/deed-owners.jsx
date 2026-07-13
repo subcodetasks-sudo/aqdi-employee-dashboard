@@ -1,13 +1,14 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { useRef, useState } from "react";
-import ImageGallery from "react-image-gallery";
-import "react-image-gallery/styles/image-gallery.css";
+import { useState } from "react";
 import { BiEdit } from "react-icons/bi";
 import { Eye, ImageIcon } from "lucide-react";
 import { toast } from "sonner";
 import dynamic from "next/dynamic";
+import DeedInstrumentViewerDialog, {
+  DeedInstrumentViewer,
+} from "./deed-instrument-viewer";
 import { ContractStepEditor } from "./contract-edit/contract-step-editor";
 import {
   SUMMARY_OWNER_FIELDS,
@@ -65,9 +66,9 @@ function isPdfUrl(url) {
 }
 
 const DeedOwners = ({ data }) => {
-  const galleryRef = useRef(null);
   const [agencyViewerOpen, setAgencyViewerOpen] = useState(false);
-console.log({data});
+  const [deedViewerOpen, setDeedViewerOpen] = useState(false);
+
   const orderData = data?.contract_summary ?? {};
   const hasLegalAgent =
     orderData?.add_legal_agent_of_owner === 1 || data?.add_legal_agent_of_owner === 1;
@@ -123,9 +124,17 @@ console.log({data});
               تعديل
             </Button>
           </div>
-          <div dir="ltr" className="bg-[#E8E8E8] p-6 rounded-3xl">
-            <ImageGallery ref={galleryRef} items={images} />
+          <div dir="ltr">
+            <DeedInstrumentViewer
+              images={images}
+              onExpand={() => setDeedViewerOpen(true)}
+            />
           </div>
+          <DeedInstrumentViewerDialog
+            open={deedViewerOpen}
+            onOpenChange={setDeedViewerOpen}
+            images={images}
+          />
         </div>
       )}
 
@@ -136,18 +145,18 @@ console.log({data});
           step="summary"
           fields={SUMMARY_OWNER_FIELDS}
         >
-          <SummaryFieldsLayout
-            errorMenu={
-              <OrderSectionErrorMenu
-                label="إرسال خطأ"
-                orderData={data}
-                context="owner"
-                buttonClassName={SECTION_ERROR_BUTTON_CLASS}
-              />
-            }
-          >
-            <div className="space-y-6">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-6 gap-y-5">
+          <div className="rounded-[28px] border border-gray-100 bg-gray-100/50 p-6">
+            <SummaryFieldsLayout
+              errorMenu={
+                <OrderSectionErrorMenu
+                  label="إرسال خطأ للعميل"
+                  orderData={data}
+                  context="owner"
+                  buttonClassName={SECTION_ERROR_BUTTON_CLASS}
+                />
+              }
+            >
+              <div className="grid grid-cols-1 gap-x-6 gap-y-5 sm:grid-cols-3">
                 <SummaryInfoItem
                   value={owner.nationalId}
                   label="رقم الهوية"
@@ -164,82 +173,75 @@ console.log({data});
                   onCopy={copyToClipboard}
                 />
               </div>
-            </div>
-          </SummaryFieldsLayout>
+            </SummaryFieldsLayout>
+          </div>
         </ContractStepEditor>
 
         {hasLegalAgent ? (
-          <div className="bg-gray-100/50 p-6 rounded-[28px] border border-gray-100">
           <ContractStepEditor
             title="بيــانات الوكيل"
             step="summary"
             fields={SUMMARY_AGENT_FIELDS}
           >
-            <div className="space-y-6">
-              <SummaryFieldsLayout
-                errorMenu={
-                  <OrderSectionErrorMenu
-                    label="إرسال خطأ للوكيل"
-                    orderData={data}
-                    context="agent"
-                    buttonClassName={SECTION_ERROR_BUTTON_CLASS}
-                  />
-                }
-              >
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-x-6 gap-y-5">
-                  <SummaryInfoItem
-                    value={agent.nationalId}
-                    label="رقم هوية الوكيل"
-                    onCopy={copyToClipboard}
-                  />
-                  <SummaryInfoItem
-                    value={agent.birthDate}
-                    label="تاريخ ميلاد الوكيل"
-                    onCopy={copyToClipboard}
-                  />
-                  <SummaryInfoItem
-                    value={agent.phone}
-                    label="رقم جوال الوكيل"
-                    onCopy={copyToClipboard}
-                  />
-                  {/* <SummaryInfoItem
-                    value={agent.name}
-                    label="اسم الوكيل"
-                    onCopy={copyToClipboard}
-                  /> */}
+            <div className="rounded-[28px] border border-gray-100 bg-gray-100/50 p-6">
+              <div className="space-y-6">
+                <SummaryFieldsLayout
+                  errorMenu={
+                    <OrderSectionErrorMenu
+                      label="إرسال خطأ للوكيل"
+                      orderData={data}
+                      context="agent"
+                      buttonClassName={SECTION_ERROR_BUTTON_CLASS}
+                    />
+                  }
+                >
+                  <div className="grid grid-cols-1 gap-x-6 gap-y-5 sm:grid-cols-2 lg:grid-cols-3">
+                    <SummaryInfoItem
+                      value={agent.nationalId}
+                      label="رقم هوية الوكيل"
+                      onCopy={copyToClipboard}
+                    />
+                    <SummaryInfoItem
+                      value={agent.birthDate}
+                      label="تاريخ ميلاد الوكيل"
+                      onCopy={copyToClipboard}
+                    />
+                    <SummaryInfoItem
+                      value={agent.phone}
+                      label="رقم جوال الوكيل"
+                      onCopy={copyToClipboard}
+                    />
+                  </div>
+                </SummaryFieldsLayout>
 
+                <div className="flex flex-wrap items-center gap-3 pt-1">
+                  <LegalAgentStatusBadge />
+
+                  {!agencyIsPdf && agencyDocumentUrl ? (
+                    <button
+                      type="button"
+                      onClick={openAgencyDocument}
+                      className="inline-flex items-center gap-2 rounded-xl border border-[#E8E8E8] bg-white px-4 py-2.5 text-[13px] font-bold text-black shadow-sm transition-colors hover:bg-[#FAFAFA]"
+                    >
+                      <ImageIcon className="size-4" />
+                      عرض صورة الوكالة
+                    </button>
+                  ) : null}
+
+                  {agencyIsPdf && agencyDocumentUrl ? (
+                    <button
+                      type="button"
+                      onClick={openAgencyDocument}
+                      className="inline-flex items-center gap-2 rounded-xl border border-[#E8E8E8] bg-white px-4 py-2.5 text-[13px] font-bold text-black shadow-sm transition-colors hover:bg-[#FAFAFA]"
+                    >
+                      <Eye className="size-4" />
+                      عرض الوكالة PDF
+                    </button>
+                  ) : null}
                 </div>
-              </SummaryFieldsLayout>
-
-
-              <div className="flex flex-wrap items-center gap-3 pt-1">
-                <LegalAgentStatusBadge />
-
-                {!agencyIsPdf && agencyDocumentUrl ? (
-                  <button
-                    type="button"
-                    onClick={openAgencyDocument}
-                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[#E8E8E8] bg-white text-[13px] font-bold text-black hover:bg-[#FAFAFA] transition-colors shadow-sm"
-                  >
-                    <ImageIcon className="size-4" />
-                    عرض صورة الوكالة
-                  </button>
-                ) : null}
-
-                {agencyIsPdf && agencyDocumentUrl ? (
-                  <button
-                    type="button"
-                    onClick={openAgencyDocument}
-                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[#E8E8E8] bg-white text-[13px] font-bold text-black hover:bg-[#FAFAFA] transition-colors shadow-sm"
-                  >
-                    <Eye className="size-4" />
-                    عرض الوكالة PDF
-                  </button>
-                ) : null}
               </div>
             </div>
           </ContractStepEditor>
-          </div>
         ) : null}
 
         <UserRelatedContracts orderData={data} />

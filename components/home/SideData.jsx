@@ -18,6 +18,7 @@ import { TbClipboardListFilled } from "react-icons/tb";
 import { useSidebarStore } from "@/src/stores/sidebar-store";
 import { useUnreceivedOrdersWatcher } from "@/src/hooks/use-unreceived-orders-watcher";
 import NotificationList from "../notifiction/notification-list";
+import CommentList from "../comment/comment-list";
 
 const NAV_ICONS = {
   '/home/analysis': RiPentagonFill,
@@ -69,12 +70,18 @@ export default function SideData() {
 
   useEffect(() => {
     const media = window.matchMedia(DESKTOP_MEDIA);
-    const syncSidebarForViewport = () => setSidebarOpen(media.matches);
+    const syncSidebarForViewport = () => {
+      if (displayedPart !== "default") {
+        setSidebarOpen(true);
+        return;
+      }
+      setSidebarOpen(media.matches);
+    };
 
     syncSidebarForViewport();
-    media.addEventListener('change', syncSidebarForViewport);
-    return () => media.removeEventListener('change', syncSidebarForViewport);
-  }, [setSidebarOpen]);
+    media.addEventListener("change", syncSidebarForViewport);
+    return () => media.removeEventListener("change", syncSidebarForViewport);
+  }, [setSidebarOpen, displayedPart]);
 
   const visibleNav = SIDEBAR_NAV.map((group) => ({
     ...group,
@@ -162,6 +169,7 @@ export default function SideData() {
         )}
 
         {displayedPart === 'notification' && <NotificationList />}
+        {displayedPart === 'comments' && <CommentList />}
       </div>
     </>
   );

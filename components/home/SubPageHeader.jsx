@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { RefreshCw, Search, Loader2 } from 'lucide-react';
+import { RefreshCw, Search, Loader2, FileSpreadsheet } from 'lucide-react';
 import { LuLogOut } from 'react-icons/lu';
 import { Button } from '@/components/ui/button';
 import {
@@ -41,6 +41,9 @@ export default function SubPageHeader({
   searchPlaceholder = 'البحث الذكي...!',
   onRefresh,
   refreshTitle = 'تحديث',
+  onExport,
+  isExporting = false,
+  exportLabel = 'تصدير Excel',
 }) {
   const router = useRouter();
   const { user } = useUserStore();
@@ -148,6 +151,25 @@ export default function SubPageHeader({
         </div>
 
         <div className="flex items-center gap-2.5 shrink-0">
+          {onExport ? (
+            <button
+              type="button"
+              onClick={onExport}
+              disabled={isExporting}
+              className="h-[46px] px-5 rounded-full border border-[#10B981] bg-white text-[#10B981] hover:bg-[#10B981] hover:text-white font-bold text-[14px] transition-all flex items-center gap-2 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-[#10B981] max-[768px]:px-3"
+              title={exportLabel}
+            >
+              {isExporting ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <FileSpreadsheet className="size-4" />
+              )}
+              <span className="max-[768px]:hidden">
+                {isExporting ? 'جاري التصدير...' : exportLabel}
+              </span>
+            </button>
+          ) : null}
+
           {onRefresh ? (
             <button
               type="button"

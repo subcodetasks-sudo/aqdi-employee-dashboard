@@ -165,10 +165,10 @@ export function ContractStepEditor({
 
   return (
     <div className={className} dir="rtl">
-      <div className="flex items-center justify-between mb-4 px-2 flex-wrap gap-2">
-        <div className="flex items-center gap-2">
-          <FileText className="text-green-600 w-5 h-5" />
-          <h3 className="text-gray-800 font-bold text-lg">{title}</h3>
+      <div className="mb-4 flex flex-wrap items-center gap-3 px-2">
+      <div className="flex items-center gap-2">
+          <FileText className="size-4 text-green-600" />
+          <h3 className="text-sm! font-bold text-gray-800">{title}</h3>
         </div>
         {showEdit ? (
           <div className="flex items-center gap-2">
@@ -178,7 +178,7 @@ export function ContractStepEditor({
                   type="button"
                   onClick={handleCancel}
                   disabled={isSaving}
-                  className="flex items-center gap-1.5 text-[#737373] text-sm font-bold px-3 py-2 rounded-full border border-[#E4E4E4] hover:bg-[#F5F5F5]"
+                  className="flex items-center gap-1.5 rounded-full border border-[#E4E4E4] px-3 py-2 text-sm font-bold text-[#737373] hover:bg-[#F5F5F5]"
                 >
                   <X size={16} />
                   إلغاء
@@ -187,7 +187,7 @@ export function ContractStepEditor({
                   type="button"
                   onClick={handleSave}
                   disabled={isSaving}
-                  className="flex items-center gap-1.5 text-white bg-brand-hover text-sm font-bold px-4 py-2 rounded-full hover:bg-brand-hover/90 disabled:opacity-60"
+                  className="flex items-center gap-1.5 rounded-full bg-brand-hover px-4 py-2 text-sm font-bold text-white hover:bg-brand-hover/90 disabled:opacity-60"
                 >
                   {isSaving ? (
                     <Loader2 className="size-4 animate-spin" />
@@ -201,18 +201,19 @@ export function ContractStepEditor({
               <button
                 type="button"
                 onClick={() => setEditing(true)}
-                className="flex items-center gap-1.5 text-green-600 hover:text-green-700 text-sm font-bold"
+                className=" flex items-center gap-1.5 text-xs font-bold text-green-600 hover:text-green-700"
               >
-                <Edit size={16} />
                 <span>تعديل</span>
+                <Edit />
               </button>
             )}
           </div>
         ) : null}
+
       </div>
 
       {editing ? (
-        <div className="bg-[#F9F9F9] p-6 rounded-[28px] border border-[#EEEEEE]">
+        <div className="rounded-[28px] border border-[#EEEEEE] bg-[#F9F9F9] p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {fields.map((field) => (
               <ContractFormField

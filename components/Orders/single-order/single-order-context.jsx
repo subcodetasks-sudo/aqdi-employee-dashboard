@@ -1,12 +1,20 @@
 "use client";
 
-import { createContext, useContext } from "react";
+import { createContext, useContext, useEffect } from "react";
 import { useSingleOrder } from "./use-single-order";
+import { syncRelatedContractOrigin } from "./related-contract-origin-storage";
 
 const SingleOrderContext = createContext(null);
 
 export function SingleOrderProvider({ contractId, children }) {
   const value = useSingleOrder(contractId);
+
+  useEffect(() => {
+    if (value.orderData) {
+      syncRelatedContractOrigin(value.orderData);
+    }
+  }, [value.orderData, contractId]);
+
   return (
     <SingleOrderContext.Provider value={value}>{children}</SingleOrderContext.Provider>
   );

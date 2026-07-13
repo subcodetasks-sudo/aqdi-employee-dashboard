@@ -1,9 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback } from "react";
 import Image from "next/image";
 import {
-  Maximize2,
   Minus,
   Plus,
   Share2,
@@ -11,6 +10,7 @@ import {
   X,
 } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { useImageZoomPan } from "./use-image-zoom-pan";
 
 function isPdfUrl(url) {
   if (!url || typeof url !== "string") return false;
@@ -34,12 +34,21 @@ export default function AgencyDocumentViewerDialog({
   documentUrl,
   title = "صورة الوكالة",
 }) {
-  const [zoom, setZoom] = useState(1);
   const isPdf = isPdfUrl(documentUrl);
 
-  useEffect(() => {
-    if (open) setZoom(1);
-  }, [open, documentUrl]);
+  const {
+    scale,
+    position,
+    containerRef,
+    resetTransform,
+    handleMouseDown,
+    zoomIn,
+    zoomOut,
+    cursorClass,
+  } = useImageZoomPan({
+    enabled: open && !isPdf,
+    resetDeps: [open, documentUrl],
+  });
 
   const handleShare = useCallback(async () => {
     if (!documentUrl) return;
@@ -54,34 +63,29 @@ export default function AgencyDocumentViewerDialog({
     window.open(documentUrl, "_blank", "noopener,noreferrer");
   }, [documentUrl, title]);
 
-  const handleFullscreen = () => {
-    if (!documentUrl) return;
-    window.open(documentUrl, "_blank", "noopener,noreferrer");
-  };
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         closeButton={false}
-        className="sm:max-w-[min(920px,calc(100vw-32px))] p-0 gap-0 overflow-hidden rounded-[28px] border-0 bg-[#E8E8E8]"
+        className="gap-0 overflow-hidden rounded-[28px] border-0 bg-[#E8E8E8] p-0 sm:max-w-[min(920px,calc(100vw-32px))]"
         dir="rtl"
       >
-        <div className="flex items-center justify-between px-6 py-4 bg-white border-b border-[#EBEBEB]">
+        <div className="flex items-center justify-between border-b border-[#EBEBEB] bg-white px-6 py-4">
           <h2 className="text-[18px] font-bold text-black">{title}</h2>
           <button
             type="button"
             onClick={() => onOpenChange(false)}
-            className="w-9 h-9 flex items-center justify-center rounded-full text-[#A3A3A3] hover:bg-[#F5F5F5] hover:text-[#E24444] transition-colors"
+            className="flex size-9 items-center justify-center rounded-full text-[#A3A3A3] transition-colors hover:bg-[#F5F5F5] hover:text-[#E24444]"
             aria-label="إغلاق"
           >
             <X className="size-5" />
           </button>
         </div>
 
-        <div className="relative bg-[#E8E8E8] min-h-[min(70vh,640px)] flex items-center justify-center p-6">
-          {documentUrl ? (
+        <div className="relative overflow-hidden bg-[#E8E8E8] p-6">
+          {open && documentUrl ? (
             <>
-              <div className="absolute left-5 top-1/2 -translate-y-1/2 z-10 flex flex-col gap-2">
+              <div className="absolute left-5 top-1/2 z-10 flex -translate-y-1/2 flex-col gap-2">
                 <ViewerToolButton
                   icon={Share2}
                   label="مشاركة"
@@ -90,40 +94,47 @@ export default function AgencyDocumentViewerDialog({
                 <ViewerToolButton
                   icon={Minus}
                   label="تصغير"
-                  onClick={() => setZoom((z) => Math.max(0.5, z - 0.25))}
+                  onClick={zoomOut}
                   disabled={isPdf}
-                />
-                <ViewerToolButton
-                  icon={Maximize2}
-                  label="ملء الشاشة"
-                  onClick={handleFullscreen}
                 />
                 <ViewerToolButton
                   icon={Plus}
                   label="تكبير"
-                  onClick={() => setZoom((z) => Math.min(2.5, z + 0.25))}
+                  onClick={zoomIn}
                   disabled={isPdf}
                 />
               </div>
 
-              <div className="w-full max-w-[min(720px,100%)] max-h-[min(68vh,600px)] overflow-auto rounded-xl bg-white shadow-lg">
+              <div
+                ref={containerRef}
+                className={`flex min-h-[min(70vh,640px)] w-full items-center justify-center ${
+                  isPdf ? "" : cursorClass
+                }`}
+                onMouseDown={handleMouseDown}
+                onDoubleClick={resetTransform}
+              >
                 {isPdf ? (
                   <iframe
                     src={documentUrl}
                     title={title}
-                    className="w-full min-h-[min(68vh,600px)] rounded-xl border-0"
+                    className="min-h-[min(68vh,600px)] w-full max-w-[min(720px,100%)] rounded-xl border-0 bg-white shadow-lg"
                   />
                 ) : (
                   <div
-                    className="flex items-center justify-center p-4 transition-transform duration-200"
-                    style={{ transform: `scale(${zoom})` }}
+                    className="relative will-change-transform"
+                    style={{
+                      transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
+                      transformOrigin: "center center",
+                      transition: cursorClass === "cursor-grabbing" ? "none" : "transform 0.15s ease-out",
+                    }}
                   >
                     <Image
                       src={documentUrl}
                       alt={title}
                       width={640}
                       height={900}
-                      className="w-auto h-auto max-w-full max-h-[min(64vh,560px)] object-contain"
+                      className="h-auto max-h-[min(64vh,560px)] w-auto max-w-full select-none object-contain"
+                      draggable={false}
                       unoptimized
                     />
                   </div>
@@ -131,15 +142,17 @@ export default function AgencyDocumentViewerDialog({
               </div>
             </>
           ) : (
-            <p className="text-[15px] text-[#737373]">لا يوجد ملف وكالة مرفق</p>
+            <p className="min-h-[min(70vh,640px)] text-center text-[15px] text-[#737373]">
+              لا يوجد ملف وكالة مرفق
+            </p>
           )}
         </div>
 
-        <div className="px-6 py-5 bg-white border-t border-[#EBEBEB] flex justify-center">
+        <div className="flex justify-center border-t border-[#EBEBEB] bg-white px-6 py-5">
           <button
             type="button"
             onClick={() => onOpenChange(false)}
-            className="min-w-[200px] h-[52px] bg-brand-hover text-white rounded-xl font-bold text-[16px] hover:bg-brand-hover/90 transition-colors"
+            className="h-[52px] min-w-[200px] rounded-xl bg-brand-hover text-[16px] font-bold text-white transition-colors hover:bg-brand-hover/90"
           >
             إغلاق
           </button>
@@ -157,7 +170,7 @@ function ViewerToolButton({ icon: Icon, label, onClick, disabled }) {
       disabled={disabled}
       title={label}
       aria-label={label}
-      className="w-11 h-11 rounded-full bg-[#1A1A1A] text-white flex items-center justify-center shadow-lg hover:bg-black transition-colors disabled:opacity-40 disabled:pointer-events-none"
+      className="flex size-11 items-center justify-center rounded-full bg-[#1A1A1A] text-white shadow-lg transition-colors hover:bg-black disabled:pointer-events-none disabled:opacity-40"
     >
       <Icon className="size-5" strokeWidth={2} />
     </button>
@@ -166,7 +179,7 @@ function ViewerToolButton({ icon: Icon, label, onClick, disabled }) {
 
 export function LegalAgentStatusBadge() {
   return (
-    <span className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-[#F0E6FF] text-[#7C3AED] text-[13px] font-bold whitespace-nowrap">
+    <span className="inline-flex items-center gap-2 whitespace-nowrap rounded-full bg-[#F0E6FF] px-4 py-2.5 text-[13px] font-bold text-[#7C3AED]">
       <UserPlus className="size-4 shrink-0" />
       يوجد وكيل للمالك
     </span>
