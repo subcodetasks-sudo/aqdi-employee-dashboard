@@ -14,7 +14,7 @@ export default function ClientProviders({ children }) {
     <QueryClientProvider client={queryClient}>
         <CounterProvider>
           {children}
-          <Toaster position="top-right" />
+          <Toaster position="top-center" richColors closeButton/>
         </CounterProvider>
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>

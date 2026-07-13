@@ -56,19 +56,32 @@ export const CONTRACT_STEP_KEYS = {
     "water_meter",
   ],
   step3: [
+    "tenant_entity",
     "tenant_name",
     "tenant_id_num",
     "tenant_dob",
+    "tenant_dob_day",
+    "tenant_dob_month",
+    "tenant_dob_year",
     "tenant_mobile",
     "tenant_email",
     "tenant_nationality",
     "tenant_work",
     "tenant_gender",
     "type_tenant_dob",
+    "tenant_entity_unified_registry_number",
+    "authorization_type",
+    "copy_of_the_owner_record",
     "is_there_a_legal_representative_of_the_tenant",
+    "region_of_the_tenant_legal_agent",
+    "city_of_the_tenant_legal_agent",
+    "id_num_of_property_tenant_agent",
     "id_number_of_property_tenant_agent",
     "type_dob_tenant_agent",
     "dob_of_property_tenant_agent",
+    "dob_of_property_tenant_agent_day",
+    "dob_of_property_tenant_agent_month",
+    "dob_of_property_tenant_agent_year",
     "mobile_of_property_tenant_agent",
     "tenant_role_id",
     "tenant_role_ids",
@@ -97,11 +110,19 @@ function readStep2(orderData, key) {
   return s2[key];
 }
 
+function readStep3(orderData, key) {
+  const s3 = orderData?.step3 ?? {};
+  if (key === "id_num_of_property_tenant_agent") {
+    return s3.id_num_of_property_tenant_agent ?? s3.id_number_of_property_tenant_agent;
+  }
+  return s3[key];
+}
+
 function readValue(orderData, step, key) {
   if (step === "summary") return orderData?.contract_summary?.[key];
   if (step === "step1") return orderData?.step1?.[key];
   if (step === "step2") return readStep2(orderData, key);
-  if (step === "step3") return orderData?.step3?.[key];
+  if (step === "step3") return readStep3(orderData, key);
   if (step === "step4") return orderData?.step4?.[key];
   return undefined;
 }

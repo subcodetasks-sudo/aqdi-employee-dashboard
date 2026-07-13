@@ -11,6 +11,11 @@ import { axiosInstance } from "@/src/utils/axios";
 import greenRial from "@/public/images/greenRial.svg";
 import waIcon from "@/public/images/waIcon.svg";
 import { Button } from "../ui/button";
+import {
+    ensureReturnContractStatus,
+    getOrderContractStatusDisplay,
+    RETURN_CONTRACT_STATUS_ID,
+} from "@/components/analysis/returned/refund-contract-utils";
 
 function formatRelativeTimeAr(dateString) {
     if (!dateString) return "—";
@@ -56,12 +61,16 @@ export default function ReturnRequestDialog({
     open,
     onOpenChange,
     order,
+    orderId,
+    orderUuid,
     queryKey = ["returnOrders"],
+    onReturnSuccess,
 }) {
     const [step, setStep] = useState(0);
     const [draftNumber, setDraftNumber] = useState("");
     const [refundAmount, setRefundAmount] = useState("");
     const [notes, setNotes] = useState("");
+    const [statusDisplay, setStatusDisplay] = useState(() => getOrderContractStatusDisplay(order));
     const queryClient = useQueryClient();
 
     useEffect(() => {
@@ -73,20 +82,40 @@ export default function ReturnRequestDialog({
         }
     }, [open]);
 
-    const contractId = order?.contract_id ?? order?.id;
+    useEffect(() => {
+        setStatusDisplay(getOrderContractStatusDisplay(order));
+    }, [order]);
+
+    const contractId = order?.contract_id ?? order?.id ?? orderUuid;
+    const statusOrderId = orderId ?? order?.id;
 
     const { mutate: submitReturn, isPending } = useMutation({
-        mutationFn: () =>
-            axiosInstance.post("/admin/refundable-contracts", {
+        mutationFn: async () => {
+            if (Number(statusDisplay.id) !== RETURN_CONTRACT_STATUS_ID) {
+                await ensureReturnContractStatus(statusOrderId, RETURN_CONTRACT_STATUS_ID);
+            }
+
+            return axiosInstance.post("/admin/refundable-contracts", {
                 contract_id: contractId,
                 draft_contract_number: draftNumber.trim(),
                 refund_amount: Number(refundAmount),
                 notes: notes.trim() || null,
-            }),
+            });
+        },
         onSuccess: (res) => {
+            setStatusDisplay({
+                id: RETURN_CONTRACT_STATUS_ID,
+                name: "استرجاع",
+                color: statusDisplay.color,
+            });
             toast.success(res?.data?.message || "تم رفع طلب الاسترجاع بنجاح");
+            queryClient.invalidateQueries({ queryKey });
             queryClient.invalidateQueries({ queryKey: ["refundContractsLookup"] });
             queryClient.invalidateQueries({ queryKey: ["refundContracts"] });
+            queryClient.invalidateQueries({ queryKey: ["returnOrders"] });
+            queryClient.invalidateQueries({ queryKey: ["orders-all-total"] });
+            queryClient.invalidateQueries({ queryKey: ["status"] });
+            onReturnSuccess?.();
             setStep(2);
         },
         onError: (error) => {
@@ -222,10 +251,10 @@ export default function ReturnRequestDialog({
                                     <span
                                         className="px-3 py-1 rounded-full text-[12px] font-bold whitespace-nowrap text-[#212121]"
                                         style={{
-                                            backgroundColor: order.status?.color || "#E6F0FF",
+                                            backgroundColor: statusDisplay.color,
                                         }}
                                     >
-                                        {order.status?.name || "—"}
+                                        {statusDisplay.name}
                                     </span>
                                 </SummaryRow>
 

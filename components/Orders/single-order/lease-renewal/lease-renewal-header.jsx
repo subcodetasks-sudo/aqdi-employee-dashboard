@@ -133,6 +133,7 @@ export default function LeaseRenewalHeader({
         </div>
         <ChangeStatusDialog
           orderId={summary.id}
+          order={orderData}
           queryKey={["single-order", orderData?.id]}
         />
       </div>

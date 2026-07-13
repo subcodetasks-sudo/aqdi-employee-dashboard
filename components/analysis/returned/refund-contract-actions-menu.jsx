@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { ChevronLeft, Loader2 } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -20,7 +20,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { canManageAdminRefund, updateRefundContract } from "./refund-contract-utils";
+import {
+  canManageAdminRefund,
+  isCustomerRefundPending,
+  resolveRefundIdForAction,
+  resolveRefundIdForActionAsync,
+  updateRefundContract,
+} from "./refund-contract-utils";
 import RefundContractReviewDialog from "./refund-contract-review-dialog";
 import {
   RefundApprovedSuccessDialog,
@@ -33,7 +39,14 @@ const menuContentClass =
 const itemBaseClass =
   "flex items-center gap-3 w-full rounded-[14px] px-3 py-3.5 cursor-pointer outline-none";
 
-export default function RefundContractActionsMenu({ refund, queryKey }) {
+export default function RefundContractActionsMenu({
+  refund,
+  order,
+  refundsLookup,
+  refundItems = [],
+  queryKey,
+  forceShow = false,
+}) {
   const queryClient = useQueryClient();
   const [reviewOpen, setReviewOpen] = useState(false);
   const [rejectOpen, setRejectOpen] = useState(false);
@@ -42,14 +55,25 @@ export default function RefundContractActionsMenu({ refund, queryKey }) {
   const [retractSuccessOpen, setRetractSuccessOpen] = useState(false);
   const [successRefund, setSuccessRefund] = useState(null);
 
+  const refundId = useMemo(
+    () => resolveRefundIdForAction(order, refund, refundsLookup),
+    [order, refund, refundsLookup]
+  );
+
+  const enrichedRefund = useMemo(
+    () => (refund ? { ...refund, refundId: refundId ?? refund.refundId } : null),
+    [refund, refundId]
+  );
+
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey });
+    queryClient.invalidateQueries({ queryKey: ["returnOrders"] });
     queryClient.invalidateQueries({ queryKey: ["refundContractsLookup"] });
     queryClient.invalidateQueries({ queryKey: ["refundContracts"] });
   };
 
   const { mutate: updateRefund, isPending } = useMutation({
-    mutationFn: ({ refundId, body }) => updateRefundContract(refundId, body),
+    mutationFn: ({ refundId: id, body }) => updateRefundContract(id, body),
     onSuccess: (res, variables) => {
       invalidate();
       if (variables.action === "reject") {
@@ -59,7 +83,7 @@ export default function RefundContractActionsMenu({ refund, queryKey }) {
       }
       if (variables.action === "retract") {
         setRetractOpen(false);
-        setSuccessRefund(refund);
+        setSuccessRefund(enrichedRefund);
         setRetractSuccessOpen(true);
         return;
       }
@@ -69,41 +93,51 @@ export default function RefundContractActionsMenu({ refund, queryKey }) {
     },
   });
 
+  const requireRefundId = async () => {
+    const syncId = resolveRefundIdForAction(order, enrichedRefund, refundsLookup);
+    if (syncId) return syncId;
+
+    const id = await resolveRefundIdForActionAsync(order, enrichedRefund, refundsLookup, {
+      allRefunds: refundItems,
+    });
+    if (!id) {
+      toast.error("تعذر تحديد طلب الاسترجاع");
+      return null;
+    }
+    return id;
+  };
+
   const getRefundAmount = () => {
-    const amount = Number(refund?.refundAmount);
+    const amount = Number(enrichedRefund?.refundAmount ?? order?.refund_amount);
     if (Number.isFinite(amount) && amount > 0) return amount;
     return 0;
   };
 
-  const handleReject = () => {
-    if (!refund?.refundId) {
-      toast.error("تعذر تنفيذ الإجراء");
-      return;
-    }
-    const amount = getRefundAmount();
+  const handleReject = async () => {
+    const id = await requireRefundId();
+    if (!id) return;
+
     updateRefund({
-      refundId: refund.refundId,
+      refundId: id,
       action: "reject",
       body: {
         admin_confirmed: false,
-        refund_amount: amount,
+        refund_amount: getRefundAmount(),
         notes: "لم تتم الموافقة من الإدارة",
       },
     });
   };
 
-  const handleRetract = () => {
-    if (!refund?.refundId) {
-      toast.error("تعذر تنفيذ الإجراء");
-      return;
-    }
-    const amount = getRefundAmount();
+  const handleRetract = async () => {
+    const id = await requireRefundId();
+    if (!id) return;
+
     updateRefund({
-      refundId: refund.refundId,
+      refundId: id,
       action: "retract",
       body: {
         admin_confirmed: false,
-        refund_amount: amount,
+        refund_amount: getRefundAmount(),
         notes: "التراجع عن الاسترجاع وتصنيف الطلب كطلب مكتمل",
       },
     });
@@ -115,9 +149,11 @@ export default function RefundContractActionsMenu({ refund, queryKey }) {
     invalidate();
   };
 
-  const canManage = canManageAdminRefund(refund);
+  const shouldShow = forceShow
+    ? isCustomerRefundPending(order ?? enrichedRefund?.raw)
+    : canManageAdminRefund(enrichedRefund) && Boolean(refundId);
 
-  if (!canManage) {
+  if (!shouldShow || !enrichedRefund) {
     return null;
   }
 
@@ -129,7 +165,7 @@ export default function RefundContractActionsMenu({ refund, queryKey }) {
             type="button"
             onClick={(e) => e.stopPropagation()}
             disabled={isPending}
-            className="w-8 h-8 rounded-full flex items-center justify-center bg-[#F5F5F5] text-[#4D4D4D] hover:bg-[#EBEBEB] transition-all disabled:opacity-50"
+            className="w-8 h-8 rounded-full flex items-center justify-center bg-[#F5F5F5] text-[#4D4D4D] hover:bg-[#EBEBEB] transition-all disabled:opacity-50 shrink-0"
             aria-label="إجراءات موافقة الإدارة"
           >
             {isPending ? (
@@ -199,7 +235,10 @@ export default function RefundContractActionsMenu({ refund, queryKey }) {
       <RefundContractReviewDialog
         open={reviewOpen}
         onOpenChange={setReviewOpen}
-        refund={refund}
+        refund={enrichedRefund}
+        order={order}
+        refundsLookup={refundsLookup}
+        refundItems={refundItems}
         onApproved={handleApproved}
       />
 
@@ -223,7 +262,7 @@ export default function RefundContractActionsMenu({ refund, queryKey }) {
             </AlertDialogTitle>
             <AlertDialogDescription className="text-[14px] text-[#737373] text-right">
               هل أنت متأكد من تسجيل عدم الموافقة على استرجاع الطلب{" "}
-              <span className="font-bold text-black">{refund?.orderUuid}</span>؟
+              <span className="font-bold text-black">{enrichedRefund?.orderUuid}</span>؟
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="flex-row-reverse gap-2 sm:gap-2">
@@ -252,7 +291,7 @@ export default function RefundContractActionsMenu({ refund, queryKey }) {
             </AlertDialogTitle>
             <AlertDialogDescription className="text-[14px] text-[#737373] text-right">
               سيتم إلغاء استرجاع الطلب{" "}
-              <span className="font-bold text-black">{refund?.orderUuid}</span> وتصنيفه في قسم
+              <span className="font-bold text-black">{enrichedRefund?.orderUuid}</span> وتصنيفه في قسم
               الطلبات المكتملة. هل تريد المتابعة؟
             </AlertDialogDescription>
           </AlertDialogHeader>

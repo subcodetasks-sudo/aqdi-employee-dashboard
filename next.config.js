@@ -16,6 +16,17 @@ module.exports = {
       },
     ];
   },
+  async headers() {
+    return [
+      {
+        source: "/firebase-messaging-sw.js",
+        headers: [
+          { key: "Cache-Control", value: "no-cache, no-store, must-revalidate" },
+          { key: "Service-Worker-Allowed", value: "/" },
+        ],
+      },
+    ];
+  },
   images: {
     domains: ["aqid.subcodeco.com", "b3app.co"],
     remotePatterns: [

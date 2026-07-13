@@ -99,6 +99,7 @@ export default function OrderDetailsActions({ orderData }) {
           </p>
           <ChangeStatusDialog
             orderId={orderData?.contract_summary?.id}
+            order={orderData}
             queryKey={["single-order", orderData?.id]}
           />
         </div>

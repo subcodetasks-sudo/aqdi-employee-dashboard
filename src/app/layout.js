@@ -3,6 +3,7 @@ import './globals.css';
 import { Toaster } from 'sonner';
 import ReactQueryProvider from '../utils/providers/ReactQueryProvider';
 import StoreHydrator from '@/components/auth/StoreHydrator';
+import FirebaseMessagingProvider from '@/components/firebase/FirebaseMessagingProvider';
 export async function generateMetadata() {
   return {
     title: 'Aakdi',
@@ -33,9 +34,20 @@ export default function RootLayout({ children }) {
       <body suppressHydrationWarning={true}>
         <ReactQueryProvider>
           <StoreHydrator />
+          <FirebaseMessagingProvider />
           {children}
+          <Toaster
+            position="top-center"
+            dir="rtl"
+            richColors
+            closeButton
+            expand
+            visibleToasts={4}
+            toastOptions={{
+              className: "font-[Alexandria]",
+            }}
+          />
         </ReactQueryProvider>
-        <Toaster position="top-right" richColors />
       </body>
     </html>
   );

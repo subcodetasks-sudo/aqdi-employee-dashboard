@@ -64,11 +64,88 @@ export const STEP2_SERVICE_FIELDS = [
 ];
 
 export const STEP3_TENANT_FIELDS = [
-  { key: "tenant_id_num", label: "رقم هوية المستأجر", type: "text" },
-  { key: "tenant_dob", label: "تاريخ ميلاد المستأجر", type: "text" },
-  { key: "tenant_mobile", label: "جوال المستأجر", type: "text" },
+  { key: "tenant_entity", label: "كيان المستأجر", type: "text" },
   { key: "tenant_name", label: "اسم المستأجر", type: "text" },
+  { key: "tenant_id_num", label: "رقم هوية المستأجر", type: "text" },
+  { key: "tenant_mobile", label: "جوال المستأجر", type: "text" },
   { key: "tenant_email", label: "البريد الإلكتروني", type: "text" },
+  { key: "tenant_dob", label: "تاريخ ميلاد المستأجر", type: "text" },
+  { key: "tenant_dob_day", label: "يوم الميلاد", type: "text" },
+  { key: "tenant_dob_month", label: "شهر الميلاد", type: "text" },
+  { key: "tenant_dob_year", label: "سنة الميلاد", type: "text" },
+  {
+    key: "type_tenant_dob",
+    label: "نوع تاريخ ميلاد المستأجر",
+    type: "select",
+    options: [
+      { value: "hijri", label: "هجري" },
+      { value: "gregorian", label: "ميلادي" },
+    ],
+  },
+  {
+    key: "tenant_entity_unified_registry_number",
+    label: "الرقم الموحد للمنشأة",
+    type: "text",
+  },
+  { key: "authorization_type", label: "نوع التفويض", type: "text" },
+  {
+    key: "copy_of_the_owner_record",
+    label: "صورة سجل المالك",
+    type: "text",
+    colSpan: 2,
+  },
+];
+
+export const STEP3_TENANT_AGENT_FIELDS = [
+  {
+    key: "region_of_the_tenant_legal_agent",
+    label: "منطقة الوكيل الشرعي للمستأجر",
+    type: "text",
+  },
+  {
+    key: "city_of_the_tenant_legal_agent",
+    label: "مدينة الوكيل الشرعي للمستأجر",
+    type: "text",
+  },
+  {
+    key: "id_num_of_property_tenant_agent",
+    label: "رقم هوية وكيل المستأجر",
+    type: "text",
+  },
+  {
+    key: "mobile_of_property_tenant_agent",
+    label: "جوال وكيل المستأجر",
+    type: "text",
+  },
+  {
+    key: "dob_of_property_tenant_agent",
+    label: "تاريخ ميلاد وكيل المستأجر",
+    type: "text",
+  },
+  {
+    key: "dob_of_property_tenant_agent_day",
+    label: "يوم ميلاد الوكيل",
+    type: "text",
+  },
+  {
+    key: "dob_of_property_tenant_agent_month",
+    label: "شهر ميلاد الوكيل",
+    type: "text",
+  },
+  {
+    key: "dob_of_property_tenant_agent_year",
+    label: "سنة ميلاد الوكيل",
+    type: "text",
+  },
+  {
+    key: "type_dob_tenant_agent",
+    label: "نوع تاريخ ميلاد الوكيل",
+    type: "select",
+    options: [
+      { value: "hijri", label: "هجري" },
+      { value: "gregorian", label: "ميلادي" },
+    ],
+  },
 ];
 
 export const STEP3_CONTRACT_META_FIELDS = [

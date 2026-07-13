@@ -3,10 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "npm run generate:firebase-sw && next dev",
+    "build": "npm run generate:firebase-sw && next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "generate:firebase-sw": "node scripts/generate-firebase-sw.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.1.0",
@@ -49,6 +50,7 @@
     "cors": "^2.8.5",
     "date-fns": "^2.30.0",
     "dom-to-image": "^2.6.0",
+    "firebase": "^12.16.0",
     "html-react-parser": "^5.2.2",
     "html2canvas": "^1.4.1",
     "input-otp": "^1.4.1",

@@ -13,17 +13,16 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Loader from "../home/loader";
 import { useRouter } from "next/navigation";
 import { Eye } from "lucide-react";
-import ReturnOrderActionsMenu from "./return-order-actions-menu";
-import ReturnRequestDialog from "./return-request-dialog";
 import RefundContractActionsMenu from "@/components/analysis/returned/refund-contract-actions-menu";
 import {
   buildRefundsLookup,
-  canManageAdminRefund,
+  enrichReturnOrderRow,
+  ensureReturnOrderRefund,
+  fetchAllRefundContracts,
+  findRefundInLookup,
   getOrderAdminApprovalStatus,
+  hasExistingReturnRequest,
   isAdminRefundApproved,
-  isReturnContractOrder,
-  mapCreatedAtFilter,
-  resolveRefundForOrder,
 } from "@/components/analysis/returned/refund-contract-utils";
 import OrdersToolbar from "./shared/orders-toolbar";
 import OrdersPagination from "./shared/orders-pagination";
@@ -61,7 +60,7 @@ function CustomerRefundBadge({ refunded }) {
 }
 
 function AdminApprovalCell({ row }) {
-  if (!isReturnContractOrder(row)) {
+  if (!hasExistingReturnRequest(row)) {
     return <span className="text-[13px] text-[#A3A3A3]">—</span>;
   }
 
@@ -92,8 +91,6 @@ export default function ReturnOrdersWrapper({ searchParams }) {
   const [advancedFilters, setAdvancedFilters] = useState(emptyAdvancedFilters);
   const router = useRouter();
   const queryClient = useQueryClient();
-  const [returnDialogOpen, setReturnDialogOpen] = useState(false);
-  const [returnDialogOrder, setReturnDialogOrder] = useState(null);
   const {
     selectedOrders,
     selectedCount,
@@ -135,10 +132,6 @@ export default function ReturnOrdersWrapper({ searchParams }) {
     clear();
   }, [debouncedSearchQuery, createdAtParam, advancedFilters, clear]);
 
-  const createdAtFilter = mapCreatedAtFilter(
-    createdAtParam === "day" ? "day" : createdAtParam || "total"
-  );
-
   function getReturnOrders(page = 1) {
     let url = `/admin/orders/return?page=${page}`;
     if (createdAtParam) {
@@ -163,11 +156,8 @@ export default function ReturnOrdersWrapper({ searchParams }) {
   });
 
   const { data: refundsResponse } = useQuery({
-    queryKey: ["refundContractsLookup", createdAtFilter],
-    queryFn: () =>
-      axiosInstance
-        .get(`/admin/analytics/refunds/contracts?created_at=${createdAtFilter}&page=1`)
-        .then((res) => res.data),
+    queryKey: ["refundContractsLookup"],
+    queryFn: fetchAllRefundContracts,
     enabled: isResolved,
   });
 
@@ -182,14 +172,33 @@ export default function ReturnOrdersWrapper({ searchParams }) {
   ];
 
   const refundsLookup = useMemo(() => {
-    const payload = refundsResponse?.data;
-    const refundItems = Array.isArray(payload) ? payload : (payload?.items ?? []);
-    return buildRefundsLookup(refundItems);
-  }, [refundsResponse]);
+    const refundItems = Array.isArray(refundsResponse) ? refundsResponse : [];
+    const lookup = buildRefundsLookup(refundItems);
+
+    for (const row of items) {
+      const found = findRefundInLookup(row, lookup);
+      if (!found?.refundId) continue;
+      lookup.set(row.id, found);
+      lookup.set(String(row.id), found);
+      if (row.uuid) {
+        lookup.set(row.uuid, found);
+        lookup.set(String(row.uuid), found);
+      }
+    }
+
+    return lookup;
+  }, [refundsResponse, items]);
+
+  const refundItems = Array.isArray(refundsResponse) ? refundsResponse : [];
+
+  const enrichedItems = useMemo(
+    () => items.map((row) => enrichReturnOrderRow(row, refundItems, refundsLookup)),
+    [items, refundItems, refundsLookup]
+  );
 
   const filteredItems = useMemo(
-    () => applyAdvancedFilters(items, advancedFilters, { showStatusColumn: false }),
-    [items, advancedFilters]
+    () => applyAdvancedFilters(enrichedItems, advancedFilters, { showStatusColumn: false }),
+    [enrichedItems, advancedFilters]
   );
 
   const pageSelectionState = getPageSelectionState(filteredItems);
@@ -308,9 +317,7 @@ export default function ReturnOrdersWrapper({ searchParams }) {
                   row.contract_type_key === "housing" ||
                   row.contract_type === "سكنـي" ||
                   row.contract_type === "سكني";
-                const refund = resolveRefundForOrder(row, refundsLookup);
-                const showAdminApproval =
-                  isReturnContractOrder(row) && refund && canManageAdminRefund(refund);
+                const refund = ensureReturnOrderRefund(row, refundsLookup);
                 const customerRefunded =
                   row.customer_refunded ?? row.is_refunded ?? row.refunded;
 
@@ -415,29 +422,23 @@ export default function ReturnOrdersWrapper({ searchParams }) {
                         className="flex items-center gap-2"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        {showAdminApproval ? (
+
                           <RefundContractActionsMenu
                             refund={refund}
-                            queryKey={returnOrdersQueryKey}
-                          />
-                        ) : null}
-                        {!isReturnContractOrder(row) ? (
-                          <ReturnOrderActionsMenu
                             order={row}
+                            refundsLookup={refundsLookup}
+                            refundItems={refundItems}
                             queryKey={returnOrdersQueryKey}
-                            onReturnRequest={(order) => {
-                              setReturnDialogOrder(order);
-                              setReturnDialogOpen(true);
-                            }}
+                            forceShow
                           />
-                        ) : null}
                         <button
                           type="button"
                           onClick={() => router.push(`/home/orders/${row.id}`)}
-                          className="w-8 h-8 rounded-full flex items-center justify-center bg-[#F5F5F5] text-[#4D4D4D] hover:bg-brand-main hover:text-white transition-all"
+                          className="w-8 h-8 rounded-full flex items-center justify-center text-[#4D4D4D] hover:bg-brand-main hover:text-white transition-all "
                           aria-label="عرض العقد"
                         >
                           <Eye className="size-4" />
+                        
                         </button>
                       </div>
                     </td>
@@ -457,13 +458,6 @@ export default function ReturnOrdersWrapper({ searchParams }) {
           </tbody>
         </table>
       </div>
-
-      <ReturnRequestDialog
-        open={returnDialogOpen}
-        onOpenChange={setReturnDialogOpen}
-        order={returnDialogOrder}
-        queryKey={returnOrdersQueryKey}
-      />
 
       <OrdersPagination
         pagination={pagination}

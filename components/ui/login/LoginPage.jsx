@@ -17,6 +17,7 @@ import { useUserStore } from '@/src/stores/user-store';
 import { useRouter } from 'next/navigation';
 import { setAuthCookie } from '@/src/app/actions/auth';
 import { enrichUserWithRolePermissions } from '@/src/lib/permissions';
+import { requestFcmToken } from '@/src/lib/firebase/messaging';
 import { toast } from 'sonner';
 
 export default function LoginPage() {
@@ -42,10 +43,25 @@ export default function LoginPage() {
 
   const {mutate ,isPending}=useMutation({
     mutationFn:async(data)=>{
-      const res = await axiosInstance.post('/admin/employees/login', {
+      let fcm_token = null;
+
+      try {
+        fcm_token = await requestFcmToken();
+      } catch (error) {
+        console.warn("[firebase] FCM token unavailable during login:", error);
+      }
+console.log({fcm_token});
+
+      const payload = {
         email: data.email,
         password: data.password,
-      })
+      };
+
+      if (fcm_token) {
+        payload.fcm_token = fcm_token;
+      }
+
+      const res = await axiosInstance.post('/admin/employees/login', payload)
       return res.data
     },
     // Only auto-retry genuine connection failures (no response received) -

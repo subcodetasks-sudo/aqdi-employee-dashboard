@@ -9,7 +9,11 @@ import { useMutation } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import greenRial from "@/public/images/greenRial.svg";
 import waIcon from "@/public/images/waIcon.svg";
-import { formatRelativeTimeAr, updateRefundContract } from "./refund-contract-utils";
+import {
+  formatRelativeTimeAr,
+  resolveRefundIdForActionAsync,
+  updateRefundContract,
+} from "./refund-contract-utils";
 
 function SummaryRow({ label, children }) {
   return (
@@ -24,6 +28,9 @@ export default function RefundContractReviewDialog({
   open,
   onOpenChange,
   refund,
+  order,
+  refundsLookup,
+  refundItems = [],
   onApproved,
 }) {
   const [notes, setNotes] = useState("");
@@ -31,7 +38,7 @@ export default function RefundContractReviewDialog({
 
   useEffect(() => {
     if (open) {
-      setNotes(refund?.notes?.trim() || "تمت المراجعة والموافقة");
+      setNotes(refund?.notes?.trim() || "تم التحويل");
       setRefundAmount(
         refund?.refundAmount != null && refund?.refundAmount !== ""
           ? String(refund.refundAmount)
@@ -48,23 +55,35 @@ export default function RefundContractReviewDialog({
   const receivedSince = formatRelativeTimeAr(refund?.updatedAt || refund?.createdAt);
 
   const { mutate: submitApproval, isPending } = useMutation({
-    mutationFn: () => {
+    mutationFn: async () => {
+      const refundId = await resolveRefundIdForActionAsync(order, refund, refundsLookup, {
+        allRefunds: refundItems,
+      });
+      if (!refundId) {
+        throw new Error("MISSING_REFUND_ID");
+      }
       const amount = Number(refundAmount || refund?.refundAmount);
       if (!Number.isFinite(amount) || amount <= 0) {
         throw new Error("INVALID_AMOUNT");
       }
-      return updateRefundContract(refund.refundId, {
+      return updateRefundContract(refundId, {
         admin_confirmed: true,
         refund_amount: amount,
         notes: notes.trim() || null,
       });
     },
     onSuccess: (res) => {
-      toast.success(res?.data?.message || "تمت موافقة الإدارة بنجاح");
+      const message =
+        res?.data?.message ?? res?.message ?? "تمت موافقة الإدارة بنجاح";
+      toast.success(message);
       onApproved?.({ ...refund, refundAmount: Number(refundAmount) }, notes.trim());
       onOpenChange(false);
     },
     onError: (error) => {
+      if (error?.message === "MISSING_REFUND_ID") {
+        toast.error("تعذر تحديد طلب الاسترجاع");
+        return;
+      }
       if (error?.message === "INVALID_AMOUNT") {
         toast.error("قيمة المبلغ المسترجع غير صالحة");
         return;
@@ -76,10 +95,6 @@ export default function RefundContractReviewDialog({
   const needsRefundAmount = refund?.refundAmount == null || refund?.refundAmount === "";
 
   const handleSave = () => {
-    if (!refund?.refundId) {
-      toast.error("تعذر تحديد طلب الاسترجاع");
-      return;
-    }
     const amount = Number(refundAmount || refund?.refundAmount);
     if (!Number.isFinite(amount) || amount <= 0) {
       toast.error("يرجى إدخال قيمة المبلغ المسترجع");

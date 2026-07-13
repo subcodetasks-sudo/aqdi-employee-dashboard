@@ -225,7 +225,7 @@ export default function DraftContractStatusesSorting() {
                         >
                           <i className="fa-solid fa-pen-to-square text-[14px]" />
                         </button>
-                        <button
+                        {/* <button
                           type="button"
                           onClick={() => {
                             setCategoryToDelete(category);
@@ -234,7 +234,7 @@ export default function DraftContractStatusesSorting() {
                           className="w-10 h-10 rounded-full bg-[#FFEBEB] text-[#FF4D4F] flex justify-center items-center hover:bg-[#FF4D4F] hover:text-white transition-all shadow-sm"
                         >
                           <i className="fa-solid fa-trash text-[14px]" />
-                        </button>
+                        </button> */}
                       </div>
                     </td>
                   </tr>

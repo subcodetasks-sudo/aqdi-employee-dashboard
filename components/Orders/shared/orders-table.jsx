@@ -229,7 +229,11 @@ export default function OrdersTable({
                         (statusMode === "draft" ? (
                           <ChangeDraftStatusDialog orderId={row?.id} queryKey={queryKey} />
                         ) : (
-                          <ChangeStatusDialog orderId={row?.id} queryKey={queryKey} />
+                          <ChangeStatusDialog
+                            orderId={row?.id}
+                            order={row}
+                            queryKey={queryKey}
+                          />
                         ))}
                       <button
                         type="button"

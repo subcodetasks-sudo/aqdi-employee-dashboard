@@ -98,6 +98,7 @@ export const ROUTE_SECTION_RULES = [
   { prefix: '/home/completed-whatsapp', section: PERMISSION_SECTIONS.completed_whatsapp_request },
   { prefix: '/home/incolpleted-orders-analysis', section: PERMISSION_SECTIONS.incomplete_request },
   { prefix: '/home/completed-orders', section: PERMISSION_SECTIONS.completed_request },
+  { prefix: '/home/received-orders', section: PERMISSION_SECTIONS.completed_request },
   { prefix: '/home/draft-contracts', section: PERMISSION_SECTIONS.all_requests },
   { prefix: '/home/contract-paid', section: PERMISSION_SECTIONS.all_requests },
   { prefix: '/home/orders', section: PERMISSION_SECTIONS.all_requests },
@@ -170,6 +171,7 @@ export const SIDEBAR_NAV = [
       { label: 'إنشاء عقد مدفوع', href: '/home/contract-paid', section: PERMISSION_SECTIONS.all_requests },
       { label: 'طلـب مكتمـــل', href: '/home/completed-orders', section: PERMISSION_SECTIONS.completed_request },
       { label: 'طلـب مسوده و مكتمــل', href: '/home/draft-completed-orders', section: PERMISSION_SECTIONS.completed_request },
+      { label: 'طلـب مستلم من العميل', href: '/home/received-orders', section: PERMISSION_SECTIONS.completed_request },
       {
         label: 'طلـب غيــر مكتمل',
         href: '/home/incolpleted-orders-analysis/total',

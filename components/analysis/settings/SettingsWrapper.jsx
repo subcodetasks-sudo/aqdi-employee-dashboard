@@ -43,7 +43,7 @@ export default function SettingsWrapper() {
         { label: "قسم التعليمات", link: "/home/settings/instructions" },
         { label: "الشروط والاحكام", link: "/home/settings/terms" },
         { label: "سياسة الخصوصية", link: "/home/settings/privacy" },
-        { label: "الإشعارات", link: "#" },
+        { label: "الإشعارات", link: "/home/settings/notifications" },
         { label: "المدفوعات", link: "/home/settings/payments" },
         { label: "رسائل التطبيقية للعميل", link: "/home/settings/customer-app-messages" },
         { label: "طرق الدفع", link: "/home/settings/payment-types" },

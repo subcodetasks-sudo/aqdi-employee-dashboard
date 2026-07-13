@@ -9,6 +9,7 @@ const ORDER_PATH_PATTERNS = [
   /^\/home\/draft-contract-statuses/,
   /^\/home\/sorting-orders/,
   /^\/home\/draft-completed-orders/,
+  /^\/home\/received-orders/,
   /^\/home\/reliable-orders/,
   /^\/home\/canceled-orders/,
   /^\/home\/orders-analysis/,

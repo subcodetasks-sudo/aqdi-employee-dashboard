@@ -7,27 +7,33 @@ import { Loader2, Plus, TrashIcon } from 'lucide-react'
 import { toast } from 'sonner'
 import { useQueryClient } from '@tanstack/react-query'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import ReturnRequestDialog from "./return-request-dialog"
+import {
+  canRequestOrderReturn,
+  isReturnContractStatus,
+  normalizeOrderForReturnRequest,
+} from "@/components/analysis/returned/refund-contract-utils"
 
-export default function ChangeStatusDialog({ orderId, queryKey }) {
+export default function ChangeStatusDialog({ orderId, order, queryKey }) {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [returnDialogOpen, setReturnDialogOpen] = useState(false);
   const [newCategory, setNewCategory] = useState({
     name: '',
     color_text: '#000000',
     color: '#000000'
   });
   const queryClient = useQueryClient()
-  /*-------------------------------------------------------------------------------------*/
-  // get all status
+  const returnOrder = normalizeOrderForReturnRequest(order, orderId)
+  const showReturnRequest = canRequestOrderReturn(returnOrder)
+
   function getStatus() {
     return axiosInstance("/admin/contract-statuses")
   }
-  const { data: statusData, isLoading: statusLoading } = useQuery({
+  const { data: statusData } = useQuery({
     queryKey: ["status"],
     queryFn: getStatus
   })
 
-  /*----------------------------------------------------------------------------------------- */
-  // add new status
   function addStatus() {
     return axiosInstance.post("/admin/contract-statuses", newCategory)
   }
@@ -44,8 +50,6 @@ export default function ChangeStatusDialog({ orderId, queryKey }) {
     }
   })
 
-  /*-------------------------------------------------------------------------------------*/
-  // change status
   function changeStatus(statusId) {
     return axiosInstance.post(`/admin/orders/${orderId}/contract-status`, {
       contract_status_id: statusId
@@ -73,43 +77,70 @@ export default function ChangeStatusDialog({ orderId, queryKey }) {
       toast.error(error?.response?.data?.message || "حدث خطأ أثناء حذف الطلب")
     },
   })
+
+  const openReturnDialog = () => {
+    setReturnDialogOpen(true)
+  }
+
+  const handleStatusClick = (status) => {
+    if (isReturnContractStatus(status) && showReturnRequest) {
+      openReturnDialog()
+      return
+    }
+
+    changeStatusMutate(status.id)
+  }
+
   return (
     <>
     <DropdownMenu dir="rtl">
       <DropdownMenuTrigger asChild>
-        <button className="w-8 h-8 rounded-full flex items-center justify-center bg-[#F5F5F5] text-[#4D4D4D] hover:bg-brand-main hover:text-white transition-all">
+        <button
+          type="button"
+          onClick={(e) => e.stopPropagation()}
+          className="w-8 h-8 rounded-full flex items-center justify-center bg-[#F5F5F5] text-[#4D4D4D] hover:bg-brand-main hover:text-white transition-all"
+          aria-label="إجراءات الطلب"
+        >
           <i className="fa-solid fa-ellipsis-vertical text-[14px]"></i>
         </button>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent className="w-64 rounded-[16px] shadow-lg border-[#EEEEEE] p-2">
+      <DropdownMenuContent
+        className="w-64 rounded-[16px] shadow-lg border-[#EEEEEE] p-2"
+        onClick={(e) => e.stopPropagation()}
+      >
         <DropdownMenuLabel>تغيير حالة الطلب</DropdownMenuLabel>
         <DropdownMenuSeparator className="bg-[#F5F5F5] my-1" />
-        {/* قيد المعالجة */}
 
         {statusData?.data?.data?.items?.map((item) => (
           <div key={item?.id}>
-            <DropdownMenuItem onClick={() => changeStatusMutate(item?.id)} disabled={changeStatusPending} className="cursor-pointer hover:bg-[#F9F9F9] rounded-lg p-2">
+            <DropdownMenuItem
+              onClick={() => handleStatusClick(item)}
+              disabled={changeStatusPending}
+              className="cursor-pointer hover:bg-[#F9F9F9] rounded-lg p-2"
+            >
               <span className="font-medium text-[13px]">{item?.name}</span>
-              {changeStatusPending ? <Loader2 className="animate-spin" /> :
+              {changeStatusPending ? (
+                <Loader2 className="animate-spin mr-auto size-4" />
+              ) : (
                 <i className="fa-solid fa-chevron-left mr-auto text-[#A3A3A3] text-[10px]"></i>
-              }
+              )}
             </DropdownMenuItem>
             <DropdownMenuSeparator className="bg-[#F5F5F5] my-1" />
           </div>
         ))}
 
-
-
-        {/* أخرى */}
-        <DropdownMenuItem onClick={() => setIsAddModalOpen(true)} className="cursor-pointer hover:bg-[#F9F9F9] rounded-lg p-2" >
-          <Plus />
+        <DropdownMenuItem
+          onClick={() => setIsAddModalOpen(true)}
+          className="cursor-pointer hover:bg-[#F9F9F9] rounded-lg p-2"
+        >
+          <Plus className="size-4" />
           <span className="font-medium text-[13px]">أخـرى</span>
           <i className="fa-solid fa-chevron-left mr-auto text-[#A3A3A3] text-[10px]"></i>
         </DropdownMenuItem>
+
         <DropdownMenuSeparator className="bg-[#F5F5F5] my-1" />
 
-        {/* حذف الطلب */}
         <DropdownMenuItem
           className="cursor-pointer hover:bg-[#FFF5F5] text-red-600 rounded-lg p-2"
           disabled={isDeleting}
@@ -118,7 +149,7 @@ export default function ChangeStatusDialog({ orderId, queryKey }) {
             deleteOrder()
           }}
         >
-          <TrashIcon className='text-red-600' />
+          <TrashIcon className='text-red-600 size-4' />
           <span className="font-medium text-[13px] text-red-600">حذف الطلـب</span>
           {isDeleting ? (
             <Loader2 className="animate-spin mr-auto size-4" />
@@ -128,9 +159,15 @@ export default function ChangeStatusDialog({ orderId, queryKey }) {
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
-    
+
+      <ReturnRequestDialog
+        open={returnDialogOpen}
+        onOpenChange={setReturnDialogOpen}
+        order={returnOrder}
+        orderId={orderId}
+        queryKey={queryKey}
+      />
       
-      {/* Add Category Modal */}
       <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
         <DialogContent className="sm:max-w-[600px] p-8 rounded-[32px] border-0" dir="rtl">
           <DialogHeader className="mb-6">

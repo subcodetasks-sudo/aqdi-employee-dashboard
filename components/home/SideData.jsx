@@ -33,6 +33,7 @@ const NAV_ICONS = {
   '/home/sorting-orders': FaEnvelopeOpen,
   '/home/draft-contract-statuses': FaEnvelopeOpen,
   '/home/draft-completed-orders': RiPentagonFill,
+  '/home/received-orders': RiPentagonFill,
   '/home/reliable-orders': RiPentagonFill,
   '/home/canceled-orders': RiPentagonFill,
   '/home/roles': TbClipboardListFilled,

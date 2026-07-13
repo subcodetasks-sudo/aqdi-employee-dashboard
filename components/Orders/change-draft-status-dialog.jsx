@@ -86,12 +86,20 @@ export default function ChangeDraftStatusDialog({ orderId, queryKey }) {
     <>
       <DropdownMenu dir="rtl">
         <DropdownMenuTrigger asChild>
-          <button className="w-8 h-8 rounded-full flex items-center justify-center bg-[#F5F5F5] text-[#4D4D4D] hover:bg-brand-main hover:text-white transition-all">
+          <button
+            type="button"
+            onClick={(e) => e.stopPropagation()}
+            className="w-8 h-8 rounded-full flex items-center justify-center bg-[#F5F5F5] text-[#4D4D4D] hover:bg-brand-main hover:text-white transition-all"
+            aria-label="إجراءات الطلب"
+          >
             <i className="fa-solid fa-ellipsis-vertical text-[14px]" />
           </button>
         </DropdownMenuTrigger>
 
-        <DropdownMenuContent className="w-64 rounded-[16px] shadow-lg border-[#EEEEEE] p-2">
+        <DropdownMenuContent
+          className="w-64 rounded-[16px] shadow-lg border-[#EEEEEE] p-2"
+          onClick={(e) => e.stopPropagation()}
+        >
           <DropdownMenuLabel>تغيير حالة المسودة</DropdownMenuLabel>
           <DropdownMenuSeparator className="bg-[#F5F5F5] my-1" />
 
