@@ -92,11 +92,19 @@ export function DeedInstrumentViewer({
           <button
             type="button"
             onClick={onClose}
-            className="absolute right-4 top-4 z-30 flex size-9 items-center justify-center rounded-full bg-white/90 text-[#737373] shadow-md transition-colors hover:bg-white hover:text-[#E24444]"
+            className="absolute left-4 top-4 z-30 flex size-9 items-center justify-center rounded-full bg-white/90 text-[#737373] shadow-md transition-colors hover:bg-white hover:text-[#E24444]"
             aria-label="إغلاق"
           >
             <X className="size-5" />
           </button>
+        ) : null}
+
+        {current?.description ? (
+          <div className="absolute right-4 top-4 z-30 max-w-[min(70%,420px)]" dir="rtl">
+            <span className="inline-block rounded-full bg-black/65 px-4 py-2 text-[13px] font-bold text-white shadow-md backdrop-blur-sm">
+              {current.description}
+            </span>
+          </div>
         ) : null}
 
         <div className="absolute left-4 top-1/2 z-20 flex -translate-y-1/2 flex-col gap-2.5">
@@ -162,7 +170,7 @@ export function DeedInstrumentViewer({
         </div>
 
         {images.length > 1 ? (
-          <div className="absolute bottom-4 right-4 z-20 flex items-center gap-3">
+          <div className="absolute bottom-4 right-4 z-20 flex max-w-[calc(100%-5.5rem)] items-end gap-3 overflow-x-auto pb-1 pe-1">
             {images.map((image, index) => {
               const isActive = index === activeIndex;
               const thumbIsPdf = isPdfUrl(image.original);
@@ -173,8 +181,10 @@ export function DeedInstrumentViewer({
                   type="button"
                   onClick={() => setActiveIndex(index)}
                   title={image.description}
-                  className={`relative size-[62px] shrink-0 overflow-hidden rounded-lg  shadow-md transition-all ${
-                    isActive ? "border-[#10B981] " : "border-white opacity-70 hover:opacity-100"
+                  className={`relative size-[62px] shrink-0 overflow-hidden rounded-lg shadow-md transition-all ${
+                    isActive
+                      ? "ring-2 ring-[#10B981] ring-offset-1 ring-offset-[#E8E8E8]"
+                      : "opacity-70 hover:opacity-100"
                   }`}
                 >
                   {thumbIsPdf ? (
@@ -191,10 +201,15 @@ export function DeedInstrumentViewer({
                     />
                   )}
                   {isActive ? (
-                    <span className="absolute inset-0 flex items-center justify-center bg-black/25">
-                      <span className="flex size-7 items-center justify-center rounded-full bg-[#10B981] text-white shadow">
-                        <Check className="size-4" strokeWidth={3} />
+                    <span className="absolute inset-0 flex items-start justify-center bg-black/20 pt-1.5">
+                      <span className="flex size-6 items-center justify-center rounded-full bg-[#10B981] text-white shadow">
+                        <Check className="size-3.5" strokeWidth={3} />
                       </span>
+                    </span>
+                  ) : null}
+                  {image.description ? (
+                    <span className="absolute inset-x-0 bottom-0 z-10 bg-black/75 px-1 py-0.5 text-center text-[8px] font-bold leading-tight text-white line-clamp-2">
+                      {image.description}
                     </span>
                   ) : null}
                 </button>

@@ -1,22 +1,25 @@
 /** UI field definitions per step — `key` must match flat POST keys */
 
+/** Only fields shown in deed-owners view (بيانات الملاك). */
 export const SUMMARY_OWNER_FIELDS = [
-  { key: "name_owner", label: "اسم المالك", type: "text" },
   { key: "property_owner_id_num", label: "رقم الهوية", type: "text" },
-  { key: "property_owner_dob", label: "تاريخ الميلاد", type: "text" },
-  { key: "property_owner_mobile", label: "رقم الجوال", type: "text" },
-  //{ key: "property_owner_iban", label: "ايبان المالك", type: "text", colSpan: 2 },
   {
-    key: "add_legal_agent_of_owner",
-    label: "إضافة ممثل أو وكيل شرعي لمالك العقار",
-    type: "boolean",
+    key: "property_owner_dob",
+    label: "تاريخ الميلاد",
+    type: "date",
+    calendarTypeKey: "type_dob_property_owner",
   },
-  { key: "notes_edits", label: "ملاحظات التعديل", type: "textarea", colSpan: 3 },
+  { key: "property_owner_mobile", label: "رقم الجوال", type: "text" },
 ];
 
 export const SUMMARY_AGENT_FIELDS = [
   { key: "id_num_of_property_owner_agent", label: "رقم هوية الوكيل", type: "text" },
-  { key: "dob_of_property_owner_agent", label: "تاريخ ميلاد الوكيل", type: "text" },
+  {
+    key: "dob_of_property_owner_agent",
+    label: "تاريخ ميلاد الوكيل",
+    type: "date",
+    calendarTypeKey: "type_dob_property_owner_agent",
+  },
   { key: "mobile_of_property_owner_agent", label: "جوال الوكيل", type: "text" },
 ];
 
@@ -69,7 +72,7 @@ export const STEP3_TENANT_FIELDS = [
   { key: "tenant_id_num", label: "رقم هوية المستأجر", type: "text" },
   { key: "tenant_mobile", label: "جوال المستأجر", type: "text" },
   { key: "tenant_email", label: "البريد الإلكتروني", type: "text" },
-  { key: "tenant_dob", label: "تاريخ ميلاد المستأجر", type: "text" },
+  { key: "tenant_dob", label: "تاريخ ميلاد المستأجر", type: "date", calendarTypeKey: "type_tenant_dob" },
   { key: "tenant_dob_day", label: "يوم الميلاد", type: "text" },
   { key: "tenant_dob_month", label: "شهر الميلاد", type: "text" },
   { key: "tenant_dob_year", label: "سنة الميلاد", type: "text" },
@@ -120,7 +123,8 @@ export const STEP3_TENANT_AGENT_FIELDS = [
   {
     key: "dob_of_property_tenant_agent",
     label: "تاريخ ميلاد وكيل المستأجر",
-    type: "text",
+    type: "date",
+    calendarTypeKey: "type_dob_tenant_agent",
   },
   {
     key: "dob_of_property_tenant_agent_day",
@@ -150,19 +154,27 @@ export const STEP3_TENANT_AGENT_FIELDS = [
 
 export const STEP3_CONTRACT_META_FIELDS = [
   { key: "contract_type", label: "نوع العقد", type: "text", step: "summary" },
-  { key: "contract_period_id", label: "معرف مدة العقد", type: "text", step: "summary" },
-  { key: "contract_starting_date", label: "تاريخ بدء العقد", type: "text", step: "step4" },
+  {
+    key: "contract_starting_date",
+    label: "تاريخ بدء العقد",
+    type: "date",
+    step: "step4",
+    calendarTypeKey: "type_contract_starting_date",
+  },
 ];
 
 export const STEP4_FINANCIAL_FIELDS = [
   { key: "annual_rent_amount_for_the_unit", label: "مبلغ الإيجار السنوي للوحدة", type: "text" },
-  { key: "payment_type_id", label: "معرف نوع الدفع", type: "text" },
   { key: "daily_fine", label: "الغرامة اليومية", type: "text" },
-  { key: "contract_term_in_years", label: "مدة العقد (معرف/قيمة)", type: "text" },
 ];
 
 export const STEP4_TERMS_FIELDS = [
-  { key: "contract_starting_date", label: "تاريخ بداية العقد", type: "text" },
+  {
+    key: "contract_starting_date",
+    label: "تاريخ بداية العقد",
+    type: "date",
+    calendarTypeKey: "type_contract_starting_date",
+  },
   {
     key: "type_contract_starting_date",
     label: "نوع التاريخ",
@@ -175,4 +187,68 @@ export const STEP4_TERMS_FIELDS = [
   { key: "other_conditions", label: "شروط إضافية", type: "text" },
   { key: "text_additional_terms", label: "نص الشروط الإضافية", type: "textarea", colSpan: 2 },
   { key: "notes_edits", label: "ملاحظات التعديل", type: "textarea", colSpan: 2 },
+];
+
+/** Lease-renewal editable sections (displayed fields only). */
+export const LEASE_RENEWAL_TENANT_FIELDS = [
+  {
+    key: "tenant_dob",
+    label: "تاريخ ميلاد المستأجر",
+    type: "date",
+    calendarTypeKey: "type_tenant_dob",
+  },
+  {
+    key: "type_tenant_dob",
+    label: "نوع التاريخ",
+    type: "select",
+    options: [
+      { value: "hijri", label: "هجري" },
+      { value: "gregorian", label: "ميلادي" },
+    ],
+  },
+];
+
+export const LEASE_RENEWAL_TERMS_FIELDS = [
+  {
+    key: "text_additional_terms",
+    label: "الشروط والمتغيرات",
+    type: "textarea",
+    colSpan: 3,
+  },
+];
+
+export const LEASE_RENEWAL_NOTES_FIELDS = [
+  {
+    key: "notes_edits",
+    label: "ملاحظات الانتباه",
+    type: "textarea",
+    colSpan: 3,
+  },
+];
+
+export const LEASE_RENEWAL_FINANCIAL_FIELDS = [
+  {
+    key: "annual_rent_amount_for_the_unit",
+    label: "إجمالي قيمة العقد",
+    type: "text",
+  },
+  { key: "daily_fine", label: "الغرامة اليومية", type: "text" },
+];
+
+export const LEASE_RENEWAL_CONTRACT_DATE_FIELDS = [
+  {
+    key: "contract_starting_date",
+    label: "تاريخ بداية العقد",
+    type: "date",
+    calendarTypeKey: "type_contract_starting_date",
+  },
+  {
+    key: "type_contract_starting_date",
+    label: "نوع التاريخ",
+    type: "select",
+    options: [
+      { value: "hijri", label: "هجري" },
+      { value: "gregorian", label: "ميلادي" },
+    ],
+  },
 ];

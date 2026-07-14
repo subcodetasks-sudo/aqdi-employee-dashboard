@@ -8,11 +8,30 @@ import { getOrderContractUuid } from "@/components/Orders/messages/order-section
 import { fetchContractPaymentLink } from "@/components/Orders/shared/payment-gateway";
 import PaymentLinkDialog from "@/components/Orders/shared/payment-link-dialog";
 
+function isContractPaid(orderData) {
+  const summary = orderData?.contract_summary ?? {};
+  const isPaid =
+    orderData?.is_paid ??
+    summary?.is_paid ??
+    orderData?.payment_status ??
+    summary?.payment_status;
+  const amountPayment =
+    orderData?.amount_payment ?? summary?.amount_payment;
+
+  if (isPaid === true || isPaid === 1 || isPaid === "paid") return true;
+  if (isPaid === false || isPaid === 0 || isPaid === "unpaid") return false;
+  return Boolean(amountPayment);
+}
+
 export default function ContractPaymentLinkButton({ orderData }) {
   const [isLoading, setIsLoading] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [paymentLink, setPaymentLink] = useState({ paymentUrl: "", cartAmount: null });
   const contractUuid = getOrderContractUuid(orderData);
+
+  if (isContractPaid(orderData)) {
+    return null;
+  }
 
   const handleClick = async () => {
     if (!contractUuid) {

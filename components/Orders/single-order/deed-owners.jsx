@@ -103,6 +103,18 @@ const DeedOwners = ({ data }) => {
     nationalId: orderData?.id_num_of_property_owner_agent,
   };
 
+  const ownerFields = [
+    { value: owner.nationalId, label: "رقم الهوية" },
+    { value: owner.birthDate, label: "تاريخ الميلاد" },
+    { value: owner.phone, label: "رقم الجوال" },
+  ];
+
+  const agentFields = [
+    { value: agent.nationalId, label: "رقم هوية الوكيل" },
+    { value: agent.birthDate, label: "تاريخ ميلاد الوكيل" },
+    { value: agent.phone, label: "رقم جوال الوكيل" },
+  ];
+
 
 
   const openAgencyDocument = () => {
@@ -157,21 +169,14 @@ const DeedOwners = ({ data }) => {
               }
             >
               <div className="grid grid-cols-1 gap-x-6 gap-y-5 sm:grid-cols-3">
-                <SummaryInfoItem
-                  value={owner.nationalId}
-                  label="رقم الهوية"
-                  onCopy={copyToClipboard}
-                />
-                <SummaryInfoItem
-                  value={owner.birthDate}
-                  label="تاريخ الميلاد"
-                  onCopy={copyToClipboard}
-                />
-                <SummaryInfoItem
-                  value={owner.phone}
-                  label="رقم الجوال"
-                  onCopy={copyToClipboard}
-                />
+                {ownerFields.map((item) => (
+                  <SummaryInfoItem
+                    key={item.label}
+                    value={item.value}
+                    label={item.label}
+                    onCopy={copyToClipboard}
+                  />
+                ))}
               </div>
             </SummaryFieldsLayout>
           </div>
@@ -196,21 +201,14 @@ const DeedOwners = ({ data }) => {
                   }
                 >
                   <div className="grid grid-cols-1 gap-x-6 gap-y-5 sm:grid-cols-2 lg:grid-cols-3">
-                    <SummaryInfoItem
-                      value={agent.nationalId}
-                      label="رقم هوية الوكيل"
-                      onCopy={copyToClipboard}
-                    />
-                    <SummaryInfoItem
-                      value={agent.birthDate}
-                      label="تاريخ ميلاد الوكيل"
-                      onCopy={copyToClipboard}
-                    />
-                    <SummaryInfoItem
-                      value={agent.phone}
-                      label="رقم جوال الوكيل"
-                      onCopy={copyToClipboard}
-                    />
+                    {agentFields.map((item) => (
+                      <SummaryInfoItem
+                        key={item.label}
+                        value={item.value}
+                        label={item.label}
+                        onCopy={copyToClipboard}
+                      />
+                    ))}
                   </div>
                 </SummaryFieldsLayout>
 

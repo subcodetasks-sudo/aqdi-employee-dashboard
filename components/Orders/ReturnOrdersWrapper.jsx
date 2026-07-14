@@ -163,6 +163,7 @@ export default function ReturnOrdersWrapper({ searchParams }) {
 
   const rawData = responseData?.data;
   const items = rawData?.items ?? [];
+  console.log(items);
   const pagination = rawData?.pagination;
   const returnOrdersQueryKey = [
     "returnOrders",

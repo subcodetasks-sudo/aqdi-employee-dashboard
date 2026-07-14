@@ -1,15 +1,36 @@
 "use client";
 
-const SECTION_ERROR_BUTTON_CLASS =
+export const SECTION_ERROR_BUTTON_CLASS =
   "text-xs px-4 py-3 bg-pink-100 text-pink-600 hover:bg-pink-200 rounded-full gap-2 h-auto font-semibold shrink-0 flex items-center";
 
+const EMPTY_PLACEHOLDERS = new Set([
+  "",
+  "—",
+  "--",
+  "---",
+  "لا يوجد",
+  "null",
+  "undefined",
+]);
+
+export function isEmptyDisplayValue(value) {
+  if (value === null || value === undefined) return true;
+  if (typeof value === "string" && EMPTY_PLACEHOLDERS.has(value.trim())) return true;
+  return false;
+}
+
+export function formatDisplayValue(value, emptyFallback = "—") {
+  if (isEmptyDisplayValue(value)) return emptyFallback;
+  return String(value);
+}
+
 export function SummaryInfoItem({ value, label, onCopy }) {
-  const display =
-    value === null || value === undefined || value === "" ? "--" : value;
-  const canCopy = value && value !== "--";
+  const empty = isEmptyDisplayValue(value);
+  const display = empty ? "—" : value;
+  const canCopy = !empty;
 
   return (
-    <div>
+    <div className={empty ? "opacity-45" : undefined}>
       <p
         role={canCopy ? "button" : undefined}
         tabIndex={canCopy ? 0 : undefined}
@@ -21,9 +42,9 @@ export function SummaryInfoItem({ value, label, onCopy }) {
               }
             : undefined
         }
-        className={`flex items-center gap-1.5 text-[15px] font-bold text-black leading-snug ${
-          canCopy ? "cursor-pointer hover:text-brand-hover" : ""
-        }`}
+        className={`flex items-center gap-1.5 text-[15px] font-bold leading-snug ${
+          empty ? "text-[#A3A3A3]" : "text-black"
+        } ${canCopy ? "cursor-pointer hover:text-brand-hover" : ""}`}
       >
         <span dir={label?.includes("جوال") || label?.includes("هوية") ? "ltr" : "rtl"}>
           {display}
@@ -45,5 +66,3 @@ export function SummaryFieldsLayout({ children, errorMenu }) {
     </div>
   );
 }
-
-export { SECTION_ERROR_BUTTON_CLASS };

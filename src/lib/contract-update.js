@@ -219,6 +219,7 @@ export function buildContractUpdatePayload(step, form, initialForm) {
 
   for (const [key, defaultValue] of Object.entries(REQUIRED_BOOLEAN_DEFAULTS)) {
     if (!allowed.has(key) || key in payload) continue;
+    if (!(key in form)) continue;
     const value = form[key];
     payload[key] =
       value === 1 || value === "1" || value === true ? 1 : defaultValue;

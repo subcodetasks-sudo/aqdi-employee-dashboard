@@ -15,6 +15,12 @@ import {
 } from "@/components/Orders/shared/orders-filter-utils";
 import { exportOrdersToExcel } from "@/components/Orders/shared/orders-export";
 import { useOrdersSelection } from "@/components/Orders/shared/use-orders-selection";
+import {
+  OrdersContractStatusFilterBar,
+  useOrdersContractStatusFilter,
+} from "@/components/Orders/shared/use-orders-contract-status-filter";
+
+const INCOMPLETE_ORDERS_API = "/admin/orders/incomplete/list";
 
 export default function InCompletedOrdersAnalysisWrapper({ id }) {
   const router = useRouter();
@@ -35,6 +41,23 @@ export default function InCompletedOrdersAnalysisWrapper({ id }) {
     getPageSelectionState,
   } = useOrdersSelection();
 
+  const createdAt = id === "total" ? "all" : id;
+
+  const {
+    activeFilter,
+    setActiveFilter,
+    statusItems,
+    allTotal,
+    countsById,
+    statusLoading,
+    countsLoading,
+    appendStatusParam,
+    resetStatusFilter,
+  } = useOrdersContractStatusFilter({
+    countsBaseUrl: INCOMPLETE_ORDERS_API,
+    countsExtraParams: `created_at=${createdAt}`,
+  });
+
   useEffect(() => {
     const handler = setTimeout(() => setDebouncedSearchQuery(searchQuery), 500);
     return () => clearTimeout(handler);
@@ -42,11 +65,11 @@ export default function InCompletedOrdersAnalysisWrapper({ id }) {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [id, debouncedSearchQuery, advancedFilters]);
+  }, [id, debouncedSearchQuery, advancedFilters, activeFilter]);
 
   useEffect(() => {
     clear();
-  }, [id, debouncedSearchQuery, advancedFilters, clear]);
+  }, [id, debouncedSearchQuery, advancedFilters, activeFilter, clear]);
 
   useEffect(() => {
     switch (id) {
@@ -72,14 +95,19 @@ export default function InCompletedOrdersAnalysisWrapper({ id }) {
   }, [id]);
 
   const { data, isLoading } = useQuery({
-    queryKey: ["inCompletedOrders", id, debouncedSearchQuery, currentPage],
+    queryKey: [
+      "inCompletedOrders",
+      id,
+      debouncedSearchQuery,
+      currentPage,
+      activeFilter,
+    ],
     queryFn: () => {
-      const createAt = id === "total" ? "all" : id;
-      let url = `/admin/orders/incomplete/list?created_at=${createAt}&page=${currentPage}`;
+      let url = `${INCOMPLETE_ORDERS_API}?created_at=${createdAt}&page=${currentPage}`;
       if (debouncedSearchQuery) {
         url += `&search=${encodeURIComponent(debouncedSearchQuery)}`;
       }
-      return axiosInstance(url);
+      return axiosInstance(appendStatusParam(url));
     },
   });
 
@@ -108,6 +136,7 @@ export default function InCompletedOrdersAnalysisWrapper({ id }) {
   const handleResetAll = () => {
     setSearchQuery("");
     setDebouncedSearchQuery("");
+    resetStatusFilter();
     setAdvancedFilters(emptyAdvancedFilters);
     setShowMoreFilters(false);
     setCurrentPage(1);
@@ -115,7 +144,7 @@ export default function InCompletedOrdersAnalysisWrapper({ id }) {
     queryClient.invalidateQueries({ queryKey: ["inCompletedOrders"] });
   };
 
-  if (isLoading) return <Loader />;
+  if (isLoading || statusLoading || countsLoading) return <Loader />;
 
   return (
     <div className="flex flex-col gap-6 p-6 min-h-screen" dir="rtl">
@@ -132,6 +161,13 @@ export default function InCompletedOrdersAnalysisWrapper({ id }) {
       />
 
       <div className="flex flex-col gap-6 mt-4 relative z-10">
+        <OrdersContractStatusFilterBar
+          activeFilter={activeFilter}
+          onFilterChange={setActiveFilter}
+          statusItems={statusItems}
+          countsById={countsById}
+          allTotal={allTotal}
+        />
         <OrdersToolbar
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}

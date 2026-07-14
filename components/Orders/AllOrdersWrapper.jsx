@@ -7,7 +7,6 @@ import { useQuery } from "@tanstack/react-query";
 import Loader from "../home/loader";
 import { useRouter } from "next/navigation";
 import OrdersToolbar from "./shared/orders-toolbar";
-import OrdersStatusCards from "./shared/orders-status-cards";
 import OrdersTable from "./shared/orders-table";
 import OrdersPagination from "./shared/orders-pagination";
 import {
@@ -16,11 +15,12 @@ import {
 } from "./shared/orders-filter-utils";
 import { exportOrdersToExcel } from "./shared/orders-export";
 import { useOrdersSelection } from "./shared/use-orders-selection";
-import { filterOrdersPageStatusItems } from "@/src/lib/orders-page-statuses";
-import { useOrderStatusCounts } from "./shared/use-order-status-counts";
+import {
+  OrdersContractStatusFilterBar,
+  useOrdersContractStatusFilter,
+} from "./shared/use-orders-contract-status-filter";
 
 export default function AllOrdersWrapper() {
-  const [activeFilter, setActiveFilter] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -36,6 +36,20 @@ export default function AllOrdersWrapper() {
     clear,
     getPageSelectionState,
   } = useOrdersSelection();
+
+  const {
+    activeFilter,
+    setActiveFilter,
+    statusItems,
+    allTotal,
+    countsById,
+    statusLoading,
+    countsLoading,
+    appendStatusParam,
+    resetStatusFilter,
+  } = useOrdersContractStatusFilter({
+    countsBaseUrl: "/admin/orders",
+  });
 
   useEffect(() => {
     const handler = setTimeout(() => setDebouncedSearchQuery(searchQuery), 500);
@@ -53,41 +67,21 @@ export default function AllOrdersWrapper() {
   const handleResetAll = () => {
     setSearchQuery("");
     setDebouncedSearchQuery("");
-    setActiveFilter("");
+    resetStatusFilter();
     setAdvancedFilters(emptyAdvancedFilters);
     setShowMoreFilters(false);
     setCurrentPage(1);
     clear();
   };
 
-  const { data: statusData, isLoading: statusLoading } = useQuery({
-    queryKey: ["status"],
-    queryFn: () => axiosInstance("/admin/contract-statuses"),
-  });
-
-  const statusItems = statusData?.data?.data?.items;
-  const ordersPageStatusItems = useMemo(
-    () => filterOrdersPageStatusItems(statusItems),
-    [statusItems]
-  );
-
-  const {
-    allTotal,
-    byId: countsById,
-    isLoading: countsLoading,
-  } = useOrderStatusCounts(ordersPageStatusItems, {
-    baseUrl: "/admin/orders",
-    statusParam: "contract_status_id",
-  });
-
   const { data, isLoading } = useQuery({
     queryKey: ["orders", activeFilter, debouncedSearchQuery, currentPage],
     queryFn: () => {
-      let url = `/admin/orders?contract_status_id=${activeFilter}&page=${currentPage}`;
+      let url = `/admin/orders?page=${currentPage}`;
       if (debouncedSearchQuery) {
         url += `&search=${encodeURIComponent(debouncedSearchQuery)}`;
       }
-      return axiosInstance(url);
+      return axiosInstance(appendStatusParam(url));
     },
   });
 
@@ -127,6 +121,13 @@ export default function AllOrdersWrapper() {
       />
 
       <div className="flex flex-col gap-6 mt-4 relative z-10">
+        <OrdersContractStatusFilterBar
+          activeFilter={activeFilter}
+          onFilterChange={setActiveFilter}
+          statusItems={statusItems}
+          countsById={countsById}
+          allTotal={allTotal}
+        />
         <OrdersToolbar
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
@@ -141,15 +142,6 @@ export default function AllOrdersWrapper() {
           exportConfig={exportConfig}
           selectedCount={selectedCount}
           onClearSelection={clear}
-        />
-        <OrdersStatusCards
-          statusItems={ordersPageStatusItems}
-          activeFilter={activeFilter}
-          onFilterChange={setActiveFilter}
-          showAllCard={false}
-          allTotal={allTotal}
-          countsById={countsById}
-          gridClassName="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3"
         />
       </div>
 

@@ -8,11 +8,49 @@ import {
   getStepFormValues,
 } from "@/src/lib/contract-update";
 import { useSingleOrderContext } from "../single-order-context";
+import ContractDatePicker, {
+  resolveCalendarType,
+} from "./contract-date-picker";
+import DateObject from "react-date-object";
+import arabic from "react-date-object/calendars/arabic";
+import gregorian from "react-date-object/calendars/gregorian";
+import arabic_ar from "react-date-object/locales/arabic_ar";
+import gregorian_ar from "react-date-object/locales/gregorian_ar";
+
+const DATE_FORMAT = "DD-MM-YYYY";
+
+function convertDateBetweenCalendars(dateString, fromType, toType) {
+  if (!dateString || fromType === toType) return dateString;
+  try {
+    const fromCalendar = fromType === "hijri" ? arabic : gregorian;
+    const fromLocale = fromType === "hijri" ? arabic_ar : gregorian_ar;
+    const toCalendar = toType === "hijri" ? arabic : gregorian;
+    const toLocale = toType === "hijri" ? arabic_ar : gregorian_ar;
+    const parsed = new DateObject({
+      date: String(dateString).trim(),
+      format: DATE_FORMAT,
+      calendar: fromCalendar,
+      locale: fromLocale,
+    });
+    if (!parsed.isValid) return dateString;
+    return parsed.convert(toCalendar, toLocale).format(DATE_FORMAT);
+  } catch {
+    return dateString;
+  }
+}
+
+const CALENDAR_TYPE_TO_DATE_KEYS = {
+  type_dob_property_owner: ["property_owner_dob"],
+  type_dob_property_owner_agent: ["dob_of_property_owner_agent"],
+  type_tenant_dob: ["tenant_dob"],
+  type_dob_tenant_agent: ["dob_of_property_tenant_agent"],
+  type_contract_starting_date: ["contract_starting_date"],
+};
 
 const inputClass =
   "w-full h-[48px] bg-white border border-[#EEEEEE] rounded-[14px] px-4 text-[14px] focus:outline-none focus:border-brand-hover transition-all";
 
-function ContractFormField({ field, value, onChange, error }) {
+function ContractFormField({ field, value, formValues, onChange, error }) {
   const id = field.key;
 
   if (field.type === "textarea") {
@@ -78,6 +116,32 @@ function ContractFormField({ field, value, onChange, error }) {
     );
   }
 
+  if (field.type === "date") {
+    const calendarType = resolveCalendarType(
+      formValues?.[field.calendarTypeKey],
+      value
+    );
+    const typeLabel = calendarType === "hijri" ? "هجري" : "ميلادي";
+
+    return (
+      <div className="flex flex-col gap-2">
+        <label htmlFor={id} className="text-[13px] font-bold text-black text-right">
+          {field.label}
+          <span className="mr-2 text-[11px] font-medium text-[#A3A3A3]">
+            ({typeLabel})
+          </span>
+        </label>
+        <ContractDatePicker
+          id={id}
+          value={value}
+          calendarType={calendarType}
+          onChange={onChange}
+        />
+        {error ? <p className="text-[12px] text-[#E24444]">{error}</p> : null}
+      </div>
+    );
+  }
+
   return (
     <div className={`flex flex-col gap-2 ${field.colSpan === 2 ? "md:col-span-2" : ""}`}>
       <label htmlFor={id} className="text-[13px] font-bold text-black text-right">
@@ -121,6 +185,19 @@ export function ContractStepEditor({
       if (f.step && f.step !== resolvedStep) {
         const stepValues = getStepFormValues(orderData, f.step);
         extra[f.key] = stepValues[f.key] ?? "";
+        if (f.calendarTypeKey) {
+          extra[f.calendarTypeKey] =
+            stepValues[f.calendarTypeKey] ?? base[f.calendarTypeKey] ?? "";
+        }
+      } else if (f.calendarTypeKey && base[f.calendarTypeKey] == null) {
+        // Ensure linked calendar-type keys stay available even if not edited here.
+        for (const maybeStep of ["summary", "step3", "step4"]) {
+          const stepValues = getStepFormValues(orderData, maybeStep);
+          if (stepValues[f.calendarTypeKey] != null && stepValues[f.calendarTypeKey] !== "") {
+            extra[f.calendarTypeKey] = stepValues[f.calendarTypeKey];
+            break;
+          }
+        }
       }
     }
     return { ...base, ...extra };
@@ -133,13 +210,26 @@ export function ContractStepEditor({
   }, [syncForm]);
 
   const handleSave = async () => {
+    const editableKeys = new Set(fields.map((f) => f.key));
     const stepsToSave = new Set([
       resolvedStep,
       ...fields.map((f) => f.step).filter(Boolean),
     ]);
+
+    // Only send changes for fields shown in this section (even if empty).
+    const scopedForm = Object.fromEntries(
+      Object.entries(form).filter(([key]) => editableKeys.has(key))
+    );
+    const scopedInitial = Object.fromEntries(
+      Object.entries(initial).filter(([key]) => editableKeys.has(key))
+    );
+
     let payload = {};
     for (const s of stepsToSave) {
-      payload = { ...payload, ...buildContractUpdatePayload(s, form, initial) };
+      payload = {
+        ...payload,
+        ...buildContractUpdatePayload(s, scopedForm, scopedInitial),
+      };
     }
 
     if (Object.keys(payload).length === 0) {
@@ -220,12 +310,62 @@ export function ContractStepEditor({
                 key={field.key}
                 field={field}
                 value={form[field.key]}
+                formValues={form}
                 error={fieldErrors[field.key]}
                 onChange={(val) =>
-                  setForm((prev) => ({
-                    ...prev,
-                    [field.key]: val,
-                  }))
+                  setForm((prev) => {
+                    const next = { ...prev, [field.key]: val };
+
+                    // Switching Hijri/Gregorian: convert linked date fields.
+                    const linkedDateKeys = CALENDAR_TYPE_TO_DATE_KEYS[field.key];
+                    if (linkedDateKeys) {
+                      const fromType = resolveCalendarType(prev[field.key], prev[linkedDateKeys[0]]);
+                      const toType = resolveCalendarType(val, prev[linkedDateKeys[0]]);
+                      for (const dateKey of linkedDateKeys) {
+                        if (!prev[dateKey]) continue;
+                        next[dateKey] = convertDateBetweenCalendars(
+                          prev[dateKey],
+                          fromType,
+                          toType
+                        );
+                        if (dateKey === "tenant_dob" && next[dateKey]) {
+                          const parts = String(next[dateKey]).split("-");
+                          if (parts.length === 3) {
+                            next.tenant_dob_day = parts[0];
+                            next.tenant_dob_month = parts[1];
+                            next.tenant_dob_year = parts[2];
+                          }
+                        }
+                        if (dateKey === "dob_of_property_tenant_agent" && next[dateKey]) {
+                          const parts = String(next[dateKey]).split("-");
+                          if (parts.length === 3) {
+                            next.dob_of_property_tenant_agent_day = parts[0];
+                            next.dob_of_property_tenant_agent_month = parts[1];
+                            next.dob_of_property_tenant_agent_year = parts[2];
+                          }
+                        }
+                      }
+                    }
+
+                    // Keep day/month/year parts in sync when the main date changes.
+                    if (field.type === "date" && typeof val === "string") {
+                      const parts = val.split("-");
+                      if (parts.length === 3) {
+                        if (field.key === "tenant_dob") {
+                          next.tenant_dob_day = parts[0];
+                          next.tenant_dob_month = parts[1];
+                          next.tenant_dob_year = parts[2];
+                        }
+                        if (field.key === "dob_of_property_tenant_agent") {
+                          next.dob_of_property_tenant_agent_day = parts[0];
+                          next.dob_of_property_tenant_agent_month = parts[1];
+                          next.dob_of_property_tenant_agent_year = parts[2];
+                        }
+                      }
+                    }
+
+                    return next;
+                  })
                 }
               />
             ))}

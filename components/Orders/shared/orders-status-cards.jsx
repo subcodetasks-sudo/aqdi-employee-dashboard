@@ -38,6 +38,53 @@ const formatCount = (count) => {
   return String(num).padStart(2, "0");
 };
 
+function parseHexColor(value = "") {
+  const hex = String(value).trim().replace(/^#/, "");
+  if (/^[0-9a-fA-F]{3}$/.test(hex)) {
+    return {
+      r: parseInt(hex[0] + hex[0], 16),
+      g: parseInt(hex[1] + hex[1], 16),
+      b: parseInt(hex[2] + hex[2], 16),
+    };
+  }
+  if (/^[0-9a-fA-F]{6}$/.test(hex)) {
+    return {
+      r: parseInt(hex.slice(0, 2), 16),
+      g: parseInt(hex.slice(2, 4), 16),
+      b: parseInt(hex.slice(4, 6), 16),
+    };
+  }
+  return null;
+}
+
+function getRelativeLuminance({ r, g, b }) {
+  const toLinear = (channel) => {
+    const c = channel / 255;
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  };
+  return 0.2126 * toLinear(r) + 0.7152 * toLinear(g) + 0.0722 * toLinear(b);
+}
+
+function isDarkColor(value = "") {
+  const rgb = parseHexColor(value);
+  if (!rgb) {
+    const normalized = String(value).trim().toLowerCase();
+    return (
+      normalized === "black" ||
+      normalized === "#000" ||
+      normalized === "#000000" ||
+      normalized === "rgb(0,0,0)" ||
+      normalized === "rgb(0, 0, 0)"
+    );
+  }
+  return getRelativeLuminance(rgb) < 0.45;
+}
+
+function getActiveStatusTextColor(backgroundColor, textColor) {
+  if (isDarkColor(backgroundColor)) return "#FFFFFF";
+  return textColor || "#111111";
+}
+
 function StatusIcon({ name }) {
   if (usesWhatsAppIcon(name)) {
     return (
@@ -50,40 +97,36 @@ function StatusIcon({ name }) {
 }
 
 function StatusCard({ item, count, isActive, onClick, actionLabel }) {
-  const viewAction = isViewAction(actionLabel);
+  const statusColor = item?.color;
+  const statusTextColor = getActiveStatusTextColor(
+    statusColor,
+    item?.color_text
+  );
 
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`bg-[#F5F5F5] rounded-[16px] border p-4 flex flex-col min-h-[118px] text-right transition-all hover:shadow-md ${
+      className={`rounded-full p-4 flex flex-col text-right transition-all hover:shadow-md ${
         isActive
-          ? "border-brand-main shadow-md ring-2 ring-brand-main/15"
-          : "border-transparent hover:border-[#E0E0E0]"
+          ? statusColor
+            ? "shadow-md ring-2 ring-black/5"
+            : "bg-brand-main text-white shadow-md ring-2 ring-brand-main/15"
+          : "bg-[#F5F5F5] hover:border-[#E0E0E0]"
       }`}
+      style={
+        isActive && statusColor
+          ? {
+              backgroundColor: statusColor,
+              color: statusTextColor,
+              boxShadow: `0 0 0 2px ${statusColor}26`,
+            }
+          : undefined
+      }
     >
-      <div className="flex justify-end w-full">
-        <StatusIcon name={item.name} />
-      </div>
-
-      <p className="text-[11px] font-bold text-[#1A1A1A] leading-snug mt-2 min-h-[32px] flex-1">
-        {item.name}
+      <p className="font-bold leading-snug">
+        {item.name} ({formatCount(count)})
       </p>
-
-      <div className="flex items-end justify-between gap-2 mt-3 w-full">
-        <span
-          className={`text-[11px] font-bold px-3 py-0.5 rounded-full shrink-0 ${
-            viewAction
-              ? "bg-white text-[#616161] border border-[#E0E0E0]"
-              : "text-[#10B981] border border-[#10B981]"
-          }`}
-        >
-          {actionLabel}
-        </span>
-        <span className="text-[32px] font-black text-black leading-none tabular-nums">
-          {formatCount(count)}
-        </span>
-      </div>
     </button>
   );
 }

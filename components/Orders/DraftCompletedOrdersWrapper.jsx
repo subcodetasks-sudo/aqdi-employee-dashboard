@@ -15,6 +15,10 @@ import {
 } from "./shared/orders-filter-utils";
 import { exportOrdersToExcel } from "./shared/orders-export";
 import { useOrdersSelection } from "./shared/use-orders-selection";
+import {
+  OrdersContractStatusFilterBar,
+  useOrdersContractStatusFilter,
+} from "./shared/use-orders-contract-status-filter";
 
 export const DRAFT_COMPLETED_ORDERS_QUERY_KEY = "draftCompletedOrders";
 export const DRAFT_COMPLETED_ORDERS_API = "/admin/orders/completed-draft";
@@ -36,6 +40,20 @@ export default function DraftCompletedOrdersWrapper() {
     getPageSelectionState,
   } = useOrdersSelection();
 
+  const {
+    activeFilter,
+    setActiveFilter,
+    statusItems,
+    allTotal,
+    countsById,
+    statusLoading,
+    countsLoading,
+    appendStatusParam,
+    resetStatusFilter,
+  } = useOrdersContractStatusFilter({
+    countsBaseUrl: DRAFT_COMPLETED_ORDERS_API,
+  });
+
   useEffect(() => {
     const handler = setTimeout(() => setDebouncedSearchQuery(searchQuery), 500);
     return () => clearTimeout(handler);
@@ -43,15 +61,16 @@ export default function DraftCompletedOrdersWrapper() {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [debouncedSearchQuery]);
+  }, [activeFilter, debouncedSearchQuery]);
 
   useEffect(() => {
     clear();
-  }, [debouncedSearchQuery, advancedFilters, clear]);
+  }, [activeFilter, debouncedSearchQuery, advancedFilters, clear]);
 
   const handleResetAll = () => {
     setSearchQuery("");
     setDebouncedSearchQuery("");
+    resetStatusFilter();
     setAdvancedFilters(emptyAdvancedFilters);
     setShowMoreFilters(false);
     setCurrentPage(1);
@@ -59,13 +78,18 @@ export default function DraftCompletedOrdersWrapper() {
   };
 
   const { data, isLoading } = useQuery({
-    queryKey: [DRAFT_COMPLETED_ORDERS_QUERY_KEY, debouncedSearchQuery, currentPage],
+    queryKey: [
+      DRAFT_COMPLETED_ORDERS_QUERY_KEY,
+      activeFilter,
+      debouncedSearchQuery,
+      currentPage,
+    ],
     queryFn: () => {
       let url = `${DRAFT_COMPLETED_ORDERS_API}?page=${currentPage}`;
       if (debouncedSearchQuery) {
         url += `&search=${encodeURIComponent(debouncedSearchQuery)}`;
       }
-      return axiosInstance(url);
+      return axiosInstance(appendStatusParam(url));
     },
   });
 
@@ -91,7 +115,7 @@ export default function DraftCompletedOrdersWrapper() {
 
   const pageSelectionState = getPageSelectionState(filteredOrders);
 
-  if (isLoading) {
+  if (isLoading || statusLoading || countsLoading) {
     return <Loader />;
   }
 
@@ -108,6 +132,13 @@ export default function DraftCompletedOrdersWrapper() {
       />
 
       <div className="flex flex-col gap-6 mt-4 relative z-10">
+        <OrdersContractStatusFilterBar
+          activeFilter={activeFilter}
+          onFilterChange={setActiveFilter}
+          statusItems={statusItems}
+          countsById={countsById}
+          allTotal={allTotal}
+        />
         <OrdersToolbar
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}

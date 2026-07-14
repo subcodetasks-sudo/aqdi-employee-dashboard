@@ -19,6 +19,10 @@ import {
 } from './shared/orders-filter-utils'
 import { exportOrdersToExcel } from './shared/orders-export'
 import { useOrdersSelection } from './shared/use-orders-selection'
+import {
+    OrdersContractStatusFilterBar,
+    useOrdersContractStatusFilter,
+} from './shared/use-orders-contract-status-filter'
 
 export default function CompletedOrdersWrapper() {
     const router = useRouter()
@@ -37,6 +41,20 @@ export default function CompletedOrdersWrapper() {
         clear,
         getPageSelectionState,
     } = useOrdersSelection();
+
+    const {
+        activeFilter,
+        setActiveFilter,
+        statusItems,
+        allTotal,
+        countsById,
+        statusLoading,
+        countsLoading,
+        appendStatusParam,
+        resetStatusFilter,
+    } = useOrdersContractStatusFilter({
+        countsBaseUrl: "/admin/orders/complete/list",
+    });
 
     useEffect(() => {
         const handler = setTimeout(() => {
@@ -105,6 +123,7 @@ export default function CompletedOrdersWrapper() {
         setDebouncedSearchQuery('');
         setAdvancedFilters(emptyAdvancedFilters);
         setShowMoreFilters(false);
+        resetStatusFilter();
         setCurrentPage(1);
         clear();
         if (createdAtParam) {
@@ -114,11 +133,11 @@ export default function CompletedOrdersWrapper() {
 
     useEffect(() => {
         setCurrentPage(1);
-    }, [debouncedSearchQuery, createdAtParam]);
+    }, [debouncedSearchQuery, createdAtParam, activeFilter]);
 
     useEffect(() => {
         clear();
-    }, [debouncedSearchQuery, createdAtParam, advancedFilters, clear]);
+    }, [debouncedSearchQuery, createdAtParam, advancedFilters, activeFilter, clear]);
 
     /*-------------------------------------------------------------------------------------*/
     // get completed orders
@@ -131,10 +150,10 @@ export default function CompletedOrdersWrapper() {
         if (debouncedSearchQuery) {
             url += `&search=${encodeURIComponent(debouncedSearchQuery)}`;
         }
-        return axiosInstance(url);
+        return axiosInstance(appendStatusParam(url));
     }
     const { data, isLoading } = useQuery({
-        queryKey: ["completedOrders", createdAtParam, debouncedSearchQuery, currentPage],
+        queryKey: ["completedOrders", createdAtParam, debouncedSearchQuery, currentPage, activeFilter],
         queryFn: getCompletedOrders
     })
     const orders = data?.data?.data?.items ?? []
@@ -158,12 +177,19 @@ export default function CompletedOrdersWrapper() {
 
     /*-------------------------------------------------------------------------------------*/
     // loader
-    if (isLoading) return <Loader />
+    if (isLoading || statusLoading || countsLoading) return <Loader />
     return (
         <div className="flex flex-col gap-6 p-6 min-h-screen" dir="rtl">
             <Header page='welcome' title={"طلب مكتمل"} isMain={false} first="الرئيــسية" firstURL="/" second="طلب مكتمل" secondURL="/home/completed-orders" />
 
             <div className="flex flex-col gap-4 mt-4 relative z-10">
+                <OrdersContractStatusFilterBar
+                    activeFilter={activeFilter}
+                    onFilterChange={setActiveFilter}
+                    statusItems={statusItems}
+                    countsById={countsById}
+                    allTotal={allTotal}
+                />
                 <OrdersToolbar
                     searchQuery={searchQuery}
                     onSearchChange={setSearchQuery}
@@ -174,7 +200,7 @@ export default function CompletedOrdersWrapper() {
                     advancedFilters={advancedFilters}
                     onAdvancedFiltersChange={setAdvancedFilters}
                     onResetAll={handleResetAll}
-                    showStatusField={false}
+                    showStatusField
                     quickLinksLimit={3}
                     exportConfig={exportConfig}
                     selectedCount={selectedCount}

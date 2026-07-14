@@ -1,36 +1,42 @@
 "use client";
 
 import { toast } from "sonner";
-import { Check, Copy, Edit, Wallet, X } from "lucide-react";
+import { Check, Copy, Wallet, X } from "lucide-react";
 import LeaseRenewalDraftTransfer from "./lease-renewal-draft-transfer";
+import { ContractStepEditor } from "../contract-edit/contract-step-editor";
+import {
+  LEASE_RENEWAL_CONTRACT_DATE_FIELDS,
+  LEASE_RENEWAL_FINANCIAL_FIELDS,
+} from "../contract-edit/contract-field-schemas";
+import {
+  formatDisplayValue,
+  isEmptyDisplayValue,
+} from "../contract-summary-view";
 
-const SectionEditHeader = ({ title, showEdit = true }) => (
-  <div className="flex items-center justify-between mb-4">
-    <h3 className="text-[14px] font-black text-black">{title}</h3>
-    {showEdit && (
-      <button
-        type="button"
-        className="flex items-center gap-1 text-[#10B981] text-[11px] font-bold"
-        onClick={() => toast.info("تعديل")}
-      >
-        <Edit className="size-3.5" />
-        تعديل
-      </button>
-    )}
-  </div>
-);
-
-const MoneyCard = ({ label, value, accent = "border-[#10B981]" }) => (
-  <div className={`bg-white rounded-2xl p-4 shadow-sm border-r-[3px] ${accent}`}>
-    <div className="flex items-center justify-between gap-2">
-      <Wallet className="size-5 text-[#3B82F6] shrink-0" />
-      <div className="text-right flex-1 min-w-0">
-        <p className="text-[11px] text-[#9E9E9E] mb-0.5">{label}</p>
-        <p className="text-[15px] font-black text-black">{value}</p>
+const MoneyCard = ({ label, value, accent = "border-[#10B981]" }) => {
+  const empty = isEmptyDisplayValue(value);
+  return (
+    <div
+      className={`bg-white rounded-2xl p-4 shadow-sm border-r-[3px] ${accent} ${
+        empty ? "opacity-45" : ""
+      }`}
+    >
+      <div className="flex items-center justify-between gap-2">
+        <Wallet className={`size-5 shrink-0 ${empty ? "text-[#BDBDBD]" : "text-[#3B82F6]"}`} />
+        <div className="text-right flex-1 min-w-0">
+          <p className="text-[11px] text-[#9E9E9E] mb-0.5">{label}</p>
+          <p
+            className={`text-[15px] font-black ${
+              empty ? "text-[#A3A3A3]" : "text-black"
+            }`}
+          >
+            {formatDisplayValue(value)}
+          </p>
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 const InactiveCard = ({ label }) => (
   <div className="bg-[#ECECEC] rounded-2xl p-4 opacity-70 border-r-[3px] border-r-[#BDBDBD]">
@@ -55,82 +61,116 @@ const PermissionCard = ({ label, active }) =>
 
 export default function LeaseRenewalFinancialTab({ orderData }) {
   const step4 = orderData?.step4 ?? {};
+  const step2 = orderData?.step2 ?? {};
 
   const totalValue =
     step4.contract_term_in_years?.price ||
     step4.annual_rent_amount_for_the_unit ||
-    "5000000";
+    null;
+
+  const electricityMeter =
+    step2.electricity_meter_number || step2.electricity_meter || null;
+  const waterMeter = step2.water_meter_number || step2.water_meter || null;
+  const startDate = step4.contract_starting_date || null;
+  const dateType =
+    step4.type_contract_starting_date === "hijri"
+      ? "هجري"
+      : step4.type_contract_starting_date === "gregorian"
+        ? "ميلادي"
+        : step4.type_contract_starting_date || "—";
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-      {/* Col 1 — البيانات المالية (rightmost in RTL) */}
       <div className="bg-[#F4F4F4] rounded-[20px] p-4">
-        <SectionEditHeader title="البيانات المالية" />
-        <div className="space-y-3">
-          <MoneyCard label="إجمالي قيمة العقد" value={totalValue} accent="border-[#10B981]" />
-          <MoneyCard
-            label="طريقة الدفعات"
-            value={step4.payment_type_name || "شهري"}
-            accent="border-[#BDBDBD]"
-          />
-          <div className="bg-white rounded-2xl p-4 shadow-sm border-r-[3px] border-r-[#10B981]">
-            <div className="flex items-start justify-between gap-2">
-              <Check className="size-5 text-[#10B981] shrink-0 mt-0.5" />
-              <div className="text-right flex-1 min-w-0">
-                <p className="text-[11px] text-[#9E9E9E] mb-1">عداد الكهرباء</p>
-                <p className="text-[12px] font-bold text-[#10B981] mb-2">مطلوب نقل العداد</p>
-                <div className="flex items-center gap-2 justify-end">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      navigator.clipboard.writeText("GAJ929292929292929");
-                      toast.success("تم النسخ");
-                    }}
-                    className="text-[#A3A3A3] hover:text-brand-main"
-                  >
-                    <Copy className="size-3.5" />
-                  </button>
-                  <p className="text-[11px] font-mono text-black break-all" dir="ltr">
-                    GAJ929292929292929
-                  </p>
+        <ContractStepEditor
+          title="البيانات المالية"
+          step="step4"
+          fields={LEASE_RENEWAL_FINANCIAL_FIELDS}
+        >
+          <div className="space-y-3">
+            <MoneyCard label="إجمالي قيمة العقد" value={totalValue} accent="border-[#10B981]" />
+            <MoneyCard
+              label="طريقة الدفعات"
+              value={step4.payment_type_name || "—"}
+              accent="border-[#BDBDBD]"
+            />
+            {electricityMeter ? (
+              <div className="bg-white rounded-2xl p-4 shadow-sm border-r-[3px] border-r-[#10B981]">
+                <div className="flex items-start justify-between gap-2">
+                  <Check className="size-5 text-[#10B981] shrink-0 mt-0.5" />
+                  <div className="text-right flex-1 min-w-0">
+                    <p className="text-[11px] text-[#9E9E9E] mb-1">عداد الكهرباء</p>
+                    <div className="flex items-center gap-2 justify-end">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          navigator.clipboard.writeText(String(electricityMeter));
+                          toast.success("تم النسخ");
+                        }}
+                        className="text-[#A3A3A3] hover:text-brand-main"
+                      >
+                        <Copy className="size-3.5" />
+                      </button>
+                      <p className="text-[11px] font-mono text-black break-all" dir="ltr">
+                        {electricityMeter}
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
+            ) : (
+              <InactiveCard label="عداد الكهرباء" />
+            )}
+            {waterMeter ? (
+              <MoneyCard label="عداد المياه" value={waterMeter} accent="border-[#3B82F6]" />
+            ) : (
+              <InactiveCard label="عداد المياه" />
+            )}
           </div>
-          <InactiveCard label="عداد المياه" />
-        </div>
+        </ContractStepEditor>
       </div>
 
-      {/* Col 2 — مبالغ إضافية */}
       <div className="bg-[#F4F4F4] rounded-[20px] p-4">
-        <SectionEditHeader title="مبالغ إضافية" />
-        <div className="space-y-3">
-          <MoneyCard label="مبلغ الضمان" value="1000" accent="border-[#10B981]" />
-          <InactiveCard label="الغرامة اليومية" />
-          <MoneyCard label="المبالغ المقدمة" value="1000000" accent="border-[#3B82F6]" />
-        </div>
+        <ContractStepEditor
+          title="مدة العقد"
+          step="step4"
+          fields={LEASE_RENEWAL_CONTRACT_DATE_FIELDS}
+        >
+          <div className="space-y-3">
+            <MoneyCard label="تاريخ بداية العقد" value={startDate} accent="border-[#10B981]" />
+            <MoneyCard label="نوع التاريخ" value={dateType} accent="border-[#3B82F6]" />
+            <MoneyCard
+              label="الغرامة اليومية"
+              value={step4.daily_fine || "—"}
+              accent="border-[#EF4444]"
+            />
+          </div>
+        </ContractStepEditor>
       </div>
 
-      {/* Col 3 — الصلاحيات */}
       <div className="bg-[#F4F4F4] rounded-[20px] p-4">
-        <SectionEditHeader title="الصلاحيات" />
-        <div className="space-y-3">
-          <PermissionCard label="التأجير من الباطن" active />
-          <PermissionCard label="الترميمات والتحسينات" active />
-          <PermissionCard label="مراجعة الجهات الحكومية" active={false} />
-          <PermissionCard label="تعديل الوحدة الإيجارية" active={false} />
-        </div>
+        <ContractStepEditor title="الصلاحيات" step="step4" fields={[]} showEdit={false}>
+          <div className="space-y-3">
+            <PermissionCard label="التأجير من الباطن" active={Boolean(step4.other_conditions)} />
+            <PermissionCard
+              label="الترميمات والتحسينات"
+              active={Boolean(step4.text_additional_terms)}
+            />
+            <PermissionCard label="مراجعة الجهات الحكومية" active={false} />
+            <PermissionCard label="تعديل الوحدة الإيجارية" active={false} />
+          </div>
+        </ContractStepEditor>
       </div>
 
-      {/* Col 4 — تحويل الطلب (leftmost in RTL) */}
       <div className="bg-[#F4F4F4] rounded-[20px] p-4 flex flex-col h-fit">
-        <SectionEditHeader title="تحويل الطلب" showEdit={false} />
-        <LeaseRenewalDraftTransfer
-          orderId={orderData?.id}
-          orderData={orderData}
-          layout="column"
-          showTransferLabel={false}
-        />
+        <ContractStepEditor title="تحويل الطلب" step="step4" fields={[]} showEdit={false}>
+          <LeaseRenewalDraftTransfer
+            orderId={orderData?.id}
+            orderData={orderData}
+            layout="column"
+            showTransferLabel={false}
+          />
+        </ContractStepEditor>
       </div>
     </div>
   );

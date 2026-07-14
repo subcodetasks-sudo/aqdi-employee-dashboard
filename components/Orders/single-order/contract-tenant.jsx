@@ -8,16 +8,15 @@ import {
   STEP3_TENANT_AGENT_FIELDS,
   STEP3_CONTRACT_META_FIELDS,
 } from "./contract-edit/contract-field-schemas";
+import {
+  formatDisplayValue,
+  isEmptyDisplayValue,
+} from "./contract-summary-view";
 
 const copy = (value) => {
-  if (!value || value === "---") return;
+  if (isEmptyDisplayValue(value)) return;
   navigator.clipboard.writeText(String(value));
   toast.success("تم النسخ بنجاح");
-};
-
-const display = (value) => {
-  if (value === null || value === undefined || value === "") return "—";
-  return String(value);
 };
 
 const calendarTypeLabel = (value) => {
@@ -31,24 +30,35 @@ const DetailCard = ({
   value,
   copyable = false,
   borderColor = "border-gray-200",
-}) => (
-  <div className={`rounded-[16px] border-r-4 bg-white p-4 shadow-sm ${borderColor}`}>
-    <span className="mb-1 block text-right text-xs font-medium text-gray-400">{label}</span>
-    <p className="flex items-center justify-end gap-2 text-sm font-bold text-gray-800 lg:text-base">
-      {copyable && value && value !== "—" && value !== "---" ? (
-        <button
-          type="button"
-          onClick={() => copy(value)}
-          className="text-gray-400 hover:text-brand-main"
-          title="نسخ"
-        >
-          <Copy size={14} />
-        </button>
-      ) : null}
-      <span>{display(value)}</span>
-    </p>
-  </div>
-);
+}) => {
+  const empty = isEmptyDisplayValue(value);
+  return (
+    <div
+      className={`rounded-[16px] border-r-4 bg-white p-4 shadow-sm ${borderColor} ${
+        empty ? "opacity-45" : ""
+      }`}
+    >
+      <span className="mb-1 block text-right text-xs font-medium text-gray-400">{label}</span>
+      <p
+        className={`flex items-center justify-end gap-2 text-sm font-bold lg:text-base ${
+          empty ? "text-[#A3A3A3]" : "text-gray-800"
+        }`}
+      >
+        {copyable && !empty ? (
+          <button
+            type="button"
+            onClick={() => copy(value)}
+            className="text-gray-400 hover:text-brand-main"
+            title="نسخ"
+          >
+            <Copy size={14} />
+          </button>
+        ) : null}
+        <span>{formatDisplayValue(value)}</span>
+      </p>
+    </div>
+  );
+};
 
 function ContractTenant({ data }) {
   const step3 = data?.step3 ?? {};
@@ -65,6 +75,7 @@ function ContractTenant({ data }) {
 
   const tenantDetails = [
     { label: "كيان المستأجر", value: step3.tenant_entity, borderColor: "border-indigo-500" },
+    { label: "اسم المستأجر", value: step3.tenant_name, borderColor: "border-indigo-400", copyable: true },
     {
       label: "صلاحيات المستأجر",
       value: step3.tenant_role_names?.join?.("، ") || step3.tenant_role_names,
@@ -90,6 +101,12 @@ function ContractTenant({ data }) {
       label: "رقـم جــوال المستأجر",
       value: step3.tenant_mobile,
       borderColor: "border-green-500",
+      copyable: true,
+    },
+    {
+      label: "البريد الإلكتروني",
+      value: step3.tenant_email,
+      borderColor: "border-emerald-500",
       copyable: true,
     },
     {

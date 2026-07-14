@@ -9,6 +9,10 @@ import {
   STEP2_ROOM_FIELDS,
   STEP2_SERVICE_FIELDS,
 } from "./contract-edit/contract-field-schemas";
+import {
+  formatDisplayValue,
+  isEmptyDisplayValue,
+} from "./contract-summary-view";
 
 const BORDER_COLORS = [
   "border-blue-500",
@@ -24,14 +28,9 @@ const BORDER_COLORS = [
 ];
 
 const copy = (value) => {
-  if (!value || value === "—") return;
+  if (isEmptyDisplayValue(value)) return;
   navigator.clipboard.writeText(String(value));
   toast.success("تم النسخ بنجاح");
-};
-
-const display = (value) => {
-  if (value === null || value === undefined || value === "") return "—";
-  return String(value);
 };
 
 const DetailCard = ({
@@ -39,24 +38,35 @@ const DetailCard = ({
   value,
   copyable = false,
   borderColor = "border-gray-200",
-}) => (
-  <div className={`rounded-[16px] border-r-4 bg-white p-4 shadow-sm ${borderColor}`}>
-    <span className="mb-1 block text-right text-xs font-medium text-gray-400">{label}</span>
-    <p className="flex items-center justify-end gap-2 text-sm font-bold text-gray-800 lg:text-base">
-      {copyable && value && value !== "—" ? (
-        <button
-          type="button"
-          onClick={() => copy(value)}
-          className="text-gray-400 hover:text-brand-main"
-          title="نسخ"
-        >
-          <Copy size={14} />
-        </button>
-      ) : null}
-      <span>{display(value)}</span>
-    </p>
-  </div>
-);
+}) => {
+  const empty = isEmptyDisplayValue(value);
+  return (
+    <div
+      className={`rounded-[16px] border-r-4 bg-white p-4 shadow-sm ${borderColor} ${
+        empty ? "opacity-45" : ""
+      }`}
+    >
+      <span className="mb-1 block text-right text-xs font-medium text-gray-400">{label}</span>
+      <p
+        className={`flex items-center justify-end gap-2 text-sm font-bold lg:text-base ${
+          empty ? "text-[#A3A3A3]" : "text-gray-800"
+        }`}
+      >
+        {copyable && !empty ? (
+          <button
+            type="button"
+            onClick={() => copy(value)}
+            className="text-gray-400 hover:text-brand-main"
+            title="نسخ"
+          >
+            <Copy size={14} />
+          </button>
+        ) : null}
+        <span>{formatDisplayValue(value)}</span>
+      </p>
+    </div>
+  );
+};
 
 function resolveFieldDisplayValue(field, data) {
   const step2 = data?.step2 ?? {};
