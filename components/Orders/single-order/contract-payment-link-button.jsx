@@ -1,12 +1,27 @@
 "use client";
 
 import { Link2, Loader2 } from "lucide-react";
+import Image from "next/image";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { getOrderContractUuid } from "@/components/Orders/messages/order-section-message-utils";
 import { fetchContractPaymentLink } from "@/components/Orders/shared/payment-gateway";
 import PaymentLinkDialog from "@/components/Orders/shared/payment-link-dialog";
+import greenRial from "@/public/images/greenRial.svg";
+
+function getPaymentAmount(orderData) {
+  const summary = orderData?.contract_summary ?? {};
+  return (
+    orderData?.amount_payment ??
+    summary?.amount_payment ??
+    orderData?.cart_amount ??
+    summary?.cart_amount ??
+    orderData?.amount ??
+    summary?.amount ??
+    null
+  );
+}
 
 function isContractPaid(orderData) {
   const summary = orderData?.contract_summary ?? {};
@@ -15,12 +30,29 @@ function isContractPaid(orderData) {
     summary?.is_paid ??
     orderData?.payment_status ??
     summary?.payment_status;
-  const amountPayment =
-    orderData?.amount_payment ?? summary?.amount_payment;
+  const amountPayment = getPaymentAmount(orderData);
 
   if (isPaid === true || isPaid === 1 || isPaid === "paid") return true;
   if (isPaid === false || isPaid === 0 || isPaid === "unpaid") return false;
   return Boolean(amountPayment);
+}
+
+function PaidBadge({ orderData }) {
+  const amount = getPaymentAmount(orderData);
+
+  return (
+    <div className="flex h-auto items-center gap-2 rounded-2xl bg-[#E6FFE6] px-4 py-3 shrink-0">
+      <span className="rounded-full bg-white/80 px-3 py-1 text-[11px] font-bold whitespace-nowrap text-[#10B981]">
+        مدفوع
+      </span>
+      {amount != null && amount !== "" ? (
+        <div className="flex items-center gap-1 text-[13px] font-bold text-[#007C13]">
+          <span>{amount}</span>
+          <Image src={greenRial} alt="rial" width={14} height={14} />
+        </div>
+      ) : null}
+    </div>
+  );
 }
 
 export default function ContractPaymentLinkButton({ orderData }) {
@@ -30,7 +62,7 @@ export default function ContractPaymentLinkButton({ orderData }) {
   const contractUuid = getOrderContractUuid(orderData);
 
   if (isContractPaid(orderData)) {
-    return null;
+    return <PaidBadge orderData={orderData} />;
   }
 
   const handleClick = async () => {
