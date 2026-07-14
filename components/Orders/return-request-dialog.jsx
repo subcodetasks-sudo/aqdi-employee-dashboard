@@ -12,8 +12,9 @@ import greenRial from "@/public/images/greenRial.svg";
 import waIcon from "@/public/images/waIcon.svg";
 import { Button } from "../ui/button";
 import {
-    ensureReturnContractStatus,
+    ensureReturnContractStatusForOrder,
     getOrderContractStatusDisplay,
+    resolveRefundableContractId,
     RETURN_CONTRACT_STATUS_ID,
 } from "@/components/analysis/returned/refund-contract-utils";
 
@@ -86,14 +87,22 @@ export default function ReturnRequestDialog({
         setStatusDisplay(getOrderContractStatusDisplay(order));
     }, [order]);
 
-    const contractId = order?.contract_id ?? order?.id ?? orderUuid;
-    const statusOrderId = orderId ?? order?.id;
+    const contractId = resolveRefundableContractId(order, orderId ?? orderUuid);
 
     const { mutate: submitReturn, isPending } = useMutation({
         mutationFn: async () => {
-            if (Number(statusDisplay.id) !== RETURN_CONTRACT_STATUS_ID) {
-                await ensureReturnContractStatus(statusOrderId, RETURN_CONTRACT_STATUS_ID);
-            }
+            // Backend requires حالة العقد = 2 (استرجاع) before creating refund request.
+            await ensureReturnContractStatusForOrder(
+                order,
+                orderId ?? order?.id ?? orderUuid,
+                RETURN_CONTRACT_STATUS_ID
+            );
+
+            setStatusDisplay((current) => ({
+                id: RETURN_CONTRACT_STATUS_ID,
+                name: "استرجاع",
+                color: current?.color || "#ffcccc",
+            }));
 
             return axiosInstance.post("/admin/refundable-contracts", {
                 contract_id: contractId,
@@ -106,7 +115,7 @@ export default function ReturnRequestDialog({
             setStatusDisplay({
                 id: RETURN_CONTRACT_STATUS_ID,
                 name: "استرجاع",
-                color: statusDisplay.color,
+                color: "#ffcccc",
             });
             toast.success(res?.data?.message || "تم رفع طلب الاسترجاع بنجاح");
             queryClient.invalidateQueries({ queryKey });
@@ -119,7 +128,7 @@ export default function ReturnRequestDialog({
             setStep(2);
         },
         onError: (error) => {
-            toast.error(error?.response?.data?.message || "حدث خطأ أثناء إرسال طلب الاسترجاع");
+            toast.error(error?.response?.data?.message || error?.message || "حدث خطأ أثناء إرسال طلب الاسترجاع");
         },
     });
 

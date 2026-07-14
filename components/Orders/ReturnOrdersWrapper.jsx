@@ -36,6 +36,31 @@ import {
   SelectableTableHeaderCheckbox,
   SelectableTableRowCheckbox,
 } from "./shared/selectable-table-checkbox";
+import OrdersStatusCards from "./shared/orders-status-cards";
+import { useOrderStatusCounts } from "./shared/use-order-status-counts";
+
+const RETURN_ORDERS_API = "/admin/orders/return";
+
+const RETURN_STATUS_TABS = [
+  {
+    id: "pending",
+    name: "بانتظار",
+    color: "#F59E0B",
+    color_text: "#FFFFFF",
+  },
+  {
+    id: "accept",
+    name: "مقبول",
+    color: "#10B981",
+    color_text: "#FFFFFF",
+  },
+  {
+    id: "reject",
+    name: "مرفوض",
+    color: "#EF4444",
+    color_text: "#FFFFFF",
+  },
+];
 
 function CustomerRefundBadge({ refunded }) {
   if (refunded === true || refunded === 1) {
@@ -85,6 +110,7 @@ export default function ReturnOrdersWrapper({ searchParams }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
+  const [returnStatusFilter, setReturnStatusFilter] = useState("pending");
   const [resolvedParams, setResolvedParams] = useState(null);
   const [isResolved, setIsResolved] = useState(false);
   const [showMoreFilters, setShowMoreFilters] = useState(false);
@@ -124,16 +150,40 @@ export default function ReturnOrdersWrapper({ searchParams }) {
 
   const createdAtParam = resolvedParams?.created_at || null;
 
+  const countsExtraParams = useMemo(() => {
+    if (!createdAtParam) return "";
+    const createAt =
+      createdAtParam === "total"
+        ? "all"
+        : createdAtParam === "day"
+          ? "today"
+          : createdAtParam;
+    return `created_at=${createAt}`;
+  }, [createdAtParam]);
+
+  const { byId: returnStatusCounts, isLoading: countsLoading } =
+    useOrderStatusCounts(RETURN_STATUS_TABS, {
+      baseUrl: RETURN_ORDERS_API,
+      statusParam: "return_status",
+      extraParams: countsExtraParams,
+    });
+
   useEffect(() => {
     setCurrentPage(1);
-  }, [debouncedSearchQuery, createdAtParam, advancedFilters]);
+  }, [debouncedSearchQuery, createdAtParam, advancedFilters, returnStatusFilter]);
 
   useEffect(() => {
     clear();
-  }, [debouncedSearchQuery, createdAtParam, advancedFilters, clear]);
+  }, [
+    debouncedSearchQuery,
+    createdAtParam,
+    advancedFilters,
+    returnStatusFilter,
+    clear,
+  ]);
 
   function getReturnOrders(page = 1) {
-    let url = `/admin/orders/return?page=${page}`;
+    let url = `${RETURN_ORDERS_API}?page=${page}&return_status=${returnStatusFilter}`;
     if (createdAtParam) {
       const createAt =
         createdAtParam === "total"
@@ -150,10 +200,17 @@ export default function ReturnOrdersWrapper({ searchParams }) {
   }
 
   const { data: responseData, isLoading, isError } = useQuery({
-    queryKey: ["returnOrders", currentPage, createdAtParam, debouncedSearchQuery],
+    queryKey: [
+      "returnOrders",
+      currentPage,
+      createdAtParam,
+      debouncedSearchQuery,
+      returnStatusFilter,
+    ],
     queryFn: () => getReturnOrders(currentPage),
     enabled: isResolved,
   });
+
 
   const { data: refundsResponse } = useQuery({
     queryKey: ["refundContractsLookup"],
@@ -161,15 +218,18 @@ export default function ReturnOrdersWrapper({ searchParams }) {
     enabled: isResolved,
   });
 
+ 
+
   const rawData = responseData?.data;
   const items = rawData?.items ?? [];
-  console.log(items);
+  console.log({items});
   const pagination = rawData?.pagination;
   const returnOrdersQueryKey = [
     "returnOrders",
     currentPage,
     createdAtParam,
     debouncedSearchQuery,
+    returnStatusFilter,
   ];
 
   const refundsLookup = useMemo(() => {
@@ -231,9 +291,13 @@ export default function ReturnOrdersWrapper({ searchParams }) {
     }
   };
 
+
+  
+
   const handleResetAll = () => {
     setSearchQuery("");
     setDebouncedSearchQuery("");
+    setReturnStatusFilter("pending");
     setAdvancedFilters(emptyAdvancedFilters);
     setShowMoreFilters(false);
     setCurrentPage(1);
@@ -254,7 +318,7 @@ export default function ReturnOrdersWrapper({ searchParams }) {
     "عرض العقــد",
   ];
 
-  if (isLoading || !isResolved) return <Loader />;
+  if (isLoading || !isResolved || countsLoading) return <Loader />;
   if (isError) {
     return (
       <div className="text-center p-8 text-[#FA5252] text-[15px]">
@@ -276,6 +340,13 @@ export default function ReturnOrdersWrapper({ searchParams }) {
       />
 
       <div className="flex flex-col gap-6 mt-4 relative z-10">
+        <OrdersStatusCards
+          statusItems={RETURN_STATUS_TABS}
+          activeFilter={returnStatusFilter}
+          onFilterChange={setReturnStatusFilter}
+          countsById={returnStatusCounts}
+          gridClassName="flex flex-wrap gap-3"
+        />
         <OrdersToolbar
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}

@@ -96,7 +96,7 @@ function StatusIcon({ name }) {
   return <span className="text-[22px] leading-none">{emoji}</span>;
 }
 
-function StatusCard({ item, count, isActive, onClick, actionLabel }) {
+function StatusCard({ item, count, isActive, onClick }) {
   const statusColor = item?.color;
   const statusTextColor = getActiveStatusTextColor(
     statusColor,
@@ -107,19 +107,17 @@ function StatusCard({ item, count, isActive, onClick, actionLabel }) {
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-full p-4 flex flex-col text-right transition-all hover:shadow-md ${
+      className={`rounded-full p-4 flex flex-col text-right transition-all border-2 ${
         isActive
-          ? statusColor
-            ? "shadow-md ring-2 ring-black/5"
-            : "bg-brand-main text-white shadow-md ring-2 ring-brand-main/15"
-          : "bg-[#F5F5F5] hover:border-[#E0E0E0]"
-      }`}
+          ? "shadow-md"
+          : "hover:shadow-md border-transparent"
+      } ${!statusColor ? (isActive ? "bg-brand-main text-white border-brand-main" : "bg-[#F5F5F5] border-transparent text-black") : ""}`}
       style={
-        isActive && statusColor
+        statusColor
           ? {
               backgroundColor: statusColor,
               color: statusTextColor,
-              boxShadow: `0 0 0 2px ${statusColor}26`,
+              borderColor: isActive ? statusTextColor : "transparent",
             }
           : undefined
       }
@@ -147,7 +145,6 @@ export default function OrdersStatusCards({
           item={{ name: "الكل" }}
           count={allTotal}
           isActive={activeFilter === ""}
-          actionLabel="تصفية"
           onClick={() => onFilterChange("")}
         />
       )}
@@ -168,7 +165,6 @@ export default function OrdersStatusCards({
             item={item}
             count={count}
             isActive={isActive}
-            actionLabel={getActionLabel(item.name)}
             onClick={() => onFilterChange(item.id)}
           />
         );

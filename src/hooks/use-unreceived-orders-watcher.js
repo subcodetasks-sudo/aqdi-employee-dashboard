@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { axiosInstance } from '@/src/utils/axios';
-import { isOrdersRelatedPath } from '@/src/lib/order-routes';
+import { isAllOrdersListPath } from '@/src/lib/order-routes';
 import { useSidebarStore } from '@/src/stores/sidebar-store';
 
 const POLL_INTERVAL = 30_000;
@@ -20,13 +20,14 @@ function openNotificationsSidebar({ queryClient, setSidebarOpen, setDisplayedPar
   setDisplayedPart('notification');
 }
 
-// Polls unreceived-orders count in the background and opens the notification
-// sidebar when entering orders-related pages or when a new order arrives.
+// Polls unreceived-orders count and opens the notification sidebar
+// only on the جميع الطلبات page (`/home/orders`).
 export function useUnreceivedOrdersWatcher() {
   const pathname = usePathname();
   const queryClient = useQueryClient();
   const { setDisplayedPart, setSidebarOpen } = useSidebarStore();
   const previousTotalRef = useRef(null);
+  const isAllOrdersPage = isAllOrdersListPath(pathname);
 
   const { data: total } = useQuery({
     queryKey: ['unReceivedOrdersTotal'],
@@ -36,20 +37,24 @@ export function useUnreceivedOrdersWatcher() {
   });
 
   useEffect(() => {
-    if (!isOrdersRelatedPath(pathname) || total === undefined || total <= 0) return;
+    if (!isAllOrdersPage || total === undefined || total <= 0) return;
 
     openNotificationsSidebar({ queryClient, setSidebarOpen, setDisplayedPart });
-  }, [pathname, total, queryClient, setSidebarOpen, setDisplayedPart]);
+  }, [isAllOrdersPage, total, queryClient, setSidebarOpen, setDisplayedPart]);
 
   useEffect(() => {
     if (total === undefined) return;
 
     const previousTotal = previousTotalRef.current;
-    if (previousTotal !== null && total > previousTotal) {
+    if (
+      isAllOrdersPage &&
+      previousTotal !== null &&
+      total > previousTotal
+    ) {
       openNotificationsSidebar({ queryClient, setSidebarOpen, setDisplayedPart });
     }
     previousTotalRef.current = total;
-  }, [total, queryClient, setSidebarOpen, setDisplayedPart]);
+  }, [isAllOrdersPage, total, queryClient, setSidebarOpen, setDisplayedPart]);
 
   return total ?? 0;
 }

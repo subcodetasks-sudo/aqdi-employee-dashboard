@@ -178,7 +178,7 @@ function ContractTenant({ data }) {
 
   return (
     <div className="space-y-6 p-4 lg:p-6" dir="rtl">
-      <ContractStepEditor
+      {/* <ContractStepEditor
         title="نوع العقد / تاريخ بدء العقد"
         step="step3"
         fields={STEP3_CONTRACT_META_FIELDS}
@@ -190,7 +190,7 @@ function ContractTenant({ data }) {
             ))}
           </div>
         </div>
-      </ContractStepEditor>
+      </ContractStepEditor> */}
 
       <ContractStepEditor title="تفاصيل المستأجر" step="step3" fields={STEP3_TENANT_FIELDS}>
         <div className="rounded-[28px] border border-gray-100 bg-gray-100/50 p-6">

@@ -229,9 +229,70 @@ export async function ensureReturnContractStatus(orderId, returnStatusId = RETUR
     throw new Error("تعذر تحديد الطلب لتغيير الحالة");
   }
 
-  return axiosInstance.post(`/admin/orders/${orderId}/contract-status`, {
-    contract_status_id: returnStatusId,
+  const response = await axiosInstance.post(
+    `/admin/orders/${orderId}/contract-status`,
+    {
+      contract_status_id: returnStatusId,
+    }
+  );
+
+  if (response?.data?.success === false) {
+    throw new Error(
+      response?.data?.message || "تعذر تغيير حالة العقد إلى استرجاع"
+    );
+  }
+
+  return response;
+}
+
+/**
+ * Force contract status = 2 (استرجاع) on every known order identifier.
+ * Backend refundable-contracts validates that status.
+ */
+export async function ensureReturnContractStatusForOrder(
+  order,
+  orderId,
+  returnStatusId = RETURN_CONTRACT_STATUS_ID
+) {
+  const candidates = [
+    order?.uuid,
+    orderId,
+    order?.id,
+    order?.contract_id,
+    order?.contract_summary?.uuid,
+    order?.contract_summary?.id,
+  ].filter((value, index, arr) => {
+    if (value == null || value === "") return false;
+    return arr.findIndex((item) => String(item) === String(value)) === index;
   });
+
+  if (!candidates.length) {
+    throw new Error("تعذر تحديد الطلب لتغيير الحالة");
+  }
+
+  let lastError = null;
+
+  for (const candidate of candidates) {
+    try {
+      await ensureReturnContractStatus(candidate, returnStatusId);
+      return candidate;
+    } catch (error) {
+      lastError = error;
+    }
+  }
+
+  throw lastError || new Error("تعذر تغيير حالة العقد إلى استرجاع");
+}
+
+export function resolveRefundableContractId(order, orderId) {
+  return (
+    order?.uuid ??
+    order?.contract_summary?.uuid ??
+    orderId ??
+    order?.id ??
+    order?.contract_id ??
+    null
+  );
 }
 
 export function getOrderAdminApprovalStatus(order) {
