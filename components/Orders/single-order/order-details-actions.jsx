@@ -11,6 +11,7 @@ import {
 } from "@/components/Orders/messages/order-section-message-utils";
 import ContractPaymentLinkButton from "./contract-payment-link-button";
 import PrintContractButton from "./print-contract-button";
+import SendOrderSmsButton from "@/components/Orders/shared/send-order-sms-button";
 
 const pillClass =
   "text-black p-3 flex items-center gap-2 bg-gray-200 border border-gray-300 rounded-2xl text-xs cursor-pointer shrink-0";
@@ -43,6 +44,7 @@ export default function OrderDetailsActions({ orderData }) {
       <div className="flex items-center gap-2 flex-wrap">
         <PrintContractButton orderData={orderData} />
         <ContractPaymentLinkButton orderData={orderData} />
+        <SendOrderSmsButton order={orderData} label="إرسال رسالة" />
       </div>
 
       <div className="flex items-center gap-2 flex-wrap">

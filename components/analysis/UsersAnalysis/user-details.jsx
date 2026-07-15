@@ -15,6 +15,7 @@ import {
 import { FaWhatsapp } from "react-icons/fa6";
 import BlockUserDialog from "./block-user-dialog";
 import DeleteUserDialog from "./delete-user-dialog";
+import SendOrderSmsButton from "@/components/Orders/shared/send-order-sms-button";
 
 export default function UserDetailsCard({ user, backUrl }) {
   const phone = user?.mobile || user?.phone;
@@ -116,7 +117,15 @@ export default function UserDetailsCard({ user, backUrl }) {
             </div>
           </div>
 
-          <div className="flex gap-3 mt-6 justify-end">
+          <div className="flex gap-3 mt-6 justify-end items-center">
+            <SendOrderSmsButton
+              userId={user?.id}
+              order={{
+                ...user,
+                user_id: user?.id,
+                user_mobile: phone,
+              }}
+            />
             <BlockUserDialog user={user} />
             <DeleteUserDialog user={user} redirectTo={backUrl} />
           </div>

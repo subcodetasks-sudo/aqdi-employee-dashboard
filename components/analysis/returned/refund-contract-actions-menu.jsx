@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import {
   canManageAdminRefund,
-  isCustomerRefundPending,
+  canShowReturnOrderApproval,
   resolveRefundIdForAction,
   resolveRefundIdForActionAsync,
   updateRefundContract,
@@ -46,6 +46,9 @@ export default function RefundContractActionsMenu({
   refundItems = [],
   queryKey,
   forceShow = false,
+  /** When set, parent owns the success popup so it survives list refetch/unmount */
+  onApprovedSuccess,
+  onRetractSuccess,
 }) {
   const queryClient = useQueryClient();
   const [reviewOpen, setReviewOpen] = useState(false);
@@ -54,6 +57,9 @@ export default function RefundContractActionsMenu({
   const [approvedSuccessOpen, setApprovedSuccessOpen] = useState(false);
   const [retractSuccessOpen, setRetractSuccessOpen] = useState(false);
   const [successRefund, setSuccessRefund] = useState(null);
+
+  const parentOwnsSuccess =
+    typeof onApprovedSuccess === "function" || typeof onRetractSuccess === "function";
 
   const refundId = useMemo(
     () => resolveRefundIdForAction(order, refund, refundsLookup),
@@ -75,15 +81,20 @@ export default function RefundContractActionsMenu({
   const { mutate: updateRefund, isPending } = useMutation({
     mutationFn: ({ refundId: id, body }) => updateRefundContract(id, body),
     onSuccess: (res, variables) => {
-      invalidate();
       if (variables.action === "reject") {
+        invalidate();
         toast.success(res?.data?.message || "تم تسجيل عدم الموافقة");
         setRejectOpen(false);
         return;
       }
       if (variables.action === "retract") {
         setRetractOpen(false);
-        setSuccessRefund(enrichedRefund);
+        const payload = enrichedRefund;
+        if (typeof onRetractSuccess === "function") {
+          onRetractSuccess(payload);
+          return;
+        }
+        setSuccessRefund(payload);
         setRetractSuccessOpen(true);
         return;
       }
@@ -144,115 +155,144 @@ export default function RefundContractActionsMenu({
   };
 
   const handleApproved = (approvedRefund) => {
+    if (typeof onApprovedSuccess === "function") {
+      onApprovedSuccess(approvedRefund);
+      return;
+    }
     setSuccessRefund(approvedRefund);
     setApprovedSuccessOpen(true);
-    invalidate();
+  };
+
+  const handleLocalApprovedClose = (open) => {
+    setApprovedSuccessOpen(open);
+    if (!open) {
+      invalidate();
+      setSuccessRefund(null);
+    }
+  };
+
+  const handleLocalRetractClose = (open) => {
+    setRetractSuccessOpen(open);
+    if (!open) {
+      invalidate();
+      setSuccessRefund(null);
+    }
   };
 
   const shouldShow = forceShow
-    ? isCustomerRefundPending(order ?? enrichedRefund?.raw)
+    ? canShowReturnOrderApproval(order ?? enrichedRefund?.raw, enrichedRefund)
     : canManageAdminRefund(enrichedRefund) && Boolean(refundId);
 
-  if (!shouldShow || !enrichedRefund) {
+  const keepForLocalSuccess =
+    !parentOwnsSuccess && (approvedSuccessOpen || retractSuccessOpen);
+
+  if ((!shouldShow && !keepForLocalSuccess) || (!enrichedRefund && !successRefund)) {
     return null;
   }
 
   return (
     <>
-      <DropdownMenu dir="rtl">
-        <DropdownMenuTrigger asChild>
-          <button
-            type="button"
+      {shouldShow && enrichedRefund ? (
+        <DropdownMenu dir="rtl">
+          <DropdownMenuTrigger asChild>
+            <button
+              type="button"
+              onClick={(e) => e.stopPropagation()}
+              disabled={isPending}
+              className="w-8 h-8 rounded-full flex items-center justify-center bg-[#F5F5F5] text-[#4D4D4D] hover:bg-[#EBEBEB] transition-all disabled:opacity-50 shrink-0"
+              aria-label="إجراءات موافقة الإدارة"
+            >
+              {isPending ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <i className="fa-solid fa-ellipsis-vertical text-[14px]" />
+              )}
+            </button>
+          </DropdownMenuTrigger>
+
+          <DropdownMenuContent
+            align="start"
+            sideOffset={6}
+            className={menuContentClass}
             onClick={(e) => e.stopPropagation()}
-            disabled={isPending}
-            className="w-8 h-8 rounded-full flex items-center justify-center bg-[#F5F5F5] text-[#4D4D4D] hover:bg-[#EBEBEB] transition-all disabled:opacity-50 shrink-0"
-            aria-label="إجراءات موافقة الإدارة"
           >
-            {isPending ? (
-              <Loader2 className="size-4 animate-spin" />
-            ) : (
-              <i className="fa-solid fa-ellipsis-vertical text-[14px]" />
-            )}
-          </button>
-        </DropdownMenuTrigger>
+            <DropdownMenuItem
+              className={`${itemBaseClass} hover:bg-[#F0FFF8] focus:bg-[#F0FFF8]`}
+              onClick={(e) => {
+                e.stopPropagation();
+                setReviewOpen(true);
+              }}
+            >
+              <span className="text-[16px] shrink-0" aria-hidden>
+                ✅
+              </span>
+              <span className="flex-1 text-center text-[14px] font-medium text-black">
+                الموافقة على الإرجاع
+              </span>
+              <ChevronLeft className="size-3.5 shrink-0 text-[#0c6055]" strokeWidth={2.5} />
+            </DropdownMenuItem>
 
-        <DropdownMenuContent
-          align="start"
-          sideOffset={6}
-          className={menuContentClass}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <DropdownMenuItem
-            className={`${itemBaseClass} hover:bg-[#F0FFF8] focus:bg-[#F0FFF8]`}
-            onClick={(e) => {
-              e.stopPropagation();
-              setReviewOpen(true);
-            }}
-          >
-            <span className="text-[16px] shrink-0" aria-hidden>
-              ✅
-            </span>
-            <span className="flex-1 text-center text-[14px] font-medium text-black">
-              الموافقة على الإرجاع
-            </span>
-            <ChevronLeft className="size-3.5 shrink-0 text-[#0c6055]" strokeWidth={2.5} />
-          </DropdownMenuItem>
+            <DropdownMenuItem
+              className={`${itemBaseClass} hover:bg-[#FFF5F5] focus:bg-[#FFF5F5]`}
+              onClick={(e) => {
+                e.stopPropagation();
+                setRejectOpen(true);
+              }}
+            >
+              <span className="text-[16px] shrink-0" aria-hidden>
+                ❌
+              </span>
+              <span className="flex-1 text-center text-[14px] font-medium text-[#E24444]">
+                لم تتم الموافقة
+              </span>
+              <ChevronLeft className="size-3.5 shrink-0 text-[#E24444]" strokeWidth={2.5} />
+            </DropdownMenuItem>
 
-          <DropdownMenuItem
-            className={`${itemBaseClass} hover:bg-[#FFF5F5] focus:bg-[#FFF5F5]`}
-            onClick={(e) => {
-              e.stopPropagation();
-              setRejectOpen(true);
-            }}
-          >
-            <span className="text-[16px] shrink-0" aria-hidden>
-              ❌
-            </span>
-            <span className="flex-1 text-center text-[14px] font-medium text-[#E24444]">
-              لم تتم الموافقة
-            </span>
-            <ChevronLeft className="size-3.5 shrink-0 text-[#E24444]" strokeWidth={2.5} />
-          </DropdownMenuItem>
+            <DropdownMenuItem
+              className={`${itemBaseClass} hover:bg-[#F9F9F9] focus:bg-[#F9F9F9]`}
+              onClick={(e) => {
+                e.stopPropagation();
+                setRetractOpen(true);
+              }}
+            >
+              <span className="text-[18px] shrink-0" aria-hidden>
+                🧐
+              </span>
+              <span className="flex-1 text-center text-[13px] font-medium text-black leading-snug">
+                التراجع وتصنيف الطلب إلى أخرى
+              </span>
+              <ChevronLeft className="size-3.5 shrink-0 text-[#737373]" strokeWidth={2.5} />
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      ) : null}
 
-          <DropdownMenuItem
-            className={`${itemBaseClass} hover:bg-[#F9F9F9] focus:bg-[#F9F9F9]`}
-            onClick={(e) => {
-              e.stopPropagation();
-              setRetractOpen(true);
-            }}
-          >
-            <span className="text-[18px] shrink-0" aria-hidden>
-              🧐
-            </span>
-            <span className="flex-1 text-center text-[13px] font-medium text-black leading-snug">
-              التراجع وتصنيف الطلب إلى أخرى
-            </span>
-            <ChevronLeft className="size-3.5 shrink-0 text-[#737373]" strokeWidth={2.5} />
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      {enrichedRefund ? (
+        <RefundContractReviewDialog
+          open={reviewOpen}
+          onOpenChange={setReviewOpen}
+          refund={enrichedRefund}
+          order={order}
+          refundsLookup={refundsLookup}
+          refundItems={refundItems}
+          onApproved={handleApproved}
+        />
+      ) : null}
 
-      <RefundContractReviewDialog
-        open={reviewOpen}
-        onOpenChange={setReviewOpen}
-        refund={enrichedRefund}
-        order={order}
-        refundsLookup={refundsLookup}
-        refundItems={refundItems}
-        onApproved={handleApproved}
-      />
-
-      <RefundApprovedSuccessDialog
-        open={approvedSuccessOpen}
-        onOpenChange={setApprovedSuccessOpen}
-        refund={successRefund}
-      />
-
-      <RefundRetractSuccessDialog
-        open={retractSuccessOpen}
-        onOpenChange={setRetractSuccessOpen}
-        refund={successRefund}
-      />
+      {!parentOwnsSuccess ? (
+        <>
+          <RefundApprovedSuccessDialog
+            open={approvedSuccessOpen}
+            onOpenChange={handleLocalApprovedClose}
+            refund={successRefund}
+          />
+          <RefundRetractSuccessDialog
+            open={retractSuccessOpen}
+            onOpenChange={handleLocalRetractClose}
+            refund={successRefund}
+          />
+        </>
+      ) : null}
 
       <AlertDialog open={rejectOpen} onOpenChange={setRejectOpen}>
         <AlertDialogContent dir="rtl" className="rounded-[20px] max-w-[400px]">

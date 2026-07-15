@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Eye } from "lucide-react";
 import { toast } from "sonner";
 import Header from "../../home/Header";
@@ -14,6 +14,11 @@ import waIcon from "@/public/images/waIcon.svg";
 import orangerial from "@/public/images/orangerial.svg";
 import { axiosInstance } from "@/src/utils/axios";
 import RefundContractActionsMenu from "./refund-contract-actions-menu";
+import SendOrderSmsButton from "@/components/Orders/shared/send-order-sms-button";
+import {
+  RefundApprovedSuccessDialog,
+  RefundRetractSuccessDialog,
+} from "./refund-contract-success-dialog";
 import OrdersToolbar from "@/components/Orders/shared/orders-toolbar";
 import OrdersPagination from "@/components/Orders/shared/orders-pagination";
 import { exportRefundContractsToExcel } from "@/components/Orders/shared/orders-export";
@@ -23,7 +28,9 @@ import {
   SelectableTableRowCheckbox,
 } from "@/components/Orders/shared/selectable-table-checkbox";
 import {
+  REFUNDS_CONTRACTS_API,
   canManageAdminRefund,
+  extractRefundsContractsPayload,
   getReturnAnalysisTitle,
   isAdminRefundApproved,
   mapCreatedAtFilter,
@@ -92,10 +99,12 @@ const tableHeaders = [
 
 export default function ReturnedAnalysisWrapper({ id }) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [title, setTitle] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [successDialog, setSuccessDialog] = useState(null);
   const {
     selectedOrders,
     selectedCount,
@@ -127,16 +136,21 @@ export default function ReturnedAnalysisWrapper({ id }) {
     queryFn: () => {
       const createdAt = mapCreatedAtFilter(id);
       return axiosInstance
-        .get(`/admin/analytics/refunds/contracts?created_at=${createdAt}&page=${currentPage}`)
+        .get(`${REFUNDS_CONTRACTS_API}?created_at=${createdAt}&page=${currentPage}`)
         .then((res) => res.data);
     },
   });
 
-  const rawData = responseData?.data;
-  const items = Array.isArray(rawData) ? rawData : (rawData?.items ?? []);
-  const pagination = rawData?.pagination ?? responseData?.pagination;
-  const stats = rawData?.stats ?? responseData?.stats;
-  const rows = items.map(normalizeRefundContract).filter(Boolean);
+  const payload = useMemo(
+    () => extractRefundsContractsPayload(responseData),
+    [responseData]
+  );
+  const rows = useMemo(
+    () => (payload.contracts || []).map(normalizeRefundContract).filter(Boolean),
+    [payload.contracts]
+  );
+  const pagination = payload.pagination;
+  const managementApproval = payload.managementApproval;
   const filteredRows = useMemo(
     () => filterRows(rows, debouncedSearchQuery),
     [rows, debouncedSearchQuery]
@@ -159,6 +173,13 @@ export default function ReturnedAnalysisWrapper({ id }) {
     clear();
   };
 
+  const handleSuccessDialogClose = (open) => {
+    if (open) return;
+    setSuccessDialog(null);
+    queryClient.invalidateQueries({ queryKey: ["refundContracts"] });
+    queryClient.invalidateQueries({ queryKey: ["returnOrders"] });
+  };
+
   if (isLoading) return <Loader />;
 
   if (isError) {
@@ -169,30 +190,35 @@ export default function ReturnedAnalysisWrapper({ id }) {
     );
   }
 
+  const pageTitle = payload.labelAr || title;
+
   return (
     <div className="flex flex-col gap-6 p-6 min-h-screen" dir="rtl">
       <Header
         page="welcome"
-        title={title}
+        title={pageTitle}
         isMain={false}
         first="الرئيــسية"
         firstURL="/"
         second="التحليــلات"
         secondURL="/home/analysis"
-        third={title}
+        third={pageTitle}
         thirdURL={`/home/return-analysis/${id}`}
       />
 
-      {(stats?.pending != null || stats?.completed != null) && (
+      {(managementApproval?.approved != null ||
+        managementApproval?.not_approved != null) && (
         <div className="flex flex-wrap items-center gap-3">
-          {stats?.pending != null && (
+          {managementApproval?.not_approved != null && (
             <span className="px-4 py-2 rounded bg-[#FFF7E6] text-[#D97706] text-[13px] font-bold">
-              بانتظار الاسترجاع: {stats.pending}
+              {managementApproval.not_approved.label_ar || "لم تتم الموافقة"}:{" "}
+              {managementApproval.not_approved.count ?? 0}
             </span>
           )}
-          {stats?.completed != null && (
+          {managementApproval?.approved != null && (
             <span className="px-4 py-2 rounded bg-[#E6FFE6] text-[#10B981] text-[13px] font-bold">
-              تم الاسترجاع: {stats.completed}
+              {managementApproval.approved.label_ar || "تمت الموافقة"}:{" "}
+              {managementApproval.approved.count ?? 0}
             </span>
           )}
         </div>
@@ -240,7 +266,7 @@ export default function ReturnedAnalysisWrapper({ id }) {
 
                 return (
                   <tr
-                    key={row.id}
+                    key={row.id ?? row.orderUuid}
                     className="border-b border-[#F5F5F5] last:border-0 hover:bg-[#fafafa] transition-all"
                   >
                     <SelectableTableRowCheckbox
@@ -335,8 +361,18 @@ export default function ReturnedAnalysisWrapper({ id }) {
                     <td className="p-[15px_20px]">
                       <div className="flex items-center gap-2">
                         {canManageAdminRefund(row) ? (
-                          <RefundContractActionsMenu refund={row} queryKey={queryKey} />
+                          <RefundContractActionsMenu
+                            refund={row}
+                            queryKey={queryKey}
+                            onApprovedSuccess={(approvedRefund) =>
+                              setSuccessDialog({ type: "approved", refund: approvedRefund })
+                            }
+                            onRetractSuccess={(retractRefund) =>
+                              setSuccessDialog({ type: "retract", refund: retractRefund })
+                            }
+                          />
                         ) : null}
+                        <SendOrderSmsButton order={row.raw ?? row} />
                         <button
                           type="button"
                           onClick={() => {
@@ -374,6 +410,17 @@ export default function ReturnedAnalysisWrapper({ id }) {
         pagination={pagination}
         currentPage={currentPage}
         onPageChange={setCurrentPage}
+      />
+
+      <RefundApprovedSuccessDialog
+        open={successDialog?.type === "approved"}
+        onOpenChange={handleSuccessDialogClose}
+        refund={successDialog?.type === "approved" ? successDialog.refund : null}
+      />
+      <RefundRetractSuccessDialog
+        open={successDialog?.type === "retract"}
+        onOpenChange={handleSuccessDialogClose}
+        refund={successDialog?.type === "retract" ? successDialog.refund : null}
       />
     </div>
   );

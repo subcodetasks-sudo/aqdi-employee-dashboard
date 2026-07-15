@@ -84,6 +84,7 @@ export default function AllOrdersWrapper() {
       return axiosInstance(appendStatusParam(url));
     },
   });
+  console.log(data);
 
   const orders = data?.data?.data?.items ?? [];
   const pagination = data?.data?.data?.pagination;

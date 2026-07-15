@@ -12,7 +12,6 @@ import {
   canRequestOrderReturn,
   isReturnContractStatus,
   normalizeOrderForReturnRequest,
-  RETURN_CONTRACT_STATUS_ID,
 } from "@/components/analysis/returned/refund-contract-utils"
 
 export default function ChangeStatusDialog({ orderId, order, queryKey }) {
@@ -84,18 +83,9 @@ export default function ChangeStatusDialog({ orderId, order, queryKey }) {
   }
 
   const handleStatusClick = (status) => {
-    // استرجاع: غيّر الحالة إلى 2 أولاً ثم افتح نموذج الطلب
+    // استرجاع: افتح النموذج أولاً — تغيير الحالة يتم بعد نجاح إرسال الطلب
     if (isReturnContractStatus(status) && showReturnRequest) {
-      changeStatusMutate(RETURN_CONTRACT_STATUS_ID, {
-        onSuccess: () => {
-          openReturnDialog()
-        },
-      })
-      return
-    }
-
-    if (isReturnContractStatus(status) && !showReturnRequest) {
-      changeStatusMutate(RETURN_CONTRACT_STATUS_ID)
+      openReturnDialog()
       return
     }
 

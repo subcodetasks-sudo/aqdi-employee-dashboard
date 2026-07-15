@@ -16,7 +16,7 @@ export default function LeaseRenewalOrderView({ orderData }) {
   };
 
   return (
-    <div dir="rtl" className="flex flex-col gap-4">
+    <div dir="rtl" className="flex flex-col gap-4 w-full min-w-0">
       <LeaseRenewalHeader
         activeTab={activeTab}
         onTabChange={setActiveTab}

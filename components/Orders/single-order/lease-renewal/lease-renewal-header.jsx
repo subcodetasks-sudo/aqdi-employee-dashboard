@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import ChangeStatusDialog from "@/components/Orders/change-status-dialog";
 import ContractPaymentLinkButton from "@/components/Orders/single-order/contract-payment-link-button";
+import SendOrderSmsButton from "@/components/Orders/shared/send-order-sms-button";
 
 const display = (v) => (v == null || v === "" ? "---" : String(v));
 
@@ -56,13 +57,7 @@ export default function LeaseRenewalHeader({
     "flex items-center gap-2 py-3 px-5 rounded-2xl text-xs font-bold transition-all shrink-0";
 
   return (
-    <div
-      className="flex justify-between items-center gap-2 w-full"
-      dir="rtl"
-    >
-      {/* Tabs — right side in RTL */}
-      <div className="flex items-center gap-2">
-        
+    <div className="flex w-full flex-wrap items-center gap-2" dir="rtl">
       <button
         type="button"
         onClick={() => onTabChange("renew")}
@@ -91,11 +86,7 @@ export default function LeaseRenewalHeader({
         <ShieldCheck className="size-4" />
         البيانات المالية - الشروط
       </button>
-      </div>
 
-
-      <div className="flex items-center gap-2">
-      {/* Status chips */}
       <InfoChip
         bg="bg-[#E8F8EF]"
         labelColor="text-[#2E7D32]"
@@ -124,7 +115,7 @@ export default function LeaseRenewalHeader({
       />
 
       <div className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-[#E8EEFF] shrink-0">
-        <div className="flex flex-col text-right leading-tight flex-1 min-w-[120px]">
+        <div className="flex flex-col text-right leading-tight">
           <span className="text-[11px] font-medium text-[#1565C0] flex items-center gap-1 justify-end">
             حالة الطلب
             <span className="text-base leading-none">🤔</span>
@@ -139,6 +130,8 @@ export default function LeaseRenewalHeader({
       </div>
 
       <ContractPaymentLinkButton orderData={orderData} />
+
+      <SendOrderSmsButton order={orderData} label="إرسال رسالة" />
 
       <button
         type="button"
@@ -171,12 +164,14 @@ export default function LeaseRenewalHeader({
           className="flex flex-col text-right leading-tight hover:opacity-80"
         >
           <span className="text-[11px] font-medium text-[#757575]">رقم الجوال</span>
-          <span className="text-[13px] font-bold text-[#212121] flex items-center gap-1.5 justify-end" dir="ltr">
+          <span
+            className="text-[13px] font-bold text-[#212121] flex items-center gap-1.5 justify-end"
+            dir="ltr"
+          >
             <BiSolidCopy className="size-3.5 text-[#0019FF] shrink-0" />
             {mobile}
           </span>
         </button>
-      </div>
       </div>
     </div>
   );

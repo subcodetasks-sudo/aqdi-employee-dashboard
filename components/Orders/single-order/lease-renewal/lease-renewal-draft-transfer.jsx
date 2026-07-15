@@ -186,7 +186,7 @@ export default function LeaseRenewalDraftTransfer({
   );
 
   const draftNumberBlock = (
-    <div>
+    <div className="min-w-0">
       <p
         className={`text-[13px] font-black text-black mb-2 ${
           layout === "column" ? "text-right" : ""
@@ -194,20 +194,26 @@ export default function LeaseRenewalDraftTransfer({
       >
         رقم مسودة العقد{layout === "stacked" ? " :" : ""}
       </p>
-      <div className={layout === "column" ? "space-y-4" : "flex items-center gap-2"}>
+      <div
+        className={
+          layout === "column"
+            ? "space-y-4"
+            : "flex flex-col sm:flex-row items-stretch sm:items-center gap-2 min-w-0"
+        }
+      >
         <Input
           placeholder="أدخل رقم مسودة العقد هنا..."
           value={draftNumber}
           onChange={(e) => setDraftNumber(e.target.value)}
-          className={`rounded-xl bg-white border-[#E0E0E0] text-right ${
-            layout === "column" ? "h-12 mb-0" : "h-11 flex-1"
+          className={`rounded-xl bg-white border-[#E0E0E0] text-right min-w-0 ${
+            layout === "column" ? "h-12 mb-0 w-full" : "h-11 w-full sm:flex-1"
           }`}
         />
         <Button
           type="button"
           disabled={isSaving}
           className={`rounded-xl bg-[#0019FF] hover:bg-[#0015CC] font-bold text-white shrink-0 ${
-            layout === "column" ? "w-full h-12" : "h-11 px-6"
+            layout === "column" ? "w-full h-12" : "h-11 px-6 w-full sm:w-auto"
           }`}
           onClick={handleSave}
         >

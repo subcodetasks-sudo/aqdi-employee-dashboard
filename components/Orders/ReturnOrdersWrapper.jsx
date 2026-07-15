@@ -14,15 +14,21 @@ import Loader from "../home/loader";
 import { useRouter } from "next/navigation";
 import { Eye } from "lucide-react";
 import RefundContractActionsMenu from "@/components/analysis/returned/refund-contract-actions-menu";
+import SendOrderSmsButton from "@/components/Orders/shared/send-order-sms-button";
 import {
+  RefundApprovedSuccessDialog,
+  RefundRetractSuccessDialog,
+} from "@/components/analysis/returned/refund-contract-success-dialog";
+import {
+  REFUNDS_CONTRACTS_API,
   buildRefundsLookup,
-  enrichReturnOrderRow,
   ensureReturnOrderRefund,
-  fetchAllRefundContracts,
-  findRefundInLookup,
+  extractRefundsContractsPayload,
   getOrderAdminApprovalStatus,
   hasExistingReturnRequest,
   isAdminRefundApproved,
+  mapAnalyticsRefundContractToOrderRow,
+  mapCreatedAtFilter,
 } from "@/components/analysis/returned/refund-contract-utils";
 import OrdersToolbar from "./shared/orders-toolbar";
 import OrdersPagination from "./shared/orders-pagination";
@@ -37,27 +43,18 @@ import {
   SelectableTableRowCheckbox,
 } from "./shared/selectable-table-checkbox";
 import OrdersStatusCards from "./shared/orders-status-cards";
-import { useOrderStatusCounts } from "./shared/use-order-status-counts";
 
-const RETURN_ORDERS_API = "/admin/orders/return";
-
-const RETURN_STATUS_TABS = [
+const APPROVAL_TABS = [
   {
-    id: "pending",
-    name: "بانتظار",
+    id: "not_approved",
+    name: "لم تتم الموافقة",
     color: "#F59E0B",
     color_text: "#FFFFFF",
   },
   {
-    id: "accept",
-    name: "مقبول",
+    id: "approved",
+    name: "تمت الموافقة",
     color: "#10B981",
-    color_text: "#FFFFFF",
-  },
-  {
-    id: "reject",
-    name: "مرفوض",
-    color: "#EF4444",
     color_text: "#FFFFFF",
   },
 ];
@@ -85,7 +82,7 @@ function CustomerRefundBadge({ refunded }) {
 }
 
 function AdminApprovalCell({ row }) {
-  if (!hasExistingReturnRequest(row)) {
+  if (!hasExistingReturnRequest(row) && row?.admin_confirmed == null) {
     return <span className="text-[13px] text-[#A3A3A3]">—</span>;
   }
 
@@ -106,15 +103,23 @@ function AdminApprovalCell({ row }) {
   );
 }
 
+function resolveCreatedAt(param) {
+  if (!param) return "today";
+  if (param === "total") return "all";
+  if (param === "day") return "today";
+  return mapCreatedAtFilter(param);
+}
+
 export default function ReturnOrdersWrapper({ searchParams }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
-  const [returnStatusFilter, setReturnStatusFilter] = useState("pending");
+  const [approvalFilter, setApprovalFilter] = useState("");
   const [resolvedParams, setResolvedParams] = useState(null);
   const [isResolved, setIsResolved] = useState(false);
   const [showMoreFilters, setShowMoreFilters] = useState(false);
   const [advancedFilters, setAdvancedFilters] = useState(emptyAdvancedFilters);
+  const [successDialog, setSuccessDialog] = useState(null);
   const router = useRouter();
   const queryClient = useQueryClient();
   const {
@@ -150,116 +155,130 @@ export default function ReturnOrdersWrapper({ searchParams }) {
 
   const createdAtParam = resolvedParams?.created_at || null;
 
-  const countsExtraParams = useMemo(() => {
-    if (!createdAtParam) return "";
-    const createAt =
-      createdAtParam === "total"
-        ? "all"
-        : createdAtParam === "day"
-          ? "today"
-          : createdAtParam;
-    return `created_at=${createAt}`;
-  }, [createdAtParam]);
-
-  const { byId: returnStatusCounts, isLoading: countsLoading } =
-    useOrderStatusCounts(RETURN_STATUS_TABS, {
-      baseUrl: RETURN_ORDERS_API,
-      statusParam: "return_status",
-      extraParams: countsExtraParams,
-    });
-
   useEffect(() => {
     setCurrentPage(1);
-  }, [debouncedSearchQuery, createdAtParam, advancedFilters, returnStatusFilter]);
+  }, [debouncedSearchQuery, createdAtParam, advancedFilters, approvalFilter]);
 
   useEffect(() => {
     clear();
-  }, [
-    debouncedSearchQuery,
-    createdAtParam,
-    advancedFilters,
-    returnStatusFilter,
-    clear,
-  ]);
+  }, [debouncedSearchQuery, createdAtParam, advancedFilters, approvalFilter, clear]);
 
   function getReturnOrders(page = 1) {
-    let url = `${RETURN_ORDERS_API}?page=${page}&return_status=${returnStatusFilter}`;
-    if (createdAtParam) {
-      const createAt =
-        createdAtParam === "total"
-          ? "all"
-          : createdAtParam === "day"
-            ? "today"
-            : createdAtParam;
-      url += `&created_at=${createAt}`;
+    const createdAt = resolveCreatedAt(createdAtParam);
+    const params = new URLSearchParams({
+      created_at: createdAt,
+      page: String(page),
+    });
+
+    // Backend filter aliases (whichever the API supports)
+    if (approvalFilter === "approved") {
+      params.set("admin_confirmed", "1");
+      params.set("management_approval", "approved");
+    } else if (approvalFilter === "not_approved") {
+      params.set("admin_confirmed", "0");
+      params.set("management_approval", "not_approved");
     }
+
     if (debouncedSearchQuery) {
-      url += `&search=${encodeURIComponent(debouncedSearchQuery)}`;
+      params.set("search", debouncedSearchQuery);
     }
-    return axiosInstance.get(url).then((res) => res.data);
+
+    return axiosInstance
+      .get(`${REFUNDS_CONTRACTS_API}?${params.toString()}`)
+      .then((res) => res.data);
   }
 
-  const { data: responseData, isLoading, isError } = useQuery({
-    queryKey: [
-      "returnOrders",
-      currentPage,
-      createdAtParam,
-      debouncedSearchQuery,
-      returnStatusFilter,
-    ],
-    queryFn: () => getReturnOrders(currentPage),
-    enabled: isResolved,
-  });
-
-
-  const { data: refundsResponse } = useQuery({
-    queryKey: ["refundContractsLookup"],
-    queryFn: fetchAllRefundContracts,
-    enabled: isResolved,
-  });
-
- 
-
-  const rawData = responseData?.data;
-  const items = rawData?.items ?? [];
-  console.log({items});
-  const pagination = rawData?.pagination;
   const returnOrdersQueryKey = [
     "returnOrders",
     currentPage,
     createdAtParam,
     debouncedSearchQuery,
-    returnStatusFilter,
+    approvalFilter,
   ];
 
-  const refundsLookup = useMemo(() => {
-    const refundItems = Array.isArray(refundsResponse) ? refundsResponse : [];
-    const lookup = buildRefundsLookup(refundItems);
+  const { data: responseData, isLoading, isError } = useQuery({
+    queryKey: returnOrdersQueryKey,
+    queryFn: () => getReturnOrders(currentPage),
+    enabled: isResolved,
+  });
 
-    for (const row of items) {
-      const found = findRefundInLookup(row, lookup);
-      if (!found?.refundId) continue;
-      lookup.set(row.id, found);
-      lookup.set(String(row.id), found);
-      if (row.uuid) {
-        lookup.set(row.uuid, found);
-        lookup.set(String(row.uuid), found);
-      }
+  const payload = useMemo(
+    () => extractRefundsContractsPayload(responseData),
+    [responseData]
+  );
+
+  const items = useMemo(() => {
+    const rows = (payload.contracts || [])
+      .map(mapAnalyticsRefundContractToOrderRow)
+      .filter(Boolean);
+
+    if (!approvalFilter) return rows;
+
+    // Always filter client-side — API may ignore approval query params
+    return rows.filter((row) => {
+      const approved = isAdminRefundApproved(getOrderAdminApprovalStatus(row));
+      if (approvalFilter === "approved") return approved;
+      if (approvalFilter === "not_approved") return !approved;
+      return true;
+    });
+  }, [payload.contracts, approvalFilter]);
+
+  const pagination = useMemo(() => {
+    const apiPagination = payload.pagination;
+    const approval = payload.managementApproval ?? {};
+    const filteredTotal =
+      approvalFilter === "approved"
+        ? (approval?.approved?.count ?? items.length)
+        : approvalFilter === "not_approved"
+          ? (approval?.not_approved?.count ?? items.length)
+          : (approval?.total ?? apiPagination?.total ?? items.length);
+
+    if (!apiPagination) {
+      return {
+        current_page: currentPage,
+        last_page: 1,
+        per_page: items.length || 20,
+        total: filteredTotal,
+      };
     }
 
-    return lookup;
-  }, [refundsResponse, items]);
+    return {
+      ...apiPagination,
+      total: filteredTotal,
+    };
+  }, [
+    payload.pagination,
+    payload.managementApproval,
+    approvalFilter,
+    items.length,
+    currentPage,
+  ]);
 
-  const refundItems = Array.isArray(refundsResponse) ? refundsResponse : [];
+  const approvalCounts = useMemo(() => {
+    const approval = payload.managementApproval ?? {};
+    return {
+      not_approved: approval?.not_approved?.count ?? 0,
+      approved: approval?.approved?.count ?? 0,
+    };
+  }, [payload.managementApproval]);
 
-  const enrichedItems = useMemo(
-    () => items.map((row) => enrichReturnOrderRow(row, refundItems, refundsLookup)),
-    [items, refundItems, refundsLookup]
+  const allApprovalTotal = useMemo(() => {
+    const approval = payload.managementApproval ?? {};
+    if (approval?.total != null) return approval.total;
+    return (
+      Number(approval?.approved?.count ?? 0) +
+      Number(approval?.not_approved?.count ?? 0)
+    );
+  }, [payload.managementApproval]);
+
+  const refundsLookup = useMemo(
+    () => buildRefundsLookup(payload.contracts || []),
+    [payload.contracts]
   );
 
   const filteredItems = useMemo(
-    () => applyAdvancedFilters(enrichedItems, advancedFilters, { showStatusColumn: false }),
-    [enrichedItems, advancedFilters]
+    () => applyAdvancedFilters(items, advancedFilters, { showStatusColumn: false }),
+    [items, advancedFilters]
   );
 
   const pageSelectionState = getPageSelectionState(filteredItems);
@@ -274,6 +293,7 @@ export default function ReturnOrdersWrapper({ searchParams }) {
   );
 
   const getPageTitle = () => {
+    if (payload.labelAr) return payload.labelAr;
     if (!createdAtParam) return "الطلبات المسترجعة";
     switch (createdAtParam) {
       case "day":
@@ -291,19 +311,28 @@ export default function ReturnOrdersWrapper({ searchParams }) {
     }
   };
 
-
-  
-
   const handleResetAll = () => {
     setSearchQuery("");
     setDebouncedSearchQuery("");
-    setReturnStatusFilter("pending");
+    setApprovalFilter("");
     setAdvancedFilters(emptyAdvancedFilters);
     setShowMoreFilters(false);
     setCurrentPage(1);
     clear();
     queryClient.invalidateQueries({ queryKey: ["returnOrders"] });
     queryClient.invalidateQueries({ queryKey: ["refundContractsLookup"] });
+  };
+
+  const invalidateAfterSuccess = () => {
+    queryClient.invalidateQueries({ queryKey: ["returnOrders"] });
+    queryClient.invalidateQueries({ queryKey: ["refundContractsLookup"] });
+    queryClient.invalidateQueries({ queryKey: ["refundContracts"] });
+  };
+
+  const handleSuccessDialogClose = (open) => {
+    if (open) return;
+    setSuccessDialog(null);
+    invalidateAfterSuccess();
   };
 
   const tableHeaders = [
@@ -318,7 +347,7 @@ export default function ReturnOrdersWrapper({ searchParams }) {
     "عرض العقــد",
   ];
 
-  if (isLoading || !isResolved || countsLoading) return <Loader />;
+  if (isLoading || !isResolved) return <Loader />;
   if (isError) {
     return (
       <div className="text-center p-8 text-[#FA5252] text-[15px]">
@@ -341,10 +370,12 @@ export default function ReturnOrdersWrapper({ searchParams }) {
 
       <div className="flex flex-col gap-6 mt-4 relative z-10">
         <OrdersStatusCards
-          statusItems={RETURN_STATUS_TABS}
-          activeFilter={returnStatusFilter}
-          onFilterChange={setReturnStatusFilter}
-          countsById={returnStatusCounts}
+          statusItems={APPROVAL_TABS}
+          activeFilter={approvalFilter}
+          onFilterChange={setApprovalFilter}
+          countsById={approvalCounts}
+          showAllCard
+          allTotal={allApprovalTotal}
           gridClassName="flex flex-wrap gap-3"
         />
         <OrdersToolbar
@@ -395,7 +426,7 @@ export default function ReturnOrdersWrapper({ searchParams }) {
 
                 return (
                   <tr
-                    key={row.id}
+                    key={row.refund_id ?? `${row.uuid}-${row.id}`}
                     className="border-b border-[#F5F5F5] last:border-0 hover:bg-[#fafafa] transition-all"
                   >
                     <SelectableTableRowCheckbox
@@ -409,7 +440,7 @@ export default function ReturnOrdersWrapper({ searchParams }) {
                         <button
                           type="button"
                           onClick={() => {
-                            navigator.clipboard.writeText(row?.uuid);
+                            navigator.clipboard.writeText(String(row?.uuid ?? ""));
                             toast.success("تم نسخ رقم الطلب");
                           }}
                           className="text-[#A3A3A3] hover:text-brand-main"
@@ -483,7 +514,7 @@ export default function ReturnOrdersWrapper({ searchParams }) {
                     </td>
                     <td className="p-[15px_20px]">
                       <span className="px-3 py-1 rounded text-[11px] font-bold whitespace-nowrap bg-[#F0E6FF] text-[#7C3AED]">
-                        {row?.employee_name || row?.accept_retrun_contract_employee?.name || "—"}
+                        {row?.employee_name || "—"}
                       </span>
                     </td>
                     <td className="p-[15px_20px]">
@@ -494,23 +525,35 @@ export default function ReturnOrdersWrapper({ searchParams }) {
                         className="flex items-center gap-2"
                         onClick={(e) => e.stopPropagation()}
                       >
-
-                          <RefundContractActionsMenu
-                            refund={refund}
-                            order={row}
-                            refundsLookup={refundsLookup}
-                            refundItems={refundItems}
-                            queryKey={returnOrdersQueryKey}
-                            forceShow
-                          />
+                        <RefundContractActionsMenu
+                          refund={refund}
+                          order={row}
+                          refundsLookup={refundsLookup}
+                          refundItems={payload.contracts || []}
+                          queryKey={returnOrdersQueryKey}
+                          forceShow
+                          onApprovedSuccess={(approvedRefund) =>
+                            setSuccessDialog({ type: "approved", refund: approvedRefund })
+                          }
+                          onRetractSuccess={(retractRefund) =>
+                            setSuccessDialog({ type: "retract", refund: retractRefund })
+                          }
+                        />
+                        <SendOrderSmsButton order={row} />
                         <button
                           type="button"
-                          onClick={() => router.push(`/home/orders/${row.id}`)}
+                          onClick={() => {
+                            const targetId = row.contract_id ?? row.id;
+                            if (!targetId) {
+                              toast.error("تعذر فتح العقد");
+                              return;
+                            }
+                            router.push(`/home/orders/${targetId}`);
+                          }}
                           className="w-8 h-8 rounded-full flex items-center justify-center text-[#4D4D4D] hover:bg-brand-main hover:text-white transition-all "
                           aria-label="عرض العقد"
                         >
                           <Eye className="size-4" />
-                        
                         </button>
                       </div>
                     </td>
@@ -535,6 +578,17 @@ export default function ReturnOrdersWrapper({ searchParams }) {
         pagination={pagination}
         currentPage={currentPage}
         onPageChange={setCurrentPage}
+      />
+
+      <RefundApprovedSuccessDialog
+        open={successDialog?.type === "approved"}
+        onOpenChange={handleSuccessDialogClose}
+        refund={successDialog?.type === "approved" ? successDialog.refund : null}
+      />
+      <RefundRetractSuccessDialog
+        open={successDialog?.type === "retract"}
+        onOpenChange={handleSuccessDialogClose}
+        refund={successDialog?.type === "retract" ? successDialog.refund : null}
       />
     </div>
   );

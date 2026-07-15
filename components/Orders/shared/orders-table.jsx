@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
 import ChangeStatusDialog from "../change-status-dialog";
 import ChangeDraftStatusDialog from "../change-draft-status-dialog";
+import SendOrderSmsButton from "./send-order-sms-button";
 import {
   getContractTypeBadgeClass,
   getDocumentTypeBadgeClass,
@@ -235,6 +236,7 @@ export default function OrdersTable({
                             queryKey={queryKey}
                           />
                         ))}
+                      <SendOrderSmsButton order={row} />
                       <button
                         type="button"
                         onClick={() => onRowClick?.(row)}

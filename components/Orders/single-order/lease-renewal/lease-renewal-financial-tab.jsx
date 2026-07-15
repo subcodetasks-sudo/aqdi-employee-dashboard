@@ -80,8 +80,8 @@ export default function LeaseRenewalFinancialTab({ orderData }) {
         : step4.type_contract_starting_date || "—";
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-      <div className="bg-[#F4F4F4] rounded-[20px] p-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 w-full min-w-0">
+      <div className="bg-[#F4F4F4] rounded-[20px] p-4 min-w-0 overflow-hidden">
         <ContractStepEditor
           title="البيانات المالية"
           step="step4"
@@ -100,14 +100,14 @@ export default function LeaseRenewalFinancialTab({ orderData }) {
                   <Check className="size-5 text-[#10B981] shrink-0 mt-0.5" />
                   <div className="text-right flex-1 min-w-0">
                     <p className="text-[11px] text-[#9E9E9E] mb-1">عداد الكهرباء</p>
-                    <div className="flex items-center gap-2 justify-end">
+                    <div className="flex items-center gap-2 justify-end min-w-0">
                       <button
                         type="button"
                         onClick={() => {
                           navigator.clipboard.writeText(String(electricityMeter));
                           toast.success("تم النسخ");
                         }}
-                        className="text-[#A3A3A3] hover:text-brand-main"
+                        className="text-[#A3A3A3] hover:text-brand-main shrink-0"
                       >
                         <Copy className="size-3.5" />
                       </button>
@@ -130,7 +130,7 @@ export default function LeaseRenewalFinancialTab({ orderData }) {
         </ContractStepEditor>
       </div>
 
-      <div className="bg-[#F4F4F4] rounded-[20px] p-4">
+      <div className="bg-[#F4F4F4] rounded-[20px] p-4 min-w-0 overflow-hidden">
         <ContractStepEditor
           title="مدة العقد"
           step="step4"
@@ -148,7 +148,7 @@ export default function LeaseRenewalFinancialTab({ orderData }) {
         </ContractStepEditor>
       </div>
 
-      <div className="bg-[#F4F4F4] rounded-[20px] p-4">
+      <div className="bg-[#F4F4F4] rounded-[20px] p-4 min-w-0 overflow-hidden">
         <ContractStepEditor title="الصلاحيات" step="step4" fields={[]} showEdit={false}>
           <div className="space-y-3">
             <PermissionCard label="التأجير من الباطن" active={Boolean(step4.other_conditions)} />
@@ -162,7 +162,7 @@ export default function LeaseRenewalFinancialTab({ orderData }) {
         </ContractStepEditor>
       </div>
 
-      <div className="bg-[#F4F4F4] rounded-[20px] p-4 flex flex-col h-fit">
+      <div className="bg-[#F4F4F4] rounded-[20px] p-4 flex flex-col h-fit min-w-0 overflow-hidden sm:col-span-2 xl:col-span-1">
         <ContractStepEditor title="تحويل الطلب" step="step4" fields={[]} showEdit={false}>
           <LeaseRenewalDraftTransfer
             orderId={orderData?.id}

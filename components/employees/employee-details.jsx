@@ -9,6 +9,7 @@ import AddSalaryDialog from "./add-salary-dialog";
 import AddNewEmployeeDialog from "./add-employee-dialog";
 import BlockEmployeeDialog from "./block-employee-dialog";
 import DeleteEmployeeDialog from "./delete-employee-dialog";
+import SendOrderSmsButton from "@/components/Orders/shared/send-order-sms-button";
 
 export default function EmployeeDetailsCard({ employee, readOnly = false }) {
   const formatDate = (dateString) => {
@@ -59,6 +60,14 @@ export default function EmployeeDetailsCard({ employee, readOnly = false }) {
               <FaWhatsapp size={18} />
             </a>
           )}
+
+          <div className="mt-3">
+            <SendOrderSmsButton
+              employee={employee}
+              employeeId={employee?.id}
+              label="إرسال رسالة"
+            />
+          </div>
         </div>
         {/* Left Section */}
         <div dir='rtl' className="col-span-2 bg-gray-100 rounded-2xl p-4 flex flex-col justify-between">

@@ -13,6 +13,7 @@ import { axiosInstance } from '@/src/utils/axios'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import Loader from '../../home/loader'
 import { ChevronRight, ChevronLeft, FolderX, FolderCheck, Loader2, X } from 'lucide-react'
+import SendOrderSmsButton from '@/components/Orders/shared/send-order-sms-button'
 
 export default function UsersAnalysisWrapper({ id }) {
     const [title, setTitle] = useState('')
@@ -321,40 +322,50 @@ export default function UsersAnalysisWrapper({ id }) {
                                             </div>
                                         </td>
                                         <td className="p-[15px_20px]">
-                                            <DropdownMenu dir="rtl">
-                                                <DropdownMenuTrigger asChild>
-                                                    <button className="w-8 h-8 rounded-full flex items-center justify-center text-[#4D4D4D] hover:bg-[#f5f5f5] transition-all">
-                                                        <i className="fa-solid fa-ellipsis-vertical text-[14px]"></i>
-                                                    </button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent className="w-56">
-                                                    <DropdownMenuItem className="cursor-pointer p-0" asChild>
-                                                        <Link
-                                                            href={`/home/users/${row.id}?from=${encodeURIComponent(`/home/user-analysis/${id}`)}`}
-                                                            className="flex items-center w-full px-2 py-1.5 cursor-pointer"
+                                            <div className="flex items-center gap-2 justify-center">
+                                                <SendOrderSmsButton
+                                                    userId={row.id}
+                                                    order={{
+                                                        ...row,
+                                                        user_id: row.id,
+                                                        user_mobile: row.phone || row.mobile,
+                                                    }}
+                                                />
+                                                <DropdownMenu dir="rtl">
+                                                    <DropdownMenuTrigger asChild>
+                                                        <button className="w-8 h-8 rounded-full flex items-center justify-center text-[#4D4D4D] hover:bg-[#f5f5f5] transition-all">
+                                                            <i className="fa-solid fa-ellipsis-vertical text-[14px]"></i>
+                                                        </button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent className="w-56">
+                                                        <DropdownMenuItem className="cursor-pointer p-0" asChild>
+                                                            <Link
+                                                                href={`/home/users/${row.id}?from=${encodeURIComponent(`/home/user-analysis/${id}`)}`}
+                                                                className="flex items-center w-full px-2 py-1.5 cursor-pointer"
+                                                            >
+                                                                <i className="fa-regular fa-eye ml-2 text-[#A3A3A3]"></i>
+                                                                <span>عرض المستخدم</span>
+                                                                <i className="fa-solid fa-chevron-left mr-auto text-[10px] text-[#A3A3A3]"></i>
+                                                            </Link>
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuSeparator />
+                                                        <DropdownMenuItem
+                                                            className="cursor-pointer"
+                                                            onClick={() => handleSuspendClick(row)}
                                                         >
-                                                            <i className="fa-regular fa-eye ml-2 text-[#A3A3A3]"></i>
-                                                            <span>عرض المستخدم</span>
+                                                            <i className={`fa-solid ${isChecked ? 'fa-ban' : 'fa-circle-check'} ml-2 text-[#A3A3A3]`}></i>
+                                                            <span>{isChecked ? 'إيقاف المستخدم' : 'تفعيل المستخدم'}</span>
                                                             <i className="fa-solid fa-chevron-left mr-auto text-[10px] text-[#A3A3A3]"></i>
-                                                        </Link>
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuSeparator />
-                                                    <DropdownMenuItem
-                                                        className="cursor-pointer"
-                                                        onClick={() => handleSuspendClick(row)}
-                                                    >
-                                                        <i className={`fa-solid ${isChecked ? 'fa-ban' : 'fa-circle-check'} ml-2 text-[#A3A3A3]`}></i>
-                                                        <span>{isChecked ? 'إيقاف المستخدم' : 'تفعيل المستخدم'}</span>
-                                                        <i className="fa-solid fa-chevron-left mr-auto text-[10px] text-[#A3A3A3]"></i>
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuSeparator />
-                                                    <DropdownMenuItem className="cursor-pointer text-red-600" onClick={() => handleDeleteClick(row.id)}>
-                                                        <i className="fa-regular fa-trash-can ml-2"></i>
-                                                        <span>حذف المستخدم</span>
-                                                        <i className="fa-solid fa-chevron-left mr-auto text-[10px] text-red-300"></i>
-                                                    </DropdownMenuItem>
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuSeparator />
+                                                        <DropdownMenuItem className="cursor-pointer text-red-600" onClick={() => handleDeleteClick(row.id)}>
+                                                            <i className="fa-regular fa-trash-can ml-2"></i>
+                                                            <span>حذف المستخدم</span>
+                                                            <i className="fa-solid fa-chevron-left mr-auto text-[10px] text-red-300"></i>
+                                                        </DropdownMenuItem>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
+                                            </div>
                                         </td>
                                     </tr>
                                 );

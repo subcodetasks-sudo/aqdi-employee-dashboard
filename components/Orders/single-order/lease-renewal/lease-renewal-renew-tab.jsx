@@ -89,14 +89,14 @@ export default function LeaseRenewalRenewTab({ orderData }) {
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-[350px_minmax(0,1fr)] gap-5">
-      <div>
+    <div className="grid grid-cols-1 xl:grid-cols-[minmax(260px,350px)_minmax(0,1fr)] gap-5 w-full min-w-0">
+      <div className="min-w-0">
         <ContractStepEditor title="العقد المرغوب تجديده :" step="summary" fields={[]} showEdit={false}>
           <div className="bg-[#F4F4F4] rounded-[20px] p-5 flex flex-col gap-4">
             <button
               type="button"
               onClick={handleDownloadInstrument}
-              className="bg-white rounded-[18px] py-6 px-4 flex flex-col items-center border border-[#EBEBEB] hover:border-[#0019FF] hover:bg-[#F8FAFF] transition-colors w-full"
+              className="bg-white rounded-[18px] py-6 px-4 flex flex-col items-center border border-[#EBEBEB] hover:border-[#0019FF] hover:bg-[#F8FAFF] transition-colors w-full min-w-0"
             >
               {instrumentImage ? (
                 <div className="relative w-full max-w-[200px] h-[120px] mb-4 rounded-xl overflow-hidden border border-[#EEE]">
@@ -118,8 +118,8 @@ export default function LeaseRenewalRenewTab({ orderData }) {
             </button>
 
             {instrumentImage ? (
-              <div className="flex items-center justify-between gap-2 bg-white rounded-xl p-3 border border-[#EEEEEE]">
-                <div className="flex items-center gap-1.5">
+              <div className="flex items-center justify-between gap-2 bg-white rounded-xl p-3 border border-[#EEEEEE] min-w-0">
+                <div className="flex items-center gap-1.5 shrink-0">
                   <button
                     type="button"
                     onClick={handleViewInstrument}
@@ -162,22 +162,22 @@ export default function LeaseRenewalRenewTab({ orderData }) {
         </ContractStepEditor>
       </div>
 
-      <div className="flex flex-col gap-5">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="bg-[#F4F4F4] rounded-[20px] p-5">
+      <div className="flex flex-col gap-5 min-w-0">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 min-w-0">
+          <div className="bg-[#F4F4F4] rounded-[20px] p-5 min-w-0 overflow-hidden">
             <ContractStepEditor
               title="تفاصيل المستأجر :"
               step="step3"
               fields={LEASE_RENEWAL_TENANT_FIELDS}
             >
               <div
-                className={`bg-white rounded-2xl p-4 border-r-[3px] border-r-[#9C27B0] shadow-sm ${
+                className={`bg-white rounded-2xl p-4 border-r-[3px] border-r-[#9C27B0] shadow-sm w-full min-w-0 ${
                   isEmptyDisplayValue(step3.tenant_dob) ? "opacity-45" : ""
                 }`}
               >
                 <p className="text-[11px] text-[#9E9E9E] mb-1">تاريخ ميلاد المستأجر</p>
                 <p
-                  className={`text-[15px] font-bold ${
+                  className={`text-[15px] font-bold break-words ${
                     isEmptyDisplayValue(step3.tenant_dob) ? "text-[#A3A3A3]" : "text-black"
                   }`}
                 >
@@ -187,7 +187,7 @@ export default function LeaseRenewalRenewTab({ orderData }) {
             </ContractStepEditor>
           </div>
 
-          <div className="bg-[#F4F4F4] rounded-[20px] p-5">
+          <div className="bg-[#F4F4F4] rounded-[20px] p-5 min-w-0 overflow-hidden">
             <LeaseRenewalDraftTransfer
               orderId={orderData?.id}
               orderData={orderData}
@@ -201,7 +201,7 @@ export default function LeaseRenewalRenewTab({ orderData }) {
           step="step4"
           fields={LEASE_RENEWAL_TERMS_FIELDS}
         >
-          <div className="bg-white rounded-[20px] p-6 border border-[#EBEBEB] shadow-sm relative min-h-[200px]">
+          <div className="bg-white rounded-[20px] p-6 border border-[#EBEBEB] shadow-sm relative min-h-[200px] min-w-0 overflow-hidden">
             <button
               type="button"
               className="absolute left-4 bottom-4 w-9 h-9 rounded-full border border-[#E4E4E4] flex items-center justify-center text-[#A3A3A3] hover:bg-gray-50 disabled:opacity-40"
@@ -219,7 +219,7 @@ export default function LeaseRenewalRenewTab({ orderData }) {
             </button>
             {additionalTerms ? (
               termsLines.length > 1 ? (
-                <ol className="list-decimal list-inside space-y-4 text-[13px] text-[#333] leading-[1.8] pr-1">
+                <ol className="list-decimal list-inside space-y-4 text-[13px] text-[#333] leading-[1.8] pr-1 break-words">
                   {termsLines.map((term, i) => (
                     <li key={i} className="text-right">
                       <span className="mr-1">{term}</span>
@@ -227,7 +227,7 @@ export default function LeaseRenewalRenewTab({ orderData }) {
                   ))}
                 </ol>
               ) : (
-                <p className="text-[13px] text-[#333] leading-[1.8] text-right whitespace-pre-wrap">
+                <p className="text-[13px] text-[#333] leading-[1.8] text-right whitespace-pre-wrap break-words">
                   {additionalTerms}
                 </p>
               )
@@ -242,11 +242,11 @@ export default function LeaseRenewalRenewTab({ orderData }) {
           step="step4"
           fields={LEASE_RENEWAL_NOTES_FIELDS}
         >
-          <div className="bg-[#F0F0F0] rounded-[16px] p-5 flex gap-3 items-start border border-[#E8E8E8]">
+          <div className="bg-[#F0F0F0] rounded-[16px] p-5 flex gap-3 items-start border border-[#E8E8E8] min-w-0">
             <Hand className="size-7 text-[#FF4D4F] shrink-0 rotate-180" />
-            <div className="text-right flex-1">
+            <div className="text-right flex-1 min-w-0">
               <p className="font-black text-black text-[14px] mb-2">يرجى الانتباه :</p>
-              <p className="text-[12px] text-[#555] leading-relaxed whitespace-pre-wrap">
+              <p className="text-[12px] text-[#555] leading-relaxed whitespace-pre-wrap break-words">
                 {notesEdits ?? (
                   <span className="text-[#A3A3A3] opacity-70">{EMPTY_NOTES}</span>
                 )}

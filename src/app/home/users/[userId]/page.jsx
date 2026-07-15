@@ -50,7 +50,7 @@ export default function UserDetailsPage() {
         thirdURL={`/home/users/${userId}?from=${encodeURIComponent(from)}`}
       />
       <UserDetailsCard user={user} backUrl={backUrl} />
-      <UserContractsTable contracts={contracts} />
+      <UserContractsTable contracts={contracts} userId={user?.id ?? userId} />
     </div>
   );
 }

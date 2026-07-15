@@ -15,6 +15,7 @@ import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 import PermissionGate from '@/components/auth/PermissionGate';
 import { PERMISSION_SECTIONS } from '@/src/lib/permissions';
+import SendOrderSmsButton from '@/components/Orders/shared/send-order-sms-button';
 
 export default function EmployeesPage() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -172,6 +173,7 @@ export default function EmployeesPage() {
                   </td>
                   <td className='p-[15px_20px]'>
                     <div className='flex items-center gap-2'>
+                      <SendOrderSmsButton employee={employee} employeeId={employee.id} />
                       <PermissionGate section={PERMISSION_SECTIONS.employees} action="delete">
                         <DeleteEmployeeDialog employee={employee} />
                       </PermissionGate>

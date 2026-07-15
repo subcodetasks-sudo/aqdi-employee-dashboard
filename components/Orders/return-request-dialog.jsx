@@ -91,25 +91,22 @@ export default function ReturnRequestDialog({
 
     const { mutate: submitReturn, isPending } = useMutation({
         mutationFn: async () => {
-            // Backend requires حالة العقد = 2 (استرجاع) before creating refund request.
+            // 1) أرسل طلب الاسترجاع أولاً
+            const response = await axiosInstance.post("/admin/refundable-contracts", {
+                contract_id: contractId,
+                draft_contract_number: draftNumber.trim(),
+                refund_amount: Number(refundAmount),
+                notes: notes.trim() || null,
+            });
+
+            // 2) بعد نجاح الطلب: غيّر الحالة إلى استرجاع (2)
             await ensureReturnContractStatusForOrder(
                 order,
                 orderId ?? order?.id ?? orderUuid,
                 RETURN_CONTRACT_STATUS_ID
             );
 
-            setStatusDisplay((current) => ({
-                id: RETURN_CONTRACT_STATUS_ID,
-                name: "استرجاع",
-                color: current?.color || "#ffcccc",
-            }));
-
-            return axiosInstance.post("/admin/refundable-contracts", {
-                contract_id: contractId,
-                draft_contract_number: draftNumber.trim(),
-                refund_amount: Number(refundAmount),
-                notes: notes.trim() || null,
-            });
+            return response;
         },
         onSuccess: (res) => {
             setStatusDisplay({

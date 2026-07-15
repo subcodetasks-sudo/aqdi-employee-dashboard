@@ -3,8 +3,9 @@
 import { Copy } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
+import SendOrderSmsButton from "@/components/Orders/shared/send-order-sms-button";
 
-export default function UserContractsTable({ contracts = [] }) {
+export default function UserContractsTable({ contracts = [], userId = null }) {
   const tableHeaders = [
     "رقم الطلب",
     "نوع العقد",
@@ -99,13 +100,19 @@ export default function UserContractsTable({ contracts = [] }) {
                     {contract.employee_name || "—"}
                   </td>
                   <td className="p-[15px_20px]">
-                    <Link
-                      href={`/home/orders/${contract.id}`}
-                      aria-label="عرض الطلب"
-                      className="w-8 h-8 rounded-full flex items-center justify-center bg-[#F5F5F5] text-[#4D4D4D] hover:bg-brand-main hover:text-white transition-all mx-auto"
-                    >
-                      <i className="fa-regular fa-eye text-[13px]" />
-                    </Link>
+                    <div className="flex items-center gap-2 justify-center">
+                      <SendOrderSmsButton
+                        userId={userId ?? contract.user_id}
+                        order={contract}
+                      />
+                      <Link
+                        href={`/home/orders/${contract.id}`}
+                        aria-label="عرض الطلب"
+                        className="w-8 h-8 rounded-full flex items-center justify-center bg-[#F5F5F5] text-[#4D4D4D] hover:bg-brand-main hover:text-white transition-all"
+                      >
+                        <i className="fa-regular fa-eye text-[13px]" />
+                      </Link>
+                    </div>
                   </td>
                 </tr>
               ))

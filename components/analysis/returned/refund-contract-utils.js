@@ -78,6 +78,7 @@ export function getOrderUuid(order) {
 
   return (
     order.uuid ??
+    order.contract_uuid ??
     order.contract_summary?.uuid ??
     order.contract?.uuid ??
     order.order_uuid ??
@@ -109,6 +110,7 @@ export function isReturnContractOrder(order) {
 export function hasExistingReturnRequest(order) {
   if (!order) return false;
   if (isReturnContractOrder(order)) return true;
+  if (order.is_return_order === true) return true;
   if (extractRefundContractId(order)) return true;
   if (order.refund_amount != null && order.refund_amount !== "") return true;
 
@@ -301,6 +303,14 @@ export function getOrderAdminApprovalStatus(order) {
     order?.refund ??
     (Array.isArray(order?.refundable_contracts) ? order.refundable_contracts[0] : null);
 
+  const managementApproval =
+    order?.management_approval?.approved ??
+    nested?.management_approval?.approved;
+
+  if (managementApproval !== undefined && managementApproval !== null) {
+    return managementApproval;
+  }
+
   return (
     nested?.admin_confirmed ??
     order?.admin_confirmed ??
@@ -393,14 +403,92 @@ export function findRefundInLookup(order, refundsLookup) {
   return null;
 }
 
+export const REFUNDS_CONTRACTS_API = "/admin/analytics/refunds/contracts";
+
 export function extractRefundItemsFromApi(root) {
   if (!root) return [];
   if (Array.isArray(root)) return root;
   const payload = root?.data ?? root;
   if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload?.contracts)) return payload.contracts;
   if (Array.isArray(payload?.items)) return payload.items;
+  if (Array.isArray(root?.contracts)) return root.contracts;
   if (Array.isArray(root?.items)) return root.items;
   return [];
+}
+
+/** Summary + pagination from GET /admin/analytics/refunds/contracts. */
+export function extractRefundsContractsPayload(root) {
+  const payload = root?.data ?? root ?? {};
+  const summary = payload?.summary ?? {};
+  const managementApproval =
+    summary?.management_approval ?? payload?.management_approval ?? null;
+  const contractStatuses =
+    summary?.contract_statuses ?? payload?.contract_statuses ?? [];
+
+  return {
+    period: payload?.period ?? null,
+    labelAr: payload?.label_ar ?? null,
+    contracts: extractRefundItemsFromApi(root),
+    pagination: payload?.pagination ?? root?.pagination ?? null,
+    summary,
+    managementApproval,
+    contractStatuses,
+  };
+}
+
+/**
+ * Map analytics refund-contract row into the shape ReturnOrders / export expect.
+ */
+export function mapAnalyticsRefundContractToOrderRow(item) {
+  if (!item) return null;
+
+  const approved =
+    item.management_approval?.approved ?? item.admin_confirmed ?? null;
+  const paymentAmount = item.payment_amount ?? item.amount_payment ?? null;
+  const contractUuid =
+    item.contract_uuid ?? item.order_number ?? item.uuid ?? null;
+
+  return {
+    id: item.contract_id ?? item.id,
+    uuid: contractUuid,
+    contract_uuid: contractUuid,
+    user_mobile: item.customer_mobile ?? item.user_mobile ?? "",
+    customer_mobile: item.customer_mobile ?? item.user_mobile ?? "",
+    customer_name: item.customer_name ?? null,
+    contract_type: item.contract_type ?? "—",
+    contract_type_key: item.contract_type_key ?? null,
+    instrument_type: item.instrument_type ?? null,
+    amount_payment: paymentAmount,
+    is_paid: paymentAmount != null && paymentAmount !== "",
+    payment_label_ar: item.payment_label_ar ?? null,
+    refund_amount: item.refund_amount,
+    is_refunded: item.is_refunded,
+    customer_refunded: item.is_refunded,
+    refunded: item.is_refunded,
+    refunded_status: item.refunded_status ?? null,
+    employee_name: item.requester?.name ?? item.employee_name ?? "—",
+    requester: item.requester ?? null,
+    user_id: item.user_id ?? item.customer_id ?? item.user?.id ?? null,
+    user: item.user ?? null,
+    admin_confirmed: approved,
+    management_approval: item.management_approval ?? null,
+    refund_id: item.id,
+    refundable_contract_id: item.id,
+    draft_contract_number: item.draft_contract_number ?? null,
+    contract_id: item.contract_id ?? null,
+    notes: item.notes ?? null,
+    status: item.contract_status ?? {
+      id: item.contract_status_id,
+      name: item.contract_status_name,
+    },
+    contract_status_id: item.contract_status_id ?? null,
+    contract_status_name: item.contract_status_name ?? null,
+    is_return_order: item.is_return_order === true,
+    has_draft_contract: item.has_draft_contract === true,
+    created_at: item.created_at ?? null,
+    raw: item,
+  };
 }
 
 export function refundItemMatchesOrder(order, item) {
@@ -504,12 +592,11 @@ export async function fetchAllRefundContracts() {
 
   do {
     const res = await axiosInstance.get(
-      `/admin/analytics/refunds/contracts?created_at=all&page=${page}`
+      `${REFUNDS_CONTRACTS_API}?created_at=all&page=${page}`
     );
-    const items = extractRefundItemsFromApi(res.data);
-    allItems = allItems.concat(items);
-    const payload = res.data?.data ?? res.data;
-    lastPage = payload?.pagination?.last_page ?? payload?.last_page ?? page;
+    const { contracts, pagination } = extractRefundsContractsPayload(res.data);
+    allItems = allItems.concat(contracts);
+    lastPage = pagination?.last_page ?? page;
     page += 1;
   } while (page <= lastPage && page <= 50);
 
@@ -641,12 +728,12 @@ export function canShowReturnOrderApproval(order, refund) {
   if (!resolveRefundIdForAction(order, refund)) return false;
   if (!hasExistingReturnRequest(order)) return false;
 
-  const customerRefunded = order?.customer_refunded ?? order?.is_refunded ?? order?.refunded;
+  const customerRefunded =
+    order?.customer_refunded ?? order?.is_refunded ?? order?.refunded;
+  // Hide only after the customer refund is fully done
   if (customerRefunded === true || customerRefunded === 1) return false;
 
-  if (isCustomerRefundPending(order)) return true;
-
-  return canManageAdminRefund(refund);
+  return true;
 }
 
 /** Build refund row from return-orders list item when nested refund exists. */
@@ -683,19 +770,24 @@ export function normalizeRefundFromOrder(order) {
 export function normalizeRefundContract(item) {
   if (!item) return null;
   const contract = item.contract ?? {};
-  const refundId =
-    extractRefundContractId(item) ??
-    item.id;
+  const refundRecordId = extractRefundContractId(item) ?? item.id;
+  const orderUuid =
+    contract.uuid ??
+    item.contract_uuid ??
+    item.uuid ??
+    item.order_number ??
+    "—";
+  const paymentAmount =
+    contract.amount_payment ?? item.amount_payment ?? item.payment_amount;
+  const adminConfirmed =
+    item.management_approval?.approved ??
+    item.admin_confirmed ??
+    null;
 
   return {
-    id: refundId,
-    refundId,
-    orderUuid:
-      contract.uuid ??
-      item.contract_uuid ??
-      item.uuid ??
-      item.order_number ??
-      "—",
+    id: refundRecordId,
+    refundId: orderUuid !== "—" ? orderUuid : refundRecordId,
+    orderUuid,
     userMobile:
       contract.user?.phone ??
       contract.user_mobile ??
@@ -707,28 +799,43 @@ export function normalizeRefundContract(item) {
       item.contract_type ??
       "—",
     contractTypeKey: contract.contract_type_key ?? item.contract_type_key,
-    amountPayment:
-      contract.amount_payment ?? item.amount_payment ?? item.payment_amount,
-    isPaid: contract.is_paid ?? item.is_paid,
-    paymentLabelAr: contract.payment_label_ar ?? item.payment_label_ar,
+    amountPayment: paymentAmount,
+    isPaid:
+      contract.is_paid ??
+      item.is_paid ??
+      (paymentAmount != null && paymentAmount !== ""),
+    paymentLabelAr:
+      contract.payment_label_ar ??
+      item.payment_label_ar ??
+      item.refunded_status?.label_ar,
     refundAmount: item.refund_amount,
-    adminConfirmed: item.admin_confirmed,
+    adminConfirmed,
     customerRefunded: item.customer_refunded ?? item.is_refunded ?? item.refunded,
     employeeName:
       contract.employee?.name ??
+      item.requester?.name ??
       item.employee_name ??
       item.raised_by_name ??
       item.raised_by ??
       "—",
-    statusName: contract.status?.name ?? item.status?.name ?? item.status_name,
-    statusColor: contract.status?.color ?? item.status?.color,
+    statusName:
+      contract.status?.name ??
+      item.contract_status?.name ??
+      item.contract_status_name ??
+      item.status?.name ??
+      item.status_name,
+    statusColor:
+      contract.status?.color ??
+      item.contract_status?.color ??
+      item.status?.color,
     referenceNumber: item.reference_number ?? item.refund_reference,
     notes: item.notes,
     createdAt: item.created_at ?? contract.created_at,
     updatedAt: item.updated_at ?? contract.updated_at,
     contractId: item.contract_id ?? contract.id ?? null,
     draftContractNumber: item.draft_contract_number,
-    returnContract: item.return_contract === true,
+    returnContract:
+      item.return_contract === true || item.is_return_order === true,
     raw: item,
   };
 }

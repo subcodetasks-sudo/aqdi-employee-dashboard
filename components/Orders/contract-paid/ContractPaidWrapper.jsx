@@ -39,6 +39,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import SendOrderSmsButton from "@/components/Orders/shared/send-order-sms-button";
 
 const PAYMENT_FILTERS = [
   { value: "", label: "الكل" },
@@ -74,7 +75,11 @@ export default function ContractPaidWrapper() {
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [selectedRecordId, setSelectedRecordId] = useState(null);
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
-  const [paymentLink, setPaymentLink] = useState({ paymentUrl: "", cartAmount: null });
+  const [paymentLink, setPaymentLink] = useState({
+    paymentUrl: "",
+    cartAmount: null,
+    notes: "",
+  });
   const [loadingPaymentId, setLoadingPaymentId] = useState(null);
   const [isExporting, setIsExporting] = useState(false);
 
@@ -173,7 +178,11 @@ export default function ContractPaidWrapper() {
         return;
       }
 
-      setPaymentLink({ paymentUrl, cartAmount: cartAmount ?? record.amount });
+      setPaymentLink({
+        paymentUrl,
+        cartAmount: cartAmount ?? record.amount,
+        notes: record.notes || "",
+      });
       setPaymentDialogOpen(true);
     } catch (error) {
       toast.error(error?.response?.data?.message || "تعذر جلب رابط الدفع");
@@ -424,30 +433,33 @@ export default function ContractPaidWrapper() {
                     <td className="p-[15px_20px] text-[13px] text-black font-medium whitespace-nowrap">
                       {row.created_at || "---"}
                     </td>
-                    <td className="p-[15px_20px]">
-                      {!isPaid ? (
-                        <Button
-                          type="button"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleOpenPaymentLink(row);
-                          }}
-                          disabled={loadingPaymentId === row.id}
-                          className="h-9 shrink-0 gap-2 whitespace-nowrap rounded-full bg-[#0019FF] px-4 text-[12px] font-bold text-white hover:bg-[#0015CC]"
-                        >
-                          {loadingPaymentId === row.id ? (
-                            <Loader2 className="size-4 animate-spin" />
-                          ) : (
-                            <>
-                              <Link2 className="size-4" />
-                              رابط الدفع
-                            </>
-                          )}
-                        </Button>
-                      ) : (
-                        <span className="text-[12px] text-[#A3A3A3]">—</span>
-                      )}
+                    <td className="p-[15px_20px]" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex items-center gap-2">
+                        <SendOrderSmsButton order={row} />
+                        {!isPaid ? (
+                          <Button
+                            type="button"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleOpenPaymentLink(row);
+                            }}
+                            disabled={loadingPaymentId === row.id}
+                            className="h-9 shrink-0 gap-2 whitespace-nowrap rounded-full bg-[#0019FF] px-4 text-[12px] font-bold text-white hover:bg-[#0015CC]"
+                          >
+                            {loadingPaymentId === row.id ? (
+                              <Loader2 className="size-4 animate-spin" />
+                            ) : (
+                              <>
+                                <Link2 className="size-4" />
+                                رابط الدفع
+                              </>
+                            )}
+                          </Button>
+                        ) : (
+                          <span className="text-[12px] text-[#A3A3A3]">—</span>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 );
@@ -468,6 +480,7 @@ export default function ContractPaidWrapper() {
         onOpenChange={setPaymentDialogOpen}
         paymentUrl={paymentLink.paymentUrl}
         cartAmount={paymentLink.cartAmount}
+        notes={paymentLink.notes}
       />
 
       <Dialog

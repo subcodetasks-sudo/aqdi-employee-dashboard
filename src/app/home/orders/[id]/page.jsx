@@ -27,6 +27,7 @@ function OrderDetailsContent() {
   const { orderData, isLoading, isError } = useSingleOrderContext();
   const { id } = useParams();
   const { setOrderId, setDisplayedPart, setSidebarOpen } = useSidebarStore();
+console.log({orderData});
 
   useEffect(() => {
     setOrderId(id);
@@ -107,8 +108,8 @@ function OrderDetailsContent() {
           <Tabs defaultValue={tabsButtons[0].value}>
             <div className="flex flex-col xl:flex-row xl:items-end xl:justify-between gap-3 mb-4">
               <OrderDetailsActions orderData={orderData} />
-              <TabsList className="bg-transparent h-fit gap-1 flex-wrap justify-start">
-                {[...tabsButtons].reverse().map((tab) => (
+              <TabsList dir="rtl" className="bg-transparent h-fit gap-1 flex-wrap justify-start">
+                {[...tabsButtons].map((tab) => (
                   <TabsTrigger key={tab.value} value={tab.value} className={tabStyle}>
                     {tab.icon}
                     {tab.label}
