@@ -16,6 +16,7 @@ import arabic from "react-date-object/calendars/arabic";
 import gregorian from "react-date-object/calendars/gregorian";
 import arabic_ar from "react-date-object/locales/arabic_ar";
 import gregorian_ar from "react-date-object/locales/gregorian_ar";
+import { useTenantRoles } from "@/src/hooks/use-tenant-roles";
 
 const DATE_FORMAT = "DD-MM-YYYY";
 
@@ -50,8 +51,26 @@ const CALENDAR_TYPE_TO_DATE_KEYS = {
 const inputClass =
   "w-full h-[48px] bg-white border border-[#EEEEEE] rounded-[14px] px-4 text-[14px] focus:outline-none focus:border-brand-hover transition-all";
 
+function useResolvedSelectOptions(field) {
+  const needsTenantRoles =
+    field?.optionsSource === "tenant-roles" || field?.key === "tenant_role_id";
+  const { options, isLoading } = useTenantRoles(needsTenantRoles);
+
+  if (Array.isArray(field?.options) && field.options.length > 0) {
+    return { options: field.options, isLoading: false };
+  }
+
+  if (needsTenantRoles) {
+    return { options, isLoading };
+  }
+
+  return { options: field?.options ?? [], isLoading: false };
+}
+
 function ContractFormField({ field, value, formValues, onChange, error }) {
   const id = field.key;
+  const { options: selectOptions, isLoading: optionsLoading } =
+    useResolvedSelectOptions(field);
 
   if (field.type === "textarea") {
     return (
@@ -93,6 +112,11 @@ function ContractFormField({ field, value, formValues, onChange, error }) {
   }
 
   if (field.type === "select") {
+    const selectValue =
+      value === null || value === undefined || value === ""
+        ? ""
+        : String(value);
+
     return (
       <div className="flex flex-col gap-2">
         <label htmlFor={id} className="text-[13px] font-bold text-black text-right">
@@ -100,12 +124,22 @@ function ContractFormField({ field, value, formValues, onChange, error }) {
         </label>
         <select
           id={id}
-          value={value ?? ""}
-          onChange={(e) => onChange(e.target.value)}
+          value={selectValue}
+          disabled={optionsLoading}
+          onChange={(e) => {
+            const next = e.target.value;
+            if (next === "") {
+              onChange("");
+              return;
+            }
+            onChange(/^\d+$/.test(next) ? Number(next) : next);
+          }}
           className={inputClass}
         >
-          <option value="">—</option>
-          {field.options?.map((opt) => (
+          <option value="">
+            {optionsLoading ? "جاري التحميل..." : "— اختر —"}
+          </option>
+          {selectOptions.map((opt) => (
             <option key={opt.value} value={opt.value}>
               {opt.label}
             </option>

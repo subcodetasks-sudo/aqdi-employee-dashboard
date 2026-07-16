@@ -2,6 +2,7 @@
 
 import { Copy } from "lucide-react";
 import { toast } from "sonner";
+import dynamic from "next/dynamic";
 import { ContractStepEditor } from "./contract-edit/contract-step-editor";
 import {
   STEP2_UNIT_FIELDS,
@@ -11,8 +12,14 @@ import {
 import {
   formatDisplayValue,
   isEmptyDisplayValue,
+  SECTION_ERROR_BUTTON_CLASS,
 } from "./contract-summary-view";
 import { asYesNo, pickFirst } from "./frontend-contract-fields";
+
+const OrderSectionErrorMenu = dynamic(
+  () => import("@/components/Orders/messages/order-section-error-menu"),
+  { ssr: false }
+);
 
 const BORDER_COLORS = [
   "border-blue-500",
@@ -155,49 +162,60 @@ const UnitDetailes = ({ data }) => {
 
   return (
     <div className="space-y-6 p-4 lg:p-6" dir="rtl">
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-        <ContractStepEditor
-          title="تفاصيل الوحدات"
-          step="step2"
-          fields={STEP2_UNIT_FIELDS}
-        >
-          <div className="rounded-[28px] border border-gray-100 bg-gray-100/50 p-6">
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              {unitGeneralDetails.map((item) => (
-                <DetailCard key={item.label} {...item} />
-              ))}
-            </div>
-          </div>
-        </ContractStepEditor>
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0 flex-1 space-y-6">
+          <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+            <ContractStepEditor
+              title="تفاصيل الوحدات"
+              step="step2"
+              fields={STEP2_UNIT_FIELDS}
+            >
+              <div className="rounded-[28px] border border-gray-100 bg-gray-100/50 p-6">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  {unitGeneralDetails.map((item) => (
+                    <DetailCard key={item.label} {...item} />
+                  ))}
+                </div>
+              </div>
+            </ContractStepEditor>
 
-        <ContractStepEditor
-          title="تفاصيل الغرف"
-          step="step2"
-          fields={STEP2_ROOM_FIELDS}
-        >
-          <div className="rounded-[28px] border border-gray-100 bg-gray-100/50 p-6">
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              {roomDetails.map((item) => (
-                <DetailCard key={item.label} {...item} />
-              ))}
-            </div>
+            <ContractStepEditor
+              title="تفاصيل الغرف"
+              step="step2"
+              fields={STEP2_ROOM_FIELDS}
+            >
+              <div className="rounded-[28px] border border-gray-100 bg-gray-100/50 p-6">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  {roomDetails.map((item) => (
+                    <DetailCard key={item.label} {...item} />
+                  ))}
+                </div>
+              </div>
+            </ContractStepEditor>
           </div>
-        </ContractStepEditor>
-      </div>
 
-      <ContractStepEditor
-        title="الخدمات والعدادات"
-        step="step2"
-        fields={STEP2_SERVICE_FIELDS}
-      >
-        <div className="rounded-[28px] border border-gray-100 bg-gray-100/50 p-6">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            {services.map((item) => (
-              <DetailCard key={item.label} {...item} />
-            ))}
-          </div>
+          <ContractStepEditor
+            title="الخدمات والعدادات"
+            step="step2"
+            fields={STEP2_SERVICE_FIELDS}
+          >
+            <div className="rounded-[28px] border border-gray-100 bg-gray-100/50 p-6">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                {services.map((item) => (
+                  <DetailCard key={item.label} {...item} />
+                ))}
+              </div>
+            </div>
+          </ContractStepEditor>
         </div>
-      </ContractStepEditor>
+
+        <OrderSectionErrorMenu
+          label="إرسال خطأ للعميل"
+          orderData={data}
+          context="unitDetails"
+          buttonClassName={SECTION_ERROR_BUTTON_CLASS}
+        />
+      </div>
     </div>
   );
 };

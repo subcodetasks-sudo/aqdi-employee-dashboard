@@ -2,6 +2,7 @@
 
 import { Copy } from "lucide-react";
 import { toast } from "sonner";
+import dynamic from "next/dynamic";
 import { ContractStepEditor } from "./contract-edit/contract-step-editor";
 import {
   STEP4_FINANCIAL_FIELDS,
@@ -10,8 +11,18 @@ import {
 import {
   formatDisplayValue,
   isEmptyDisplayValue,
+  SECTION_ERROR_BUTTON_CLASS,
 } from "./contract-summary-view";
 import { asYesNo, pickFirst } from "./frontend-contract-fields";
+import {
+  getTenantRoleLabel,
+  useTenantRoles,
+} from "@/src/hooks/use-tenant-roles";
+
+const OrderSectionErrorMenu = dynamic(
+  () => import("@/components/Orders/messages/order-section-error-menu"),
+  { ssr: false }
+);
 
 const copy = (value) => {
   if (isEmptyDisplayValue(value)) return;
@@ -61,7 +72,34 @@ function composeDate(day, month, year, fallback) {
   return fallback ?? null;
 }
 
+function resolveTenantRoleDisplay(data, step4, tenantRoles = []) {
+  const roleId = pickFirst(step4?.tenant_role_id, data?.tenant_role_id);
+  const matchedRole =
+    roleId != null && roleId !== ""
+      ? tenantRoles.find((role) => String(role?.id) === String(roleId))
+      : null;
+
+  return pickFirst(
+    data?.tenant_role?.text_of_reason,
+    data?.tenant_role?.name,
+    step4?.tenant_role?.text_of_reason,
+    step4?.tenant_role?.name,
+    data?.relation_labels?.tenant_role,
+    matchedRole ? getTenantRoleLabel(matchedRole) : null,
+    Array.isArray(data?.tenant_role_ids) && data.tenant_role_ids.length
+      ? data.tenant_role_ids
+          .map((id) => {
+            const role = tenantRoles.find((item) => String(item?.id) === String(id));
+            return role ? getTenantRoleLabel(role) : null;
+          })
+          .filter(Boolean)
+          .join("، ") || null
+      : null
+  );
+}
+
 function FinancialDetailes({ data }) {
+  const { items: tenantRoles } = useTenantRoles();
   const step4 = data?.step4 ?? {};
   const pick = (...keys) =>
     pickFirst(...keys.flatMap((key) => [step4[key], data?.[key]]));
@@ -81,15 +119,7 @@ function FinancialDetailes({ data }) {
     pick("payment_type_id")
   );
 
-  const tenantRoleLabel = pickFirst(
-    data?.tenant_role?.name,
-    data?.tenant_role?.text_of_reason,
-    data?.relation_labels?.tenant_role,
-    Array.isArray(data?.tenant_role_ids)
-      ? data.tenant_role_ids.join("، ")
-      : null,
-    pick("tenant_role_id")
-  );
+  const tenantRoleLabel = resolveTenantRoleDisplay(data, step4, tenantRoles);
 
   const financialDetails = [
     {
@@ -189,41 +219,52 @@ function FinancialDetailes({ data }) {
 
   return (
     <div className="space-y-6 p-4 lg:p-6" dir="rtl">
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-        <ContractStepEditor
-          title="البيانات المالية"
-          step="step4"
-          fields={STEP4_FINANCIAL_FIELDS}
-        >
-          <div className="rounded-[28px] border border-gray-100 bg-gray-100/50 p-6">
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              {financialDetails.map((item) => (
-                <DetailCard key={item.label} {...item} />
-              ))}
-            </div>
-          </div>
-        </ContractStepEditor>
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0 flex-1 space-y-6">
+          <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+            <ContractStepEditor
+              title="البيانات المالية"
+              step="step4"
+              fields={STEP4_FINANCIAL_FIELDS}
+            >
+              <div className="rounded-[28px] border border-gray-100 bg-gray-100/50 p-6">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  {financialDetails.map((item) => (
+                    <DetailCard key={item.label} {...item} />
+                  ))}
+                </div>
+              </div>
+            </ContractStepEditor>
 
-        <ContractStepEditor title="مدة وتاريخ العقد" step="step4" fields={termsFields}>
-          <div className="rounded-[28px] border border-gray-100 bg-gray-100/50 p-6">
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              {contractDetails.map((item) => (
-                <DetailCard key={item.label} {...item} />
-              ))}
-            </div>
+            <ContractStepEditor title="مدة وتاريخ العقد" step="step4" fields={termsFields}>
+              <div className="rounded-[28px] border border-gray-100 bg-gray-100/50 p-6">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  {contractDetails.map((item) => (
+                    <DetailCard key={item.label} {...item} />
+                  ))}
+                </div>
+              </div>
+            </ContractStepEditor>
           </div>
-        </ContractStepEditor>
-      </div>
 
-      <ContractStepEditor title="الشروط والصلاحيات" step="step4" fields={additionalFields}>
-        <div className="rounded-[28px] border border-gray-100 bg-gray-100/50 p-6">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            {otherTerms.map((item) => (
-              <DetailCard key={item.label} {...item} />
-            ))}
-          </div>
+          <ContractStepEditor title="الشروط والصلاحيات" step="step4" fields={additionalFields}>
+            <div className="rounded-[28px] border border-gray-100 bg-gray-100/50 p-6">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                {otherTerms.map((item) => (
+                  <DetailCard key={item.label} {...item} />
+                ))}
+              </div>
+            </div>
+          </ContractStepEditor>
         </div>
-      </ContractStepEditor>
+
+        <OrderSectionErrorMenu
+          label="إرسال خطأ للعميل"
+          orderData={data}
+          context="financialTerms"
+          buttonClassName={SECTION_ERROR_BUTTON_CLASS}
+        />
+      </div>
     </div>
   );
 }

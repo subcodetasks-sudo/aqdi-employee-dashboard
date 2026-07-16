@@ -2,6 +2,7 @@
 
 import { Copy } from "lucide-react";
 import { toast } from "sonner";
+import dynamic from "next/dynamic";
 import { ContractStepEditor } from "./contract-edit/contract-step-editor";
 import {
   STEP3_TENANT_FIELDS,
@@ -10,8 +11,14 @@ import {
 import {
   formatDisplayValue,
   isEmptyDisplayValue,
+  SECTION_ERROR_BUTTON_CLASS,
 } from "./contract-summary-view";
 import { pickFirst } from "./frontend-contract-fields";
+
+const OrderSectionErrorMenu = dynamic(
+  () => import("@/components/Orders/messages/order-section-error-menu"),
+  { ssr: false }
+);
 
 const copy = (value) => {
   if (isEmptyDisplayValue(value)) return;
@@ -214,35 +221,46 @@ function ContractTenant({ data }) {
 
   return (
     <div className="space-y-6 p-4 lg:p-6" dir="rtl">
-      <ContractStepEditor
-        title="تفاصيل المستأجر"
-        step="step3"
-        fields={STEP3_TENANT_FIELDS}
-      >
-        <div className="rounded-[28px] border border-gray-100 bg-gray-100/50 p-6">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {tenantDetails.map((item) => (
-              <DetailCard key={item.label} {...item} />
-            ))}
-          </div>
-        </div>
-      </ContractStepEditor>
-
-      {isInstitution ? (
-        <ContractStepEditor
-          title="بيانات وكيل المستأجر"
-          step="step3"
-          fields={STEP3_TENANT_AGENT_FIELDS}
-        >
-          <div className="rounded-[28px] border border-gray-100 bg-gray-100/50 p-6">
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {agentDetails.map((item) => (
-                <DetailCard key={item.label} {...item} />
-              ))}
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0 flex-1 space-y-6">
+          <ContractStepEditor
+            title="تفاصيل المستأجر"
+            step="step3"
+            fields={STEP3_TENANT_FIELDS}
+          >
+            <div className="rounded-[28px] border border-gray-100 bg-gray-100/50 p-6">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {tenantDetails.map((item) => (
+                  <DetailCard key={item.label} {...item} />
+                ))}
+              </div>
             </div>
-          </div>
-        </ContractStepEditor>
-      ) : null}
+          </ContractStepEditor>
+
+          {isInstitution ? (
+            <ContractStepEditor
+              title="بيانات وكيل المستأجر"
+              step="step3"
+              fields={STEP3_TENANT_AGENT_FIELDS}
+            >
+              <div className="rounded-[28px] border border-gray-100 bg-gray-100/50 p-6">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+                  {agentDetails.map((item) => (
+                    <DetailCard key={item.label} {...item} />
+                  ))}
+                </div>
+              </div>
+            </ContractStepEditor>
+          ) : null}
+        </div>
+
+        <OrderSectionErrorMenu
+          label="إرسال خطأ للعميل"
+          orderData={data}
+          context="contractTenant"
+          buttonClassName={SECTION_ERROR_BUTTON_CLASS}
+        />
+      </div>
     </div>
   );
 }

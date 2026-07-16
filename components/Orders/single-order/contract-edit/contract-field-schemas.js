@@ -226,7 +226,7 @@ export const STEP4_TERMS_FIELDS = [
   { key: "conditions", label: "الشروط", type: "boolean" },
   { key: "tenant_roles", label: "صلاحيات المستأجر (علم)", type: "boolean" },
   { key: "additional_terms", label: "شروط إضافية (علم)", type: "boolean" },
-  { key: "tenant_role_id", label: "دور المستأجر", type: "text" },
+  { key: "tenant_role_id", label: "دور المستأجر", type: "select", optionsSource: "tenant-roles" },
   { key: "text_additional_terms", label: "نص الشروط الإضافية", type: "textarea", colSpan: 2 },
   { key: "notes", label: "ملاحظات", type: "textarea", colSpan: 2 },
 ];

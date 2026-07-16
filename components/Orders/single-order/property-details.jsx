@@ -1,8 +1,8 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import Image from "next/image";
-import { Copy, Home, Link2, ExternalLink, Inbox, ImageIcon } from "lucide-react";
+import { Copy, Home, Link2, ExternalLink, Inbox, ImageIcon, MapPin } from "lucide-react";
 import { toast } from "sonner";
 import dynamic from "next/dynamic";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -12,6 +12,7 @@ import { useImageZoomPan } from "./use-image-zoom-pan";
 import {
   formatDisplayValue,
   isEmptyDisplayValue,
+  SECTION_ERROR_BUTTON_CLASS,
 } from "./contract-summary-view";
 import {
   ADDRESS_FIELDS,
@@ -43,28 +44,99 @@ const copy = (value) => {
   toast.success("تم النسخ بنجاح");
 };
 
+function parseCoordinate(value) {
+  if (value === null || value === undefined || value === "") return null;
+  const num = Number(String(value).trim());
+  return Number.isFinite(num) ? num : null;
+}
+
+/** Extract lat/lng from common Google Maps / geo URLs. */
+function parseCoordsFromUrl(url) {
+  if (!url || typeof url !== "string") return null;
+  const text = url.trim();
+  if (!text) return null;
+
+  const patterns = [
+    /@(-?\d+(?:\.\d+)?),\s*(-?\d+(?:\.\d+)?)/,
+    /[?&]q=(-?\d+(?:\.\d+)?),\s*(-?\d+(?:\.\d+)?)/i,
+    /[?&]ll=(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/i,
+    /[?&]query=(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/i,
+    /geo:(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/i,
+    /^(-?\d+(?:\.\d+)?),\s*(-?\d+(?:\.\d+)?)$/,
+  ];
+
+  for (const pattern of patterns) {
+    const match = text.match(pattern);
+    if (!match) continue;
+    const lat = Number(match[1]);
+    const lng = Number(match[2]);
+    if (Number.isFinite(lat) && Number.isFinite(lng)) {
+      return { lat, lng };
+    }
+  }
+
+  return null;
+}
+
+function resolveMapLocation(data) {
+  const step1 = data?.step1 ?? {};
+  const lat = parseCoordinate(
+    pickFirst(step1.latitude, data?.latitude, step1.lat, data?.lat)
+  );
+  const lng = parseCoordinate(
+    pickFirst(step1.longitude, data?.longitude, step1.lng, data?.lng)
+  );
+  const addressUrl = pickFirst(step1.address_url, data?.address_url);
+  const fromUrl = parseCoordsFromUrl(addressUrl);
+
+  if (lat != null && lng != null) {
+    return {
+      lat,
+      lng,
+      addressUrl: addressUrl || null,
+      mapsUrl: `https://www.google.com/maps?q=${lat},${lng}`,
+      embedUrl: `https://maps.google.com/maps?q=${lat},${lng}&z=15&output=embed`,
+    };
+  }
+
+  if (fromUrl) {
+    return {
+      lat: fromUrl.lat,
+      lng: fromUrl.lng,
+      addressUrl: addressUrl || null,
+      mapsUrl: addressUrl || `https://www.google.com/maps?q=${fromUrl.lat},${fromUrl.lng}`,
+      embedUrl: `https://maps.google.com/maps?q=${fromUrl.lat},${fromUrl.lng}&z=15&output=embed`,
+    };
+  }
+
+  if (addressUrl) {
+    return {
+      lat: null,
+      lng: null,
+      addressUrl,
+      mapsUrl: addressUrl,
+      embedUrl: null,
+    };
+  }
+
+  return null;
+}
+
 const DetailCard = ({
   label,
   value,
   copyable = false,
   borderColor = "border-gray-200",
 }) => {
-  const empty = isEmptyDisplayValue(value);
   return (
     <div
-      className={`rounded-[16px] border-r-4 bg-white p-4 shadow-sm ${borderColor} ${
-        empty ? "opacity-45" : ""
-      }`}
+      className={`rounded-[16px] border-r-4 bg-white p-4 shadow-sm ${borderColor}`}
     >
       <span className="mb-1 block text-right text-xs font-medium text-gray-400">
         {label}
       </span>
-      <p
-        className={`flex items-center justify-end gap-2 text-sm font-bold lg:text-base ${
-          empty ? "text-[#A3A3A3]" : "text-gray-800"
-        }`}
-      >
-        {copyable && !empty ? (
+      <p className="flex items-center justify-end gap-2 text-sm font-bold text-gray-800 lg:text-base">
+        {copyable ? (
           <button
             type="button"
             onClick={() => copy(value)}
@@ -141,46 +213,82 @@ const AddressImageViewer = ({ src }) => {
   );
 };
 
-const AddressUrlCard = ({ url }) => {
-  const empty = isEmptyDisplayValue(url);
-  if (empty) {
-    return <NoData label="لا يوجد رابط لموقع العقار" />;
+const PropertyLocationMap = ({ location }) => {
+  if (!location) {
+    return <NoData label="لا يوجد موقع للعقار على الخريطة" />;
   }
 
+  const { embedUrl, mapsUrl, addressUrl, lat, lng } = location;
+
   return (
-    <div className="flex items-center justify-between gap-3 rounded-[16px] border-r-4 border-blue-500 bg-white p-4 shadow-sm">
-      <div className="min-w-0 flex-1 text-right">
-        <span className="text-xs font-medium text-gray-400">رابط الموقع</span>
-        <a
-          href={url}
-          target="_blank"
-          rel="noopener noreferrer"
-          dir="ltr"
-          className="mt-1 block truncate text-sm font-bold text-brand-hover hover:underline lg:text-base"
-          title={url}
-        >
-          {url}
-        </a>
+    <div className="overflow-hidden rounded-[20px] border border-[#EEEEEE] bg-white shadow-sm">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#F0F0F0] px-4 py-3">
+        <div className="flex items-center gap-2 text-right">
+          <MapPin size={16} className="text-brand-hover" />
+          <div>
+            <p className="text-sm font-bold text-gray-800">رابط الموقع</p>
+            {lat != null && lng != null ? (
+              <p className="text-[11px] text-[#A3A3A3]" dir="ltr">
+                {lat}, {lng}
+              </p>
+            ) : null}
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          {(addressUrl || mapsUrl) && (
+            <button
+              type="button"
+              onClick={() => copy(addressUrl || mapsUrl)}
+              title="نسخ الرابط"
+              className="inline-flex items-center gap-1.5 rounded-full border border-[#EEEEEE] bg-[#FAFAFA] px-3 py-1.5 text-xs font-bold text-[#4D4D4D] hover:border-brand-hover hover:text-brand-hover"
+            >
+              <Copy size={13} />
+              نسخ
+            </button>
+          )}
+          {mapsUrl ? (
+            <a
+              href={mapsUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              title="فتح في الخرائط"
+              className="inline-flex items-center gap-1.5 rounded-full bg-brand-hover px-3 py-1.5 text-xs font-bold text-white hover:bg-brand-hover/90"
+            >
+              <ExternalLink size={13} />
+              فتح الخريطة
+            </a>
+          ) : null}
+        </div>
       </div>
-      <div className="flex shrink-0 items-center gap-3 text-gray-400">
-        <button
-          type="button"
-          onClick={() => copy(url)}
-          title="نسخ الرابط"
-          className="hover:text-gray-600"
-        >
-          <Copy size={16} />
-        </button>
-        <a
-          href={url}
-          target="_blank"
-          rel="noopener noreferrer"
-          title="فتح الرابط"
-          className="hover:text-gray-600"
-        >
-          <ExternalLink size={16} />
-        </a>
-      </div>
+
+      {embedUrl ? (
+        <iframe
+          title="موقع العقار"
+          src={embedUrl}
+          className="h-[360px] w-full border-0"
+          loading="lazy"
+          referrerPolicy="no-referrer-when-downgrade"
+          allowFullScreen
+        />
+      ) : (
+        <div className="flex flex-col items-center justify-center gap-3 px-4 py-12 text-center">
+          <Inbox size={28} className="text-gray-300" />
+          <p className="text-sm text-[#A3A3A3]">
+            لا يمكن عرض الخريطة مباشرة — افتح الرابط في الخرائط
+          </p>
+          {addressUrl ? (
+            <a
+              href={addressUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              dir="ltr"
+              className="max-w-full truncate text-sm font-bold text-brand-hover hover:underline"
+            >
+              {addressUrl}
+            </a>
+          ) : null}
+        </div>
+      )}
     </div>
   );
 };
@@ -190,30 +298,36 @@ export default function PropertyDetails({ data }) {
 
   const nationalAddress = ADDRESS_FIELDS.filter(
     (field) => !["address_url"].includes(field.key)
-  ).map((field, index) => ({
-    label: field.label,
-    value: resolveAddressFieldValue(data, field),
-    borderColor: BORDER_COLORS[index % BORDER_COLORS.length],
-    copyable: true,
-  }));
+  )
+    .map((field, index) => ({
+      label: field.label,
+      value: resolveAddressFieldValue(data, field),
+      borderColor: BORDER_COLORS[index % BORDER_COLORS.length],
+      copyable: true,
+    }))
+    .filter((item) => !isEmptyDisplayValue(item.value));
 
-  const addressUrl = pickFirst(step1.address_url, data?.address_url);
   const imageAddress = resolveImageUrl(
     pickFirst(step1.image_address, data?.image_address)
   );
+
+  const location = useMemo(() => resolveMapLocation(data), [data]);
 
   const tabs = [
     {
       value: "national-address",
       label: "تفاصيل العنوان",
       icon: <Home size={16} />,
-      content: (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          {nationalAddress.map((item) => (
-            <DetailCard key={item.label} {...item} />
-          ))}
-        </div>
-      ),
+      content:
+        nationalAddress.length > 0 ? (
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            {nationalAddress.map((item) => (
+              <DetailCard key={item.label} {...item} />
+            ))}
+          </div>
+        ) : (
+          <NoData label="لا توجد تفاصيل عنوان متاحة" />
+        ),
     },
     {
       value: "image-address",
@@ -225,12 +339,6 @@ export default function PropertyDetails({ data }) {
         <NoData label="لا توجد صورة للعنوان" />
       ),
     },
-    {
-      value: "address-url",
-      label: "رابط الموقع",
-      icon: <Link2 size={16} />,
-      content: <AddressUrlCard url={addressUrl} />,
-    },
   ];
 
   return (
@@ -241,7 +349,7 @@ export default function PropertyDetails({ data }) {
         fields={STEP1_ADDRESS_FIELDS}
       >
         <div className="flex items-start justify-between gap-4">
-          <div className="flex-1 rounded-[28px] border border-gray-100 bg-gray-100/50 p-6">
+          <div className="flex-1 space-y-5 rounded-[28px] border border-gray-100 bg-gray-100/50 p-6">
             <Tabs defaultValue={tabs[0].value} dir="rtl">
               <TabsList className="mb-4 h-fit w-full flex-wrap justify-start gap-2 bg-transparent p-0">
                 {tabs.map((tab) => (
@@ -266,11 +374,20 @@ export default function PropertyDetails({ data }) {
                 </TabsContent>
               ))}
             </Tabs>
+
+            <div className="space-y-2">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-gray-500">
+                <Link2 size={14} />
+                الموقع على الخريطة
+              </div>
+              <PropertyLocationMap location={location} />
+            </div>
           </div>
           <OrderSectionErrorMenu
             label="إرسال خطأ للعميل"
             orderData={data}
             context="propertyAddress"
+            buttonClassName={SECTION_ERROR_BUTTON_CLASS}
           />
         </div>
       </ContractStepEditor>
