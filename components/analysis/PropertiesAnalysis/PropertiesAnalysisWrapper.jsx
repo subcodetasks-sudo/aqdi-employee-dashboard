@@ -47,13 +47,10 @@ export default function PropertiesAnalysisWrapper({ id }) {
 
     const tableHeaders = [
         "اسم العقــار",
-        "البريد الإلكتروني",
         "الهاتف",
-        "التـاريخ/الســاعة",
         "الوحدات المضـافة في العقــار",
         "الطلبات المكتملة",
         "الطلبات الغير المكتملة",
-        "إجمالي المبلغ المدفوع",
     ];
 
     function getProperties(page = 1) {
@@ -138,13 +135,13 @@ export default function PropertiesAnalysisWrapper({ id }) {
                             displayedProperties.map((row) => (
                                 <tr
                                     key={row.id}
-                                    onClick={() => router.push(`/home/real-estates/${row.id}`)}
+                                    // onClick={() => router.push(`/home/real-estates/${row.id}`)}
                                     className="border-b border-[#F5F5F5] last:border-0 hover:bg-[#fafafa] transition-all cursor-pointer"
                                 >
                                     <td className="p-[15px_20px] text-black text-[13px] font-medium">
                                         {row.name_real_estate || row.name_owner || `عقار #${row.id}`}
                                     </td>
-                                    <td className="p-[15px_20px] text-[#616161] text-[13px]">{"—"}</td>
+
                                     <td className="p-[15px_20px]" onClick={(e) => e.stopPropagation()}>
                                         <div className="flex items-center gap-2">
                                             <span className="text-black text-[13px]">{row.mobile || "—"}</span>
@@ -165,7 +162,6 @@ export default function PropertiesAnalysisWrapper({ id }) {
                                             )}
                                         </div>
                                     </td>
-                                    <td className="p-[15px_20px] text-[#616161] text-[12px] whitespace-nowrap">{row.created_at || row.date_time || "—"}</td>
                                     <td className="p-[15px_20px]">
                                         <div className="flex items-center gap-2 px-2.5 py-1 bg-[#f9f9f9] rounded-lg border border-[#eee] w-fit mx-auto group hover:border-brand-main transition-all cursor-pointer">
                                             <span className="text-black text-[12px] font-bold">{row.Count_Units || parseInt(row.number_of_units_in_realestate || 0) || 0}</span>
@@ -182,13 +178,6 @@ export default function PropertiesAnalysisWrapper({ id }) {
                                         <div className="flex items-center gap-2 px-2.5 py-1 bg-[#f9f9f9] rounded-lg border border-[#eee] w-fit mx-auto cursor-pointer group hover:border-brand-main transition-all">
                                             <span className="text-black text-[12px] font-bold">{0}</span>
                                             <i className="fa-regular fa-eye text-[#A3A3A3] text-[11px] group-hover:text-brand-main"></i>
-                                        </div>
-                                    </td>
-                                    <td className="p-[15px_20px]">
-                                        <div className="flex items-center gap-1.5 text-[#007C13] font-bold text-[13px] justify-center">
-                                            <i className="fa-regular fa-eye text-[#A3A3A3] text-[11px] cursor-pointer hover:text-brand-main transition-all"></i>
-                                            <span>{"0.00"}</span>
-                                            <Image src={greenRial} alt="rial" width={14} height={14} />
                                         </div>
                                     </td>
                                 </tr>

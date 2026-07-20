@@ -45,11 +45,11 @@ export default function UnitsAnalysisWrapper({ id }) {
 
     const tableHeaders = [
         "نـوع الوحــدة",
-        "البريد الإلكتروني",
-        "الهاتف",
+        "استخدام الوحدة",
+        "اسم المستخدم",
         "التـاريخ/الســاعة",
         "مســاحة الوحدة",
-        "إســم العقــار",
+        // "إســم العقــار",
         // "الاجــراءات"
     ];
 
@@ -64,8 +64,8 @@ export default function UnitsAnalysisWrapper({ id }) {
     const { data: responseData, isLoading, isError } = useQuery({
         queryKey: ['unitsAnalysis', id, currentPage],
         queryFn: () => getUnits(currentPage),
-    });
-    
+        });
+        console.log({unitsAnalysis: responseData?.data});
 
     const rawData = responseData?.data;
     const isPaginated = rawData && !Array.isArray(rawData) && Array.isArray(rawData.items);
@@ -159,36 +159,21 @@ export default function UnitsAnalysisWrapper({ id }) {
                                 return (
                                     <tr key={row.id} className="border-b border-[#F5F5F5] last:border-0 hover:bg-[#fafafa] transition-all">
                                         <td className="p-[15px_20px] text-black text-[13px] font-medium whitespace-nowrap">
-                                            {row.unit_type?.name_trans || row.unit_type?.name_ar || row.unit_type?.name_en || "—"}
+                                            {row.unit_type?.name_trans || row.unit_type?.name_ar || row.unit_type?.name_en ||row?.unit_type_name
+ || "—"}
                                         </td>
-                                        <td className="p-[15px_20px] text-[#616161] text-[13px]">{row.user?.email || "—"}</td>
-                                        <td className="p-[15px_20px]">
-                                            {phoneNum ? (
-                                                <div className="flex items-center gap-2">
-                                                    <span className="text-black text-[13px]">{phoneNum}</span>
-                                                    <button onClick={() => {
-                                                        navigator.clipboard.writeText(phoneNum)
-                                                        toast.success('تم نسخ رقم الهاتف')
-                                                    }} className="text-[#A3A3A3] hover:text-brand-main">
-                                                        <i className="fa-regular fa-copy text-[11px]"></i>
-                                                    </button>
-                                                    <Link href={`https://wa.me/${phoneNum}`} target="_blank" className="hover:scale-110 transition-all">
-                                                        <Image src={whatsappIcon} alt="wa" width={16} height={16} />
-                                                    </Link>
-                                                </div>
-                                            ) : (
-                                                "—"
-                                            )}
-                                        </td>
+                                        <td className="p-[15px_20px] text-[#616161] text-[13px]">{row.unit_usage_name || "—"}</td>
+                                        <td className="p-[15px_20px] text-[#616161] text-[13px]">{row.user_name || "—"}</td>
+
                                         <td className="p-[15px_20px] text-[#616161] text-[12px] whitespace-nowrap">{formatDate(row)}</td>
                                         <td className="p-[15px_20px]">
                                             <div className="px-3 py-1 bg-[#EEF2FF] text-[#4F46E5] rounded-lg border border-[#E0E7FF] text-[12px] font-bold w-fit mx-auto shadow-sm">
                                                 <span>{row.unit_area ? (isNaN(row.unit_area) ? row.unit_area : `${row.unit_area} م²`) : "—"}</span>
                                             </div>
                                         </td>
-                                        <td className="p-[15px_20px] text-black text-[13px] font-medium">
+                                        {/* <td className="p-[15px_20px] text-black text-[13px] font-medium">
                                             {row.real_estate?.name || row.real_estate?.name_ar || row.real_estate?.name_trans || row.real_estate?.title || "—"}
-                                        </td>
+                                        </td> */}
                                         {/* <td className="p-[15px_20px]">
                                             <DropdownMenu dir="rtl">
                                                 <DropdownMenuTrigger asChild>
