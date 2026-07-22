@@ -204,10 +204,17 @@ export function ContractStepEditor({
   showEdit = true,
   /** Override form seed values (e.g. per-unit edit). Merged over step values. */
   initialValues = null,
+  /** When true, form is seeded only from initialValues (no contract step merge). */
+  seedFromInitialValuesOnly = false,
   /** Extra keys always merged into the save payload (e.g. real_units_id). */
   payloadExtras = null,
+  /** Custom save — receives changed-fields payload. Skips default contract update. */
+  onSave = null,
+  /** Override saving spinner (e.g. unit mutation pending). */
+  isSaving: isSavingProp = null,
 }) {
-  const { orderData, updateContract, isSaving } = useSingleOrderContext();
+  const { orderData, updateContract, isSaving: contextSaving } = useSingleOrderContext();
+  const isSaving = isSavingProp ?? contextSaving;
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({});
   const [initial, setInitial] = useState({});
@@ -216,6 +223,9 @@ export function ContractStepEditor({
   const resolvedStep = step;
 
   const syncForm = useMemo(() => {
+    if (seedFromInitialValuesOnly) {
+      return initialValues && typeof initialValues === "object" ? { ...initialValues } : {};
+    }
     if (!orderData) return {};
     const base = getStepFormValues(orderData, resolvedStep);
     const extra = {};
@@ -243,7 +253,7 @@ export function ContractStepEditor({
       return { ...merged, ...initialValues };
     }
     return merged;
-  }, [orderData, resolvedStep, fields, initialValues]);
+  }, [orderData, resolvedStep, fields, initialValues, seedFromInitialValuesOnly]);
 
   useEffect(() => {
     setForm(syncForm);
@@ -253,10 +263,6 @@ export function ContractStepEditor({
 
   const handleSave = async () => {
     const editableKeys = new Set(fields.map((f) => f.key));
-    const stepsToSave = new Set([
-      resolvedStep,
-      ...fields.map((f) => f.step).filter(Boolean),
-    ]);
 
     // Only send changes for fields shown in this section (even if empty).
     const scopedForm = Object.fromEntries(
@@ -267,11 +273,26 @@ export function ContractStepEditor({
     );
 
     let payload = {};
-    for (const s of stepsToSave) {
-      payload = {
-        ...payload,
-        ...buildContractUpdatePayload(s, scopedForm, scopedInitial),
-      };
+
+    if (typeof onSave === "function") {
+      for (const key of editableKeys) {
+        const value = scopedForm[key];
+        const prev = scopedInitial[key];
+        if (value === prev) continue;
+        if (value === "" && (prev === "" || prev === undefined)) continue;
+        payload[key] = value;
+      }
+    } else {
+      const stepsToSave = new Set([
+        resolvedStep,
+        ...fields.map((f) => f.step).filter(Boolean),
+      ]);
+      for (const s of stepsToSave) {
+        payload = {
+          ...payload,
+          ...buildContractUpdatePayload(s, scopedForm, scopedInitial),
+        };
+      }
     }
 
     if (payloadExtras && typeof payloadExtras === "object") {
@@ -293,7 +314,11 @@ export function ContractStepEditor({
 
     try {
       setFieldErrors({});
-      await updateContract(payload);
+      if (typeof onSave === "function") {
+        await onSave(payload);
+      } else {
+        await updateContract(payload);
+      }
       setInitial({ ...form });
       setEditing(false);
     } catch (err) {

@@ -62,7 +62,7 @@ export const STEP1_PROPERTY_FIELDS = [
   { key: "name_real_estate", label: "اسم العقار", type: "text" },
 ];
 
-/** Unit — POST /contract/step5 */
+/** Unit — POST /contract/step5 (legacy single-unit contract fields) */
 export const STEP2_UNIT_FIELDS = [
   { key: "unit_type_id", label: "نوع الوحدة", type: "text" },
   { key: "unit_usage_id", label: "استخدام الوحدة", type: "text" },
@@ -71,7 +71,57 @@ export const STEP2_UNIT_FIELDS = [
   { key: "unit_area", label: "مساحة الوحدة", type: "text" },
 ];
 
-/** Fields present on each item in orderData.units (is_real property). */
+/**
+ * AdminUnit fields from data.units[] (UnitResource).
+ * Display prefers *_name keys; edit uses *_id where applicable.
+ */
+export const ADMIN_UNIT_CORE_FIELDS = [
+  { key: "unit_type_id", label: "نوع الوحدة", type: "text", displayKey: "unit_type_name" },
+  { key: "unit_usage_id", label: "استخدام الوحدة", type: "text", displayKey: "unit_usage_name" },
+  { key: "unit_number", label: "رقم الوحدة", type: "text" },
+  { key: "floor_number", label: "رقم الطابق", type: "text" },
+  { key: "unit_area", label: "مساحة الوحدة", type: "text" },
+];
+
+export const ADMIN_UNIT_ROOM_FIELDS = [
+  { key: "tootal_rooms", label: "إجمالي الغرف", type: "text" },
+  { key: "The_number_of_halls", label: "عدد الصالات", type: "text" },
+  { key: "The_number_of_kitchens", label: "عدد المطابخ", type: "text" },
+  { key: "The_number_of_toilets", label: "عدد دورات المياه", type: "text" },
+  { key: "window_ac", label: "مكيف شباك", type: "text" },
+  { key: "split_ac", label: "مكيف سبليت", type: "text" },
+];
+
+export const ADMIN_UNIT_SERVICE_FIELDS = [
+  { key: "kitchen_tank", label: "مطبخ راكب", type: "boolean" },
+  { key: "furnished", label: "مؤثثة", type: "boolean" },
+  { key: "type_furnished", label: "نوع التأثيث", type: "text" },
+  { key: "electricity_meter", label: "عداد كهرباء", type: "boolean" },
+  { key: "electricity_meter_number", label: "رقم عداد الكهرباء", type: "text" },
+  {
+    key: "electricity_meter_ownership",
+    label: "ملكية عداد الكهرباء",
+    type: "select",
+    options: [
+      { value: "owner", label: "المالك" },
+      { value: "tenant", label: "المستأجر" },
+    ],
+  },
+  { key: "water_meter", label: "عداد مياه", type: "boolean" },
+  { key: "water_meter_number", label: "رقم عداد المياه", type: "text" },
+  {
+    key: "water_meter_ownership",
+    label: "ملكية عداد المياه",
+    type: "select",
+    options: [
+      { value: "owner", label: "المالك" },
+      { value: "tenant", label: "المستأجر" },
+    ],
+  },
+  { key: "Number_parking_spaces", label: "مواقف السيارات", type: "text" },
+];
+
+/** @deprecated use ADMIN_UNIT_* — kept for legacy single-unit fallback callers */
 export const STEP2_PER_UNIT_FIELDS = [
   { key: "unit_type_id", label: "نوع الوحدة", type: "text" },
   { key: "unit_number", label: "رقم الوحدة", type: "text" },

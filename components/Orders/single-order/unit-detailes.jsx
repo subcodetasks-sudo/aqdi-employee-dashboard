@@ -1,23 +1,23 @@
 "use client";
 
-import { useMemo } from "react";
-import { Copy } from "lucide-react";
+import { useCallback, useMemo } from "react";
+import { Copy, Inbox, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import dynamic from "next/dynamic";
 import { ContractStepEditor } from "./contract-edit/contract-step-editor";
 import {
-  STEP2_UNIT_FIELDS,
-  STEP2_ROOM_FIELDS,
-  STEP2_SERVICE_FIELDS,
-  STEP2_PER_UNIT_FIELDS,
+  ADMIN_UNIT_CORE_FIELDS,
+  ADMIN_UNIT_ROOM_FIELDS,
+  ADMIN_UNIT_SERVICE_FIELDS,
 } from "./contract-edit/contract-field-schemas";
 import {
   formatDisplayValue,
   isEmptyDisplayValue,
   SECTION_ERROR_BUTTON_CLASS,
 } from "./contract-summary-view";
-import { asYesNo, pickFirst } from "./frontend-contract-fields";
+import { asYesNo } from "./frontend-contract-fields";
 import { normalizeFieldValue } from "@/src/lib/contract-update";
+import { useSingleOrderContext } from "./single-order-context";
 
 const OrderSectionErrorMenu = dynamic(
   () => import("@/components/Orders/messages/order-section-error-menu"),
@@ -86,74 +86,19 @@ function ownershipLabel(value) {
   return value;
 }
 
-function resolveOrderUnits(data) {
-  if (Array.isArray(data?.units) && data.units.length > 0) {
-    return data.units;
-  }
-  const single = data?.step2?.unit ?? data?.unit;
-  if (single && typeof single === "object" && (single.id || single.unit_number)) {
-    return [single];
-  }
-  return [];
-}
-
-function isSelectedUnit(unit, data) {
-  const selectedId = data?.real_units_id ?? data?.contract_summary?.real_units_id;
-  if (selectedId == null || unit?.id == null) return false;
-  return Number(unit.id) === Number(selectedId);
-}
-
-function readUnitField(unit, data, key) {
-  const step2 = data?.step2 ?? {};
-  const selected = isSelectedUnit(unit, data);
-  if (selected) {
-    return pickFirst(unit?.[key], step2[key], step2.unit?.[key], data?.[key]);
-  }
-  return pickFirst(unit?.[key], null);
-}
-
-function resolveFieldDisplayValue(field, unit, data) {
-  const rawValue = readUnitField(unit, data, field.key);
+/** Source of truth: unit object only — never contract root / step2. */
+function resolveUnitFieldValue(field, unit) {
+  const displayKey = field.displayKey;
+  const rawValue =
+    displayKey && unit?.[displayKey] != null && unit[displayKey] !== ""
+      ? unit[displayKey]
+      : unit?.[field.key];
 
   if (field.type === "boolean") {
     if (rawValue === null || rawValue === undefined || rawValue === "") {
       return null;
     }
     return asYesNo(rawValue);
-  }
-
-  if (field.key === "unit_type_id") {
-    return pickFirst(
-      unit?.unit_type_name,
-      unit?.unit_type?.name_ar,
-      unit?.unit_type?.name_trans,
-      isSelectedUnit(unit, data)
-        ? pickFirst(
-            data?.step2?.unit_type_name,
-            data?.step2?.unit_type?.name_ar,
-            data?.unit_type?.name_trans,
-            data?.unit_type?.name_ar,
-            data?.unit_type?.name
-          )
-        : null,
-      rawValue
-    );
-  }
-
-  if (field.key === "unit_usage_id") {
-    return pickFirst(
-      unit?.unit_usage_name,
-      unit?.unit_usage?.name_ar,
-      isSelectedUnit(unit, data)
-        ? pickFirst(
-            data?.step2?.unit_usage_name,
-            data?.step2?.unit_usage?.name_ar,
-            data?.unit_usage?.name_ar,
-            data?.unit_usage?.name_en
-          )
-        : null,
-      rawValue
-    );
   }
 
   if (
@@ -166,10 +111,10 @@ function resolveFieldDisplayValue(field, unit, data) {
   return rawValue;
 }
 
-function buildSectionItems(fields, unit, data) {
+function buildSectionItems(fields, unit) {
   return fields.map((field, index) => ({
     label: field.label,
-    value: resolveFieldDisplayValue(field, unit, data),
+    value: resolveUnitFieldValue(field, unit),
     borderColor: BORDER_COLORS[index % BORDER_COLORS.length],
     copyable:
       field.type !== "boolean" &&
@@ -189,187 +134,93 @@ function getUnitInitialValues(unit, fields) {
   );
 }
 
-function resolveFieldDisplayValueFromData(field, data) {
-  const step2 = data?.step2 ?? {};
-  const unit = step2.unit ?? data?.unit ?? {};
-  const rawValue = pickFirst(step2[field.key], unit[field.key], data?.[field.key]);
-
-  if (field.type === "boolean") {
-    if (rawValue === null || rawValue === undefined || rawValue === "") {
-      return null;
-    }
-    return asYesNo(rawValue);
-  }
-
-  if (field.key === "unit_type_id") {
-    return pickFirst(
-      step2.unit_type_name,
-      step2.unit_type?.name_ar,
-      data?.unit_type?.name_trans,
-      data?.unit_type?.name_ar,
-      data?.unit_type?.name,
-      rawValue
-    );
-  }
-
-  if (field.key === "unit_usage_id") {
-    return pickFirst(
-      step2.unit_usage_name,
-      step2.unit_usage?.name_ar,
-      data?.unit_usage?.name_ar,
-      data?.unit_usage?.name_en,
-      rawValue
-    );
-  }
-
-  if (
-    field.key === "electricity_meter_ownership" ||
-    field.key === "water_meter_ownership"
-  ) {
-    return ownershipLabel(rawValue);
-  }
-
-  return rawValue;
-}
-
-function buildContractSectionItems(fields, data) {
-  return fields.map((field, index) => ({
-    label: field.label,
-    value: resolveFieldDisplayValueFromData(field, data),
-    borderColor: BORDER_COLORS[index % BORDER_COLORS.length],
-    copyable:
-      field.type !== "boolean" &&
-      (field.key.includes("meter") ||
-        field.key.includes("number") ||
-        field.key.includes("unit_number") ||
-        field.key.includes("id")),
-  }));
-}
-
-function ContractUnitFallback({ data }) {
-  const unitGeneralDetails = buildContractSectionItems(STEP2_UNIT_FIELDS, data);
-  const roomDetails = buildContractSectionItems(STEP2_ROOM_FIELDS, data);
-  const services = buildContractSectionItems(STEP2_SERVICE_FIELDS, data);
-
-  return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-        <ContractStepEditor
-          title="تفاصيل الوحدات"
-          step="step2"
-          fields={STEP2_UNIT_FIELDS}
-        >
-          <div className="rounded-[28px] border border-gray-100 bg-gray-100/50 p-6">
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              {unitGeneralDetails.map((item) => (
-                <DetailCard key={item.label} {...item} />
-              ))}
-            </div>
-          </div>
-        </ContractStepEditor>
-
-        <ContractStepEditor
-          title="تفاصيل الغرف"
-          step="step2"
-          fields={STEP2_ROOM_FIELDS}
-        >
-          <div className="rounded-[28px] border border-gray-100 bg-gray-100/50 p-6">
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              {roomDetails.map((item) => (
-                <DetailCard key={item.label} {...item} />
-              ))}
-            </div>
-          </div>
-        </ContractStepEditor>
-      </div>
-
-      <ContractStepEditor
-        title="الخدمات والعدادات"
-        step="step2"
-        fields={STEP2_SERVICE_FIELDS}
-      >
-        <div className="rounded-[28px] border border-gray-100 bg-gray-100/50 p-6">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            {services.map((item) => (
-              <DetailCard key={item.label} {...item} />
-            ))}
-          </div>
-        </div>
-      </ContractStepEditor>
-    </div>
-  );
-}
-
-function SingleUnitBlock({ unit, data, index }) {
-  const selected = isSelectedUnit(unit, data);
-  const unitLabel =
-    unit?.unit_number != null && unit.unit_number !== ""
-      ? `الوحدة رقم ${unit.unit_number}`
-      : `وحدة #${unit?.id ?? index + 1}`;
-
-  const editFields = useMemo(() => {
-    if (!selected) return STEP2_PER_UNIT_FIELDS;
-    const usageField = STEP2_UNIT_FIELDS.find((f) => f.key === "unit_usage_id");
-    return usageField
-      ? [...STEP2_PER_UNIT_FIELDS, usageField]
-      : STEP2_PER_UNIT_FIELDS;
-  }, [selected]);
-
-  const perUnitItems = buildSectionItems(editFields, unit, data);
-  const roomDetails = selected
-    ? buildSectionItems(STEP2_ROOM_FIELDS, unit, data)
-    : [];
-  const serviceExtras = selected
-    ? buildSectionItems(
-        STEP2_SERVICE_FIELDS.filter(
-          (f) =>
-            ![
-              "electricity_meter_number",
-              "water_meter_number",
-              "electricity_meter_ownership",
-              "water_meter_ownership",
-            ].includes(f.key)
-        ),
-        unit,
-        data
-      )
-    : [];
-
-  const unitInitialValues = useMemo(() => {
-    const fromUnit = getUnitInitialValues(unit, STEP2_PER_UNIT_FIELDS);
-    if (!selected) return fromUnit;
-    return {
-      ...fromUnit,
-      unit_usage_id: normalizeFieldValue(
-        pickFirst(
-          unit?.unit_usage_id,
-          data?.step2?.unit_usage_id,
-          data?.unit_usage_id
-        ),
-        "unit_usage_id"
-      ),
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    selected,
+function unitFormDeps(unit) {
+  return [
     unit?.id,
     unit?.unit_number,
     unit?.floor_number,
     unit?.unit_area,
     unit?.unit_type_id,
-    unit?.electricity_meter_number,
-    unit?.water_meter_number,
-    unit?.electricity_meter_ownership,
-    unit?.water_meter_ownership,
     unit?.unit_usage_id,
-    data?.step2?.unit_usage_id,
-    data?.unit_usage_id,
-  ]);
+    unit?.tootal_rooms,
+    unit?.The_number_of_halls,
+    unit?.The_number_of_kitchens,
+    unit?.The_number_of_toilets,
+    unit?.window_ac,
+    unit?.split_ac,
+    unit?.kitchen_tank,
+    unit?.furnished,
+    unit?.type_furnished,
+    unit?.electricity_meter,
+    unit?.electricity_meter_number,
+    unit?.electricity_meter_ownership,
+    unit?.water_meter,
+    unit?.water_meter_number,
+    unit?.water_meter_ownership,
+    unit?.Number_parking_spaces,
+    unit?.updated_at,
+  ];
+}
 
-  const payloadExtras = useMemo(
-    () => (unit?.id != null ? { real_units_id: unit.id } : null),
-    [unit?.id]
+function isSelectedUnit(unit, data) {
+  const selectedId = data?.real_units_id ?? data?.contract_summary?.real_units_id;
+  if (selectedId == null || unit?.id == null) return false;
+  return Number(unit.id) === Number(selectedId);
+}
+
+function SingleUnitBlock({ unit, data, index }) {
+  const { updateUnit, deleteUnit, isSavingUnit, isDeletingUnit } =
+    useSingleOrderContext();
+  const selected = isSelectedUnit(unit, data);
+
+  const unitLabel =
+    unit?.unit_number != null && unit.unit_number !== ""
+      ? `الوحدة رقم ${unit.unit_number}`
+      : `وحدة #${unit?.id ?? index + 1}`;
+
+  const coreItems = buildSectionItems(ADMIN_UNIT_CORE_FIELDS, unit);
+  const roomItems = buildSectionItems(ADMIN_UNIT_ROOM_FIELDS, unit);
+  const serviceItems = buildSectionItems(ADMIN_UNIT_SERVICE_FIELDS, unit);
+
+  const coreInitial = useMemo(
+    () => getUnitInitialValues(unit, ADMIN_UNIT_CORE_FIELDS),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    unitFormDeps(unit)
   );
+  const roomInitial = useMemo(
+    () => getUnitInitialValues(unit, ADMIN_UNIT_ROOM_FIELDS),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    unitFormDeps(unit)
+  );
+  const serviceInitial = useMemo(
+    () => getUnitInitialValues(unit, ADMIN_UNIT_SERVICE_FIELDS),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    unitFormDeps(unit)
+  );
+
+  const handleSaveSection = useCallback(
+    async (payload) => {
+      if (unit?.id == null) {
+        toast.error("معرف الوحدة غير موجود");
+        return;
+      }
+      await updateUnit(unit.id, payload);
+    },
+    [unit?.id, updateUnit]
+  );
+
+  const handleDetach = async () => {
+    if (unit?.id == null) return;
+    const ok = window.confirm(
+      `فصل الوحدة ${unitLabel} عن هذا العقد؟ لن تُحذف الوحدة من العقار.`
+    );
+    if (!ok) return;
+    try {
+      await deleteUnit(unit.id);
+    } catch {
+      /* toast handled in mutation */
+    }
+  };
 
   return (
     <section
@@ -379,17 +230,30 @@ function SingleUnitBlock({ unit, data, index }) {
           : "border-gray-100 bg-gray-50/80"
       }`}
     >
-      <div className="mb-5 flex flex-wrap items-center gap-3">
-        <h3 className="text-base font-bold text-gray-900">{unitLabel}</h3>
-        {selected ? (
-          <span className="rounded-full bg-brand-hover px-3 py-1 text-[11px] font-bold text-white">
-            الوحدة المختارة في العقد
-          </span>
-        ) : null}
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <h3 className="text-base font-bold text-gray-900">{unitLabel}</h3>
+          {selected ? (
+            <span className="rounded-full bg-brand-hover px-3 py-1 text-[11px] font-bold text-white">
+              الوحدة المختارة في العقد
+            </span>
+          ) : null}
+          {unit?.id != null ? (
+            <span className="text-xs font-medium text-[#A3A3A3]" dir="ltr">
+              ID: {unit.id}
+            </span>
+          ) : null}
+        </div>
         {unit?.id != null ? (
-          <span className="text-xs font-medium text-[#A3A3A3]" dir="ltr">
-            ID: {unit.id}
-          </span>
+          <button
+            type="button"
+            onClick={handleDetach}
+            disabled={isDeletingUnit}
+            className="inline-flex items-center gap-1.5 rounded-full border border-red-200 bg-white px-3 py-1.5 text-xs font-bold text-red-600 hover:bg-red-50 disabled:opacity-60"
+          >
+            <Trash2 size={14} />
+            فصل عن العقد
+          </button>
         ) : null}
       </div>
 
@@ -398,95 +262,101 @@ function SingleUnitBlock({ unit, data, index }) {
           <ContractStepEditor
             title="بيانات الوحدة"
             step="step2"
-            fields={editFields}
-            initialValues={unitInitialValues}
-            payloadExtras={payloadExtras}
+            fields={ADMIN_UNIT_CORE_FIELDS}
+            initialValues={coreInitial}
+            seedFromInitialValuesOnly
+            onSave={handleSaveSection}
+            isSaving={isSavingUnit}
           >
             <div className="rounded-[20px] border border-gray-100 bg-white p-5">
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                {perUnitItems.map((item) => (
+                {coreItems.map((item) => (
                   <DetailCard key={item.label} {...item} />
                 ))}
               </div>
             </div>
           </ContractStepEditor>
 
-          {selected ? (
-            <ContractStepEditor
-              title="تفاصيل الغرف"
-              step="step2"
-              fields={STEP2_ROOM_FIELDS}
-              payloadExtras={payloadExtras}
-            >
-              <div className="rounded-[20px] border border-gray-100 bg-white p-5">
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  {roomDetails.map((item) => (
-                    <DetailCard key={item.label} {...item} />
-                  ))}
-                </div>
-              </div>
-            </ContractStepEditor>
-          ) : null}
-        </div>
-
-        {selected ? (
           <ContractStepEditor
-            title="الخدمات"
+            title="تفاصيل الغرف"
             step="step2"
-            fields={STEP2_SERVICE_FIELDS.filter(
-              (f) =>
-                ![
-                  "electricity_meter_number",
-                  "water_meter_number",
-                  "electricity_meter_ownership",
-                  "water_meter_ownership",
-                ].includes(f.key)
-            )}
-            payloadExtras={payloadExtras}
+            fields={ADMIN_UNIT_ROOM_FIELDS}
+            initialValues={roomInitial}
+            seedFromInitialValuesOnly
+            onSave={handleSaveSection}
+            isSaving={isSavingUnit}
           >
             <div className="rounded-[20px] border border-gray-100 bg-white p-5">
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {serviceExtras.map((item) => (
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                {roomItems.map((item) => (
                   <DetailCard key={item.label} {...item} />
                 ))}
               </div>
             </div>
           </ContractStepEditor>
-        ) : null}
+        </div>
+
+        <ContractStepEditor
+          title="الخدمات"
+          step="step2"
+          fields={ADMIN_UNIT_SERVICE_FIELDS}
+          initialValues={serviceInitial}
+          seedFromInitialValuesOnly
+          onSave={handleSaveSection}
+          isSaving={isSavingUnit}
+        >
+          <div className="rounded-[20px] border border-gray-100 bg-white p-5">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {serviceItems.map((item) => (
+                <DetailCard key={item.label} {...item} />
+              ))}
+            </div>
+          </div>
+        </ContractStepEditor>
       </div>
     </section>
   );
 }
 
+function UnitsEmptyState() {
+  return (
+    <div className="flex flex-col items-center justify-center gap-3 rounded-[28px] border border-dashed border-gray-200 bg-white px-6 py-16 text-[#A3A3A3]">
+      <Inbox size={36} className="text-gray-300" />
+      <p className="text-sm font-bold text-gray-500">لا توجد وحدات مرتبطة بهذا العقد</p>
+      <p className="text-xs">units_count = 0</p>
+    </div>
+  );
+}
+
 const UnitDetailes = ({ data }) => {
-  const units = resolveOrderUnits(data);
-  const hasMultipleUnits = Array.isArray(data?.units) && data.units.length > 0;
+  const units = Array.isArray(data?.units) ? data.units : [];
+  const unitsCount = data?.units_count ?? units.length;
+  const isEmpty = unitsCount === 0 || units.length === 0;
 
   return (
     <div className="space-y-6 p-4 lg:p-6" dir="rtl">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0 flex-1 space-y-6">
-          {hasMultipleUnits ? (
-            <>
-              <div className="flex flex-wrap items-center gap-2 px-1">
-                <p className="text-sm font-bold text-gray-800">
-                  وحدات العقار ({data?.units_count ?? units.length})
-                </p>
-                {data?.is_real == 1 || data?.is_real === true ? (
-                  <span className="text-xs text-[#A3A3A3]">من عقار موجود</span>
-                ) : null}
-              </div>
-              {units.map((unit, index) => (
-                <SingleUnitBlock
-                  key={unit?.id ?? `unit-${index}`}
-                  unit={unit}
-                  data={data}
-                  index={index}
-                />
-              ))}
-            </>
+          <div className="flex flex-wrap items-center gap-2 px-1">
+            <p className="text-sm font-bold text-gray-800">
+              وحدات العقد
+              <span className="mr-2 rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-bold text-gray-600">
+                {unitsCount}
+              </span>
+            </p>
+          </div>
+
+          {isEmpty ? (
+            <UnitsEmptyState />
           ) : (
-            <ContractUnitFallback data={data} />
+            units.map((unit, index) => (
+              <SingleUnitBlock
+                key={unit?.id ?? `unit-${index}`}
+                unit={unit}
+                data={data}
+                index={index}
+              />
+            ))
           )}
         </div>
 

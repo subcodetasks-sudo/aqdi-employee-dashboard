@@ -9,6 +9,7 @@ import { invalidateOrdersCaches } from "@/src/lib/invalidate-orders-caches";
 export function useSingleOrder(contractId) {
   const queryClient = useQueryClient();
   const queryKey = ["single-order", contractId];
+  const unitsQueryKey = ["order-units", contractId];
 
   const query = useQuery({
     queryKey,
@@ -19,6 +20,31 @@ export function useSingleOrder(contractId) {
 
   const orderData = query.data?.data;
 
+  const invalidateOrderAndUnits = (res) => {
+    if (res?.data && !Array.isArray(res.data) && res.data?.id === Number(contractId)) {
+      queryClient.setQueryData(queryKey, (old) => ({
+        ...old,
+        data: res.data,
+      }));
+    } else {
+      queryClient.invalidateQueries({ queryKey });
+    }
+    queryClient.invalidateQueries({ queryKey: unitsQueryKey });
+    invalidateOrdersCaches(queryClient, { queryKey, orderId: contractId });
+  };
+
+  const handleMutationError = (error) => {
+    const apiErrors = error?.response?.data?.errors;
+    if (apiErrors) {
+      const mapped = mapApiValidationErrors(apiErrors);
+      const first = Object.values(mapped)[0];
+      toast.error(first || error?.response?.data?.message || "خطأ في التحقق");
+      throw { fieldErrors: mapped, message: error?.response?.data?.message };
+    }
+    toast.error(error?.response?.data?.message || "حدث خطأ أثناء حفظ البيانات");
+    throw error;
+  };
+
   const updateMutation = useMutation({
     mutationFn: (payload) =>
       axiosInstance
@@ -26,34 +52,50 @@ export function useSingleOrder(contractId) {
         .then((res) => res.data),
     onSuccess: (res) => {
       toast.success(res?.message || "تم تحديث بيانات العقد بنجاح");
-      if (res?.data) {
-        queryClient.setQueryData(queryKey, (old) => ({
-          ...old,
-          data: res.data,
-        }));
-      }
-      invalidateOrdersCaches(queryClient, { queryKey, orderId: contractId });
+      invalidateOrderAndUnits(res);
     },
-    onError: (error) => {
-      const apiErrors = error?.response?.data?.errors;
-      if (apiErrors) {
-        const mapped = mapApiValidationErrors(apiErrors);
-        const first = Object.values(mapped)[0];
-        toast.error(first || error?.response?.data?.message || "خطأ في التحقق");
-        throw { fieldErrors: mapped, message: error?.response?.data?.message };
-      }
-      toast.error(error?.response?.data?.message || "حدث خطأ أثناء حفظ البيانات");
-      throw error;
+    onError: handleMutationError,
+  });
+
+  const updateUnitMutation = useMutation({
+    mutationFn: ({ unitId, payload }) =>
+      axiosInstance
+        .post(`/admin/orders/${contractId}/units/${unitId}`, payload)
+        .then((res) => res.data),
+    onSuccess: (res) => {
+      toast.success(res?.message || "تم تحديث الوحدة بنجاح");
+      invalidateOrderAndUnits(res);
+      query.refetch();
     },
+    onError: handleMutationError,
+  });
+
+  const deleteUnitMutation = useMutation({
+    mutationFn: (unitId) =>
+      axiosInstance
+        .post(`/admin/orders/${contractId}/units/${unitId}/delete`)
+        .then((res) => res.data),
+    onSuccess: (res) => {
+      toast.success(res?.message || "تم فصل الوحدة عن العقد");
+      invalidateOrderAndUnits(res);
+      query.refetch();
+    },
+    onError: handleMutationError,
   });
 
   return {
     orderData,
+    contractId,
     isLoading: query.isLoading,
     isError: query.isError,
     error: query.error,
     refetch: query.refetch,
     updateContract: updateMutation.mutateAsync,
     isSaving: updateMutation.isPending,
+    updateUnit: (unitId, payload) =>
+      updateUnitMutation.mutateAsync({ unitId, payload }),
+    deleteUnit: deleteUnitMutation.mutateAsync,
+    isSavingUnit: updateUnitMutation.isPending,
+    isDeletingUnit: deleteUnitMutation.isPending,
   };
 }
