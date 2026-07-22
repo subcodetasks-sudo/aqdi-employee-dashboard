@@ -71,6 +71,34 @@ export const STEP2_UNIT_FIELDS = [
   { key: "unit_area", label: "مساحة الوحدة", type: "text" },
 ];
 
+/** Fields present on each item in orderData.units (is_real property). */
+export const STEP2_PER_UNIT_FIELDS = [
+  { key: "unit_type_id", label: "نوع الوحدة", type: "text" },
+  { key: "unit_number", label: "رقم الوحدة", type: "text" },
+  { key: "floor_number", label: "رقم الطابق", type: "text" },
+  { key: "unit_area", label: "مساحة الوحدة", type: "text" },
+  { key: "electricity_meter_number", label: "رقم عداد الكهرباء", type: "text" },
+  { key: "water_meter_number", label: "رقم عداد المياه", type: "text" },
+  {
+    key: "electricity_meter_ownership",
+    label: "ملكية عداد الكهرباء",
+    type: "select",
+    options: [
+      { value: "owner", label: "المالك" },
+      { value: "tenant", label: "المستأجر" },
+    ],
+  },
+  {
+    key: "water_meter_ownership",
+    label: "ملكية عداد المياه",
+    type: "select",
+    options: [
+      { value: "owner", label: "المالك" },
+      { value: "tenant", label: "المستأجر" },
+    ],
+  },
+];
+
 export const STEP2_ROOM_FIELDS = [
   { key: "tootal_rooms", label: "إجمالي الغرف", type: "text" },
   { key: "number_of_rooms", label: "عدد الغرف", type: "text" },

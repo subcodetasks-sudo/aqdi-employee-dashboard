@@ -202,6 +202,10 @@ export function ContractStepEditor({
   children,
   className = "",
   showEdit = true,
+  /** Override form seed values (e.g. per-unit edit). Merged over step values. */
+  initialValues = null,
+  /** Extra keys always merged into the save payload (e.g. real_units_id). */
+  payloadExtras = null,
 }) {
   const { orderData, updateContract, isSaving } = useSingleOrderContext();
   const [editing, setEditing] = useState(false);
@@ -234,8 +238,12 @@ export function ContractStepEditor({
         }
       }
     }
-    return { ...base, ...extra };
-  }, [orderData, resolvedStep, fields]);
+    const merged = { ...base, ...extra };
+    if (initialValues && typeof initialValues === "object") {
+      return { ...merged, ...initialValues };
+    }
+    return merged;
+  }, [orderData, resolvedStep, fields, initialValues]);
 
   useEffect(() => {
     setForm(syncForm);
@@ -266,7 +274,19 @@ export function ContractStepEditor({
       };
     }
 
-    if (Object.keys(payload).length === 0) {
+    if (payloadExtras && typeof payloadExtras === "object") {
+      payload = { ...payload, ...payloadExtras };
+    }
+
+    const extrasKeys = new Set(
+      payloadExtras && typeof payloadExtras === "object"
+        ? Object.keys(payloadExtras)
+        : []
+    );
+    const changedFieldKeys = Object.keys(payload).filter(
+      (key) => !extrasKeys.has(key)
+    );
+    if (changedFieldKeys.length === 0) {
       toast.info("لا توجد تغييرات للحفظ");
       return;
     }
