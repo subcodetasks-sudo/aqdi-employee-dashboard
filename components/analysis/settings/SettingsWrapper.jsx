@@ -47,6 +47,7 @@ export default function SettingsWrapper() {
         { label: "المدفوعات", link: "/home/settings/payments" },
         { label: "رسائل التطبيقية للعميل", link: "/home/settings/customer-app-messages" },
         { label: "طرق الدفع", link: "/home/settings/payment-types" },
+        { label: "صلاحيات المستأجر", link: "/home/settings/tenant-roles" },
         { label: "أوراق العمل", link: "/home/settings/paperworks" },
     ];
 
