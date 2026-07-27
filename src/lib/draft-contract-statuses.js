@@ -2,22 +2,90 @@ export const DRAFT_CONTRACT_STATUSES_API = "/admin/draft-contract-statuses";
 export const DRAFT_CONTRACT_STATUSES_QUERY_KEY = "draft-contract-statuses";
 
 export const DRAFT_ORDERS_API = "/admin/orders/draft";
+/** @deprecated Use buildDraftOrdersUrl({ statusId }) — API is ?status_id= */
 export const DRAFT_ORDERS_BY_STATUS_API = "/admin/orders/draft/status";
+
+export function buildDraftOrdersUrl({
+  statusId,
+  page,
+  search,
+  perPage,
+} = {}) {
+  const params = new URLSearchParams();
+  if (statusId != null && statusId !== "") {
+    params.set("status_id", String(statusId));
+  }
+  if (page != null && page !== "") params.set("page", String(page));
+  if (perPage != null && perPage !== "") {
+    params.set("per_page", String(perPage));
+  }
+  if (search) params.set("search", String(search));
+  const qs = params.toString();
+  return qs ? `${DRAFT_ORDERS_API}?${qs}` : DRAFT_ORDERS_API;
+}
+
+/** Draft list filtered by contract status: GET /admin/orders/draft?status_id= */
+export function getDraftOrdersByStatusUrl(statusId) {
+  return buildDraftOrdersUrl({ statusId });
+}
+
+export function extractDraftOrdersPayload(response) {
+  const body = response?.data ?? response;
+  const payload = body?.data ?? body;
+  const items = Array.isArray(payload?.items)
+    ? payload.items
+    : Array.isArray(payload?.data?.items)
+      ? payload.data.items
+      : [];
+  const pagination = payload?.pagination ?? payload?.data?.pagination ?? null;
+  return { items, pagination };
+}
+
+export function extractDraftStatusItems(response) {
+  const body = response?.data ?? response;
+  if (Array.isArray(body)) return body;
+  if (Array.isArray(body?.data?.items)) return body.data.items;
+  if (Array.isArray(body?.data?.data?.items)) return body.data.data.items;
+  if (Array.isArray(body?.items)) return body.items;
+  if (Array.isArray(body?.data)) return body.data;
+  return [];
+}
+
+/** Prefer active statuses; fall back to full list if /active is empty. */
+export function resolveDraftStatusFilterItems(activeResponse, allResponse) {
+  const active = extractDraftStatusItems(activeResponse);
+  if (active.length > 0) return filterDraftStatusFilterItems(active);
+  const all = extractDraftStatusItems(allResponse);
+  return filterDraftStatusFilterItems(
+    all.filter((item) => item?.is_active !== false && item?.is_active !== 0)
+  );
+}
+
+/** Statuses that should not appear as chips on the draft-contracts page. */
+const DRAFT_PAGE_FILTER_EXCLUDED_NAME_PATTERNS = [
+  "مستلم من الموظف",
+  "إرسال مسودة العقد لكم عبر واتساب",
+  "توثيق العقد في إيجار",
+  "بانتظار المشرف",
+  "66ع",
+];
+
+export function filterDraftStatusFilterItems(statusItems = []) {
+  const items = Array.isArray(statusItems) ? statusItems : [];
+  return items.filter((item) => {
+    const name = String(item?.name ?? "").trim();
+    if (!name) return false;
+    return !DRAFT_PAGE_FILTER_EXCLUDED_NAME_PATTERNS.some(
+      (pattern) => name === pattern || name.includes(pattern)
+    );
+  });
+}
 
 export const emptyDraftStatusForm = {
   name: "",
   color_text: "#000000",
   color: "#000000",
 };
-
-export function extractDraftStatusItems(response) {
-  const body = response?.data;
-  return body?.data?.items ?? body?.data?.data?.items ?? body?.items ?? [];
-}
-
-export function getDraftOrdersByStatusUrl(statusId) {
-  return `${DRAFT_ORDERS_BY_STATUS_API}/${statusId}`;
-}
 
 export function getDraftOrderStatusLabel(row = {}) {
   return (

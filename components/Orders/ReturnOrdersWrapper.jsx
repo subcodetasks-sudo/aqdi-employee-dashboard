@@ -115,7 +115,7 @@ export default function ReturnOrdersWrapper({ searchParams }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
-  const [approvalFilter, setApprovalFilter] = useState("");
+  const [approvalFilter, setApprovalFilter] = useState("not_approved");
   const [resolvedParams, setResolvedParams] = useState(null);
   const [isResolved, setIsResolved] = useState(false);
   const [showMoreFilters, setShowMoreFilters] = useState(false);
@@ -263,15 +263,6 @@ export default function ReturnOrdersWrapper({ searchParams }) {
     };
   }, [payload.managementApproval]);
 
-  const allApprovalTotal = useMemo(() => {
-    const approval = payload.managementApproval ?? {};
-    if (approval?.total != null) return approval.total;
-    return (
-      Number(approval?.approved?.count ?? 0) +
-      Number(approval?.not_approved?.count ?? 0)
-    );
-  }, [payload.managementApproval]);
-
   const refundsLookup = useMemo(
     () => buildRefundsLookup(payload.contracts || []),
     [payload.contracts]
@@ -315,7 +306,7 @@ export default function ReturnOrdersWrapper({ searchParams }) {
   const handleResetAll = () => {
     setSearchQuery("");
     setDebouncedSearchQuery("");
-    setApprovalFilter("");
+    setApprovalFilter("not_approved");
     setAdvancedFilters(emptyAdvancedFilters);
     setShowMoreFilters(false);
     setCurrentPage(1);
@@ -372,8 +363,6 @@ export default function ReturnOrdersWrapper({ searchParams }) {
           activeFilter={approvalFilter}
           onFilterChange={setApprovalFilter}
           countsById={approvalCounts}
-          showAllCard
-          allTotal={allApprovalTotal}
           gridClassName="flex flex-wrap gap-3"
         />
         <OrdersToolbar

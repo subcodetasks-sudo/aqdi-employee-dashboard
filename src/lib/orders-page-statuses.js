@@ -31,8 +31,8 @@ export function filterOrdersPageStatusItems(statusItems = []) {
   }).filter(Boolean);
 }
 
-/** Default chip on order list pages (مستلم). */
-export const DEFAULT_ORDERS_PAGE_STATUS_LABEL = "مستلم";
+/** Default chip on order list pages (جديد). */
+export const DEFAULT_ORDERS_PAGE_STATUS_LABEL = "جديد";
 
 export function findOrdersPageStatusIdByLabel(
   statusItems = [],

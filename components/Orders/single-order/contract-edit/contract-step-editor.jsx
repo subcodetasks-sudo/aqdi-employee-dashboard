@@ -1,11 +1,15 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Edit, FileText, Loader2, Save, X } from "lucide-react";
+import { Edit, FileText, Loader2, Plus, Save, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import {
   buildContractUpdatePayload,
   getStepFormValues,
+  normalizeOtherConditionsList,
+  parseTenantRoleIds,
+  validateOtherConditionsList,
+  validateTenantRoleSelection,
 } from "@/src/lib/contract-update";
 import { useSingleOrderContext } from "../single-order-context";
 import ContractDatePicker, {
@@ -16,7 +20,9 @@ import arabic from "react-date-object/calendars/arabic";
 import gregorian from "react-date-object/calendars/gregorian";
 import arabic_ar from "react-date-object/locales/arabic_ar";
 import gregorian_ar from "react-date-object/locales/gregorian_ar";
-import { useTenantRoles } from "@/src/hooks/use-tenant-roles";
+import { getTenantRoleLabel, useTenantRoles } from "@/src/hooks/use-tenant-roles";
+import { usePaymentTypes } from "@/src/hooks/use-payment-types";
+import { useContractPeriodsForType } from "@/src/hooks/use-contract-periods";
 
 const DATE_FORMAT = "DD-MM-YYYY";
 
@@ -51,26 +57,343 @@ const CALENDAR_TYPE_TO_DATE_KEYS = {
 const inputClass =
   "w-full h-[48px] bg-white border border-[#EEEEEE] rounded-[14px] px-4 text-[14px] focus:outline-none focus:border-brand-hover transition-all";
 
-function useResolvedSelectOptions(field) {
+function resolveOrderContractType(orderData) {
+  return (
+    orderData?.contract_type ||
+    orderData?.contract_summary?.contract_type ||
+    orderData?.step4?.contract_type ||
+    null
+  );
+}
+
+function useResolvedSelectOptions(field, orderData) {
+  const contractType = resolveOrderContractType(orderData);
+
   const needsTenantRoles =
     field?.optionsSource === "tenant-roles" || field?.key === "tenant_role_id";
-  const { options, isLoading } = useTenantRoles(needsTenantRoles);
+  const needsPaymentTypes =
+    field?.optionsSource === "payment-types" ||
+    field?.key === "payment_type_id";
+  const needsContractPeriods =
+    field?.optionsSource === "contract-periods" ||
+    field?.key === "contract_term_in_years" ||
+    field?.key === "contract_period_id";
+
+  const { options: tenantOptions, isLoading: tenantLoading } =
+    useTenantRoles(needsTenantRoles);
+  const { options: paymentOptions, isLoading: paymentLoading } =
+    usePaymentTypes(contractType || "housing", needsPaymentTypes);
+  const { options: periodOptions, isLoading: periodsLoading } =
+    useContractPeriodsForType(contractType || "housing", {
+      enabled: needsContractPeriods,
+    });
 
   if (Array.isArray(field?.options) && field.options.length > 0) {
     return { options: field.options, isLoading: false };
   }
 
   if (needsTenantRoles) {
-    return { options, isLoading };
+    return { options: tenantOptions, isLoading: tenantLoading };
+  }
+
+  if (needsPaymentTypes) {
+    return { options: paymentOptions, isLoading: paymentLoading };
+  }
+
+  if (needsContractPeriods) {
+    return { options: periodOptions, isLoading: periodsLoading };
   }
 
   return { options: field?.options ?? [], isLoading: false };
 }
 
-function ContractFormField({ field, value, formValues, onChange, error }) {
+function TenantRolesMultiField({ formValues, onPatch, fieldErrors = {} }) {
+  const { items: roles, isLoading } = useTenantRoles(true);
+  const selectedIds = parseTenantRoleIds(formValues?.tenant_role_ids);
+  const selectedSet = new Set(selectedIds.map(String));
+  const values = formValues?.tenant_role_values || {};
+
+  const emit = (ids, nextValues) => {
+    onPatch({
+      tenant_role_ids: ids,
+      tenant_role_values: nextValues,
+      tenant_roles: ids.length > 0 ? 1 : 0,
+    });
+  };
+
+  const toggleRole = (roleId, checked) => {
+    const idNum = Number(roleId);
+    const nextIds = checked
+      ? [...selectedIds.filter((id) => id !== idNum), idNum]
+      : selectedIds.filter((id) => id !== idNum);
+    const nextValues = { ...values };
+    if (!checked) {
+      delete nextValues[String(roleId)];
+    }
+    emit(nextIds, nextValues);
+  };
+
+  const setRoleValue = (roleId, value) => {
+    emit(selectedIds, {
+      ...values,
+      [String(roleId)]: value,
+    });
+  };
+
+  if (isLoading) {
+    return (
+      <div className="md:col-span-2 lg:col-span-3 flex items-center gap-2 text-sm text-[#A3A3A3]">
+        <Loader2 className="size-4 animate-spin" />
+        جاري تحميل صلاحيات المستأجر...
+      </div>
+    );
+  }
+
+  if (!roles.length) {
+    return (
+      <div className="md:col-span-2 lg:col-span-3 text-sm text-[#A3A3A3]">
+        لا توجد صلاحيات متاحة حالياً
+      </div>
+    );
+  }
+
+  return (
+    <div className="md:col-span-2 lg:col-span-3 space-y-3">
+      <p className="text-[13px] font-bold text-black text-right">
+        صلاحيات المستأجر
+      </p>
+      <div className="space-y-3">
+        {roles.map((role) => {
+          const id = String(role.id);
+          const checked = selectedSet.has(id);
+          const valueError =
+            fieldErrors[`tenant_role_values.${id}`] ||
+            fieldErrors[`tenant_role_values.${role.id}`];
+
+          return (
+            <div
+              key={role.id}
+              className={`rounded-[16px] border bg-white p-4 ${
+                checked ? "border-brand-hover/40" : "border-[#EEEEEE]"
+              }`}
+            >
+              <label className="flex cursor-pointer items-start gap-3">
+                <input
+                  type="checkbox"
+                  className="mt-1 size-4 accent-[var(--brand-hover,#0C6055)]"
+                  checked={checked}
+                  onChange={(e) => toggleRole(role.id, e.target.checked)}
+                />
+                <span className="min-w-0 flex-1 text-right">
+                  <span className="block text-sm font-bold text-gray-800">
+                    {getTenantRoleLabel(role)}
+                  </span>
+                  {role.service_definition ? (
+                    <span className="mt-1 block text-[12px] text-[#737373] whitespace-pre-wrap">
+                      {role.service_definition}
+                    </span>
+                  ) : null}
+                </span>
+              </label>
+
+              {checked && role.has_user_input ? (
+                <div className="mt-3 space-y-1.5 pr-7">
+                  <label className="block text-[12px] font-medium text-gray-500 text-right">
+                    {role.input_field_label || "القيمة"}
+                    <span className="text-red-500"> *</span>
+                  </label>
+                  <input
+                    type={role.input_field_type === "number" ? "number" : "text"}
+                    value={values[id] ?? ""}
+                    onChange={(e) => setRoleValue(role.id, e.target.value)}
+                    className={inputClass}
+                    placeholder={role.input_field_label || ""}
+                    dir="ltr"
+                  />
+                  {valueError ? (
+                    <p className="text-[12px] text-[#E24444] text-right">
+                      {valueError}
+                    </p>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
+          );
+        })}
+      </div>
+      {fieldErrors.tenant_role_ids ? (
+        <p className="text-[12px] text-[#E24444] text-right">
+          {fieldErrors.tenant_role_ids}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
+const MAX_OTHER_CONDITIONS = 50;
+
+function OtherConditionsListField({ formValues, onPatch, fieldErrors = {} }) {
+  const enabled =
+    formValues?.conditions === true ||
+    formValues?.conditions === 1 ||
+    formValues?.conditions === "1";
+  const items = normalizeOtherConditionsList(formValues?.other_conditions_list);
+  const displayItems =
+    enabled && items.length === 0 ? [""] : items;
+
+  const setEnabled = (nextEnabled) => {
+    onPatch({
+      conditions: nextEnabled ? 1 : 0,
+      other_conditions_list: nextEnabled
+        ? items.length > 0
+          ? items
+          : [""]
+        : [],
+    });
+  };
+
+  const setItems = (nextItems) => {
+    onPatch({
+      conditions: 1,
+      other_conditions_list: nextItems.slice(0, MAX_OTHER_CONDITIONS),
+    });
+  };
+
+  const updateItem = (index, value) => {
+    const next = [...displayItems];
+    next[index] = value;
+    setItems(next);
+  };
+
+  const addItem = () => {
+    if (displayItems.length >= MAX_OTHER_CONDITIONS) return;
+    setItems([...displayItems, ""]);
+  };
+
+  const removeItem = (index) => {
+    if (displayItems.length <= 1) {
+      setItems([""]);
+      return;
+    }
+    setItems(displayItems.filter((_, i) => i !== index));
+  };
+
+  return (
+    <div className="md:col-span-2 lg:col-span-3 space-y-4">
+      <div className="flex flex-col gap-2">
+        <label className="text-[13px] font-bold text-black text-right">
+          هل توجد شروط أخرى؟
+        </label>
+        <select
+          value={enabled ? "1" : "0"}
+          onChange={(e) => setEnabled(e.target.value === "1")}
+          className={inputClass}
+        >
+          <option value="1">نعم</option>
+          <option value="0">لا</option>
+        </select>
+      </div>
+
+      {enabled ? (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-[13px] font-bold text-black text-right">
+              قائمة الشروط
+            </p>
+            <button
+              type="button"
+              onClick={addItem}
+              disabled={displayItems.length >= MAX_OTHER_CONDITIONS}
+              className="flex items-center gap-1.5 rounded-full border border-brand-hover/30 bg-brand-hover/10 px-3 py-1.5 text-xs font-bold text-brand-hover disabled:opacity-50"
+            >
+              <Plus size={14} />
+              إضافة شرط
+            </button>
+          </div>
+
+          {displayItems.map((item, index) => {
+            const rowError =
+              fieldErrors[`other_conditions_list.${index}`] ||
+              fieldErrors[`other_conditions_list.${index + 1}`];
+            return (
+              <div key={`condition-${index}`} className="space-y-1.5">
+                <div className="flex items-start gap-2">
+                  <input
+                    type="text"
+                    value={item}
+                    onChange={(e) => updateItem(index, e.target.value)}
+                    placeholder={`الشرط ${index + 1}`}
+                    className={`${inputClass} flex-1`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeItem(index)}
+                    className="mt-1 flex h-12 w-12 shrink-0 items-center justify-center rounded-[14px] border border-[#EEEEEE] text-[#A3A3A3] hover:border-red-200 hover:bg-red-50 hover:text-red-500"
+                    title="حذف"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+                {rowError ? (
+                  <p className="text-[12px] text-[#E24444] text-right">
+                    {rowError}
+                  </p>
+                ) : null}
+              </div>
+            );
+          })}
+
+          {fieldErrors.other_conditions_list ? (
+            <p className="text-[12px] text-[#E24444] text-right">
+              {fieldErrors.other_conditions_list}
+            </p>
+          ) : null}
+          <p className="text-[11px] text-[#A3A3A3] text-right">
+            الحد الأدنى شرط واحد · الحد الأقصى {MAX_OTHER_CONDITIONS}
+          </p>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function ContractFormField({
+  field,
+  value,
+  formValues,
+  onChange,
+  onPatch,
+  error,
+  fieldErrors,
+  orderData,
+}) {
   const id = field.key;
   const { options: selectOptions, isLoading: optionsLoading } =
-    useResolvedSelectOptions(field);
+    useResolvedSelectOptions(field, orderData);
+
+  if (field.type === "hidden") {
+    return null;
+  }
+
+  if (field.type === "tenant-roles") {
+    return (
+      <TenantRolesMultiField
+        formValues={formValues}
+        onPatch={onPatch}
+        fieldErrors={fieldErrors}
+      />
+    );
+  }
+
+  if (field.type === "other-conditions") {
+    return (
+      <OtherConditionsListField
+        formValues={formValues}
+        onPatch={onPatch}
+        fieldErrors={fieldErrors}
+      />
+    );
+  }
 
   if (field.type === "textarea") {
     return (
@@ -117,6 +440,18 @@ function ContractFormField({ field, value, formValues, onChange, error }) {
         ? ""
         : String(value);
 
+    const optionsWithCurrent =
+      selectValue &&
+      !selectOptions.some((opt) => String(opt.value) === selectValue)
+        ? [
+            ...selectOptions,
+            {
+              value: selectValue,
+              label: `الخيار الحالي (${selectValue})`,
+            },
+          ]
+        : selectOptions;
+
     return (
       <div className="flex flex-col gap-2">
         <label htmlFor={id} className="text-[13px] font-bold text-black text-right">
@@ -139,7 +474,7 @@ function ContractFormField({ field, value, formValues, onChange, error }) {
           <option value="">
             {optionsLoading ? "جاري التحميل..." : "— اختر —"}
           </option>
-          {selectOptions.map((opt) => (
+          {optionsWithCurrent.map((opt) => (
             <option key={opt.value} value={opt.value}>
               {opt.label}
             </option>
@@ -219,6 +554,10 @@ export function ContractStepEditor({
   const [form, setForm] = useState({});
   const [initial, setInitial] = useState({});
   const [fieldErrors, setFieldErrors] = useState({});
+  const needsTenantRolesCatalog = fields.some(
+    (field) => field.type === "tenant-roles"
+  );
+  const { items: tenantRolesCatalog } = useTenantRoles(needsTenantRolesCatalog);
 
   const resolvedStep = step;
 
@@ -263,6 +602,31 @@ export function ContractStepEditor({
 
   const handleSave = async () => {
     const editableKeys = new Set(fields.map((f) => f.key));
+
+    if (editableKeys.has("tenant_role_ids")) {
+      const roleErrors = validateTenantRoleSelection(
+        form.tenant_role_ids,
+        form.tenant_role_values,
+        tenantRolesCatalog
+      );
+      if (Object.keys(roleErrors).length > 0) {
+        setFieldErrors(roleErrors);
+        toast.error(Object.values(roleErrors)[0]);
+        return;
+      }
+    }
+
+    if (editableKeys.has("other_conditions_list")) {
+      const conditionErrors = validateOtherConditionsList(
+        form.conditions,
+        form.other_conditions_list
+      );
+      if (Object.keys(conditionErrors).length > 0) {
+        setFieldErrors(conditionErrors);
+        toast.error(Object.values(conditionErrors)[0]);
+        return;
+      }
+    }
 
     // Only send changes for fields shown in this section (even if empty).
     const scopedForm = Object.fromEntries(
@@ -390,7 +754,12 @@ export function ContractStepEditor({
                 field={field}
                 value={form[field.key]}
                 formValues={form}
+                orderData={orderData}
                 error={fieldErrors[field.key]}
+                fieldErrors={fieldErrors}
+                onPatch={(patch) =>
+                  setForm((prev) => ({ ...prev, ...patch }))
+                }
                 onChange={(val) =>
                   setForm((prev) => {
                     const next = { ...prev, [field.key]: val };

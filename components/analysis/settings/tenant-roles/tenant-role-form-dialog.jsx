@@ -32,9 +32,6 @@ import { toast } from "sonner";
 const EMPTY_FORM = {
   text_of_reason: "",
   service_definition: "",
-  icon: "",
-  input_icon: "",
-  pop: false,
   hasUserInput: false,
   input_field_label: "",
   input_field_type: "text",
@@ -50,9 +47,6 @@ function roleToForm(role) {
   return {
     text_of_reason: role.text_of_reason || role.name || "",
     service_definition: role.service_definition || "",
-    icon: role.icon || "",
-    input_icon: role.input_icon || "",
-    pop: Boolean(role.pop),
     hasUserInput,
     input_field_label: role.input_field_label || "",
     input_field_type: role.input_field_type || "text",
@@ -181,27 +175,12 @@ export default function TenantRoleFormDialog({ role = null }) {
               />
             </div>
 
-            <div className="rounded-[16px] border border-[#EEEEEE] bg-[#FAFAFA] p-4 space-y-4">
+            <div className="rounded-[16px] border border-[#EEEEEE] bg-[#FAFAFA] p-4">
               <div className="flex items-center justify-between gap-3">
-                <div className="text-right">
-                  <p className="text-sm font-bold">فتح نافذة منبثقة؟</p>
-                  <p className="text-[11px] text-[#A3A3A3]">
-                    عند التفعيل يظهر مودال التعريف/الإدخال في التطبيق
-                  </p>
-                </div>
-                <Switch
-                  dir="ltr"
-                  checked={form.pop}
-                  onCheckedChange={(checked) => setField("pop", checked)}
-                  className="data-[state=checked]:bg-brand-main"
-                />
-              </div>
-
-              <div className="flex items-center justify-between gap-3 border-t border-[#EEEEEE] pt-4">
                 <div className="text-right">
                   <p className="text-sm font-bold">حقل من المستخدم؟</p>
                   <p className="text-[11px] text-[#A3A3A3]">
-                    يطلب إدخال قيمة (نص أو رقم) داخل المودال
+                    يطلب إدخال قيمة (نص أو رقم) داخل المودال في التطبيق
                   </p>
                 </div>
                 <Switch

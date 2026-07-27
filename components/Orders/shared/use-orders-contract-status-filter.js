@@ -12,7 +12,7 @@ import OrdersStatusCards from "./orders-status-cards";
 
 /**
  * Shared contract-status filter tabs (جديد / استرجاع / ملغي / معلق / مستلم / تم التوثيق)
- * used across order list pages. Default selection is مستلم.
+ * used across order list pages. Default selection is جديد.
  */
 export function useOrdersContractStatusFilter({
   countsBaseUrl = "/admin/orders",
@@ -20,7 +20,7 @@ export function useOrdersContractStatusFilter({
   countsExtraParams = "",
   enabled = true,
 } = {}) {
-  // null = use default (مستلم) once statuses are loaded
+  // null = use default (جديد) once statuses are loaded
   const [activeFilter, setActiveFilter] = useState(null);
 
   const { data: statusData, isLoading: statusLoading } = useQuery({
@@ -71,7 +71,7 @@ export function useOrdersContractStatusFilter({
     appendStatusParam,
     resetStatusFilter,
     defaultFilterId,
-    /** False until contract statuses are loaded and the default (مستلم) can be resolved. */
+    /** False until contract statuses are loaded and the default (جديد) can be resolved. */
     statusFilterReady: enabled ? !statusLoading : true,
   };
 }
@@ -82,7 +82,7 @@ export function OrdersContractStatusFilterBar({
   statusItems,
   countsById,
   allTotal,
-  showAllCard = true,
+  showAllCard = false,
   className = "flex flex-wrap gap-3",
 }) {
   if (!statusItems?.length && !showAllCard) return null;

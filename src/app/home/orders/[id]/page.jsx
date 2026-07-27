@@ -19,6 +19,7 @@ import LeaseRenewalOrderView from "@/components/Orders/single-order/lease-renewa
 import Loader from "@/components/home/loader";
 import { SingleOrderProvider, useSingleOrderContext } from "@/components/Orders/single-order/single-order-context";
 import { useSidebarStore } from "@/src/stores/sidebar-store";
+import { isSubleaseInstrument } from "@/src/lib/instrument-types";
 
 const tabStyle =
   "max-lg:flex-1 flex items-center text-xs gap-1 py-3 px-4 bg-gray-200 rounded-full border border-gray-300 data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:border-transparent";
@@ -27,7 +28,6 @@ function OrderDetailsContent() {
   const { orderData, isLoading, isError } = useSingleOrderContext();
   const { id } = useParams();
   const { setOrderId, setDisplayedPart, setSidebarOpen } = useSidebarStore();
-console.log({orderData});
 
   useEffect(() => {
     setOrderId(id);
@@ -43,6 +43,7 @@ console.log({orderData});
 
   const isLeaseRenewal =
     orderData?.contract_summary?.instrument_type_key === "lease_renewal";
+  const isSublease = isSubleaseInstrument(orderData);
 
   if (isLoading) return <Loader />;
   if (isError || !orderData) {
@@ -56,16 +57,18 @@ console.log({orderData});
   const tabsButtons = [
     {
       value: "deed-owners",
-      label: "الصك - الملاك",
+      label: isSublease ? "عقد الإيجار من الباطن" : "الصك - الملاك",
       icon: <PiFilesLight size={20} />,
       content: <DeedOwners data={orderData} />,
     },
-    {
-      value: "property-details",
-      label: "تفاصيل العقار",
-      icon: <TbPentagonMinus size={20} />,
-      content: <PropertyDetails data={orderData} />,
-    },
+    !isSublease
+      ? {
+          value: "property-details",
+          label: "تفاصيل العقار",
+          icon: <TbPentagonMinus size={20} />,
+          content: <PropertyDetails data={orderData} />,
+        }
+      : null,
     {
       value: "units-details",
       label: "تفاصيل الوحدات",
@@ -84,7 +87,7 @@ console.log({orderData});
       icon: <LuShieldMinus size={20} />,
       content: <FinancialDetailes data={orderData} />,
     },
-  ];
+  ].filter(Boolean);
 
   return (
     <div>

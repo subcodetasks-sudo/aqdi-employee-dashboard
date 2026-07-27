@@ -166,21 +166,21 @@ export default function OrdersStatusCards({
   statusItems = [],
   activeFilter,
   onFilterChange,
-  showAllCard = true,
+  showAllCard = false,
   allTotal = 0,
   countsById = {},
   gridClassName = "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3",
 }) {
   return (
     <div className={gridClassName}>
-      {showAllCard && (
+      {showAllCard ? (
         <StatusCard
           item={{ name: "الكل" }}
           count={allTotal}
           isActive={activeFilter === ""}
           onClick={() => onFilterChange("")}
         />
-      )}
+      ) : null}
 
       {statusItems?.map((item) => {
         const isActive = String(activeFilter) === String(item.id);

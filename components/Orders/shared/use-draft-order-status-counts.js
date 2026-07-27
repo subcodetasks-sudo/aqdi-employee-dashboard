@@ -3,14 +3,13 @@ import { useQueries } from "@tanstack/react-query";
 import { axiosInstance } from "@/src/utils/axios";
 import {
   DRAFT_ORDERS_API,
-  getDraftOrdersByStatusUrl,
+  buildDraftOrdersUrl,
 } from "@/src/lib/draft-contract-statuses";
 
 const COUNT_QUERY_OPTIONS = {
   staleTime: 60_000,
   gcTime: 10 * 60_000,
   refetchOnWindowFocus: false,
-  // Must refetch when stale (e.g. after invalidateQueries) so draft status tabs update
   refetchOnMount: true,
   retry: false,
 };
@@ -18,17 +17,20 @@ const COUNT_QUERY_OPTIONS = {
 const extractTotal = (response) => {
   const body = response?.data;
   return (
-    body?.data?.data?.pagination?.total ??
     body?.data?.pagination?.total ??
+    body?.data?.data?.pagination?.total ??
+    body?.pagination?.total ??
     0
   );
 };
 
 const fetchListTotal = async (url) => {
-  const response = await axiosInstance(`${url}?page=1&per_page=1`);
+  const separator = url.includes("?") ? "&" : "?";
+  const response = await axiosInstance(`${url}${separator}page=1&per_page=1`);
   return extractTotal(response);
 };
 
+/** Counts draft orders per contract status via GET /admin/orders/draft?status_id= */
 export function useDraftOrderStatusCounts(statusItems = []) {
   const statusIds = useMemo(
     () => (statusItems ?? []).map((item) => item.id).filter(Boolean),
@@ -44,8 +46,9 @@ export function useDraftOrderStatusCounts(statusItems = []) {
           ...COUNT_QUERY_OPTIONS,
         },
         ...statusIds.map((id) => ({
-          queryKey: ["draft-order-status-count", id],
-          queryFn: () => fetchListTotal(getDraftOrdersByStatusUrl(id)),
+          queryKey: ["draft-order-status-count", "status_id", id],
+          queryFn: () =>
+            fetchListTotal(buildDraftOrdersUrl({ statusId: id })),
           enabled: Boolean(id),
           ...COUNT_QUERY_OPTIONS,
         })),

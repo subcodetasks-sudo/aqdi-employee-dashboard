@@ -7,20 +7,23 @@ import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { invalidateOrdersCaches } from '@/src/lib/invalidate-orders-caches'
 
+const RECEIVED_CONTRACT_STATUS_ID = 6
+
 export default function NotifictionCard({ order }) {
   const queryClient = useQueryClient()
   const router = useRouter()
   const { mutate: acceptOrder, isPending } = useMutation({
-    mutationFn: () => axiosInstance.post(`/admin/received-contracts`, {
-      contract_id: order?.id
-    }),
+    mutationFn: () =>
+      axiosInstance.post(`/admin/orders/${order?.id}/contract-status`, {
+        contract_status_id: RECEIVED_CONTRACT_STATUS_ID,
+      }),
     onSuccess: (res) => {
       invalidateOrdersCaches(queryClient, { orderId: order?.id })
-      toast.success(res?.data?.data?.receipt_status_label_ar)
+      toast.success(res?.data?.message || "تم استلام الطلب")
       router.push(`/home/orders/${order?.id}`)
     },
     onError: (err) => {
-      toast.error(err?.response?.data?.message)
+      toast.error(err?.response?.data?.message || "حدث خطأ أثناء استلام الطلب")
     }
   })
 

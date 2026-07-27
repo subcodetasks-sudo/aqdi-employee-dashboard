@@ -37,11 +37,6 @@ export function buildTenantRolePayload(form) {
       ? String(form.input_field_label || "").trim() || null
       : null,
     input_field_type: hasUserInput ? form.input_field_type || null : null,
-    icon: form.icon?.trim() ? form.icon.trim() : null,
-    input_icon: hasUserInput && form.input_icon?.trim()
-      ? form.input_icon.trim()
-      : null,
-    pop: Boolean(form.pop),
   };
 }
 

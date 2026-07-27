@@ -85,7 +85,6 @@ export const ADMIN_UNIT_CORE_FIELDS = [
 
 export const ADMIN_UNIT_ROOM_FIELDS = [
   { key: "tootal_rooms", label: "إجمالي الغرف", type: "text" },
-  { key: "The_number_of_halls", label: "عدد الصالات", type: "text" },
   { key: "The_number_of_kitchens", label: "عدد المطابخ", type: "text" },
   { key: "The_number_of_toilets", label: "عدد دورات المياه", type: "text" },
   { key: "window_ac", label: "مكيف شباك", type: "text" },
@@ -95,7 +94,15 @@ export const ADMIN_UNIT_ROOM_FIELDS = [
 export const ADMIN_UNIT_SERVICE_FIELDS = [
   { key: "kitchen_tank", label: "مطبخ راكب", type: "boolean" },
   { key: "furnished", label: "مؤثثة", type: "boolean" },
-  { key: "type_furnished", label: "نوع التأثيث", type: "text" },
+  {
+    key: "type_furnished",
+    label: "نوع التأثيث",
+    type: "select",
+    options: [
+      { value: "1", label: "جديد" },
+      { value: "0", label: "مستعمل" },
+    ],
+  },
   { key: "electricity_meter", label: "عداد كهرباء", type: "boolean" },
   { key: "electricity_meter_number", label: "رقم عداد الكهرباء", type: "text" },
   {
@@ -118,7 +125,6 @@ export const ADMIN_UNIT_SERVICE_FIELDS = [
       { value: "tenant", label: "المستأجر" },
     ],
   },
-  { key: "Number_parking_spaces", label: "مواقف السيارات", type: "text" },
 ];
 
 /** @deprecated use ADMIN_UNIT_* — kept for legacy single-unit fallback callers */
@@ -163,7 +169,15 @@ export const STEP2_ROOM_FIELDS = [
 export const STEP2_SERVICE_FIELDS = [
   { key: "kitchen_tank", label: "مطبخ راكب", type: "boolean" },
   { key: "furnished", label: "مؤثثة", type: "boolean" },
-  { key: "type_furnished", label: "نوع التأثيث", type: "text" },
+  {
+    key: "type_furnished",
+    label: "نوع التأثيث",
+    type: "select",
+    options: [
+      { value: "1", label: "جديد" },
+      { value: "0", label: "مستعمل" },
+    ],
+  },
   { key: "electricity_meter", label: "عداد كهرباء", type: "boolean" },
   { key: "electricity_meter_number", label: "رقم عداد الكهرباء", type: "text" },
   {
@@ -279,8 +293,18 @@ export const STEP3_CONTRACT_META_FIELDS = [
 
 /** Financial / terms — POST /contract/step6 */
 export const STEP4_FINANCIAL_FIELDS = [
-  { key: "payment_type_id", label: "نوع الدفع", type: "text" },
-  { key: "contract_term_in_years", label: "مدة العقد", type: "text" },
+  {
+    key: "payment_type_id",
+    label: "نوع الدفع",
+    type: "select",
+    optionsSource: "payment-types",
+  },
+  {
+    key: "contract_term_in_years",
+    label: "مدة العقد",
+    type: "select",
+    optionsSource: "contract-periods",
+  },
   { key: "duration_years", label: "مدة (سنوات)", type: "text" },
   { key: "duration_months", label: "مدة (أشهر)", type: "text" },
 ];
@@ -301,12 +325,60 @@ export const STEP4_TERMS_FIELDS = [
       { value: "gregorian", label: "ميلادي" },
     ],
   },
-  { key: "conditions", label: "الشروط", type: "boolean" },
-  { key: "tenant_roles", label: "صلاحيات المستأجر (علم)", type: "boolean" },
+  { key: "conditions", label: "هل توجد شروط أخرى؟", type: "boolean" },
+  { key: "tenant_roles", label: "تفعيل صلاحيات المستأجر", type: "boolean" },
   { key: "additional_terms", label: "شروط إضافية (علم)", type: "boolean" },
   { key: "tenant_role_id", label: "دور المستأجر", type: "select", optionsSource: "tenant-roles" },
+  {
+    key: "tenant_role_ids",
+    label: "صلاحيات المستأجر",
+    type: "tenant-roles",
+    colSpan: 3,
+  },
+  { key: "tenant_role_values", label: "قيم صلاحيات المستأجر", type: "hidden" },
+  {
+    key: "other_conditions_list",
+    label: "قائمة الشروط",
+    type: "other-conditions",
+    colSpan: 3,
+  },
   { key: "text_additional_terms", label: "نص الشروط الإضافية", type: "textarea", colSpan: 2 },
   { key: "notes", label: "ملاحظات", type: "textarea", colSpan: 2 },
+];
+
+/** Editable other-conditions block on contract financial tab */
+export const STEP4_OTHER_CONDITIONS_FIELDS = [
+  { key: "conditions", label: "هل توجد شروط أخرى؟", type: "hidden" },
+  {
+    key: "other_conditions_list",
+    label: "قائمة الشروط",
+    type: "other-conditions",
+    colSpan: 3,
+  },
+];
+
+/** Notes / additional terms (separate from other_conditions_list) */
+export const STEP4_NOTES_FIELDS = [
+  { key: "additional_terms", label: "شروط إضافية (علم)", type: "boolean" },
+  {
+    key: "text_additional_terms",
+    label: "نص الشروط الإضافية",
+    type: "textarea",
+    colSpan: 2,
+  },
+  { key: "notes", label: "ملاحظات", type: "textarea", colSpan: 2 },
+];
+
+/** Editable tenant-roles block on contract financial tab */
+export const STEP4_TENANT_ROLES_FIELDS = [
+  {
+    key: "tenant_role_ids",
+    label: "صلاحيات المستأجر",
+    type: "tenant-roles",
+    colSpan: 3,
+  },
+  { key: "tenant_role_values", label: "قيم صلاحيات المستأجر", type: "hidden" },
+  { key: "tenant_roles", label: "تفعيل صلاحيات المستأجر", type: "hidden" },
 ];
 
 /** Lease-renewal editable sections (displayed fields only). */

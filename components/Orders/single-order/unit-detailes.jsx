@@ -86,6 +86,13 @@ function ownershipLabel(value) {
   return value;
 }
 
+/** API stores type_furnished as 0|1 — display Arabic labels. */
+function furnishedTypeLabel(value) {
+  if (value === true || value === 1 || value === "1") return "جديد";
+  if (value === false || value === 0 || value === "0") return "مستعمل";
+  return value;
+}
+
 /** Source of truth: unit object only — never contract root / step2. */
 function resolveUnitFieldValue(field, unit) {
   const displayKey = field.displayKey;
@@ -99,6 +106,10 @@ function resolveUnitFieldValue(field, unit) {
       return null;
     }
     return asYesNo(rawValue);
+  }
+
+  if (field.key === "type_furnished") {
+    return furnishedTypeLabel(rawValue);
   }
 
   if (
@@ -143,7 +154,6 @@ function unitFormDeps(unit) {
     unit?.unit_type_id,
     unit?.unit_usage_id,
     unit?.tootal_rooms,
-    unit?.The_number_of_halls,
     unit?.The_number_of_kitchens,
     unit?.The_number_of_toilets,
     unit?.window_ac,
@@ -157,7 +167,6 @@ function unitFormDeps(unit) {
     unit?.water_meter,
     unit?.water_meter_number,
     unit?.water_meter_ownership,
-    unit?.Number_parking_spaces,
     unit?.updated_at,
   ];
 }

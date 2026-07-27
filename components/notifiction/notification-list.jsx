@@ -15,7 +15,7 @@ export default function NotificationList() {
 
   function getUnreceivedOrders() {
     return axiosInstance
-      .get(`/admin/orders?is_received=false&per_page=100&page=${currentPage}`)
+      .get(`/admin/orders?status_id=1&per_page=100&page=${currentPage}`)
       .then((res) => res?.data)
       .catch((err) => {
         throw err;

@@ -193,7 +193,26 @@ export function buildContractPrintHtml(orderData) {
     ["نوع العقد", summary.contract_type],
     ["تاريخ بدء العقد", step4.contract_starting_date],
     ["مدة العقد", summary.contract_period],
-    ["صلاحيات المستأجر", step3.tenant_role_names?.join("، ")],
+    ["صلاحيات المستأجر", (() => {
+      const details = orderData?.tenant_roles_details || step4.tenant_roles_details;
+      if (Array.isArray(details) && details.length) {
+        return details
+          .map((item) => {
+            const label = item?.text_of_reason || item?.name || "";
+            const value = item?.value;
+            return value != null && value !== ""
+              ? `${label} (${value})`
+              : label;
+          })
+          .filter(Boolean)
+          .join("، ");
+      }
+      const names =
+        orderData?.tenant_role_names ||
+        step4.tenant_role_names ||
+        step3.tenant_role_names;
+      return Array.isArray(names) ? names.join("، ") : names;
+    })()],
     ["رقم هوية المستأجر", step3.tenant_id_num],
     ["تاريخ ميلاد المستأجر", step3.tenant_dob],
     ["رقم جوال المستأجر", step3.tenant_mobile],
@@ -207,7 +226,14 @@ export function buildContractPrintHtml(orderData) {
     ["مدة العقد", step4.contract_term_name],
     ["تاريخ بداية العقد", step4.contract_starting_date],
     ["نوع التاريخ", step4.type_contract_starting_date === "hijri" ? "هجري" : "ميلادي"],
-    ["شروط إضافية", step4.other_conditions || "لا يوجد"],
+    ["شروط أخرى", (() => {
+      const list =
+        orderData?.other_conditions_list || step4.other_conditions_list;
+      if (Array.isArray(list) && list.length) {
+        return list.filter(Boolean).join("، ");
+      }
+      return step4.other_conditions || orderData?.other_conditions || "لا يوجد";
+    })()],
     ["نص الشروط الإضافية", step4.text_additional_terms],
   ])}
 </body>

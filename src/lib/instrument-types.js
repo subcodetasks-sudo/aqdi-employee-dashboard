@@ -44,3 +44,30 @@ export function getInstrumentTypeOptions() {
     label: getInstrumentTypeLabel(value),
   }));
 }
+
+const SUBLEASE_LABELS = new Set([
+  "اتفاقية إعارة من الباطن",
+  "عقد إيجار من الباطن",
+  INSTRUMENT_TYPE_LABELS.sublease_agreement,
+]);
+
+/** True when instrument is sublease / إعارة من الباطن. */
+export function isSubleaseInstrument(orderData) {
+  const summary = orderData?.contract_summary ?? {};
+  const candidates = [
+    orderData?.instrument_type_key,
+    summary.instrument_type_key,
+    orderData?.instrument_type,
+    summary.instrument_type,
+    orderData?.instrument_type_trans,
+    summary.instrument_type_trans,
+  ]
+    .filter((value) => value != null && value !== "")
+    .map((value) => String(value).trim());
+
+  return candidates.some((value) => {
+    if (value === "sublease_agreement") return true;
+    if (SUBLEASE_LABELS.has(value)) return true;
+    return value.includes("إعارة من الباطن") || value.includes("إيجار من الباطن");
+  });
+}

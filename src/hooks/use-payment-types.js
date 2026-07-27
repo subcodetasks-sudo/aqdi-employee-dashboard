@@ -30,8 +30,30 @@ export function usePaymentTypes(contractType, enabled = true) {
     staleTime: 60_000,
   });
 
+  const items = query.data ?? [];
+
   return {
-    items: query.data ?? [],
+    items,
+    options: mapPaymentTypesToOptions(items),
     isLoading: query.isLoading,
   };
+}
+
+export function getPaymentTypeLabel(item = {}) {
+  return (
+    item?.name_trans ||
+    item?.name_ar ||
+    item?.name ||
+    item?.name_en ||
+    (item?.id != null ? String(item.id) : "—")
+  );
+}
+
+export function mapPaymentTypesToOptions(items = []) {
+  return items
+    .filter((item) => item?.id != null)
+    .map((item) => ({
+      value: String(item.id),
+      label: String(getPaymentTypeLabel(item)).trim() || String(item.id),
+    }));
 }

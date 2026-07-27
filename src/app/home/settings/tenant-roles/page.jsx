@@ -12,8 +12,8 @@ import { ChevronLeft, ChevronRight, Search } from "lucide-react";
 const PER_PAGE = 20;
 const TABLE_HEADERS = [
   "العنوان",
-  "نافذة منبثقة",
   "حقل مستخدم",
+  "ملخص الحقل",
   "الإجراءات",
 ];
 
@@ -112,31 +112,27 @@ export default function TenantRolesPage() {
                     <td className="p-[15px_20px] align-middle">
                       <span
                         className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-bold ${
-                          role.pop
-                            ? "bg-[#E7F5FF] text-[#228BE6]"
-                            : "bg-[#F5F5F5] text-[#737373]"
-                        }`}
-                      >
-                        {role.pop ? "مودال" : "بدون مودال"}
-                      </span>
-                    </td>
-                    <td className="p-[15px_20px] align-middle">
-                      <span
-                        className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-bold ${
                           role.has_user_input
                             ? "bg-[#E6FCF5] text-[#0C6055]"
                             : "bg-[#F5F5F5] text-[#737373]"
                         }`}
                       >
-                        {role.has_user_input
-                          ? `${role.input_field_type || "input"}`
-                          : "لا"}
+                        {role.has_user_input ? "نعم" : "لا"}
                       </span>
-                      {role.has_user_input && role.input_field_label ? (
-                        <p className="mt-1 text-[11px] text-[#A3A3A3]">
-                          {role.input_field_label}
-                        </p>
-                      ) : null}
+                    </td>
+                    <td className="p-[15px_20px] align-middle">
+                      {role.has_user_input ? (
+                        <div className="text-right">
+                          <p className="text-[13px] font-bold text-black">
+                            {role.input_field_label || "—"}
+                          </p>
+                          <p className="mt-0.5 text-[11px] text-[#A3A3A3]">
+                            النوع: {role.input_field_type || "—"}
+                          </p>
+                        </div>
+                      ) : (
+                        <span className="text-[13px] text-[#A3A3A3]">—</span>
+                      )}
                     </td>
                     <td className="p-[15px_20px] align-middle">
                       <div className="flex items-center gap-2">

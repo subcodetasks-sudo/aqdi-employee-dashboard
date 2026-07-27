@@ -157,13 +157,47 @@ export function getOrderSectionFields(orderData, context) {
       { label: "مدة (أشهر)", value: step4.duration_months },
       { label: "تاريخ بداية العقد", value: step4.contract_starting_date },
       {
-        label: "دور المستأجر",
-        value:
-          orderData?.tenant_role?.text_of_reason ||
-          orderData?.tenant_role?.name ||
-          step4.tenant_role_id,
+        label: "صلاحيات المستأجر",
+        value: (() => {
+          const details =
+            orderData?.tenant_roles_details || step4.tenant_roles_details;
+          if (Array.isArray(details) && details.length) {
+            return details
+              .map((item) => {
+                const label = item?.text_of_reason || item?.name || "";
+                return item?.value != null && item.value !== ""
+                  ? `${label} (${item.value})`
+                  : label;
+              })
+              .filter(Boolean)
+              .join("، ");
+          }
+          const names =
+            orderData?.tenant_role_names || step4.tenant_role_names;
+          if (Array.isArray(names) && names.length) return names.join("، ");
+          return (
+            orderData?.tenant_role?.text_of_reason ||
+            orderData?.tenant_role?.name ||
+            step4.tenant_role_id
+          );
+        })(),
       },
-      { label: "الشروط الإضافية", value: step4.text_additional_terms },
+      {
+        label: "شروط أخرى",
+        value: (() => {
+          const list =
+            orderData?.other_conditions_list || step4.other_conditions_list;
+          if (Array.isArray(list) && list.length) {
+            return list.filter(Boolean).join("، ");
+          }
+          return (
+            orderData?.other_conditions ||
+            step4.other_conditions ||
+            step4.text_additional_terms
+          );
+        })(),
+      },
+      { label: "نص الشروط الإضافية", value: step4.text_additional_terms },
       { label: "ملاحظات", value: step4.notes },
     ];
   }

@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import Header from "../home/Header";
 import { axiosInstance } from "@/src/utils/axios";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Loader from "../home/loader";
 import { useRouter } from "next/navigation";
 import OrdersToolbar from "./shared/orders-toolbar";
@@ -19,6 +19,7 @@ import {
   OrdersContractStatusFilterBar,
   useOrdersContractStatusFilter,
 } from "./shared/use-orders-contract-status-filter";
+import { useSidebarStore } from "@/src/stores/sidebar-store";
 
 export default function AllOrdersWrapper() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -27,6 +28,8 @@ export default function AllOrdersWrapper() {
   const [showMoreFilters, setShowMoreFilters] = useState(false);
   const [advancedFilters, setAdvancedFilters] = useState(emptyAdvancedFilters);
   const router = useRouter();
+  const queryClient = useQueryClient();
+  const { setDisplayedPart, setSidebarOpen } = useSidebarStore();
   const {
     selectedOrders,
     selectedCount,
@@ -37,6 +40,11 @@ export default function AllOrdersWrapper() {
     getPageSelectionState,
   } = useOrdersSelection();
 
+  useEffect(() => {
+    queryClient.invalidateQueries({ queryKey: ["unReceivedOrders"] });
+    setSidebarOpen(true);
+    setDisplayedPart("notification");
+  }, [queryClient, setDisplayedPart, setSidebarOpen]);
   const {
     activeFilter,
     setActiveFilter,

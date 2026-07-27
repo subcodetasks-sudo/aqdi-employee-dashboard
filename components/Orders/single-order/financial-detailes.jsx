@@ -6,18 +6,21 @@ import dynamic from "next/dynamic";
 import { ContractStepEditor } from "./contract-edit/contract-step-editor";
 import {
   STEP4_FINANCIAL_FIELDS,
+  STEP4_OTHER_CONDITIONS_FIELDS,
   STEP4_TERMS_FIELDS,
+  STEP4_TENANT_ROLES_FIELDS,
 } from "./contract-edit/contract-field-schemas";
 import {
   formatDisplayValue,
   isEmptyDisplayValue,
   SECTION_ERROR_BUTTON_CLASS,
 } from "./contract-summary-view";
-import { asYesNo, pickFirst } from "./frontend-contract-fields";
 import {
-  getTenantRoleLabel,
-  useTenantRoles,
-} from "@/src/hooks/use-tenant-roles";
+  pickFirst,
+  resolveOtherConditionsList,
+  resolveTenantRoleDetails,
+} from "./frontend-contract-fields";
+import { useTenantRoles } from "@/src/hooks/use-tenant-roles";
 
 const OrderSectionErrorMenu = dynamic(
   () => import("@/components/Orders/messages/order-section-error-menu"),
@@ -62,35 +65,48 @@ const DetailCard = ({
   );
 };
 
+const ROLE_BORDER_COLORS = [
+  "border-blue-500",
+  "border-amber-500",
+  "border-indigo-600",
+  "border-sky-400",
+  "border-orange-500",
+  "border-rose-500",
+  "border-purple-500",
+  "border-teal-500",
+];
+
+function TenantRoleCard({ role, borderColor }) {
+  const valueText = role.value;
+  const empty = isEmptyDisplayValue(role.label);
+
+  return (
+    <div
+      className={`rounded-[16px] border-r-4 bg-white p-4 shadow-sm ${borderColor} ${
+        empty ? "opacity-45" : ""
+      }`}
+    >
+      <span className="mb-1 block text-right text-xs font-medium text-gray-400">
+        صلاحية المستأجر
+      </span>
+      <p className="text-right text-sm font-bold text-gray-800 lg:text-base">
+        {formatDisplayValue(role.label)}
+      </p>
+      {!isEmptyDisplayValue(valueText) ? (
+        <p className="mt-2 text-right text-xs text-gray-500">
+          <span className="font-medium text-gray-400">
+            {role.inputLabel || "القيمة"}:
+          </span>{" "}
+          <span className="font-bold text-gray-800">{valueText}</span>
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
 function composeDate(day, month, year, fallback) {
   if (day && month && year) return `${day}-${month}-${year}`;
   return fallback ?? null;
-}
-
-function resolveTenantRoleDisplay(data, step4, tenantRoles = []) {
-  const roleId = pickFirst(step4?.tenant_role_id, data?.tenant_role_id);
-  const matchedRole =
-    roleId != null && roleId !== ""
-      ? tenantRoles.find((role) => String(role?.id) === String(roleId))
-      : null;
-
-  return pickFirst(
-    data?.tenant_role?.text_of_reason,
-    data?.tenant_role?.name,
-    step4?.tenant_role?.text_of_reason,
-    step4?.tenant_role?.name,
-    data?.relation_labels?.tenant_role,
-    matchedRole ? getTenantRoleLabel(matchedRole) : null,
-    Array.isArray(data?.tenant_role_ids) && data.tenant_role_ids.length
-      ? data.tenant_role_ids
-          .map((id) => {
-            const role = tenantRoles.find((item) => String(item?.id) === String(id));
-            return role ? getTenantRoleLabel(role) : null;
-          })
-          .filter(Boolean)
-          .join("، ") || null
-      : null
-  );
 }
 
 function FinancialDetailes({ data }) {
@@ -114,7 +130,18 @@ function FinancialDetailes({ data }) {
     pick("payment_type_id")
   );
 
-  const tenantRoleLabel = resolveTenantRoleDisplay(data, step4, tenantRoles);
+  const tenantRoleItems = resolveTenantRoleDetails(data, tenantRoles);
+  const hasTenantRolesFlag =
+    pick("tenant_roles") === true ||
+    pick("tenant_roles") === 1 ||
+    pick("tenant_roles") === "1";
+
+  const otherConditionsList = resolveOtherConditionsList(data);
+  const hasOtherConditionsFlag =
+    pick("conditions") === true ||
+    pick("conditions") === 1 ||
+    pick("conditions") === "1" ||
+    otherConditionsList.length > 0;
 
   const financialDetails = [
     {
@@ -165,51 +192,10 @@ function FinancialDetailes({ data }) {
             : pick("type_contract_starting_date"),
       borderColor: "border-sky-400",
     },
-    {
-      label: "صلاحيات المستأجر",
-      value: tenantRoleLabel,
-      borderColor: "border-blue-500",
-      copyable: true,
-    },
-  ];
-
-  const otherTerms = [
-    {
-      label: "الشروط",
-      value: asYesNo(pick("conditions")),
-      borderColor: "border-gray-300",
-    },
-    {
-      label: "صلاحيات المستأجر (علم)",
-      value: asYesNo(pick("tenant_roles")),
-      borderColor: "border-gray-300",
-    },
-    {
-      label: "شروط إضافية (علم)",
-      value: asYesNo(pick("additional_terms")),
-      borderColor: "border-gray-300",
-    },
-    {
-      label: "نص الشروط الإضافية",
-      value: pick("text_additional_terms", "other_conditions"),
-      borderColor: "border-gray-300",
-    },
   ];
 
   const termsFields = STEP4_TERMS_FIELDS.filter((field) =>
-    ["contract_starting_date", "type_contract_starting_date", "tenant_role_id"].includes(
-      field.key
-    )
-  );
-
-  const additionalFields = STEP4_TERMS_FIELDS.filter((field) =>
-    [
-      "conditions",
-      "tenant_roles",
-      "additional_terms",
-      "text_additional_terms",
-      "notes",
-    ].includes(field.key)
+    ["contract_starting_date", "type_contract_starting_date"].includes(field.key)
   );
 
   return (
@@ -242,13 +228,86 @@ function FinancialDetailes({ data }) {
             </ContractStepEditor>
           </div>
 
-          <ContractStepEditor title="الشروط والصلاحيات" step="step4" fields={additionalFields}>
+          <ContractStepEditor
+            title="شروط أخرى"
+            step="step4"
+            fields={STEP4_OTHER_CONDITIONS_FIELDS}
+          >
             <div className="rounded-[28px] border border-gray-100 bg-gray-100/50 p-6">
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                {otherTerms.map((item) => (
-                  <DetailCard key={item.label} {...item} />
-                ))}
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <div className="text-right">
+                  <h3 className="text-sm font-black text-gray-800">
+                    هل توجد شروط أخرى؟
+                  </h3>
+                  <p className="mt-1 text-xs text-gray-400">
+                    {hasOtherConditionsFlag ? "نعم" : "لا"}
+                  </p>
+                </div>
+                {otherConditionsList.length > 0 ? (
+                  <span className="rounded-full bg-brand-hover/15 px-2.5 py-1 text-[11px] font-bold text-brand-hover">
+                    {otherConditionsList.length} شرط
+                  </span>
+                ) : null}
               </div>
+
+              {otherConditionsList.length > 0 ? (
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  {otherConditionsList.map((condition, index) => (
+                    <DetailCard
+                      key={`condition-${index}`}
+                      label={`الشرط ${index + 1}`}
+                      value={condition}
+                      borderColor={
+                        ROLE_BORDER_COLORS[index % ROLE_BORDER_COLORS.length]
+                      }
+                      copyable
+                    />
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm font-medium text-[#A3A3A3]">
+                  لا توجد شروط أخرى محددة
+                </p>
+              )}
+            </div>
+          </ContractStepEditor>
+
+          <ContractStepEditor
+            title="صلاحيات المستأجر"
+            step="step4"
+            fields={STEP4_TENANT_ROLES_FIELDS}
+          >
+            <div className="rounded-[28px] border border-brand-hover/30 bg-brand-hover/5 p-6">
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <h3 className="text-sm font-black text-gray-800">
+                  الصلاحيات المحددة
+                </h3>
+                {hasTenantRolesFlag || tenantRoleItems.length > 0 ? (
+                  <span className="rounded-full bg-brand-hover/15 px-2.5 py-1 text-[11px] font-bold text-brand-hover">
+                    {tenantRoleItems.length} صلاحية
+                  </span>
+                ) : null}
+              </div>
+
+              {tenantRoleItems.length > 0 ? (
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  {tenantRoleItems.map((role, index) => (
+                    <TenantRoleCard
+                      key={role.id ?? `${role.label}-${index}`}
+                      role={role}
+                      borderColor={
+                        ROLE_BORDER_COLORS[index % ROLE_BORDER_COLORS.length]
+                      }
+                    />
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm font-medium text-[#A3A3A3]">
+                  {hasTenantRolesFlag
+                    ? "تم تفعيل صلاحيات المستأجر بدون تفاصيل محفوظة"
+                    : "لا توجد صلاحيات مستأجر محددة"}
+                </p>
+              )}
             </div>
           </ContractStepEditor>
         </div>

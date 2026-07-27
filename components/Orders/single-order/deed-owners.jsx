@@ -29,6 +29,7 @@ import {
   asYesNo,
   pickFirst,
 } from "./frontend-contract-fields";
+import { isSubleaseInstrument } from "@/src/lib/instrument-types";
 
 const OrderSectionErrorMenu = dynamic(
   () => import("@/components/Orders/messages/order-section-error-menu"),
@@ -76,6 +77,10 @@ const DeedOwners = ({ data }) => {
 
   const hasLegalAgent =
     asYesNo(pick("add_legal_agent_of_owner")) === "نعم";
+  const isSublease = isSubleaseInstrument(data);
+  const instrumentImageLabel = isSublease
+    ? "صورة عقد الإيجار من الباطن الأساسي"
+    : "صـورة الصك";
 
   const agencyDocumentUrl = resolveAgencyDocumentUrl({
     ...summary,
@@ -89,11 +94,15 @@ const DeedOwners = ({ data }) => {
   const images = INSTRUMENT_IMAGE_FIELDS.map(({ key, label }) => {
     const url = resolveImageUrl(pick(key));
     if (!url) return null;
+    const displayLabel =
+      key === "image_instrument" && isSublease
+        ? "صورة عقد الإيجار من الباطن الأساسي"
+        : label;
     return {
       original: url,
       thumbnail: url,
-      description: label,
-      originalAlt: label,
+      description: displayLabel,
+      originalAlt: displayLabel,
     };
   }).filter(Boolean);
 
@@ -158,7 +167,7 @@ const DeedOwners = ({ data }) => {
       {images.length > 0 ? (
         <div className="w-1/3 shrink-0">
           <div className="flex items-center gap-1 text-xs mb-2">
-            <p className="text-[#4D4D4D]">صـورة الصك :</p>
+            <p className="text-[#4D4D4D]">{instrumentImageLabel} :</p>
             <Button
               variant="ghost"
               className="p-0 text-xs h-auto text-green-600 font-bold hover:text-green-700"
@@ -182,39 +191,39 @@ const DeedOwners = ({ data }) => {
       ) : null}
 
       <div className="flex-1 min-w-0 space-y-8">
-
-
-        <ContractStepEditor
-          title="بيــانات المــلاك"
-          step="summary"
-          fields={SUMMARY_OWNER_FIELDS}
-        >
-          <div className="rounded-[28px] border border-gray-100 bg-gray-100/50 p-6">
-            <SummaryFieldsLayout
-              errorMenu={
-                <OrderSectionErrorMenu
-                  label="إرسال خطأ للعميل"
-                  orderData={data}
-                  context="owner"
-                  buttonClassName={SECTION_ERROR_BUTTON_CLASS}
-                />
-              }
-            >
-              <div className="grid grid-cols-1 gap-x-6 gap-y-5 sm:grid-cols-2 lg:grid-cols-3">
-                {ownerFields.map((item) => (
-                  <SummaryInfoItem
-                    key={item.label}
-                    value={item.value}
-                    label={item.label}
-                    onCopy={copyToClipboard}
+        {!isSublease ? (
+          <ContractStepEditor
+            title="بيــانات المــلاك"
+            step="summary"
+            fields={SUMMARY_OWNER_FIELDS}
+          >
+            <div className="rounded-[28px] border border-gray-100 bg-gray-100/50 p-6">
+              <SummaryFieldsLayout
+                errorMenu={
+                  <OrderSectionErrorMenu
+                    label="إرسال خطأ للعميل"
+                    orderData={data}
+                    context="owner"
+                    buttonClassName={SECTION_ERROR_BUTTON_CLASS}
                   />
-                ))}
-              </div>
-            </SummaryFieldsLayout>
-          </div>
-        </ContractStepEditor>
+                }
+              >
+                <div className="grid grid-cols-1 gap-x-6 gap-y-5 sm:grid-cols-2 lg:grid-cols-3">
+                  {ownerFields.map((item) => (
+                    <SummaryInfoItem
+                      key={item.label}
+                      value={item.value}
+                      label={item.label}
+                      onCopy={copyToClipboard}
+                    />
+                  ))}
+                </div>
+              </SummaryFieldsLayout>
+            </div>
+          </ContractStepEditor>
+        ) : null}
 
-        {hasLegalAgent ? (
+        {!isSublease && hasLegalAgent ? (
           <ContractStepEditor
             title="بيــانات الوكيل"
             step="summary"

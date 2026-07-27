@@ -16,17 +16,20 @@ import {
 } from "./shared/orders-filter-utils";
 import { exportOrdersToExcel } from "./shared/orders-export";
 import { useOrdersSelection } from "./shared/use-orders-selection";
+import { useDraftOrderStatusCounts } from "./shared/use-draft-order-status-counts";
 import {
-  DRAFT_CONTRACT_STATUSES_API,
-  DRAFT_ORDERS_API,
-  extractDraftStatusItems,
-  getDraftOrdersByStatusUrl,
+  buildDraftOrdersUrl,
+  extractDraftOrdersPayload,
 } from "@/src/lib/draft-contract-statuses";
+import {
+  filterOrdersPageStatusItems,
+  getDefaultOrdersPageStatusId,
+} from "@/src/lib/orders-page-statuses";
 
 const DRAFT_CONTRACTS_QUERY_KEY = "draftContracts";
 
 export default function DraftContractsWrapper() {
-  const [activeFilter, setActiveFilter] = useState("");
+  const [activeFilter, setActiveFilter] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -48,74 +51,73 @@ export default function DraftContractsWrapper() {
     return () => clearTimeout(handler);
   }, [searchQuery]);
 
+  const { data: statusData, isLoading: statusLoading } = useQuery({
+    queryKey: ["status"],
+    queryFn: () => axiosInstance("/admin/contract-statuses"),
+  });
+
+  const statusItems = useMemo(
+    () => filterOrdersPageStatusItems(statusData?.data?.data?.items),
+    [statusData]
+  );
+
+  const defaultFilterId = useMemo(() => {
+    const id = getDefaultOrdersPageStatusId(statusItems);
+    return id != null && id !== "" ? String(id) : "";
+  }, [statusItems]);
+
+  const resolvedActiveFilter =
+    activeFilter === null ? defaultFilterId : activeFilter;
+
+  const statusFilterReady = !statusLoading;
+
+  const { byId: countsById, isLoading: countsLoading } =
+    useDraftOrderStatusCounts(statusItems);
+
   useEffect(() => {
     setCurrentPage(1);
-  }, [activeFilter, debouncedSearchQuery]);
+  }, [resolvedActiveFilter, debouncedSearchQuery]);
 
   useEffect(() => {
     clear();
-  }, [activeFilter, debouncedSearchQuery, advancedFilters, clear]);
+  }, [resolvedActiveFilter, debouncedSearchQuery, advancedFilters, clear]);
 
   const handleResetAll = () => {
     setSearchQuery("");
     setDebouncedSearchQuery("");
-    setActiveFilter("");
+    setActiveFilter(null);
     setAdvancedFilters(emptyAdvancedFilters);
     setShowMoreFilters(false);
     setCurrentPage(1);
     clear();
   };
 
-  const { data: statusData, isLoading: statusLoading } = useQuery({
-    queryKey: ["draft-contract-statuses-active"],
-    queryFn: () => axiosInstance(`${DRAFT_CONTRACT_STATUSES_API}/active`),
+  const { data, isLoading } = useQuery({
+    queryKey: [
+      DRAFT_CONTRACTS_QUERY_KEY,
+      resolvedActiveFilter,
+      debouncedSearchQuery,
+      currentPage,
+    ],
+    enabled: statusFilterReady && Boolean(resolvedActiveFilter),
+    queryFn: () =>
+      axiosInstance(
+        buildDraftOrdersUrl({
+          statusId: resolvedActiveFilter,
+          page: currentPage,
+          search: debouncedSearchQuery || undefined,
+        })
+      ),
   });
 
-  const statusItems = extractDraftStatusItems(statusData);
-
-  const countsById = useMemo(
-    () =>
-      statusItems.reduce((acc, item) => {
-        acc[item.id] =
-          item.orders_count ??
-          item.count ??
-          item.total ??
-          item.contracts_count ??
-          0;
-        return acc;
-      }, {}),
-    [statusItems]
+  const { items: orders, pagination } = useMemo(
+    () => extractDraftOrdersPayload(data),
+    [data]
   );
 
-  const { data: allDraftTotal = 0 } = useQuery({
-    queryKey: ["draft-orders-all-total"],
-    queryFn: async () => {
-      const response = await axiosInstance(`${DRAFT_ORDERS_API}?page=1&per_page=1`);
-      return response?.data?.data?.pagination?.total ?? 0;
-    },
-    staleTime: 5 * 60 * 1000,
-    retry: false,
-  });
-
-  const { data, isLoading } = useQuery({
-    queryKey: [DRAFT_CONTRACTS_QUERY_KEY, activeFilter, debouncedSearchQuery, currentPage],
-    queryFn: () => {
-      const baseUrl = activeFilter
-        ? getDraftOrdersByStatusUrl(activeFilter)
-        : DRAFT_ORDERS_API;
-      let url = `${baseUrl}?page=${currentPage}`;
-      if (debouncedSearchQuery) {
-        url += `&search=${encodeURIComponent(debouncedSearchQuery)}`;
-      }
-      return axiosInstance(url);
-    },
-  });
-
-  const orders = data?.data?.data?.items ?? [];
-  const pagination = data?.data?.data?.pagination;
-
   const filteredOrders = useMemo(
-    () => applyAdvancedFilters(orders, advancedFilters, { showStatusColumn: true }),
+    () =>
+      applyAdvancedFilters(orders, advancedFilters, { showStatusColumn: true }),
     [orders, advancedFilters]
   );
 
@@ -123,14 +125,17 @@ export default function DraftContractsWrapper() {
     () => ({
       getSelectedOrders: () => selectedOrders,
       onExport: (rows) =>
-        exportOrdersToExcel(rows, { filename: "مسودة-العقود", showStatusColumn: true }),
+        exportOrdersToExcel(rows, {
+          filename: "مسودة-العقود",
+          showStatusColumn: true,
+        }),
     }),
     [selectedOrders]
   );
 
   const pageSelectionState = getPageSelectionState(filteredOrders);
 
-  if (statusLoading || isLoading) {
+  if (!statusFilterReady || isLoading || countsLoading) {
     return <Loader />;
   }
 
@@ -147,6 +152,16 @@ export default function DraftContractsWrapper() {
       />
 
       <div className="flex flex-col gap-6 mt-4 relative z-10">
+        {statusItems.length > 0 ? (
+          <OrdersStatusCards
+            statusItems={statusItems}
+            activeFilter={resolvedActiveFilter}
+            onFilterChange={setActiveFilter}
+            countsById={countsById}
+            gridClassName="flex flex-wrap gap-3"
+          />
+        ) : null}
+
         <OrdersToolbar
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
@@ -162,24 +177,12 @@ export default function DraftContractsWrapper() {
           selectedCount={selectedCount}
           onClearSelection={clear}
         />
-        {statusItems.length > 0 ? (
-          <OrdersStatusCards
-            statusItems={statusItems}
-            activeFilter={activeFilter}
-            onFilterChange={setActiveFilter}
-            showAllCard
-            allTotal={allDraftTotal}
-            countsById={countsById}
-            gridClassName="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3"
-          />
-        ) : null}
       </div>
 
       <OrdersTable
         orders={filteredOrders}
         showStatusColumn
         showChangeStatus
-        statusMode="draft"
         queryKey={[DRAFT_CONTRACTS_QUERY_KEY]}
         onRowClick={(row) => router.push(`/home/orders/${row.id}`)}
         selectable
