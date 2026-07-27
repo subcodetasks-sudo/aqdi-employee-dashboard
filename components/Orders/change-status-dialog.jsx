@@ -22,6 +22,7 @@ export default function ChangeStatusDialog({ orderId, order, queryKey }) {
   const [returnDialogOpen, setReturnDialogOpen] = useState(false);
   const [newCategory, setNewCategory] = useState({
     name: '',
+    description: '',
     color_text: '#000000',
     color: '#000000'
   });
@@ -56,7 +57,7 @@ export default function ChangeStatusDialog({ orderId, order, queryKey }) {
     mutationFn: addStatus,
     onSuccess: (res) => {
       setIsAddModalOpen(false);
-      setNewCategory({ name: '', color_text: '#000000', color: '#000000' });
+      setNewCategory({ name: '', description: '', color_text: '#000000', color: '#000000' });
       queryClient.invalidateQueries({ queryKey: ["status"] });
       invalidateOrdersCaches(queryClient);
       changeStatusMutate(res?.data?.data?.id)
@@ -209,6 +210,19 @@ export default function ChangeStatusDialog({ orderId, order, queryKey }) {
                 value={newCategory.name}
                 onChange={(e) => setNewCategory(prev => ({ ...prev, name: e.target.value }))}
                 className="w-full h-[54px] bg-[#F9F9F9] border border-[#EEEEEE] rounded-[16px] px-5 text-[15px] focus:outline-none focus:border-brand-main focus:bg-white transition-all font-medium text-right"
+              />
+            </div>
+
+            <div className="flex flex-col gap-3">
+              <label className="text-[13px] font-bold text-black px-1">
+                وصف الحالة
+              </label>
+              <textarea
+                placeholder="ادخل وصف الحالة هنا ..."
+                value={newCategory.description}
+                onChange={(e) => setNewCategory(prev => ({ ...prev, description: e.target.value }))}
+                rows={3}
+                className="w-full min-h-[96px] bg-[#F9F9F9] border border-[#EEEEEE] rounded-[16px] px-5 py-3 text-[15px] focus:outline-none focus:border-brand-main focus:bg-white transition-all font-medium text-right resize-none"
               />
             </div>
 

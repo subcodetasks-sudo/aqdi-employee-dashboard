@@ -18,6 +18,7 @@ export default function OrdersSorting() {
     const [categoryToDelete, setCategoryToDelete] = useState(null);
     const [newCategory, setNewCategory] = useState({
         name: '',
+        description: '',
         color_text: '#000000',
         color: '#000000'
     });
@@ -34,7 +35,7 @@ export default function OrdersSorting() {
         onSuccess: (res) => {
             toast.success(res.data.message || "تم إضافة حالة العقد بنجاح");
             setIsAddModalOpen(false);
-            setNewCategory({ name: '', color_text: '#000000', color: '#000000' });
+            setNewCategory({ name: '', description: '', color_text: '#000000', color: '#000000' });
             invalidateContractStatusCaches(queryClient);
         },
         onError: (error) => {
@@ -123,6 +124,7 @@ export default function OrdersSorting() {
                         <thead>
                             <tr className="bg-[#FAFAFA]">
                                 <th className="text-right p-4 text-[#A3A3A3] text-[13px] font-bold rounded-r-[16px]">اسم التصنيــف</th>
+                                <th className="text-right p-4 text-[#A3A3A3] text-[13px] font-bold">وصف الحالة</th>
                                 <th className="text-center p-4 text-[#A3A3A3] text-[13px] font-bold">لون التصنيــف</th>
                                 <th className="text-center p-4 text-[#A3A3A3] text-[13px] font-bold rounded-l-[16px]">الاجـــراءات</th>
                             </tr>
@@ -134,6 +136,11 @@ export default function OrdersSorting() {
                                         <div className="flex items-center gap-4">
                                             <span className="text-[16px] font-bold text-black">{category?.name}</span>
                                         </div>
+                                    </td>
+                                    <td className="p-4 bg-white group-hover:bg-[#FAFAFA] border-y border-[#F0F0F0] max-w-[280px]">
+                                        <p className="text-[13px] text-[#737373] line-clamp-2 text-right">
+                                            {category?.description || "—"}
+                                        </p>
                                     </td>
                                     <td className="p-4 bg-white group-hover:bg-[#FAFAFA] border-y border-[#F0F0F0]">
                                         <div className="flex items-center justify-center gap-4">
@@ -155,7 +162,10 @@ export default function OrdersSorting() {
                                         <div className="flex items-center justify-center gap-3">
                                             <button
                                                 onClick={() => {
-                                                    setEditingCategory(category);
+                                                    setEditingCategory({
+                                                        ...category,
+                                                        description: category?.description ?? "",
+                                                    });
                                                     setIsEditModalOpen(true);
                                                 }}
                                                 className="w-10 h-10 rounded-full bg-[#E6FFE6] text-[#10B981] flex justify-center items-center hover:bg-[#10B981] hover:text-white transition-all shadow-sm"
@@ -213,6 +223,19 @@ export default function OrdersSorting() {
                                 value={newCategory.name}
                                 onChange={(e) => setNewCategory(prev => ({ ...prev, name: e.target.value }))}
                                 className="w-full h-[54px] bg-[#F9F9F9] border border-[#EEEEEE] rounded-[16px] px-5 text-[15px] focus:outline-none focus:border-brand-main focus:bg-white transition-all font-medium text-right"
+                            />
+                        </div>
+
+                        <div className="flex flex-col gap-3">
+                            <label className="text-[13px] font-bold text-black px-1">
+                                وصف الحالة
+                            </label>
+                            <textarea
+                                placeholder="ادخل وصف الحالة هنا ..."
+                                value={newCategory.description}
+                                onChange={(e) => setNewCategory(prev => ({ ...prev, description: e.target.value }))}
+                                rows={3}
+                                className="w-full min-h-[96px] bg-[#F9F9F9] border border-[#EEEEEE] rounded-[16px] px-5 py-3 text-[15px] focus:outline-none focus:border-brand-main focus:bg-white transition-all font-medium text-right resize-none"
                             />
                         </div>
 
@@ -292,6 +315,19 @@ export default function OrdersSorting() {
                                     value={editingCategory.name}
                                     onChange={(e) => setEditingCategory(prev => ({ ...prev, name: e.target.value }))}
                                     className="w-full h-[54px] bg-[#F9F9F9] border border-[#EEEEEE] rounded-[16px] px-5 text-[15px] focus:outline-none focus:border-brand-main focus:bg-white transition-all font-medium text-right"
+                                />
+                            </div>
+
+                            <div className="flex flex-col gap-3">
+                                <label className="text-[13px] font-bold text-black px-1">
+                                    وصف الحالة
+                                </label>
+                                <textarea
+                                    placeholder="ادخل وصف الحالة هنا ..."
+                                    value={editingCategory.description ?? ""}
+                                    onChange={(e) => setEditingCategory(prev => ({ ...prev, description: e.target.value }))}
+                                    rows={3}
+                                    className="w-full min-h-[96px] bg-[#F9F9F9] border border-[#EEEEEE] rounded-[16px] px-5 py-3 text-[15px] focus:outline-none focus:border-brand-main focus:bg-white transition-all font-medium text-right resize-none"
                                 />
                             </div>
 

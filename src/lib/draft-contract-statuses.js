@@ -83,6 +83,7 @@ export function filterDraftStatusFilterItems(statusItems = []) {
 
 export const emptyDraftStatusForm = {
   name: "",
+  description: "",
   color_text: "#000000",
   color: "#000000",
 };

@@ -173,6 +173,21 @@ export default function ChangeDraftStatusDialog({ orderId, queryKey }) {
               />
             </div>
 
+            <div className="flex flex-col gap-3">
+              <label className="text-[13px] font-bold text-black px-1">
+                وصف الحالة
+              </label>
+              <textarea
+                placeholder="ادخل وصف الحالة هنا ..."
+                value={newCategory.description ?? ""}
+                onChange={(e) =>
+                  setNewCategory((prev) => ({ ...prev, description: e.target.value }))
+                }
+                rows={3}
+                className="w-full min-h-[96px] bg-[#F9F9F9] border border-[#EEEEEE] rounded-[16px] px-5 py-3 text-[15px] focus:outline-none focus:border-brand-main focus:bg-white transition-all font-medium text-right resize-none"
+              />
+            </div>
+
             <button
               type="button"
               onClick={() => addStatusMutate()}
