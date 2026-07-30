@@ -15,6 +15,15 @@ export const CONTRACT_STEP_KEYS = {
     "mobile_of_property_owner_agent",
     "dob_of_property_owner_agent",
     "type_dob_property_owner_agent",
+    "copy_of_the_authorization_or_agency",
+    "image_instrument",
+    "image_instrument_from_the_front",
+    "image_instrument_from_the_back",
+    "Image_inheritance_certificate",
+    "copy_power_of_attorney_from_heirs_to_agent",
+    "copy_of_the_endowment_registration_certificate",
+    "copy_of_the_trusteeship_deed",
+    "copy_of_guardians_power_of_attorney_for_agent",
     "notes_edits",
   ],
   step1: [
@@ -72,6 +81,7 @@ export const CONTRACT_STEP_KEYS = {
     "dob_of_property_tenant_agent_month",
     "dob_of_property_tenant_agent_year",
     "mobile_of_property_tenant_agent",
+    "copy_of_the_authorization_or_agency",
     "notes",
   ],
   step4: [
@@ -394,6 +404,27 @@ const REQUIRED_BOOLEAN_DEFAULTS = {
   add_legal_agent_of_owner: 0,
 };
 
+const FILE_FIELD_KEYS = new Set([
+  "copy_of_the_authorization_or_agency",
+  "image_instrument",
+  "image_instrument_from_the_front",
+  "image_instrument_from_the_back",
+  "Image_inheritance_certificate",
+  "copy_power_of_attorney_from_heirs_to_agent",
+  "copy_of_the_endowment_registration_certificate",
+  "copy_of_the_trusteeship_deed",
+  "copy_of_guardians_power_of_attorney_for_agent",
+]);
+
+function normalizeFileFieldValue(value) {
+  if (!value) return "";
+  if (typeof value === "string") return value;
+  if (typeof value === "object") {
+    return value.url || value.path || value.full_url || value.src || "";
+  }
+  return "";
+}
+
 export function normalizeFieldValue(value, key) {
   if (key === "tenant_role_ids") {
     return parseTenantRoleIds(value);
@@ -403,6 +434,9 @@ export function normalizeFieldValue(value, key) {
   }
   if (key === "other_conditions_list") {
     return normalizeOtherConditionsList(value);
+  }
+  if (FILE_FIELD_KEYS.has(key)) {
+    return normalizeFileFieldValue(value);
   }
   if (
     key === "contract_term_in_years" ||
@@ -472,6 +506,14 @@ export function buildContractUpdatePayload(step, form, initialForm) {
 
     if (value === initial) continue;
     if (value === "" && (initial === "" || initial === undefined)) continue;
+
+    // Existing file URLs are display-only; only new File uploads are sent.
+    if (
+      FILE_FIELD_KEYS.has(key) &&
+      !(typeof File !== "undefined" && value instanceof File)
+    ) {
+      continue;
+    }
 
     if (
       [

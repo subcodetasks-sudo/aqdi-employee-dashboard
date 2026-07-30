@@ -4,15 +4,14 @@ import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { axiosInstance } from "@/src/utils/axios";
 import {
-  filterOrdersPageStatusItems,
   getDefaultOrdersPageStatusId,
 } from "@/src/lib/orders-page-statuses";
 import { useOrderStatusCounts } from "./use-order-status-counts";
 import OrdersStatusCards from "./orders-status-cards";
 
 /**
- * Shared contract-status filter tabs (جديد / استرجاع / ملغي / معلق / مستلم / تم التوثيق)
- * used across order list pages. Default selection is جديد.
+ * Shared contract-status filter tabs for order list pages.
+ * Shows all statuses from /admin/contract-statuses. Default selection is جديد.
  */
 export function useOrdersContractStatusFilter({
   countsBaseUrl = "/admin/orders",
@@ -30,7 +29,7 @@ export function useOrdersContractStatusFilter({
   });
 
   const statusItems = useMemo(
-    () => filterOrdersPageStatusItems(statusData?.data?.data?.items),
+    () => statusData?.data?.data?.items ?? [],
     [statusData]
   );
 

@@ -136,13 +136,37 @@ function buildSectionItems(fields, unit) {
   }));
 }
 
+const ALL_UNIT_FIELDS = [
+  ...ADMIN_UNIT_CORE_FIELDS,
+  ...ADMIN_UNIT_ROOM_FIELDS,
+  ...ADMIN_UNIT_SERVICE_FIELDS,
+];
+
+/**
+ * The unit endpoint replaces the whole record, so a section save has to resend
+ * every field it isn't editing — otherwise rooms/services get wiped.
+ */
+function getUnitFullPayload(unit) {
+  const payload = {};
+  for (const field of ALL_UNIT_FIELDS) {
+    const value = normalizeFieldValue(unit?.[field.key], field.key);
+    if (value === "" || value === null || value === undefined) continue;
+    payload[field.key] = value;
+  }
+  return payload;
+}
+
 function getUnitInitialValues(unit, fields) {
-  return Object.fromEntries(
-    fields.map((field) => [
-      field.key,
-      normalizeFieldValue(unit?.[field.key], field.key),
-    ])
-  );
+  const entries = fields.flatMap((field) => {
+    const pairs = [
+      [field.key, normalizeFieldValue(unit?.[field.key], field.key)],
+    ];
+    if (field.displayKey && unit?.[field.displayKey] != null) {
+      pairs.push([field.displayKey, unit[field.displayKey]]);
+    }
+    return pairs;
+  });
+  return Object.fromEntries(entries);
 }
 
 function unitFormDeps(unit) {
@@ -213,9 +237,9 @@ function SingleUnitBlock({ unit, data, index }) {
         toast.error("معرف الوحدة غير موجود");
         return;
       }
-      await updateUnit(unit.id, payload);
+      await updateUnit(unit.id, { ...getUnitFullPayload(unit), ...payload });
     },
-    [unit?.id, updateUnit]
+    [unit, updateUnit]
   );
 
   const handleDetach = async () => {
@@ -332,7 +356,7 @@ function UnitsEmptyState() {
     <div className="flex flex-col items-center justify-center gap-3 rounded-[28px] border border-dashed border-gray-200 bg-white px-6 py-16 text-[#A3A3A3]">
       <Inbox size={36} className="text-gray-300" />
       <p className="text-sm font-bold text-gray-500">لا توجد وحدات مرتبطة بهذا العقد</p>
-      <p className="text-xs">units_count = 0</p>
+      <p className="text-xs">عدد الوحدات = 0</p>
     </div>
   );
 }

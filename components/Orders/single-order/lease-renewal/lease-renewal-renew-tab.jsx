@@ -1,11 +1,13 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import { toast } from "sonner";
 import {
   Copy,
   Download,
   Eye,
+  FileText,
   Hand,
   ImageIcon,
 } from "lucide-react";
@@ -20,23 +22,45 @@ import {
   formatDisplayValue,
   isEmptyDisplayValue,
 } from "../contract-summary-view";
+import AgencyDocumentViewerDialog from "../agency-document-viewer-dialog";
 
 const EMPTY_ADDITIONAL_TERMS = "لا توجد شروط أو متغيرات إضافية من العميل";
 const EMPTY_NOTES = "لا توجد ملاحظات";
 
+function resolveInstrumentUrl(value) {
+  if (!value) return null;
+  if (typeof value === "string") return value.trim() || null;
+  if (typeof value === "object") {
+    return value.url || value.path || value.full_url || value.src || null;
+  }
+  return null;
+}
+
+function isPdfUrl(url) {
+  if (!url || typeof url !== "string") return false;
+  return url.split("?")[0].toLowerCase().endsWith(".pdf");
+}
+
 const getFileExtension = (url) => {
-  if (!url) return "jpg";
+  if (!url) return "file";
+  if (isPdfUrl(url)) return "pdf";
   const match = url.split("?")[0].match(/\.([a-zA-Z0-9]+)$/);
   return match ? match[1].toLowerCase() : "jpg";
 };
 
 export default function LeaseRenewalRenewTab({ orderData }) {
+  const [viewerOpen, setViewerOpen] = useState(false);
   const step3 = orderData?.step3 ?? {};
   const step4 = orderData?.step4 ?? {};
   const orderUuid = orderData?.uuid ?? "410001";
-  const instrumentImage = orderData?.contract_summary?.image_instrument ?? null;
+  const instrumentImage = resolveInstrumentUrl(
+    orderData?.contract_summary?.image_instrument ??
+      orderData?.image_instrument
+  );
+  const isPdf = isPdfUrl(instrumentImage);
   const fileExtension = getFileExtension(instrumentImage);
   const documentName = `الصك #${orderUuid}`;
+  const viewerTitle = isPdf ? "معاينة عقد PDF" : "معاينة الصك";
 
   const additionalTerms = step4.text_additional_terms?.trim() || null;
   const notesEdits = step4.notes_edits?.trim() || null;
@@ -46,7 +70,7 @@ export default function LeaseRenewalRenewTab({ orderData }) {
 
   const requireInstrumentImage = () => {
     if (!instrumentImage) {
-      toast.error("لا توجد صورة صك متاحة");
+      toast.error("لا يوجد ملف عقد متاح");
       return false;
     }
     return true;
@@ -69,7 +93,7 @@ export default function LeaseRenewalRenewTab({ orderData }) {
       link.click();
       link.remove();
       window.URL.revokeObjectURL(blobUrl);
-      toast.success("تم تحميل صورة الصك بنجاح");
+      toast.success(isPdf ? "تم تحميل العقد PDF بنجاح" : "تم تحميل صورة الصك بنجاح");
     } catch {
       const link = document.createElement("a");
       link.href = instrumentImage;
@@ -79,13 +103,13 @@ export default function LeaseRenewalRenewTab({ orderData }) {
       document.body.appendChild(link);
       link.click();
       link.remove();
-      toast.success("تم بدء تحميل صورة الصك");
+      toast.success(isPdf ? "تم بدء تحميل العقد PDF" : "تم بدء تحميل صورة الصك");
     }
   };
 
   const handleViewInstrument = () => {
     if (!requireInstrumentImage()) return;
-    window.open(instrumentImage, "_blank", "noopener,noreferrer");
+    setViewerOpen(true);
   };
 
   return (
@@ -95,25 +119,37 @@ export default function LeaseRenewalRenewTab({ orderData }) {
           <div className="bg-[#F4F4F4] rounded-[20px] p-5 flex flex-col gap-4">
             <button
               type="button"
-              onClick={handleDownloadInstrument}
-              className="bg-white rounded-[18px] py-6 px-4 flex flex-col items-center border border-[#EBEBEB] hover:border-[#0019FF] hover:bg-[#F8FAFF] transition-colors w-full min-w-0"
+              onClick={instrumentImage ? handleViewInstrument : undefined}
+              disabled={!instrumentImage}
+              className="bg-white rounded-[18px] py-6 px-4 flex flex-col items-center border border-[#EBEBEB] hover:border-[#0019FF] hover:bg-[#F8FAFF] transition-colors w-full min-w-0 disabled:opacity-60 disabled:hover:border-[#EBEBEB] disabled:hover:bg-white"
             >
               {instrumentImage ? (
-                <div className="relative w-full max-w-[200px] h-[120px] mb-4 rounded-xl overflow-hidden border border-[#EEE]">
-                  <Image
-                    src={instrumentImage}
-                    alt="صورة الصك"
-                    fill
-                    className="object-contain"
-                    unoptimized
-                  />
-                </div>
+                isPdf ? (
+                  <div className="w-full max-w-[200px] h-[120px] mb-4 rounded-xl border border-[#EEE] bg-[#F8F8F8] flex flex-col items-center justify-center gap-2">
+                    <FileText className="size-10 text-[#E24444]" />
+                    <span className="text-[12px] font-bold text-[#616161] uppercase">
+                      PDF
+                    </span>
+                  </div>
+                ) : (
+                  <div className="relative w-full max-w-[200px] h-[120px] mb-4 rounded-xl overflow-hidden border border-[#EEE]">
+                    <Image
+                      src={instrumentImage}
+                      alt="صورة الصك"
+                      fill
+                      className="object-contain"
+                      unoptimized
+                    />
+                  </div>
+                )
               ) : (
                 <div className="w-[72px] h-[72px] rounded-full bg-black flex items-center justify-center mb-4">
                   <ImageIcon className="size-8 text-white" />
                 </div>
               )}
-              <p className="font-black text-[15px] text-black">تحميل العقد</p>
+              <p className="font-black text-[15px] text-black">
+                {isPdf ? "معاينة العقد PDF" : "تحميل العقد"}
+              </p>
               <p className="text-[12px] text-[#9E9E9E] mt-1">{fileExtension}</p>
             </button>
 
@@ -143,19 +179,23 @@ export default function LeaseRenewalRenewTab({ orderData }) {
                     <p className="text-[10px] text-[#9E9E9E]">{fileExtension}</p>
                   </div>
                   <div className="w-10 h-10 rounded-xl bg-black flex items-center justify-center shrink-0 overflow-hidden relative">
-                    <Image
-                      src={instrumentImage}
-                      alt=""
-                      fill
-                      className="object-cover"
-                      unoptimized
-                    />
+                    {isPdf ? (
+                      <FileText className="size-5 text-white" />
+                    ) : (
+                      <Image
+                        src={instrumentImage}
+                        alt=""
+                        fill
+                        className="object-cover"
+                        unoptimized
+                      />
+                    )}
                   </div>
                 </div>
               </div>
             ) : (
               <p className="text-center text-[12px] text-[#9E9E9E] py-2">
-                لا توجد صورة صك مرفقة
+                لا يوجد ملف عقد مرفق
               </p>
             )}
           </div>
@@ -255,6 +295,13 @@ export default function LeaseRenewalRenewTab({ orderData }) {
           </div>
         </ContractStepEditor>
       </div>
+
+      <AgencyDocumentViewerDialog
+        open={viewerOpen}
+        onOpenChange={setViewerOpen}
+        documentUrl={instrumentImage}
+        title={viewerTitle}
+      />
     </div>
   );
 }

@@ -28,11 +28,12 @@ export function extractAdminTenantRoles(response) {
 
 export function buildTenantRolePayload(form) {
   const hasUserInput = Boolean(form.hasUserInput);
+  const definitionHtml = String(form.service_definition || "").trim();
+  const definitionText = definitionHtml.replace(/<[^>]*>/g, "").trim();
+
   return {
     text_of_reason: String(form.text_of_reason || "").trim(),
-    service_definition: form.service_definition?.trim()
-      ? form.service_definition.trim()
-      : null,
+    service_definition: definitionText ? definitionHtml : null,
     input_field_label: hasUserInput
       ? String(form.input_field_label || "").trim() || null
       : null,

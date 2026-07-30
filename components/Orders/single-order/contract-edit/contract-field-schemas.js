@@ -2,7 +2,6 @@
 
 /** Owner fields from POST /contract/step3 */
 export const SUMMARY_OWNER_FIELDS = [
-  { key: "name_owner", label: "اسم المالك", type: "text" },
   { key: "property_owner_id_num", label: "رقم الهوية", type: "text" },
   {
     key: "property_owner_dob",
@@ -20,7 +19,6 @@ export const SUMMARY_OWNER_FIELDS = [
     ],
   },
   { key: "property_owner_mobile", label: "رقم الجوال", type: "text" },
-  { key: "property_owner_iban", label: "آيبان المالك", type: "text" },
 ];
 
 export const SUMMARY_AGENT_FIELDS = [
@@ -41,12 +39,89 @@ export const SUMMARY_AGENT_FIELDS = [
     ],
   },
   { key: "mobile_of_property_owner_agent", label: "جوال الوكيل", type: "text" },
+  {
+    key: "copy_of_the_authorization_or_agency",
+    label: "صورة التفويض / الوكالة",
+    type: "file",
+    accept: "image/*,application/pdf",
+    colSpan: 3,
+  },
+];
+
+/** Deed / instrument images — multipart on contract update */
+export const SUMMARY_INSTRUMENT_IMAGE_FIELDS = [
+  {
+    key: "image_instrument",
+    label: "صورة الصك",
+    type: "file",
+    accept: "image/*,application/pdf",
+    colSpan: 3,
+  },
+  {
+    key: "image_instrument_from_the_front",
+    label: "صورة الصك (من الأمام)",
+    type: "file",
+    accept: "image/*,application/pdf",
+    colSpan: 3,
+  },
+  {
+    key: "image_instrument_from_the_back",
+    label: "صورة الصك (من الخلف)",
+    type: "file",
+    accept: "image/*,application/pdf",
+    colSpan: 3,
+  },
+  {
+    key: "Image_inheritance_certificate",
+    label: "شهادة حصر الإرث",
+    type: "file",
+    accept: "image/*,application/pdf",
+    colSpan: 3,
+  },
+  {
+    key: "copy_power_of_attorney_from_heirs_to_agent",
+    label: "توكيل الورثة للوكيل",
+    type: "file",
+    accept: "image/*,application/pdf",
+    colSpan: 3,
+  },
+  {
+    key: "copy_of_the_endowment_registration_certificate",
+    label: "شهادة تسجيل الوقف",
+    type: "file",
+    accept: "image/*,application/pdf",
+    colSpan: 3,
+  },
+  {
+    key: "copy_of_the_trusteeship_deed",
+    label: "صك النظارة",
+    type: "file",
+    accept: "image/*,application/pdf",
+    colSpan: 3,
+  },
+  {
+    key: "copy_of_guardians_power_of_attorney_for_agent",
+    label: "توكيل الأولياء للوكيل",
+    type: "file",
+    accept: "image/*,application/pdf",
+    colSpan: 3,
+  },
 ];
 
 /** Address — POST /contract/step2 */
 export const STEP1_ADDRESS_FIELDS = [
-  { key: "property_place_id", label: "المنطقة", type: "text" },
-  { key: "property_city_id", label: "المدينة", type: "text" },
+  {
+    key: "property_place_id",
+    label: "المنطقة",
+    type: "select",
+    optionsSource: "regions",
+  },
+  {
+    key: "property_city_id",
+    label: "المدينة",
+    type: "select",
+    optionsSource: "cities",
+  },
   { key: "neighborhood", label: "الحي", type: "text" },
   { key: "street", label: "الشارع", type: "text" },
   { key: "building_number", label: "رقم المبنى", type: "text" },
@@ -64,8 +139,18 @@ export const STEP1_PROPERTY_FIELDS = [
 
 /** Unit — POST /contract/step5 (legacy single-unit contract fields) */
 export const STEP2_UNIT_FIELDS = [
-  { key: "unit_type_id", label: "نوع الوحدة", type: "text" },
-  { key: "unit_usage_id", label: "استخدام الوحدة", type: "text" },
+  {
+    key: "unit_type_id",
+    label: "نوع الوحدة",
+    type: "select",
+    optionsSource: "unit-types",
+  },
+  {
+    key: "unit_usage_id",
+    label: "استخدام الوحدة",
+    type: "select",
+    optionsSource: "unit-usages",
+  },
   { key: "unit_number", label: "رقم الوحدة", type: "text" },
   { key: "floor_number", label: "رقم الطابق", type: "text" },
   { key: "unit_area", label: "مساحة الوحدة", type: "text" },
@@ -76,8 +161,20 @@ export const STEP2_UNIT_FIELDS = [
  * Display prefers *_name keys; edit uses *_id where applicable.
  */
 export const ADMIN_UNIT_CORE_FIELDS = [
-  { key: "unit_type_id", label: "نوع الوحدة", type: "text", displayKey: "unit_type_name" },
-  { key: "unit_usage_id", label: "استخدام الوحدة", type: "text", displayKey: "unit_usage_name" },
+  {
+    key: "unit_type_id",
+    label: "نوع الوحدة",
+    type: "select",
+    optionsSource: "unit-types",
+    displayKey: "unit_type_name",
+  },
+  {
+    key: "unit_usage_id",
+    label: "استخدام الوحدة",
+    type: "select",
+    optionsSource: "unit-usages",
+    displayKey: "unit_usage_name",
+  },
   { key: "unit_number", label: "رقم الوحدة", type: "text" },
   { key: "floor_number", label: "رقم الطابق", type: "text" },
   { key: "unit_area", label: "مساحة الوحدة", type: "text" },
@@ -129,7 +226,12 @@ export const ADMIN_UNIT_SERVICE_FIELDS = [
 
 /** @deprecated use ADMIN_UNIT_* — kept for legacy single-unit fallback callers */
 export const STEP2_PER_UNIT_FIELDS = [
-  { key: "unit_type_id", label: "نوع الوحدة", type: "text" },
+  {
+    key: "unit_type_id",
+    label: "نوع الوحدة",
+    type: "select",
+    optionsSource: "unit-types",
+  },
   { key: "unit_number", label: "رقم الوحدة", type: "text" },
   { key: "floor_number", label: "رقم الطابق", type: "text" },
   { key: "unit_area", label: "مساحة الوحدة", type: "text" },
@@ -206,77 +308,142 @@ export const STEP2_SERVICE_FIELDS = [
 export const STEP3_TENANT_FIELDS = [
   {
     key: "tenant_entity",
-    label: "كيان المستأجر",
+    label: "صفة المستأجر",
     type: "select",
     options: [
       { value: "person", label: "فرد" },
-      { value: "institution", label: "منشأة" },
+      { value: "institution", label: "مؤسسة أو شركة" },
     ],
   },
-  { key: "tenant_id_num", label: "رقم هوية المستأجر", type: "text" },
+  // —— فرد ——
   {
-    key: "tenant_dob",
-    label: "تاريخ ميلاد المستأجر",
-    type: "date",
-    calendarTypeKey: "type_tenant_dob",
+    key: "tenant_id_num",
+    label: "رقم هوية المستأجر",
+    type: "text",
+    entity: "person",
+  },
+  {
+    key: "tenant_mobile",
+    label: "رقم جوال المستأجر",
+    type: "text",
+    entity: "person",
   },
   {
     key: "type_tenant_dob",
     label: "نوع تاريخ الميلاد",
     type: "select",
+    entity: "person",
     options: [
       { value: "hijri", label: "هجري" },
       { value: "gregorian", label: "ميلادي" },
     ],
   },
-  { key: "tenant_mobile", label: "جوال المستأجر", type: "text" },
   {
-    key: "tenant_entity_unified_registry_number",
-    label: "الرقم الموحد للمنشأة",
-    type: "text",
+    key: "tenant_dob",
+    label: "تاريخ ميلاد المستأجر",
+    type: "date",
+    entity: "person",
+    calendarTypeKey: "type_tenant_dob",
   },
+  // —— منشأة / مؤسسة ——
   {
     key: "authorization_type",
-    label: "نوع التفويض",
+    label: "نوع التفويض أو الوكالة",
     type: "select",
+    entity: "institution",
     options: [
       {
         value: "owner_and_representative_of_record",
-        label: "مالك وممثل السجل",
+        label: "أنا مالك السجل وممثله",
       },
       {
         value: "agent_or_authorized_by_registry_owner",
-        label: "وكيل أو مفوض من مالك السجل",
+        label: "أنا وكيل أو مفوض عن مالك السجل",
       },
     ],
   },
+  {
+    key: "tenant_entity_unified_registry_number",
+    label: "رقم السجل الموحد",
+    type: "text",
+    entity: "institution",
+    hint: "10 أرقام ويبدأ بالرقم 7",
+  },
+  {
+    key: "id_num_of_property_tenant_agent",
+    label: "رقم هوية مالك السجل",
+    type: "text",
+    entity: "institution",
+  },
+  {
+    key: "mobile_of_property_tenant_agent",
+    label: "رقم جوال مالك السجل",
+    type: "text",
+    entity: "institution",
+  },
+  {
+    key: "type_dob_tenant_agent",
+    label: "نوع تاريخ ميلاد مالك السجل",
+    type: "select",
+    entity: "institution",
+    options: [
+      { value: "hijri", label: "هجري" },
+      { value: "gregorian", label: "ميلادي" },
+    ],
+  },
+  {
+    key: "dob_of_property_tenant_agent",
+    label: "تاريخ ميلاد مالك السجل",
+    type: "date",
+    entity: "institution",
+    calendarTypeKey: "type_dob_tenant_agent",
+  },
+  {
+    key: "copy_of_the_authorization_or_agency",
+    label: "صورة التفويض / الوكالة",
+    type: "file",
+    entity: "institution",
+    colSpan: 3,
+    accept: "image/*,application/pdf",
+    hint: "مطلوبة عند اختيار وكيل أو مفوض عن مالك السجل",
+    showWhen: {
+      authorization_type: "agent_or_authorized_by_registry_owner",
+    },
+  },
 ];
 
+/** @deprecated Prefer STEP3_TENANT_FIELDS (institution entity fields included) */
 export const STEP3_TENANT_AGENT_FIELDS = [
   {
     key: "id_num_of_property_tenant_agent",
-    label: "رقم هوية وكيل المستأجر",
+    label: "رقم هوية مالك السجل",
     type: "text",
   },
   {
     key: "mobile_of_property_tenant_agent",
-    label: "جوال وكيل المستأجر",
+    label: "رقم جوال مالك السجل",
     type: "text",
   },
   {
     key: "dob_of_property_tenant_agent",
-    label: "تاريخ ميلاد وكيل المستأجر",
+    label: "تاريخ ميلاد مالك السجل",
     type: "date",
     calendarTypeKey: "type_dob_tenant_agent",
   },
   {
     key: "type_dob_tenant_agent",
-    label: "نوع تاريخ ميلاد الوكيل",
+    label: "نوع تاريخ ميلاد مالك السجل",
     type: "select",
     options: [
       { value: "hijri", label: "هجري" },
       { value: "gregorian", label: "ميلادي" },
     ],
+  },
+  {
+    key: "copy_of_the_authorization_or_agency",
+    label: "صورة التفويض / الوكالة",
+    type: "file",
+    accept: "image/*,application/pdf",
   },
 ];
 
@@ -305,8 +472,24 @@ export const STEP4_FINANCIAL_FIELDS = [
     type: "select",
     optionsSource: "contract-periods",
   },
-  { key: "duration_years", label: "مدة (سنوات)", type: "text" },
-  { key: "duration_months", label: "مدة (أشهر)", type: "text" },
+  {
+    key: "duration_years",
+    label: "مدة (سنوات)",
+    type: "select",
+    options: Array.from({ length: 31 }, (_, i) => ({
+      value: String(i),
+      label: String(i),
+    })),
+  },
+  {
+    key: "duration_months",
+    label: "مدة (أشهر)",
+    type: "select",
+    options: Array.from({ length: 12 }, (_, i) => ({
+      value: String(i),
+      label: String(i),
+    })),
+  },
 ];
 
 export const STEP4_TERMS_FIELDS = [

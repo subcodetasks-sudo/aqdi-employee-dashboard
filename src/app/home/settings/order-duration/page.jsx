@@ -4,7 +4,6 @@ import AddNewDurationDialog from "@/components/analysis/settings/order-duration/
 import EditDurationDialog from "@/components/analysis/settings/order-duration/edit-duration-dialog";
 import ViewDurationDialog from "@/components/analysis/settings/order-duration/view-duration-dialog";
 import Header from "@/components/home/Header";
-import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   formatContractPeriodPrice,
@@ -14,24 +13,16 @@ import {
   normalizeContractPeriods,
 } from "@/src/lib/contract-period-utils";
 import { axiosInstance } from "@/src/utils/axios";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { Building2, Pentagon } from "lucide-react";
 import { useState } from "react";
-import { toast } from "sonner";
 
-function DurationCard({ item, onDelete, deletePending }) {
+function DurationCard({ item }) {
   const contractLabel = getContractTypeLabel(item?.contract_type);
 
   return (
     <div className="bg-gray-200 rounded-[16px] border border-[#E4E4E4] p-4 transition-all">
-      <div className="flex items-start justify-between gap-2">
-        <Button
-          disabled={deletePending}
-          onClick={() => onDelete(item.id)}
-          className="bg-red-500/20 text-red-500 text-xs h-8"
-        >
-          حذف
-        </Button>
+      <div className="flex items-start justify-end gap-2">
         <h3 className="text-sm font-bold">عقد {contractLabel}</h3>
       </div>
       <div className="mt-4 space-y-1">
@@ -49,8 +40,6 @@ function DurationCard({ item, onDelete, deletePending }) {
 }
 
 function DurationSections({ activeTab }) {
-  const queryClient = useQueryClient();
-
   const { data: orderDurations, isLoading } = useQuery({
     queryKey: ["contract-periods", activeTab],
     queryFn: () => axiosInstance.get(`/admin/contract-periods?contract_type=${activeTab}`),
@@ -59,17 +48,6 @@ function DurationSections({ activeTab }) {
   const items = normalizeContractPeriods(orderDurations?.data);
   const sections = groupContractPeriodsByInstrumentType(items);
   const contractLabel = getContractTypeLabel(activeTab);
-
-  const { mutate: deleteOrderDuration, isPending: deletePending } = useMutation({
-    mutationFn: (id) => axiosInstance.post(`/admin/contract-periods/${id}/delete`),
-    onSuccess: (res) => {
-      toast.success(res?.data?.message || "تم حذف المدة بنجاح");
-      queryClient.invalidateQueries({ queryKey: ["contract-periods"] });
-    },
-    onError: (error) => {
-      toast.error(error?.response?.data?.message || "حدث خطأ أثناء حذف المدة");
-    },
-  });
 
   if (isLoading) {
     return <p className="text-sm text-[#A3A3A3] py-8">جاري التحميل...</p>;
@@ -88,12 +66,7 @@ function DurationSections({ activeTab }) {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
             {section.items.map((item) => (
-              <DurationCard
-                key={item.id}
-                item={item}
-                onDelete={deleteOrderDuration}
-                deletePending={deletePending}
-              />
+              <DurationCard key={item.id} item={item} />
             ))}
           </div>
         </section>

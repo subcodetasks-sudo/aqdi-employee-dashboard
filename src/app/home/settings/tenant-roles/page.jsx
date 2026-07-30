@@ -104,8 +104,11 @@ export default function TenantRolesPage() {
                         {role.text_of_reason || role.name || "—"}
                       </p>
                       {role.service_definition ? (
-                        <p className="mt-1 text-[12px] text-[#737373] line-clamp-2 whitespace-pre-wrap">
-                          {role.service_definition}
+                        <p className="mt-1 text-[12px] text-[#737373] line-clamp-2">
+                          {String(role.service_definition)
+                            .replace(/<[^>]*>/g, " ")
+                            .replace(/\s+/g, " ")
+                            .trim()}
                         </p>
                       ) : null}
                     </td>

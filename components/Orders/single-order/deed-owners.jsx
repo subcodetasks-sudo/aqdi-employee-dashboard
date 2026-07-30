@@ -1,9 +1,7 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { useState } from "react";
-import { BiEdit } from "react-icons/bi";
-import { Eye, ImageIcon } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Eye, ImageIcon, Inbox } from "lucide-react";
 import { toast } from "sonner";
 import dynamic from "next/dynamic";
 import DeedInstrumentViewerDialog, {
@@ -13,6 +11,7 @@ import { ContractStepEditor } from "./contract-edit/contract-step-editor";
 import {
   SUMMARY_OWNER_FIELDS,
   SUMMARY_AGENT_FIELDS,
+  SUMMARY_INSTRUMENT_IMAGE_FIELDS,
 } from "./contract-edit/contract-field-schemas";
 import {
   SECTION_ERROR_BUTTON_CLASS,
@@ -82,6 +81,28 @@ const DeedOwners = ({ data }) => {
     ? "صورة عقد الإيجار من الباطن الأساسي"
     : "صـورة الصك";
 
+  const deedImageFields = useMemo(() => {
+    const catalog = isSublease
+      ? [
+          {
+            key: "image_instrument",
+            label: instrumentImageLabel,
+            type: "file",
+            accept: "image/*,application/pdf",
+            colSpan: 3,
+          },
+        ]
+      : SUMMARY_INSTRUMENT_IMAGE_FIELDS;
+
+    const existing = catalog.filter((field) =>
+      Boolean(resolveImageUrl(pick(field.key)))
+    );
+
+    // Only editable slots that already have a file; if none, keep primary upload field.
+    if (existing.length > 0) return existing;
+    return catalog.slice(0, 1);
+  }, [isSublease, instrumentImageLabel, data, summary]);
+
   const agencyDocumentUrl = resolveAgencyDocumentUrl({
     ...summary,
     copy_of_the_authorization_or_agency: pick(
@@ -124,20 +145,11 @@ const DeedOwners = ({ data }) => {
     { value: pick("property_owner_mobile"), label: "رقم الجوال" },
   ];
 
-  const instrumentFields = [
-    {
-      value: pick("instrument_type_trans", "instrument_type"),
-      label: "نوع الصك",
-    },
-    {
-      value: asYesNo(pick("is_multiple_trusteeship_deed_copy")),
-      label: "صكوك نظارة متعددة",
-    },
-  ];
-
-
   const agentFields = [
-    { value: pick("id_num_of_property_owner_agent"), label: "رقم هوية الوكيل" },
+    {
+      value: pick("id_num_of_property_owner_agent"),
+      label: "رقم هوية الوكيل",
+    },
     {
       value: composeDob(
         pick("dob_of_property_owner_agent_day"),
@@ -151,7 +163,10 @@ const DeedOwners = ({ data }) => {
       value: calendarTypeLabel(pick("type_dob_property_owner_agent")),
       label: "نوع تاريخ ميلاد الوكيل",
     },
-    { value: pick("mobile_of_property_owner_agent"), label: "رقم جوال الوكيل" },
+    {
+      value: pick("mobile_of_property_owner_agent"),
+      label: "جوال الوكيل",
+    },
   ];
 
   const openAgencyDocument = () => {
@@ -164,31 +179,36 @@ const DeedOwners = ({ data }) => {
 
   return (
     <div className="flex items-start gap-4" dir="rtl">
-      {images.length > 0 ? (
-        <div className="w-1/3 shrink-0">
-          <div className="flex items-center gap-1 text-xs mb-2">
-            <p className="text-[#4D4D4D]">{instrumentImageLabel} :</p>
-            <Button
-              variant="ghost"
-              className="p-0 text-xs h-auto text-green-600 font-bold hover:text-green-700"
-            >
-              <BiEdit size={16} className="text-green-500" />
-              تعديل
-            </Button>
-          </div>
-          <div dir="ltr">
-            <DeedInstrumentViewer
-              images={images}
-              onExpand={() => setDeedViewerOpen(true)}
-            />
-          </div>
-          <DeedInstrumentViewerDialog
-            open={deedViewerOpen}
-            onOpenChange={setDeedViewerOpen}
-            images={images}
-          />
-        </div>
-      ) : null}
+      <div className="w-1/3 shrink-0 min-w-0">
+        <ContractStepEditor
+          title={instrumentImageLabel}
+          step="summary"
+          fields={deedImageFields}
+        >
+          {images.length > 0 ? (
+            <>
+              <div dir="ltr">
+                <DeedInstrumentViewer
+                  images={images}
+                  onExpand={() => setDeedViewerOpen(true)}
+                />
+              </div>
+              <DeedInstrumentViewerDialog
+                open={deedViewerOpen}
+                onOpenChange={setDeedViewerOpen}
+                images={images}
+              />
+            </>
+          ) : (
+            <div className="flex flex-col items-center justify-center gap-2 rounded-[20px] border border-dashed border-gray-200 bg-white px-4 py-12 text-[#A3A3A3]">
+              <Inbox size={28} className="text-gray-300" />
+              <p className="text-sm font-medium text-center">
+                لا توجد صور مرفقة — اضغط تعديل للرفع
+              </p>
+            </div>
+          )}
+        </ContractStepEditor>
+      </div>
 
       <div className="flex-1 min-w-0 space-y-8">
         {!isSublease ? (

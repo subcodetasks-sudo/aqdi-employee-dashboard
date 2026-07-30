@@ -161,13 +161,6 @@ const resolveImageUrl = (value) => {
   return null;
 };
 
-const NoData = ({ label = "لا توجد بيانات" }) => (
-  <div className="flex flex-col items-center justify-center gap-2 rounded-[16px] border border-dashed border-gray-200 bg-white px-4 py-14 text-[#A3A3A3] opacity-45">
-    <Inbox size={28} className="text-gray-300" />
-    <span className="text-sm font-medium">{label}</span>
-  </div>
-);
-
 const AddressImageViewer = ({ src }) => {
   const {
     scale,
@@ -214,9 +207,7 @@ const AddressImageViewer = ({ src }) => {
 };
 
 const PropertyLocationMap = ({ location }) => {
-  if (!location) {
-    return <NoData label="لا يوجد موقع للعقار على الخريطة" />;
-  }
+  if (!location) return null;
 
   const { embedUrl, mapsUrl, addressUrl, lat, lng } = location;
 
@@ -313,33 +304,33 @@ export default function PropertyDetails({ data }) {
 
   const location = useMemo(() => resolveMapLocation(data), [data]);
 
+  const hasNationalAddress = nationalAddress.length > 0;
+  const hasImageAddress = Boolean(imageAddress);
+
   const tabs = [
-    {
-      value: "national-address",
-      label: "تفاصيل العنوان",
-      icon: <Home size={16} />,
-      content:
-        nationalAddress.length > 0 ? (
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            {nationalAddress.map((item) => (
-              <DetailCard key={item.label} {...item} />
-            ))}
-          </div>
-        ) : (
-          <NoData label="لا توجد تفاصيل عنوان متاحة" />
-        ),
-    },
-    {
-      value: "image-address",
-      label: "صورة العنوان",
-      icon: <ImageIcon size={16} />,
-      content: imageAddress ? (
-        <AddressImageViewer src={imageAddress} />
-      ) : (
-        <NoData label="لا توجد صورة للعنوان" />
-      ),
-    },
-  ];
+    hasNationalAddress
+      ? {
+          value: "national-address",
+          label: "تفاصيل العنوان",
+          icon: <Home size={16} />,
+          content: (
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              {nationalAddress.map((item) => (
+                <DetailCard key={item.label} {...item} />
+              ))}
+            </div>
+          ),
+        }
+      : null,
+    hasImageAddress
+      ? {
+          value: "image-address",
+          label: "صورة العنوان",
+          icon: <ImageIcon size={16} />,
+          content: <AddressImageViewer src={imageAddress} />,
+        }
+      : null,
+  ].filter(Boolean);
 
   return (
     <div dir="rtl" className="space-y-6">
@@ -349,40 +340,48 @@ export default function PropertyDetails({ data }) {
         fields={STEP1_ADDRESS_FIELDS}
       >
         <div className="flex items-start justify-between gap-4">
-          <div className="flex-1 space-y-5 rounded-[28px] border border-gray-100 bg-gray-100/50 p-6">
-            <Tabs defaultValue={tabs[0].value} dir="rtl">
-              <TabsList className="mb-4 h-fit w-full flex-wrap justify-start gap-2 bg-transparent p-0">
-                {tabs.map((tab) => (
-                  <TabsTrigger
-                    key={tab.value}
-                    value={tab.value}
-                    className="flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-4 py-2.5 text-xs font-bold text-gray-500 shadow-none transition-colors data-[state=active]:border-transparent data-[state=active]:bg-brand-hover data-[state=active]:text-white"
-                  >
-                    {tab.icon}
-                    {tab.label}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
+          {tabs.length > 0 || location ? (
+            <div className="flex-1 space-y-5 rounded-[28px] border border-gray-100 bg-gray-100/50 p-6">
+              {tabs.length > 0 ? (
+                <Tabs defaultValue={tabs[0].value} dir="rtl">
+                  {tabs.length > 1 ? (
+                    <TabsList className="mb-4 h-fit w-full flex-wrap justify-start gap-2 bg-transparent p-0">
+                      {tabs.map((tab) => (
+                        <TabsTrigger
+                          key={tab.value}
+                          value={tab.value}
+                          className="flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-4 py-2.5 text-xs font-bold text-gray-500 shadow-none transition-colors data-[state=active]:border-transparent data-[state=active]:bg-brand-hover data-[state=active]:text-white"
+                        >
+                          {tab.icon}
+                          {tab.label}
+                        </TabsTrigger>
+                      ))}
+                    </TabsList>
+                  ) : null}
 
-              {tabs.map((tab) => (
-                <TabsContent
-                  key={tab.value}
-                  value={tab.value}
-                  className="mt-0 focus-visible:outline-none focus-visible:ring-0"
-                >
-                  {tab.content}
-                </TabsContent>
-              ))}
-            </Tabs>
+                  {tabs.map((tab) => (
+                    <TabsContent
+                      key={tab.value}
+                      value={tab.value}
+                      className="mt-0 focus-visible:outline-none focus-visible:ring-0"
+                    >
+                      {tab.content}
+                    </TabsContent>
+                  ))}
+                </Tabs>
+              ) : null}
 
-            <div className="space-y-2">
-              <div className="flex items-center gap-1.5 text-xs font-bold text-gray-500">
-                <Link2 size={14} />
-                الموقع على الخريطة
-              </div>
-              <PropertyLocationMap location={location} />
+              {location ? (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-gray-500">
+                    <Link2 size={14} />
+                    الموقع على الخريطة
+                  </div>
+                  <PropertyLocationMap location={location} />
+                </div>
+              ) : null}
             </div>
-          </div>
+          ) : null}
           <OrderSectionErrorMenu
             label="إرسال خطأ للعميل"
             orderData={data}

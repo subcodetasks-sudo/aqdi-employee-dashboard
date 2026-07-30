@@ -1,19 +1,20 @@
 "use client";
 
-import { Copy } from "lucide-react";
+import { useState } from "react";
+import { Copy, Eye, FileText } from "lucide-react";
 import { toast } from "sonner";
 import dynamic from "next/dynamic";
 import { ContractStepEditor } from "./contract-edit/contract-step-editor";
-import {
-  STEP3_TENANT_FIELDS,
-  STEP3_TENANT_AGENT_FIELDS,
-} from "./contract-edit/contract-field-schemas";
+import { STEP3_TENANT_FIELDS } from "./contract-edit/contract-field-schemas";
 import {
   formatDisplayValue,
   isEmptyDisplayValue,
   SECTION_ERROR_BUTTON_CLASS,
 } from "./contract-summary-view";
 import { pickFirst } from "./frontend-contract-fields";
+import AgencyDocumentViewerDialog, {
+  resolveAgencyDocumentUrl,
+} from "./agency-document-viewer-dialog";
 
 const OrderSectionErrorMenu = dynamic(
   () => import("@/components/Orders/messages/order-section-error-menu"),
@@ -34,19 +35,24 @@ const calendarTypeLabel = (value) => {
 
 const tenantEntityLabel = (value) => {
   if (value === "person") return "فرد";
-  if (value === "institution") return "منشأة";
+  if (value === "institution") return "مؤسسة أو شركة";
   return value;
 };
 
 const authorizationTypeLabel = (value) => {
   if (value === "owner_and_representative_of_record") {
-    return "مالك وممثل السجل";
+    return "أنا مالك السجل وممثله";
   }
   if (value === "agent_or_authorized_by_registry_owner") {
-    return "وكيل أو مفوض من مالك السجل";
+    return "أنا وكيل أو مفوض عن مالك السجل";
   }
   return value;
 };
+
+function isPdfUrl(url) {
+  if (!url || typeof url !== "string") return false;
+  return url.split("?")[0].toLowerCase().endsWith(".pdf");
+}
 
 const DetailCard = ({
   label,
@@ -86,27 +92,50 @@ function composeDob(day, month, year, fallback) {
 }
 
 function ContractTenant({ data }) {
+  const [agencyViewerOpen, setAgencyViewerOpen] = useState(false);
   const step3 = data?.step3 ?? {};
   const pick = (key, ...alts) =>
     pickFirst(step3[key], data?.[key], ...alts.map((k) => step3[k] ?? data?.[k]));
 
   const tenantEntity = pick("tenant_entity");
   const isInstitution = tenantEntity === "institution";
+  const authorizationType = pick("authorization_type");
+  const isAgentAuth =
+    authorizationType === "agent_or_authorized_by_registry_owner";
+
+  const agencyDocumentUrl = resolveAgencyDocumentUrl({
+    copy_of_the_authorization_or_agency: pick(
+      "copy_of_the_authorization_or_agency",
+      "copy_of_the_authorization_or_agency_path"
+    ),
+  });
+  const agencyIsPdf = isPdfUrl(agencyDocumentUrl);
 
   const personFields = [
     {
-      label: "كيان المستأجر",
+      label: "صفة المستأجر",
       value: tenantEntityLabel(tenantEntity),
       borderColor: "border-indigo-500",
     },
     {
-      label: "رقــم هويـة المستأجر",
+      label: "رقم هوية المستأجر",
       value: pick("tenant_id_num"),
       borderColor: "border-yellow-400",
       copyable: true,
     },
     {
-      label: "تــاريخ ميـلاد المستأجر",
+      label: "رقم جوال المستأجر",
+      value: pick("tenant_mobile"),
+      borderColor: "border-green-500",
+      copyable: true,
+    },
+    {
+      label: "نوع تاريخ الميلاد",
+      value: calendarTypeLabel(pick("type_tenant_dob")),
+      borderColor: "border-cyan-500",
+    },
+    {
+      label: "تاريخ ميلاد المستأجر",
       value: composeDob(
         pick("tenant_dob_day"),
         pick("tenant_dob_month"),
@@ -115,41 +144,27 @@ function ContractTenant({ data }) {
       ),
       borderColor: "border-blue-600",
     },
-    {
-      label: "نوع تاريخ الميلاد",
-      value: calendarTypeLabel(pick("type_tenant_dob")),
-      borderColor: "border-cyan-500",
-    },
-    {
-      label: "رقـم جــوال المستأجر",
-      value: pick("tenant_mobile"),
-      borderColor: "border-green-500",
-      copyable: true,
-    },
   ];
 
   const institutionFields = [
     {
-      label: "كيان المستأجر",
+      label: "صفة المستأجر",
       value: tenantEntityLabel(tenantEntity),
       borderColor: "border-indigo-500",
     },
     {
-      label: "الرقم الموحد للمنشأة",
+      label: "نوع التفويض أو الوكالة",
+      value: authorizationTypeLabel(authorizationType),
+      borderColor: "border-orange-400",
+    },
+    {
+      label: "رقم السجل الموحد",
       value: pick("tenant_entity_unified_registry_number"),
       borderColor: "border-teal-500",
       copyable: true,
     },
     {
-      label: "نوع التفويض",
-      value: authorizationTypeLabel(pick("authorization_type")),
-      borderColor: "border-orange-400",
-    },
-  ];
-
-  const agentDetails = [
-    {
-      label: "رقم هوية وكيل المستأجر",
+      label: "رقم هوية مالك السجل",
       value: pick(
         "id_num_of_property_tenant_agent",
         "id_number_of_property_tenant_agent"
@@ -158,13 +173,18 @@ function ContractTenant({ data }) {
       copyable: true,
     },
     {
-      label: "جوال وكيل المستأجر",
+      label: "رقم جوال مالك السجل",
       value: pick("mobile_of_property_tenant_agent"),
       borderColor: "border-green-600",
       copyable: true,
     },
     {
-      label: "تاريخ ميلاد وكيل المستأجر",
+      label: "نوع تاريخ ميلاد مالك السجل",
+      value: calendarTypeLabel(pick("type_dob_tenant_agent")),
+      borderColor: "border-cyan-600",
+    },
+    {
+      label: "تاريخ ميلاد مالك السجل",
       value: composeDob(
         pickFirst(
           step3.dobof_property_tenant_agent_day,
@@ -188,20 +208,6 @@ function ContractTenant({ data }) {
       ),
       borderColor: "border-blue-500",
     },
-    {
-      label: "نوع تاريخ ميلاد الوكيل",
-      value: calendarTypeLabel(pick("type_dob_tenant_agent")),
-      borderColor: "border-cyan-600",
-    },
-    {
-      label: "صورة التفويض / الوكالة",
-      value: pick(
-        "copy_of_the_authorization_or_agency",
-        "copy_of_the_authorization_or_agency_path"
-      ),
-      borderColor: "border-rose-400",
-      copyable: true,
-    },
   ];
 
   const leaseRenewalNotes =
@@ -223,30 +229,47 @@ function ContractTenant({ data }) {
             step="step3"
             fields={STEP3_TENANT_FIELDS}
           >
-            <div className="rounded-[28px] border border-gray-100 bg-gray-100/50 p-6">
+            <div className="rounded-[28px] border border-gray-100 bg-gray-100/50 p-6 space-y-4">
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {tenantDetails.map((item) => (
                   <DetailCard key={item.label} {...item} />
                 ))}
               </div>
+
+              {isInstitution && isAgentAuth ? (
+                <div className="rounded-[16px] border border-[#EEEEEE] bg-white p-4">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="text-right">
+                      <p className="text-xs font-medium text-gray-400">
+                        صورة التفويض / الوكالة
+                      </p>
+                      <p className="mt-1 text-sm font-bold text-gray-800">
+                        {agencyDocumentUrl
+                          ? agencyIsPdf
+                            ? "ملف PDF مرفق"
+                            : "صورة مرفقة"
+                          : "لا يوجد ملف مرفق"}
+                      </p>
+                    </div>
+                    {agencyDocumentUrl ? (
+                      <button
+                        type="button"
+                        onClick={() => setAgencyViewerOpen(true)}
+                        className="inline-flex items-center gap-1.5 rounded-full border border-[#E0E0E0] bg-[#FAFAFA] px-3 py-1.5 text-xs font-bold text-[#4D4D4D] hover:border-brand-hover hover:text-brand-hover"
+                      >
+                        {agencyIsPdf ? (
+                          <FileText className="size-3.5 text-[#E24444]" />
+                        ) : (
+                          <Eye className="size-3.5" />
+                        )}
+                        معاينة
+                      </button>
+                    ) : null}
+                  </div>
+                </div>
+              ) : null}
             </div>
           </ContractStepEditor>
-
-          {isInstitution ? (
-            <ContractStepEditor
-              title="بيانات وكيل المستأجر"
-              step="step3"
-              fields={STEP3_TENANT_AGENT_FIELDS}
-            >
-              <div className="rounded-[28px] border border-gray-100 bg-gray-100/50 p-6">
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-                  {agentDetails.map((item) => (
-                    <DetailCard key={item.label} {...item} />
-                  ))}
-                </div>
-              </div>
-            </ContractStepEditor>
-          ) : null}
         </div>
 
         <OrderSectionErrorMenu
@@ -256,6 +279,13 @@ function ContractTenant({ data }) {
           buttonClassName={SECTION_ERROR_BUTTON_CLASS}
         />
       </div>
+
+      <AgencyDocumentViewerDialog
+        open={agencyViewerOpen}
+        onOpenChange={setAgencyViewerOpen}
+        documentUrl={agencyDocumentUrl}
+        title={agencyIsPdf ? "وكالة PDF" : "صورة الوكالة"}
+      />
     </div>
   );
 }

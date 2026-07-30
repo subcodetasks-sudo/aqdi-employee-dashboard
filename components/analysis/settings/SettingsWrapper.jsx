@@ -40,7 +40,6 @@ export default function SettingsWrapper() {
         { label: "الخصومات", link: "/home/settings/coupons" },
         { label: "المدونة", link: "/home/settings/blogs" },
         { label: "الأسئلة الشائعة", link: "/home/settings/faqs" },
-        { label: "قسم التعليمات", link: "/home/settings/instructions" },
         { label: "الشروط والاحكام", link: "/home/settings/terms" },
         { label: "سياسة الخصوصية", link: "/home/settings/privacy" },
         { label: "الإشعارات", link: "/home/settings/notifications" },

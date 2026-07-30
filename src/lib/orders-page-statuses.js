@@ -39,7 +39,10 @@ export function findOrdersPageStatusIdByLabel(
   label = DEFAULT_ORDERS_PAGE_STATUS_LABEL
 ) {
   const items = Array.isArray(statusItems) ? statusItems : [];
-  const found = items.find((item) => normalizeStatusName(item?.name) === label);
+  const filter = ORDERS_PAGE_STATUS_FILTERS.find((item) => item.label === label);
+  const patterns = filter?.match ?? [label];
+
+  const found = items.find((item) => matchesStatusName(item?.name, patterns));
   return found?.id ?? null;
 }
 

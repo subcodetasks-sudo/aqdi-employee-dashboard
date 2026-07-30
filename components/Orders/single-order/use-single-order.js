@@ -6,6 +6,23 @@ import { toast } from "sonner";
 import { mapApiValidationErrors } from "@/src/lib/contract-update";
 import { invalidateOrdersCaches } from "@/src/lib/invalidate-orders-caches";
 
+function toMultipartFormData(payload) {
+  const formData = new FormData();
+  for (const [key, value] of Object.entries(payload || {})) {
+    if (value === undefined || value === null) continue;
+    if (typeof File !== "undefined" && value instanceof File) {
+      formData.append(key, value);
+      continue;
+    }
+    if (typeof value === "object") {
+      formData.append(key, JSON.stringify(value));
+      continue;
+    }
+    formData.append(key, String(value));
+  }
+  return formData;
+}
+
 export function useSingleOrder(contractId) {
   const queryClient = useQueryClient();
   const queryKey = ["single-order", contractId];
@@ -21,10 +38,19 @@ export function useSingleOrder(contractId) {
   const orderData = query.data?.data;
 
   const invalidateOrderAndUnits = (res) => {
-    if (res?.data && !Array.isArray(res.data) && res.data?.id === Number(contractId)) {
+    const updated = res?.data;
+    // A partial update response would drop contract_summary (images, owner, …),
+    // so only adopt it directly when it carries the full order shape.
+    const isFullOrder =
+      updated &&
+      !Array.isArray(updated) &&
+      updated.id === Number(contractId) &&
+      updated.contract_summary != null;
+
+    if (isFullOrder) {
       queryClient.setQueryData(queryKey, (old) => ({
         ...old,
-        data: res.data,
+        data: updated,
       }));
     } else {
       queryClient.invalidateQueries({ queryKey });
@@ -46,10 +72,19 @@ export function useSingleOrder(contractId) {
   };
 
   const updateMutation = useMutation({
-    mutationFn: (payload) =>
-      axiosInstance
-        .post(`/admin/orders/${contractId}`, payload)
-        .then((res) => res.data),
+    mutationFn: (payload) => {
+      const hasFile = Object.values(payload || {}).some(
+        (value) => typeof File !== "undefined" && value instanceof File
+      );
+      const body = hasFile ? toMultipartFormData(payload) : payload;
+      return axiosInstance
+        .post(`/admin/orders/${contractId}`, body, {
+          headers: hasFile
+            ? { "Content-Type": "multipart/form-data" }
+            : undefined,
+        })
+        .then((res) => res.data);
+    },
     onSuccess: (res) => {
       toast.success(res?.message || "تم تحديث بيانات العقد بنجاح");
       invalidateOrderAndUnits(res);

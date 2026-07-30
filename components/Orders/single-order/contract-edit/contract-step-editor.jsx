@@ -23,6 +23,10 @@ import gregorian_ar from "react-date-object/locales/gregorian_ar";
 import { getTenantRoleLabel, useTenantRoles } from "@/src/hooks/use-tenant-roles";
 import { usePaymentTypes } from "@/src/hooks/use-payment-types";
 import { useContractPeriodsForType } from "@/src/hooks/use-contract-periods";
+import { useRegions } from "@/src/hooks/use-regions";
+import { useCities } from "@/src/hooks/use-cities";
+import { useUnitTypes } from "@/src/hooks/use-unit-types";
+import { useUnitUsages } from "@/src/hooks/use-unit-usages";
 
 const DATE_FORMAT = "DD-MM-YYYY";
 
@@ -57,6 +61,102 @@ const CALENDAR_TYPE_TO_DATE_KEYS = {
 const inputClass =
   "w-full h-[48px] bg-white border border-[#EEEEEE] rounded-[14px] px-4 text-[14px] focus:outline-none focus:border-brand-hover transition-all";
 
+function isFieldVisible(field, formValues) {
+  if (!field) return false;
+
+  const entity = formValues?.tenant_entity;
+  if (field.entity === "institution" && entity !== "institution") return false;
+  if (field.entity === "person" && entity === "institution") return false;
+
+  if (field.showWhen && typeof field.showWhen === "object") {
+    return Object.entries(field.showWhen).every(([key, expected]) => {
+      const actual = formValues?.[key];
+      if (Array.isArray(expected)) return expected.includes(actual);
+      return actual === expected;
+    });
+  }
+
+  return true;
+}
+
+function resolveFileDisplayUrl(value) {
+  if (!value) return null;
+  if (typeof File !== "undefined" && value instanceof File) {
+    return value.name;
+  }
+  if (typeof value === "string") return value.trim() || null;
+  if (typeof value === "object") {
+    return value.url || value.path || value.full_url || value.src || null;
+  }
+  return null;
+}
+
+function FileFieldPreview({ value }) {
+  const isFile = typeof File !== "undefined" && value instanceof File;
+  const [objectUrl, setObjectUrl] = useState(null);
+
+  useEffect(() => {
+    if (!isFile || !value.type?.startsWith("image/")) {
+      setObjectUrl(null);
+      return;
+    }
+    const url = URL.createObjectURL(value);
+    setObjectUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [isFile, value]);
+
+  if (isFile) {
+    return (
+      <div className="flex items-center gap-3">
+        {objectUrl ? (
+          <img
+            src={objectUrl}
+            alt=""
+            className="size-14 rounded-xl border border-[#EEEEEE] object-cover"
+          />
+        ) : (
+          <span className="flex size-14 items-center justify-center rounded-xl border border-[#EEEEEE] bg-[#FAFAFA]">
+            <FileText className="size-5 text-[#E24444]" />
+          </span>
+        )}
+        <p className="min-w-0 flex-1 truncate text-[12px] font-bold text-[#4D4D4D]">
+          {value.name}
+        </p>
+      </div>
+    );
+  }
+
+  const currentUrl = resolveFileDisplayUrl(value);
+  if (!currentUrl) return null;
+
+  const isImage = !currentUrl.split("?")[0].toLowerCase().endsWith(".pdf");
+
+  return (
+    <div className="flex items-center gap-3">
+      {isImage ? (
+        <img
+          src={currentUrl}
+          alt=""
+          className="size-14 rounded-xl border border-[#EEEEEE] object-cover"
+        />
+      ) : (
+        <span className="flex size-14 items-center justify-center rounded-xl border border-[#EEEEEE] bg-[#FAFAFA]">
+          <FileText className="size-5 text-[#E24444]" />
+        </span>
+      )}
+      <a
+        href={currentUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        dir="ltr"
+        className="min-w-0 flex-1 truncate text-[12px] text-[#737373] hover:text-brand-hover"
+      >
+        {currentUrl}
+      </a>
+    </div>
+  );
+}
+
 function resolveOrderContractType(orderData) {
   return (
     orderData?.contract_type ||
@@ -66,7 +166,7 @@ function resolveOrderContractType(orderData) {
   );
 }
 
-function useResolvedSelectOptions(field, orderData) {
+function useResolvedSelectOptions(field, orderData, formValues) {
   const contractType = resolveOrderContractType(orderData);
 
   const needsTenantRoles =
@@ -78,6 +178,20 @@ function useResolvedSelectOptions(field, orderData) {
     field?.optionsSource === "contract-periods" ||
     field?.key === "contract_term_in_years" ||
     field?.key === "contract_period_id";
+  const needsRegions =
+    field?.optionsSource === "regions" || field?.key === "property_place_id";
+  const needsCities =
+    field?.optionsSource === "cities" || field?.key === "property_city_id";
+  const needsUnitTypes =
+    field?.optionsSource === "unit-types" || field?.key === "unit_type_id";
+  const needsUnitUsages =
+    field?.optionsSource === "unit-usages" || field?.key === "unit_usage_id";
+
+  const regionId =
+    formValues?.property_place_id ??
+    orderData?.step1?.property_place_id ??
+    orderData?.property_place_id ??
+    null;
 
   const { options: tenantOptions, isLoading: tenantLoading } =
     useTenantRoles(needsTenantRoles);
@@ -87,6 +201,16 @@ function useResolvedSelectOptions(field, orderData) {
     useContractPeriodsForType(contractType || "housing", {
       enabled: needsContractPeriods,
     });
+  const { options: regionOptions, isLoading: regionsLoading } =
+    useRegions(needsRegions);
+  const { options: cityOptions, isLoading: citiesLoading } = useCities({
+    enabled: needsCities,
+    regionId: needsCities ? regionId : null,
+  });
+  const { options: unitTypeOptions, isLoading: unitTypesLoading } =
+    useUnitTypes(contractType || "housing", needsUnitTypes);
+  const { options: unitUsageOptions, isLoading: unitUsagesLoading } =
+    useUnitUsages(contractType || "housing", needsUnitUsages);
 
   if (Array.isArray(field?.options) && field.options.length > 0) {
     return { options: field.options, isLoading: false };
@@ -102,6 +226,22 @@ function useResolvedSelectOptions(field, orderData) {
 
   if (needsContractPeriods) {
     return { options: periodOptions, isLoading: periodsLoading };
+  }
+
+  if (needsRegions) {
+    return { options: regionOptions, isLoading: regionsLoading };
+  }
+
+  if (needsCities) {
+    return { options: cityOptions, isLoading: citiesLoading };
+  }
+
+  if (needsUnitTypes) {
+    return { options: unitTypeOptions, isLoading: unitTypesLoading };
+  }
+
+  if (needsUnitUsages) {
+    return { options: unitUsageOptions, isLoading: unitUsagesLoading };
   }
 
   return { options: field?.options ?? [], isLoading: false };
@@ -369,7 +509,7 @@ function ContractFormField({
 }) {
   const id = field.key;
   const { options: selectOptions, isLoading: optionsLoading } =
-    useResolvedSelectOptions(field, orderData);
+    useResolvedSelectOptions(field, orderData, formValues);
 
   if (field.type === "hidden") {
     return null;
@@ -440,6 +580,47 @@ function ContractFormField({
         ? ""
         : String(value);
 
+    const currentLabelFallback = (() => {
+      const labels = orderData?.contract_summary?.relation_labels ?? {};
+      if (field.key === "property_place_id") {
+        return (
+          labels.property_region ||
+          orderData?.property_region?.name_ar ||
+          orderData?.step1?.property_place_name ||
+          null
+        );
+      }
+      if (field.key === "property_city_id") {
+        return (
+          labels.property_city ||
+          orderData?.property_city?.name_ar ||
+          orderData?.step1?.city_name ||
+          orderData?.step1?.property_city_name ||
+          null
+        );
+      }
+      if (field.key === "unit_type_id") {
+        return (
+          formValues?.unit_type_name ||
+          orderData?.step2?.unit_type_name ||
+          orderData?.unit_type_name ||
+          null
+        );
+      }
+      if (field.key === "unit_usage_id") {
+        return (
+          formValues?.unit_usage_name ||
+          orderData?.step2?.unit_usage_name ||
+          orderData?.unit_usage_name ||
+          null
+        );
+      }
+      if (field.displayKey && formValues?.[field.displayKey]) {
+        return formValues[field.displayKey];
+      }
+      return null;
+    })();
+
     const optionsWithCurrent =
       selectValue &&
       !selectOptions.some((opt) => String(opt.value) === selectValue)
@@ -447,7 +628,9 @@ function ContractFormField({
             ...selectOptions,
             {
               value: selectValue,
-              label: `الخيار الحالي (${selectValue})`,
+              label: currentLabelFallback
+                ? String(currentLabelFallback)
+                : `الخيار الحالي (${selectValue})`,
             },
           ]
         : selectOptions;
@@ -472,7 +655,13 @@ function ContractFormField({
           className={inputClass}
         >
           <option value="">
-            {optionsLoading ? "جاري التحميل..." : "— اختر —"}
+            {optionsLoading
+              ? "جاري التحميل..."
+              : field.key === "property_city_id" &&
+                  !formValues?.property_place_id &&
+                  selectOptions.length === 0
+                ? "اختر المنطقة أولاً"
+                : "— اختر —"}
           </option>
           {optionsWithCurrent.map((opt) => (
             <option key={opt.value} value={opt.value}>
@@ -506,6 +695,31 @@ function ContractFormField({
           calendarType={calendarType}
           onChange={onChange}
         />
+        {error ? <p className="text-[12px] text-[#E24444]">{error}</p> : null}
+      </div>
+    );
+  }
+
+  if (field.type === "file") {
+    return (
+      <div className={`flex flex-col gap-2 ${field.colSpan === 2 ? "md:col-span-2" : ""} ${field.colSpan === 3 ? "md:col-span-3" : ""}`}>
+        <label htmlFor={id} className="text-[13px] font-bold text-black text-right">
+          {field.label}
+        </label>
+        <input
+          id={id}
+          type="file"
+          accept={field.accept || "image/*,application/pdf"}
+          onChange={(e) => {
+            const file = e.target.files?.[0] || null;
+            onChange(file);
+          }}
+          className="w-full rounded-[14px] border border-[#EEEEEE] bg-white px-4 py-3 text-[13px] file:me-3 file:rounded-lg file:border-0 file:bg-brand-hover/10 file:px-3 file:py-1.5 file:text-[12px] file:font-bold file:text-brand-hover"
+        />
+        <FileFieldPreview value={value} />
+        {field.hint ? (
+          <p className="text-[11px] text-[#9E9E9E]">{field.hint}</p>
+        ) : null}
         {error ? <p className="text-[12px] text-[#E24444]">{error}</p> : null}
       </div>
     );
@@ -748,7 +962,9 @@ export function ContractStepEditor({
       {editing ? (
         <div className="rounded-[28px] border border-[#EEEEEE] bg-[#F9F9F9] p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {fields.map((field) => (
+            {fields
+              .filter((field) => isFieldVisible(field, form))
+              .map((field) => (
               <ContractFormField
                 key={field.key}
                 field={field}
@@ -763,6 +979,14 @@ export function ContractStepEditor({
                 onChange={(val) =>
                   setForm((prev) => {
                     const next = { ...prev, [field.key]: val };
+
+                    // Region change: reset city so it stays within the selected region.
+                    if (
+                      field.key === "property_place_id" &&
+                      String(prev.property_place_id ?? "") !== String(val ?? "")
+                    ) {
+                      next.property_city_id = "";
+                    }
 
                     // Switching Hijri/Gregorian: convert linked date fields.
                     const linkedDateKeys = CALENDAR_TYPE_TO_DATE_KEYS[field.key];

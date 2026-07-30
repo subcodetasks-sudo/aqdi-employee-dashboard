@@ -9,7 +9,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import {
   Select,
@@ -28,6 +27,7 @@ import { TENANT_ROLES_QUERY_KEY } from "@/src/hooks/use-tenant-roles";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2, Pencil, Plus, X } from "lucide-react";
 import { toast } from "sonner";
+import TextEditor from "@/components/analysis/settings/terms/TextEditor";
 
 const EMPTY_FORM = {
   text_of_reason: "",
@@ -57,11 +57,13 @@ export default function TenantRoleFormDialog({ role = null }) {
   const isEdit = Boolean(role?.id);
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
+  const [editorKey, setEditorKey] = useState(0);
   const queryClient = useQueryClient();
 
   useEffect(() => {
     if (open) {
       setForm(isEdit ? roleToForm(role) : { ...EMPTY_FORM });
+      setEditorKey((prev) => prev + 1);
     }
   }, [open, isEdit, role]);
 
@@ -140,7 +142,7 @@ export default function TenantRoleFormDialog({ role = null }) {
         )}
       </DialogTrigger>
 
-      <DialogContent closeButton={false} className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent closeButton={false} className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <div className="flex items-center justify-between border-b pb-5">
             <h2 className="text-xl font-bold">
@@ -166,13 +168,16 @@ export default function TenantRoleFormDialog({ role = null }) {
 
             <div className="space-y-2">
               <label className="text-sm font-medium">تعريف الخدمة</label>
-              <Textarea
-                placeholder="نص يظهر داخل المودال عند اختيار الصلاحية..."
-                value={form.service_definition}
-                onChange={(e) => setField("service_definition", e.target.value)}
-                rows={4}
-                className="resize-none"
-              />
+              <div className="min-h-[220px]">
+                <TextEditor
+                  key={editorKey}
+                  initialContent={form.service_definition || ""}
+                  placeholder="نص يظهر داخل المودال عند اختيار الصلاحية..."
+                  onChange={(value) =>
+                    setField("service_definition", value?.html || "")
+                  }
+                />
+              </div>
             </div>
 
             <div className="rounded-[16px] border border-[#EEEEEE] bg-[#FAFAFA] p-4">

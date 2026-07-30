@@ -22,7 +22,6 @@ import {
   extractDraftOrdersPayload,
 } from "@/src/lib/draft-contract-statuses";
 import {
-  filterOrdersPageStatusItems,
   getDefaultOrdersPageStatusId,
 } from "@/src/lib/orders-page-statuses";
 
@@ -57,7 +56,7 @@ export default function DraftContractsWrapper() {
   });
 
   const statusItems = useMemo(
-    () => filterOrdersPageStatusItems(statusData?.data?.data?.items),
+    () => statusData?.data?.data?.items ?? [],
     [statusData]
   );
 

@@ -3,29 +3,13 @@
 import Header from "@/components/home/Header";
 import AddPaymentTypeDialog from "@/components/analysis/settings/payment-types/add-payment-type-dialog";
 import EditPaymentTypeDialog from "@/components/analysis/settings/payment-types/edit-payment-type-dialog";
-import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { usePaymentTypes } from "@/src/hooks/use-payment-types";
-import { axiosInstance } from "@/src/utils/axios";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Building2, Pentagon } from "lucide-react";
 import { useState } from "react";
-import { toast } from "sonner";
 
 function PaymentTypesGrid({ activeTab }) {
-  const queryClient = useQueryClient();
   const { items, isLoading } = usePaymentTypes(activeTab);
-
-  const { mutate: deletePaymentType, isPending: deletePending } = useMutation({
-    mutationFn: (id) => axiosInstance.post(`/admin/payment-types/${id}/delete`),
-    onSuccess: (res) => {
-      toast.success(res?.data?.message || "تم حذف طريقة الدفع بنجاح");
-      queryClient.invalidateQueries({ queryKey: ["payment-types"] });
-    },
-    onError: (error) => {
-      toast.error(error?.response?.data?.message || "حدث خطأ أثناء حذف طريقة الدفع");
-    },
-  });
 
   if (isLoading) {
     return <p className="text-sm text-[#A3A3A3] py-8">جاري التحميل...</p>;
@@ -53,13 +37,6 @@ function PaymentTypesGrid({ activeTab }) {
           </div>
           <div className="flex items-center justify-end gap-2 mt-4">
             <EditPaymentTypeDialog paymentType={item} />
-            <Button
-              disabled={deletePending}
-              onClick={() => deletePaymentType(item.id)}
-              className="bg-red-500/20 text-red-500 text-xs"
-            >
-              حذف
-            </Button>
           </div>
         </div>
       ))}
