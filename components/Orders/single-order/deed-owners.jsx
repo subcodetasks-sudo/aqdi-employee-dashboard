@@ -95,13 +95,17 @@ const DeedOwners = ({ data }) => {
       : SUMMARY_INSTRUMENT_IMAGE_FIELDS;
 
     const existing = catalog.filter((field) =>
-      Boolean(resolveImageUrl(pick(field.key)))
+      Boolean(
+        resolveImageUrl(
+          data?.contract_summary?.[field.key] ?? data?.[field.key]
+        )
+      )
     );
 
     // Only editable slots that already have a file; if none, keep primary upload field.
     if (existing.length > 0) return existing;
     return catalog.slice(0, 1);
-  }, [isSublease, instrumentImageLabel, data, summary]);
+  }, [isSublease, instrumentImageLabel, data]);
 
   const agencyDocumentUrl = resolveAgencyDocumentUrl({
     ...summary,

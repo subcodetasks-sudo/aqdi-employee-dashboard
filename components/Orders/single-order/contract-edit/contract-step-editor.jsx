@@ -809,10 +809,13 @@ export function ContractStepEditor({
   }, [orderData, resolvedStep, fields, initialValues, seedFromInitialValuesOnly]);
 
   useEffect(() => {
+    // Re-seeding mid-edit would discard what the user typed or the file they
+    // picked, so wait until the section leaves edit mode.
+    if (editing) return;
     setForm(syncForm);
     setInitial(syncForm);
     setFieldErrors({});
-  }, [syncForm]);
+  }, [syncForm, editing]);
 
   const handleSave = async () => {
     const editableKeys = new Set(fields.map((f) => f.key));
