@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { axiosInstance } from '@/src/utils/axios';
 import { isAllOrdersListPath } from '@/src/lib/order-routes';
@@ -24,10 +24,12 @@ function openNotificationsSidebar({ queryClient, setSidebarOpen, setDisplayedPar
 // only on the جميع الطلبات page (`/home/orders`).
 export function useUnreceivedOrdersWatcher() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const queryClient = useQueryClient();
   const { setDisplayedPart, setSidebarOpen } = useSidebarStore();
   const previousTotalRef = useRef(null);
-  const isAllOrdersPage = isAllOrdersListPath(pathname);
+  const tab = searchParams.get('tab');
+  const isAllOrdersPage = isAllOrdersListPath(pathname) && (!tab || tab === 'all');
 
   const { data: total } = useQuery({
     queryKey: ['unReceivedOrdersTotal'],

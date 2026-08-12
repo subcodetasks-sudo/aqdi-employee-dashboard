@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { RefreshCw, Search, Loader2, FileSpreadsheet } from 'lucide-react';
+import { RefreshCw, Search, Loader2, FileSpreadsheet, PanelLeft } from 'lucide-react';
 import { LuLogOut } from 'react-icons/lu';
 import { Button } from '@/components/ui/button';
 import {
@@ -58,8 +58,8 @@ export default function SubPageHeader({
       return;
     }
     const url = view
-      ? `/home/employees/${user.id}?view=${view}`
-      : `/home/employees/${user.id}`;
+      ? `/home/roles-and-employees/employees/${user.id}?view=${view}`
+      : `/home/roles-and-employees/employees/${user.id}`;
     router.push(url);
   };
 
@@ -74,11 +74,22 @@ export default function SubPageHeader({
 
   return (
     <div
-      className={`mb-7 transition-all duration-300 ${isSidebarOpen ? 'max-w-[calc(100vw-305px)] max-[1200px]:max-w-[calc(100vw-60px)]' : 'max-w-full'}`}
+      className={`mb-7 transition-all duration-300 ${isSidebarOpen ? 'max-w-[calc(100vw-256px)] max-[1200px]:max-w-[calc(100vw-60px)]' : 'max-w-[calc(100vw-80px)] max-[1200px]:max-w-full'}`}
       dir="rtl"
     >
       <div className="flex items-center gap-3 w-full">
         <div className="flex items-center gap-2.5 shrink-0 min-w-0">
+          {!isMain && (
+            <button
+              type="button"
+              onClick={toggleSidebar}
+              aria-label={isSidebarOpen ? 'طي القائمة الجانبية' : 'توسيع القائمة الجانبية'}
+              aria-expanded={isSidebarOpen}
+              className="w-[52px] h-[52px] rounded-full bg-sidebar text-sidebar-foreground transition-all duration-300 flex items-center justify-center hover:bg-sidebar-hover hover:scale-105 shrink-0"
+            >
+              <PanelLeft className="size-5" />
+            </button>
+          )}
           {isMain ? (
             <button
               type="button"
@@ -92,7 +103,7 @@ export default function SubPageHeader({
           ) : (
             <button
               type="button"
-              className="w-[52px] h-[52px] rounded-full bg-[#F3F3F3] transition-all duration-300 flex items-center justify-center hover:bg-[#eee] hover:scale-105 shrink-0"
+              className="w-[52px] h-[52px] rounded-full bg-surface-muted transition-all duration-300 flex items-center justify-center hover:bg-surface-muted-hover hover:scale-105 shrink-0"
               onClick={() => router.back()}
               aria-label="رجوع"
             >
@@ -108,17 +119,17 @@ export default function SubPageHeader({
               {first ? (
                 <Link
                   href={firstURL}
-                  className="text-[14px] text-[#424242] transition-all hover:text-brand-main whitespace-nowrap"
+                  className="text-[14px] text-ink-body transition-all hover:text-brand-main whitespace-nowrap"
                 >
                   {first}
                 </Link>
               ) : null}
               {second ? (
                 <>
-                  <i className="fa-solid fa-chevron-left text-[14px] text-[#424242]" />
+                  <i className="fa-solid fa-chevron-left text-[14px] text-ink-body" />
                   <Link
                     href={secondURL}
-                    className="text-[14px] text-[#424242] transition-all hover:text-brand-main whitespace-nowrap"
+                    className="text-[14px] text-ink-body transition-all hover:text-brand-main whitespace-nowrap"
                   >
                     {second}
                   </Link>
@@ -126,10 +137,10 @@ export default function SubPageHeader({
               ) : null}
               {third ? (
                 <>
-                  <i className="fa-solid fa-chevron-left text-[14px] text-[#424242]" />
+                  <i className="fa-solid fa-chevron-left text-[14px] text-ink-body" />
                   <Link
                     href={thirdURL}
-                    className="text-[14px] text-[#424242] transition-all hover:text-brand-main whitespace-nowrap"
+                    className="text-[14px] text-ink-body transition-all hover:text-brand-main whitespace-nowrap"
                   >
                     {third}
                   </Link>
@@ -140,13 +151,13 @@ export default function SubPageHeader({
         </div>
 
         <div className="relative flex-1 min-w-[140px]">
-          <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-[#A3A3A3] size-5 pointer-events-none" />
+          <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-ink-placeholder size-5 pointer-events-none" />
           <input
             type="text"
             placeholder={searchPlaceholder}
             value={searchQuery}
             onChange={(e) => onSearchChange?.(e.target.value)}
-            className="w-full h-[46px] bg-[#F9F9F9] border border-[#EEEEEE] rounded-full pr-12 pl-4 text-[14px] focus:outline-none focus:border-brand-main focus:bg-white transition-all shadow-inner"
+            className="w-full h-[46px] bg-surface-input border border-surface-border rounded-full pr-12 pl-4 text-[14px] focus:outline-none focus:border-brand-main focus:bg-white transition-all shadow-inner"
           />
         </div>
 
@@ -156,7 +167,7 @@ export default function SubPageHeader({
               type="button"
               onClick={onExport}
               disabled={isExporting}
-              className="h-[46px] px-5 rounded-full border border-[#10B981] bg-white text-[#10B981] hover:bg-[#10B981] hover:text-white font-bold text-[14px] transition-all flex items-center gap-2 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-[#10B981] max-[768px]:px-3"
+              className="h-[46px] px-5 rounded-full border border-brand-accent bg-white text-brand-accent hover:bg-brand-accent hover:text-white font-bold text-[14px] transition-all flex items-center gap-2 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-brand-accent max-[768px]:px-3"
               title={exportLabel}
             >
               {isExporting ? (
@@ -174,7 +185,7 @@ export default function SubPageHeader({
             <button
               type="button"
               onClick={onRefresh}
-              className="w-[46px] h-[46px] flex items-center justify-center rounded-full border border-[#EEEEEE] bg-[#10B981] text-white hover:bg-[#0E9F6E] transition-all shadow-sm shrink-0"
+              className="w-[46px] h-[46px] flex items-center justify-center rounded-full border border-surface-border bg-brand-accent text-white hover:bg-brand-accent-hover transition-all shadow-sm shrink-0"
               title={refreshTitle}
               aria-label={refreshTitle}
             >
@@ -184,7 +195,7 @@ export default function SubPageHeader({
 
           <button
             type="button"
-            className="w-[52px] h-[52px] rounded-full bg-[#F3F3F3] transition-all duration-300 flex items-center justify-center hover:bg-[#eee] hover:scale-105 shrink-0"
+            className="w-[52px] h-[52px] rounded-full bg-surface-muted transition-all duration-300 flex items-center justify-center hover:bg-surface-muted-hover hover:scale-105 shrink-0"
             aria-label="الرسائل"
           >
             <Image src={messageIcon} alt="" className="w-[20px] h-auto object-contain" />
@@ -193,13 +204,13 @@ export default function SubPageHeader({
           <button
             type="button"
             onClick={toggleNotification}
-            className={`${displayedPart === 'notification' ? 'bg-brand-main' : 'bg-[#F3F3F3]'} w-[52px] h-[52px] rounded-full transition-all duration-300 flex items-center justify-center hover:bg-[#eee] hover:scale-105 shrink-0`}
+            className={`${displayedPart === 'notification' ? 'bg-brand-main' : 'bg-surface-muted'} w-[52px] h-[52px] rounded-full transition-all duration-300 flex items-center justify-center hover:bg-surface-muted-hover hover:scale-105 shrink-0`}
             aria-label="الإشعارات"
           >
             <Image src={notificationIcon} alt="" className="w-[20px] h-auto object-contain" />
           </button>
 
-          <div className="h-[52px] bg-[#F3F3F3] rounded-[26px] flex items-center gap-2.5 p-[6px_10px] transition-all duration-300 hover:bg-[#eee] hover:scale-105 max-[992px]:w-[52px] max-[992px]:p-0 justify-center shrink-0">
+          <div className="h-[52px] bg-surface-muted rounded-[26px] flex items-center gap-2.5 p-[6px_10px] transition-all duration-300 hover:bg-surface-muted-hover hover:scale-105 max-[992px]:w-[52px] max-[992px]:p-0 justify-center shrink-0">
             <Image
               src={user?.profile_image || defaultUser}
               alt=""
@@ -209,7 +220,7 @@ export default function SubPageHeader({
             />
             <div className="max-[992px]:hidden">
               <h3 className="text-[12px] font-medium text-black">{user?.name}</h3>
-              <span className="text-[10px] font-normal text-[#4D4D4D]">
+              <span className="text-[10px] font-normal text-ink-subtle">
                 {user?.role_relation?.name}
               </span>
             </div>
@@ -219,7 +230,7 @@ export default function SubPageHeader({
             <DropdownMenuTrigger asChild>
               <Button
                 variant="outline"
-                className="w-[52px] h-[52px] rounded-full !bg-black !text-white border-none shadow-none hover:!bg-[#424242] transition-all duration-300 flex items-center justify-center hover:scale-105 shrink-0"
+                className="w-[52px] h-[52px] rounded-full !bg-black !text-white border-none shadow-none hover:!bg-ink-body transition-all duration-300 flex items-center justify-center hover:scale-105 shrink-0"
               >
                 <i className="fa-solid fa-chevron-down" />
               </Button>

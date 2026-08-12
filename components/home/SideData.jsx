@@ -1,52 +1,54 @@
 'use client'
 import logo from "@/public/images/logo.svg";
+import defaultUser from "@/public/images/defaultUser.jpg";
 import Image from "next/image";
 import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 import { useLogout } from "@/src/hooks/useLogout";
 import { usePermissions } from "@/src/hooks/usePermissions";
 import { SIDEBAR_NAV } from "@/src/lib/permissions";
-import { Box, FileText, Loader2, Settings } from "lucide-react";
+import {
+  BarChart3,
+  ClipboardList,
+  Loader2,
+  Menu,
+  ReceiptText,
+  Settings,
+  TrendingUp,
+  UserRound,
+  Users2,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BiSolidFolder, BiSolidFolderMinus } from "react-icons/bi";
-import { FaEnvelopeOpen } from "react-icons/fa6";
-import { HiMiniArrowPathRoundedSquare, HiUsers } from "react-icons/hi2";
+import { HiMiniArrowPathRoundedSquare } from "react-icons/hi2";
 import { LuLogOut } from "react-icons/lu";
-import { RiMoneyDollarCircleFill, RiPentagonFill } from "react-icons/ri";
-import { TbClipboardListFilled } from "react-icons/tb";
 import { useSidebarStore } from "@/src/stores/sidebar-store";
+import { useUserStore } from "@/src/stores/user-store";
 import { useUnreceivedOrdersWatcher } from "@/src/hooks/use-unreceived-orders-watcher";
 import NotificationList from "../notifiction/notification-list";
 import CommentList from "../comment/comment-list";
+import PaymentNotificationList from "../RealtimeOrders/PaymentNotificationList";
+import { toast } from "sonner";
 
 const NAV_ICONS = {
-  '/home/analysis': RiPentagonFill,
-  '/home/orders': Box,
-  '/home/draft-contracts': Box,
-  '/home/contract-paid': Box,
-  '/home/completed-orders': RiPentagonFill,
-  '/home/incolpleted-orders-analysis/total': RiPentagonFill,
-  '/home/completed-whatsapp': BiSolidFolder,
-  '/home/incompleted-whatsapp': BiSolidFolderMinus,
+  '/home/realtime-orders': Menu,
+  '/home/clients': Users2,
   '/home/return-orders': HiMiniArrowPathRoundedSquare,
-  '/home/sorting-orders': FaEnvelopeOpen,
-  '/home/draft-contract-statuses': FaEnvelopeOpen,
-  '/home/draft-completed-orders': RiPentagonFill,
-  '/home/received-orders': RiPentagonFill,
-  '/home/reliable-orders': RiPentagonFill,
-  '/home/canceled-orders': RiPentagonFill,
-  '/home/roles': TbClipboardListFilled,
-  '/home/employees': HiUsers,
-  '/home/salaries': RiMoneyDollarCircleFill,
+  '/home/roles-and-employees': UserRound,
+  '/home/marketing-and-content': TrendingUp,
+  '/home/reports': BarChart3,
   '/home/settings': Settings,
-  '/home/contract-settings': FileText,
+  '/home/orders': ClipboardList,
+  '/home/invoices': ReceiptText,
 };
 
 const DESKTOP_MEDIA = '(min-width: 1201px)';
+const EXPANDED_WIDTH = 'w-64';
+const COLLAPSED_WIDTH = 'w-20';
 
-function NavLink({ item, pathname }) {
-  const Icon = NAV_ICONS[item.href] ?? RiPentagonFill;
+function NavLink({ item, pathname, collapsed, badgeCount }) {
+  const Icon = NAV_ICONS[item.href] ?? ClipboardList;
   const isActive =
     pathname === item.href ||
     (item.href !== '/home' && pathname.startsWith(`${item.href}/`));
@@ -54,20 +56,42 @@ function NavLink({ item, pathname }) {
   return (
     <Link
       href={item.href}
-      className={`${isActive ? 'active hover:bg-[var(--main-hover)] hover:text-white' : ''} bg-white h-12 rounded-[24px] text-[14px] font-normal flex items-center justify-between gap-2.5 px-5 transition-all hover:bg-[#eee] hover:scale-105 text-[#424242]`}
+      title={collapsed ? item.label : undefined}
+      className={`group flex h-11 items-center rounded-xl text-sm font-medium transition-colors ${
+        isActive
+          ? 'bg-white/10 text-brand-accent'
+          : 'text-sidebar-foreground/90 hover:bg-white/[0.06] hover:text-sidebar-foreground'
+      } ${collapsed ? 'w-11 mx-auto justify-center px-0' : 'justify-between gap-2.5 px-3.5'}`}
     >
-      <span>{item.label}</span>
-      <Icon size={16} className="size-4 shrink-0" />
+      <span className={`flex min-w-0 items-center gap-2.5 ${collapsed ? '' : 'flex-1'}`}>
+        <Icon
+          size={18}
+          className={`size-[18px] shrink-0 ${
+            isActive ? 'text-brand-accent' : 'text-brand-accent/80 group-hover:text-brand-accent'
+          }`}
+        />
+        {!collapsed && <span className="truncate">{item.label}</span>}
+      </span>
+      {!collapsed && typeof badgeCount === 'number' && (
+        <span className="flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-[#E8923A] px-1.5 text-[11px] font-semibold leading-none text-white">
+          {badgeCount > 99 ? '99+' : badgeCount}
+        </span>
+      )}
+      {collapsed && typeof badgeCount === 'number' && badgeCount > 0 && (
+        <span className="absolute end-1.5 top-1.5 h-2 w-2 rounded-full bg-[#E8923A]" />
+      )}
     </Link>
   );
 }
 
 export default function SideData() {
   const pathname = usePathname();
+  const router = useRouter();
   const { logout, logoutLoading } = useLogout();
-  const { displayedPart, isSidebarOpen, setSidebarOpen, toggleSidebar } = useSidebarStore();
+  const { displayedPart, isSidebarOpen, setSidebarOpen } = useSidebarStore();
   const { can, isReady } = usePermissions();
-  useUnreceivedOrdersWatcher();
+  const { user } = useUserStore();
+  const unreceivedTotal = useUnreceivedOrdersWatcher();
 
   useEffect(() => {
     const media = window.matchMedia(DESKTOP_MEDIA);
@@ -89,8 +113,20 @@ export default function SideData() {
     items: group.items.filter((item) => !isReady || can(item.section, 'view')),
   })).filter((group) => group.items.length > 0);
 
-  const expandedWidth =
-    displayedPart !== 'default' ? 'max-[1700px]:w-[345px]' : 'max-[1700px]:w-[245px]';
+  const isCollapsed = displayedPart === 'default' && !isSidebarOpen;
+  const panelWidth = displayedPart !== 'default' ? 'w-80' : EXPANDED_WIDTH;
+
+  const userName = user?.name || 'مستخدم';
+  const userRole = user?.role_relation?.name || user?.role?.name || '—';
+  const userInitial = userName.trim().charAt(0) || 'م';
+
+  const openProfile = () => {
+    if (!user?.id) {
+      toast.error('تعذر تحديد حساب المستخدم');
+      return;
+    }
+    router.push(`/home/roles-and-employees/employees/${user.id}?view=profile`);
+  };
 
   return (
     <>
@@ -105,72 +141,160 @@ export default function SideData() {
 
       <div
         id="side-data"
-        className={`relative h-screen shrink-0 overflow-y-auto border-e border-[#e9e9e9] bg-[#F5F5F5] p-[45px_35px] no-scrollbar transition-all duration-300 max-[1700px]:p-[30px_10px_10px] max-[1200px]:absolute max-[1200px]:inset-s-0 max-[1200px]:inset-y-0 max-[1200px]:z-[100] ${
+        className={`relative flex h-screen shrink-0 flex-col overflow-hidden border-e border-white/10 bg-gradient-to-b from-sidebar to-sidebar-dark transition-all duration-300 max-[1200px]:absolute max-[1200px]:inset-s-0 max-[1200px]:inset-y-0 max-[1200px]:z-[100] ${
           isSidebarOpen
-            ? `w-[309px] translate-x-0 ${expandedWidth}`
-            : 'w-0 !overflow-hidden border-e-0 !p-0 max-[1200px]:translate-x-full'
+            ? `${panelWidth} translate-x-0`
+            : `${COLLAPSED_WIDTH} translate-x-0 max-[1200px]:w-0 max-[1200px]:!p-0 max-[1200px]:!overflow-hidden max-[1200px]:border-e-0 max-[1200px]:translate-x-full`
         }`}
       >
         {displayedPart === 'default' && (
-          <>
-            <div
-              className="absolute top-[80px] inset-inline-end-[-30px] hidden h-[30px] w-[30px] cursor-pointer items-center justify-center rounded-s-[4px] border border-transparent bg-[#F5F5F5] transition-all hover:scale-105 hover:border-brand-main hover:bg-[#ddd] hover:text-white max-[1200px]:flex"
-              onClick={toggleSidebar}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') toggleSidebar();
-              }}
-              aria-label={isSidebarOpen ? 'إغلاق القائمة' : 'فتح القائمة'}
-            >
-              <i className={`fa-solid ${isSidebarOpen ? 'fa-chevron-right' : 'fa-chevron-left'}`} />
-            </div>
-
-            <div className="mb-[25px] flex items-center gap-2.5 max-[1700px]:mb-5">
-              <Link href="/home">
+          <div className={`flex h-full min-h-0 flex-col ${isCollapsed ? 'px-2 py-4' : 'px-3.5 py-5'}`}>
+            <div className={`mb-4 flex items-center gap-3 ${isCollapsed ? 'justify-center' : 'px-1'}`}>
+              <Link
+                href="/home"
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-accent/15 ring-1 ring-brand-accent/25"
+              >
                 <Image
                   src={logo}
-                  alt="Aakdi"
-                  width={52}
-                  height={52}
-                  className="flex h-[52px] w-[52px] items-center justify-center rounded-full border border-black/10 bg-white object-contain p-3 transition-all hover:scale-105 hover:border-brand-main hover:bg-[#ddd] hover:text-white"
+                  alt="عقدي"
+                  width={28}
+                  height={36}
+                  className="h-7 w-auto object-contain"
                 />
               </Link>
-              <div>
-                <h2 className="mb-[7px] text-[14px] font-semibold text-black max-[1700px]:text-[13px]">
-                  عقــدي لتقنيـــات العقــاريـة
-                </h2>
-                <h5 className="text-[12px] font-normal text-[#686868]">داشبـــورد</h5>
-              </div>
+              {!isCollapsed && (
+                <div className="min-w-0">
+                  <h2 className="truncate text-[15px] font-bold leading-tight text-sidebar-foreground">
+                    لوحة الموظفين
+                  </h2>
+                  <p className="mt-0.5 truncate text-[11px] font-normal text-sidebar-foreground/55">
+                    إدارة طلبات العقود
+                  </p>
+                </div>
+              )}
             </div>
 
-            {visibleNav.map((group) => (
-              <div key={group.group} className="mb-5 max-[1700px]:mb-2.5">
-                <h3 className="mb-2.5 text-[12px] font-normal text-[#686868]">{group.group}</h3>
-                <div className="flex flex-col gap-[5px]">
-                  {group.items.map((item) => (
-                    <NavLink key={item.href} item={item} pathname={pathname} />
-                  ))}
-                </div>
-              </div>
-            ))}
+            <div className="mx-1 mb-3 h-px bg-white/10" />
 
-            <div className="mb-5 max-[1700px]:mb-2.5">
-              <div className="flex flex-col gap-[5px]">
-                <div
-                  onClick={() => logout()}
-                  className="flex h-12 cursor-pointer items-center justify-between gap-2.5 rounded-[24px] bg-white px-5 text-[14px] font-normal text-[#424242] transition-all hover:scale-105 hover:bg-[#eee]"
-                >
-                  <span>تسجيل الخـــروج</span>
-                  {logoutLoading ? <Loader2 className="animate-spin" /> : <LuLogOut />}
+            <div className="min-h-0 flex-1 overflow-y-auto no-scrollbar">
+              {visibleNav.map((group, groupIndex) => (
+                <div key={group.group}>
+                  {groupIndex > 0 && <div className="mx-1 my-3 h-px bg-white/10" />}
+                  <div className="flex flex-col gap-1">
+                    {group.items.map((item) => (
+                      <div key={item.href} className="relative">
+                        <NavLink
+                          item={item}
+                          pathname={pathname}
+                          collapsed={isCollapsed}
+                          badgeCount={
+                            item.badge === 'unreceived' ? unreceivedTotal : undefined
+                          }
+                        />
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              ))}
             </div>
-          </>
+
+            <div className={`mt-3 shrink-0 ${isCollapsed ? '' : 'px-0.5'}`}>
+              {isCollapsed ? (
+                <div className="flex flex-col items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={openProfile}
+                    title={userName}
+                    className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl bg-white/10 text-sm font-bold text-sidebar-foreground transition-colors hover:bg-white/[0.14] ring-1 ring-white/10"
+                  >
+                    {user?.profile_image ? (
+                      <Image
+                        src={user.profile_image}
+                        alt=""
+                        width={44}
+                        height={44}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      userInitial
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => logout()}
+                    disabled={logoutLoading}
+                    title="تسجيل الخروج"
+                    className="flex h-9 w-9 items-center justify-center rounded-lg text-sidebar-foreground/70 transition-colors hover:bg-white/10 hover:text-sidebar-foreground"
+                  >
+                    {logoutLoading ? (
+                      <Loader2 className="size-4 animate-spin" />
+                    ) : (
+                      <LuLogOut className="size-4" />
+                    )}
+                  </button>
+                </div>
+              ) : (
+                <div className="rounded-2xl bg-white/[0.08] p-2.5 ring-1 ring-white/10">
+                  <div className="flex items-center gap-2.5">
+                    <button
+                      type="button"
+                      onClick={openProfile}
+                      className="flex min-w-0 flex-1 items-center gap-2.5 text-start rounded-xl p-1 -m-1 transition-colors hover:bg-white/[0.06]"
+                    >
+                      <span className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-brand-accent/20 text-sm font-bold text-brand-accent ring-2 ring-brand-accent/25">
+                        <Image
+                          src={user?.profile_image || defaultUser}
+                          alt=""
+                          width={44}
+                          height={44}
+                          className="h-full w-full object-cover"
+                        />
+                      </span>
+                      <span className="min-w-0">
+                        <span className="block truncate text-[13px] font-semibold text-sidebar-foreground">
+                          {userName}
+                        </span>
+                        <span className="mt-0.5 block truncate text-[11px] text-sidebar-foreground/55">
+                          صلاحية: {userRole}
+                        </span>
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => logout()}
+                      disabled={logoutLoading}
+                      title="تسجيل الخروج"
+                      aria-label="تسجيل الخروج"
+                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-sidebar-foreground/70 transition-colors hover:bg-white/10 hover:text-sidebar-foreground disabled:opacity-60"
+                    >
+                      {logoutLoading ? (
+                        <Loader2 className="size-4 animate-spin" />
+                      ) : (
+                        <LuLogOut className="size-4 shrink-0" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
         )}
 
-        {displayedPart === 'notification' && <NotificationList />}
-        {displayedPart === 'comments' && <CommentList />}
+        {displayedPart === 'notification' && (
+          <div className="h-full overflow-y-auto px-3.5 py-5 no-scrollbar">
+            <NotificationList />
+          </div>
+        )}
+        {displayedPart === 'comments' && (
+          <div className="h-full overflow-y-auto px-3.5 py-5 no-scrollbar">
+            <CommentList />
+          </div>
+        )}
+        {displayedPart === 'payments' && (
+          <div className="h-full overflow-y-auto px-3.5 py-5 no-scrollbar">
+            <PaymentNotificationList />
+          </div>
+        )}
       </div>
     </>
   );

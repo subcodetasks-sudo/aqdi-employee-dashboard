@@ -104,7 +104,7 @@ export default function HomeWelcomeWrapper() {
                     <button
                         type="button"
                         className="flex h-[58px] items-center gap-3 rounded-full bg-black px-[18px] text-sm font-semibold text-white transition-colors hover:bg-[#1a1a1a]"
-                        onClick={() => router.push('/home/analysis')}
+                        onClick={() => router.push('/home/reports')}
                     >
                         <span>ابدأ الآن</span>
                         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white">
