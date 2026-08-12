@@ -1,0 +1,21 @@
+/** Reports dashboard palette (matches Figma / mock screens). */
+export const RP = {
+  brand: "#0B5345",
+  brandLight: "#0c6055",
+  pageBg: "#F4F6F5",
+  card: "#FFFFFF",
+  border: "#E6EBE9",
+  muted: "#9CA3AF",
+  text: "#111827",
+  textSecondary: "#6B7280",
+  teal: "#0D9488",
+  tealBar: "#0B5345",
+  blueBar: "#1E40AF",
+  orangeBar: "#EA580C",
+  goldBar: "#CA8A04",
+  redBar: "#DC2626",
+  grayBar: "#9CA3AF",
+  greenText: "#15803D",
+  redText: "#DC2626",
+  goldText: "#B45309",
+};

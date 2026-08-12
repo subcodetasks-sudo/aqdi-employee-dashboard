@@ -1,5 +1,6 @@
 "use client";
 
+import ClientDetailsWrapper from "@/components/clients/ClientDetailsWrapper";
 import UserDetailsCard from "@/components/analysis/UsersAnalysis/user-details";
 import UserContractsTable from "@/components/analysis/UsersAnalysis/user-contracts-table";
 import Header from "@/components/home/Header";
@@ -8,11 +9,27 @@ import { axiosInstance } from "@/src/utils/axios";
 import { useQuery } from "@tanstack/react-query";
 import { useParams, useSearchParams } from "next/navigation";
 
+function isClientFileRoute(userId, from) {
+  if (typeof from === "string" && from.includes("/home/clients")) return true;
+  return String(userId || "").startsWith("c-");
+}
+
 export default function UserDetailsPage() {
   const { userId } = useParams();
   const searchParams = useSearchParams();
-  const from = searchParams.get("from") || "/home/user-analysis/total";
-  const backUrl = from.startsWith("/") ? from : `/home/user-analysis/${from}`;
+  const from = searchParams.get("from") || "/home/reports?tab=users";
+
+  if (isClientFileRoute(userId, from)) {
+    return <ClientDetailsWrapper />;
+  }
+
+  return <LegacyUserDetailsPage userId={userId} from={from} />;
+}
+
+function LegacyUserDetailsPage({ userId, from }) {
+  const backUrl = from.startsWith("/")
+    ? from
+    : `/home/reports?tab=users&segment=${from}`;
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["user", String(userId)],
