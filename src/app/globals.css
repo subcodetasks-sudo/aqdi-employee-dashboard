@@ -66,6 +66,32 @@
   --sec-color: #453B2F;
 }
 
+.dark {
+  --background: 150 28% 6%;
+  --foreground: 140 20% 96%;
+  --card: 150 24% 9%;
+  --card-foreground: 140 20% 96%;
+  --popover: 150 24% 10%;
+  --popover-foreground: 140 20% 96%;
+  --primary: 160 45% 42%;
+  --primary-foreground: 150 30% 8%;
+  --secondary: 150 18% 16%;
+  --secondary-foreground: 140 20% 96%;
+  --muted: 150 16% 14%;
+  --muted-foreground: 140 10% 65%;
+  --accent: 150 16% 14%;
+  --accent-foreground: 160 55% 65%;
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 150 14% 18%;
+  --input: 150 14% 18%;
+  --ring: 160 45% 42%;
+
+  --main-color: #10B981;
+  --main-hover: #34D399;
+  --sec-color: #A8B5A8;
+}
+
 .active {
   background-color: var(--main-hover);
   color: white;
@@ -105,6 +131,16 @@
   background: var(--main-hover);
 }
 
+.dark ::-webkit-scrollbar-track {
+  background: #13241C;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: #0B5345;
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #10B981;
+}
+
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
@@ -129,7 +165,7 @@ a {
   color: inherit;
 }
 
-/* Table headers */
+/* Table headers — light by default, dark when html.dark */
 table thead,
 table thead tr {
   background-color: #f2f2f2 !important;
@@ -139,4 +175,14 @@ table thead th {
   color: #000000 !important;
   font-weight: 700 !important;
   border-bottom-color: #e4e4e4 !important;
+}
+
+.dark table thead,
+.dark table thead tr {
+  background-color: #162820 !important;
+}
+
+.dark table thead th {
+  color: rgba(255, 255, 255, 0.55) !important;
+  border-bottom-color: rgba(255, 255, 255, 0.08) !important;
 }

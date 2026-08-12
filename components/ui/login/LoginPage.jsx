@@ -2,7 +2,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import bluelogo from '@/public/images/blue-logo.svg';
+import logo from '@/public/images/logo.svg';
 import waving from '@/public/images/waving.svg';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,7 +10,7 @@ import { Form, FormField, FormItem, FormControl, FormMessage, FormLabel } from '
 import Image from 'next/image';
 import { useState } from 'react';
 import Link from 'next/link';
-import { ArrowUpRight, Eye, EyeOff } from 'lucide-react';
+import { ArrowUpRight, Eye, EyeOff, Moon, Sun } from 'lucide-react';
 import { useMutation } from '@tanstack/react-query';
 import { axiosInstance } from '@/src/utils/axios';
 import { useUserStore } from '@/src/stores/user-store';
@@ -19,11 +19,14 @@ import { setAuthCookie } from '@/src/app/actions/auth';
 import { enrichUserWithRolePermissions } from '@/src/lib/permissions';
 import { requestFcmToken } from '@/src/lib/firebase/messaging';
 import { toast } from 'sonner';
+import { useIsDark, useToggleTheme } from '@/src/hooks/useThemeMode';
 
 export default function LoginPage() {
   const { setAuth } = useUserStore();
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
+  const isDark = useIsDark();
+  const { toggleTheme } = useToggleTheme();
 
   const FormSchema = z.object({
     email: z.string().email('يرجى إدخال بريد إلكتروني صحيح.'),
@@ -103,21 +106,46 @@ console.log({fcm_token});
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-[#FAFAFA] relative overflow-hidden p-4" dir="rtl">
-      <div className="w-full max-w-[580px] bg-white rounded-[40px] border border-[#F0F0F0] shadow-2xl p-[50px_60px] relative z-10 max-[768px]:p-8 max-[480px]:p-6 max-[480px]:rounded-[24px]">
-        <div className="flex flex-col items-center text-center mb-10">
-          <Link href="/" className="flex items-center gap-3  transition-transform hover:scale-105">
+    <div
+      className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#F4F6F5] p-4 dark:bg-[#0B1411]"
+      dir="rtl"
+    >
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -right-24 -top-24 size-[420px] rounded-full bg-brand-main/10 blur-3xl dark:bg-brand-accent/10"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -bottom-32 -left-20 size-[380px] rounded-full bg-brand-main/8 blur-3xl dark:bg-brand-accent/5"
+      />
+
+      <button
+        type="button"
+        onClick={toggleTheme}
+        aria-label={isDark ? 'الوضع الفاتح' : 'الوضع الداكن'}
+        className="absolute left-4 top-4 z-20 flex size-11 items-center justify-center rounded-full border border-[#E6EBE9] bg-white text-brand-main shadow-[0_2px_12px_rgba(11,83,69,0.08)] transition-colors hover:bg-[#E8F5F1] dark:border-white/10 dark:bg-[#13241C] dark:text-brand-accent dark:hover:bg-[#1A2E24] sm:left-6 sm:top-6"
+      >
+        {isDark ? (
+          <Sun className="size-5 text-amber-300" strokeWidth={1.75} />
+        ) : (
+          <Moon className="size-5" strokeWidth={1.75} />
+        )}
+      </button>
+
+      <div className="relative z-10 w-full max-w-[580px] rounded-[40px] border border-[#E6EBE9] bg-card p-[50px_60px] shadow-[0_4px_24px_rgba(11,83,69,0.08)] dark:border-white/10 dark:bg-[#13241C] dark:shadow-[0_8px_32px_rgba(0,0,0,0.35)] max-[768px]:p-8 max-[480px]:rounded-[24px] max-[480px]:p-6">
+        <div className="mb-10 flex flex-col items-center text-center">
+          <Link href="/" className="flex items-center gap-3 transition-transform hover:scale-105">
             <Image
-              src={bluelogo}
+              src={logo}
               alt="عقدي"
               width={96}
               height={96}
-              className="w-24 h-24 object-contain"
+              className="h-24 w-24 object-contain"
               priority
             />
           </Link>
-          <Image src={waving} alt="" width={40} height={40} className="w-10 h-auto object-contain mb-4" aria-hidden />
-          <p className="text-[18px]  text-[#363636]">لوحة تحكم الموظفين.</p>
+          <Image src={waving} alt="" width={40} height={40} className="mb-4 h-auto w-10 object-contain" aria-hidden />
+          <p className="text-[18px] text-foreground/80 dark:text-white/70">لوحة تحكم الموظفين.</p>
         </div>
         
         <Form {...form}>
@@ -125,40 +153,40 @@ console.log({fcm_token});
             <FormField name="email" control={form.control} render={({ field }) => (
               <FormItem>
                 <div className="flex flex-col gap-2.5">
-                  <FormLabel className="text-[14px]  text-black flex items-center gap-1">
-                    البريـــد الإلكتـــرونـــي <span className="text-[#FF4444]">*</span>
+                  <FormLabel className="flex items-center gap-1 text-[14px] text-foreground">
+                    البريـــد الإلكتـــرونـــي <span className="text-destructive">*</span>
                   </FormLabel>
                   <FormControl>
                     <Input 
                         type="email" 
-                        className="h-[54px] rounded-[16px] border-[#EEEEEE] bg-white px-5 text-right focus-visible:ring-1 focus-visible:ring-brand-main focus-visible:border-brand-main text-[14px] placeholder:text-[#C4C4C4]" 
+                        className="h-[54px] rounded-[16px] border-border bg-surface-input px-5 text-right text-[14px] text-foreground placeholder:text-ink-placeholder focus-visible:border-brand-main focus-visible:ring-1 focus-visible:ring-brand-main dark:border-white/10 dark:bg-[#0F1C16] dark:placeholder:text-white/35" 
                         placeholder="... أدخل بريدك الإلكتروني هنا" 
                         {...field} 
                     />
                   </FormControl>
                 </div>
-                <FormMessage className="text-[#FF4444] text-[12px] mt-1" />
+                <FormMessage className="mt-1 text-[12px] text-destructive" />
               </FormItem>
             )} />
             
             <FormField name="password" control={form.control} render={({ field }) => (
               <FormItem>
                 <div className="flex flex-col gap-2.5">
-                  <FormLabel className="text-[14px]  text-black flex items-center gap-1">
-                    كلمة المرور <span className="text-[#FF4444]">*</span>
+                  <FormLabel className="flex items-center gap-1 text-[14px] text-foreground">
+                    كلمة المرور <span className="text-destructive">*</span>
                   </FormLabel>
                   <FormControl>
                     <div className="relative">
                       <Input 
                           type={showPassword ? 'text' : 'password'}
-                          className="h-[54px] rounded-[16px] border-[#EEEEEE] bg-white px-5 pl-12 text-right focus-visible:ring-1 focus-visible:ring-brand-main focus-visible:border-brand-main text-[14px] placeholder:text-[#C4C4C4]" 
+                          className="h-[54px] rounded-[16px] border-border bg-surface-input px-5 pl-12 text-right text-[14px] text-foreground placeholder:text-ink-placeholder focus-visible:border-brand-main focus-visible:ring-1 focus-visible:ring-brand-main dark:border-white/10 dark:bg-[#0F1C16] dark:placeholder:text-white/35" 
                           placeholder="... أدخل كلمة المرور هنا"  
                           {...field} 
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword((prev) => !prev)}
-                        className="absolute left-4 top-1/2 -translate-y-1/2 text-[#A3A3A3] hover:text-[#363636] transition-colors"
+                        className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-placeholder transition-colors hover:text-foreground dark:text-white/40 dark:hover:text-white/80"
                         aria-label={showPassword ? 'إخفاء كلمة المرور' : 'إظهار كلمة المرور'}
                       >
                         {showPassword ? (
@@ -170,24 +198,26 @@ console.log({fcm_token});
                     </div>
                   </FormControl>
                 </div>
-                <FormMessage className="text-[#FF4444] text-[12px] mt-1" />
+                <FormMessage className="mt-1 text-[12px] text-destructive" />
               </FormItem>
             )} />
             
             <FormField name="remember" control={form.control} render={({ field }) => (
               <FormItem>
                 <FormControl>
-                  <label className="flex items-center gap-2.5 cursor-pointer group w-fit">
-                    <div className="relative flex items-center justify-center w-5 h-5">
+                  <label className="group flex w-fit cursor-pointer items-center gap-2.5">
+                    <div className="relative flex size-5 items-center justify-center">
                       <input
                         type="checkbox"
-                        className="peer appearance-none w-5 h-5 rounded border-2 border-[#D9D9D9] bg-white checked:bg-brand-main checked:border-brand-main transition-all cursor-pointer"
+                        className="peer size-5 cursor-pointer appearance-none rounded border-2 border-[#D9D9D9] bg-white transition-all checked:border-brand-main checked:bg-brand-main dark:border-white/20 dark:bg-[#0F1C16] dark:checked:border-brand-accent dark:checked:bg-brand-accent"
                         checked={!!field.value}
                         onChange={field.onChange}
                       />
-                      <i className="fa-solid fa-check absolute text-white text-[10px] opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none" />
+                      <i className="fa-solid fa-check pointer-events-none absolute text-[10px] text-white opacity-0 transition-opacity peer-checked:opacity-100" />
                     </div>
-                    <span className="text-[14px] text-[#363636] group-hover:text-black transition-colors">تذكرني</span>
+                    <span className="text-[14px] text-muted-foreground transition-colors group-hover:text-foreground">
+                      تذكرني
+                    </span>
                   </label>
                 </FormControl>
               </FormItem>
@@ -196,13 +226,13 @@ console.log({fcm_token});
             <div className="mt-2">
               <Button
                 type="submit"
-                className="w-full h-[58px] rounded-[20px] bg-[#0004E2] hover:bg-[#0003c4] text-white  text-[16px] transition-all duration-300 flex items-center justify-between px-6 shadow-none"
+                className="flex h-[58px] w-full items-center justify-between rounded-[20px] bg-brand-main px-6 text-[16px] text-white shadow-none transition-all duration-300 hover:bg-brand-main/90 dark:bg-brand-accent dark:text-[#0B1411] dark:hover:bg-brand-accent-hover"
                 disabled={isPending}
               >
                 <span>{isPending ? 'جار التحقق ...' : 'تسجيل الدخول'}</span>
                 {!isPending && (
-                  <span className="w-9 h-9 rounded-[10px] bg-white flex items-center justify-center shrink-0">
-                    <ArrowUpRight className="size-5 text-[#0004E2]" strokeWidth={2.5} />
+                  <span className="flex size-9 shrink-0 items-center justify-center rounded-[10px] bg-white dark:bg-[#0B1411]">
+                    <ArrowUpRight className="size-5 text-brand-main dark:text-brand-accent" strokeWidth={2.5} />
                   </span>
                 )}
               </Button>

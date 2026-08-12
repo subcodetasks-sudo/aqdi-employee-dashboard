@@ -94,7 +94,7 @@ export default function AddRole() {
             queryClient.invalidateQueries({ queryKey: ['roles'] });
             queryClient.invalidateQueries({ queryKey: ['roles-list'] });
             queryClient.invalidateQueries({ queryKey: ['permissions-by-section'] });
-            router.push('/home/roles');
+            router.push('/home/roles-and-employees?tab=roles');
         },
         onError: (error) => {
             toast.error(
@@ -160,10 +160,10 @@ export default function AddRole() {
                 isMain={false}
                 first="الرئيــسية"
                 firstURL="/"
-                second="الادوار"
-                secondURL="/home/roles"
+                second="الأدوار"
+                secondURL="/home/roles-and-employees?tab=roles"
                 third="إضافة دور"
-                thirdURL="/home/roles/add"
+                thirdURL="/home/roles-and-employees/roles/add"
             />
 
             <div className="bg-white rounded-[32px] border border-[#F0F0F0] p-8 mt-4 shadow-sm relative z-10" dir="rtl">

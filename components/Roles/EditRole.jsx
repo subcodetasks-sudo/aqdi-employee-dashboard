@@ -134,7 +134,7 @@ export default function EditRole() {
             queryClient.invalidateQueries({ queryKey: ['roles-list'] });
             queryClient.invalidateQueries({ queryKey: ['role', roleId] });
             queryClient.invalidateQueries({ queryKey: ['permissions-by-section'] });
-            router.push('/home/roles');
+            router.push('/home/roles-and-employees?tab=roles');
         },
         onError: (error) => {
             toast.error(
@@ -194,7 +194,7 @@ export default function EditRole() {
                 معرف الدور غير موجود.
                 <button
                     type="button"
-                    onClick={() => router.push('/home/roles')}
+                    onClick={() => router.push('/home/roles-and-employees?tab=roles')}
                     className="block mx-auto mt-4 text-brand-main font-bold"
                 >
                     العودة للأدوار
@@ -213,7 +213,7 @@ export default function EditRole() {
                 تعذر تحميل بيانات الدور.
                 <button
                     type="button"
-                    onClick={() => router.push('/home/roles')}
+                    onClick={() => router.push('/home/roles-and-employees?tab=roles')}
                     className="block mx-auto mt-4 text-brand-main font-bold"
                 >
                     العودة للأدوار
@@ -230,10 +230,10 @@ export default function EditRole() {
                 isMain={false}
                 first="الرئيــسية"
                 firstURL="/"
-                second="الادوار"
-                secondURL="/home/roles"
+                second="الأدوار"
+                secondURL="/home/roles-and-employees?tab=roles"
                 third="تعديل دور"
-                thirdURL={`/home/roles/edit?id=${roleId}`}
+                thirdURL={`/home/roles-and-employees/roles/edit?id=${roleId}`}
             />
 
             <div className="bg-white rounded-[32px] border border-[#F0F0F0] p-8 mt-4 shadow-sm relative z-10" dir="rtl">

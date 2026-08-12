@@ -13,7 +13,11 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-export default function DeleteEmployeeDialog({ employee, isSingle = false }) {
+export default function DeleteEmployeeDialog({
+  employee,
+  isSingle = false,
+  triggerVariant = "icon",
+}) {
   const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
   const router = useRouter();
@@ -29,20 +33,38 @@ export default function DeleteEmployeeDialog({ employee, isSingle = false }) {
       setOpen(false);
       queryClient.invalidateQueries({ queryKey: ["allEmployees"] });
       queryClient.invalidateQueries({ queryKey: ["employee", String(employee?.id)] });
-      if(isSingle) router.push("/home/employees");
+      if(isSingle) router.push("/home/roles-and-employees?tab=employees");
     },
     onError: (error) => {
       toast.error(error?.response?.data?.message || "حدث خطأ أثناء حذف الموظف");
     }
   });
 
+  const renderTrigger = () => {
+    if (triggerVariant === "outline-delete") {
+      return (
+        <button
+          type="button"
+          className="inline-flex items-center justify-center h-8 px-3 rounded-lg border border-[#FCA5A5] bg-white text-[#DC2626] text-[12px] font-semibold hover:bg-[#FEF2F2] transition-colors"
+        >
+          حذف
+        </button>
+      );
+    }
+
+    return (
+      <Button
+        className="bg-[#FFEBEB] text-[#FF4D4F] hover:bg-[#FF4D4F] hover:text-white w-9 h-9 rounded-full flex items-center justify-center p-0 border-0 shadow-none"
+        size="icon"
+      >
+        <Trash2 className="size-4" />
+      </Button>
+    );
+  };
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button className="bg-[#FFEBEB] text-[#FF4D4F] hover:bg-[#FF4D4F] hover:text-white w-9 h-9 rounded-full flex items-center justify-center p-0 border-0 shadow-none" size="icon">
-          <Trash2 className="size-4" />
-        </Button>
-      </DialogTrigger>
+      <DialogTrigger asChild>{renderTrigger()}</DialogTrigger>
       <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden rounded-[32px] border-0" dir="rtl">
         <div className="p-8 flex flex-col items-center text-center gap-6">
           <div className="w-24 h-24 rounded-full bg-[#FFEBEB] text-[#FF4D4F] flex items-center justify-center shadow-inner mt-4">
