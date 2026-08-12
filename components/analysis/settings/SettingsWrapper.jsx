@@ -25,6 +25,7 @@ export default function SettingsWrapper() {
     ];
 
     const systemSettings = [
+        { label: "اعــدادات العقــود", link: "/home/contract-settings" },
         { label: "انواع الوحدات", link: "/home/settings/unit-types" },
         { label: "استخدام الوحدة", link: "/home/settings/unit-usage" },
         { label: "المناطق", link: "/home/settings/regions" },

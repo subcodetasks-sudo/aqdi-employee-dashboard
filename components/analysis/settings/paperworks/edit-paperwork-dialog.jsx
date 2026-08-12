@@ -23,6 +23,7 @@ import {
 import { axiosInstance } from "@/src/utils/axios";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2, X } from "lucide-react";
+import { SETTINGS_EDIT_TRIGGER_CLASS } from "@/components/SystemSettings/shared";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -125,7 +126,9 @@ export default function EditPaperworkDialog({ paperwork }) {
   return (
     <Dialog dir="rtl" open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-brand-hover/20 text-brand-hover text-xs">تعديل</Button>
+        <button type="button" className={SETTINGS_EDIT_TRIGGER_CLASS}>
+          تعديل
+        </button>
       </DialogTrigger>
       <DialogContent closeButton={false} className="max-w-3xl">
         <DialogHeader>

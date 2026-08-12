@@ -12,7 +12,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { axiosInstance } from "@/src/utils/axios";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Loader2, Pencil, X } from "lucide-react";
+import { Loader2, X } from "lucide-react";
+import { SETTINGS_EDIT_TRIGGER_CLASS } from "@/components/SystemSettings/shared";
 import { toast } from "sonner";
 
 export default function EditFaqDialog({ faq }) {
@@ -55,14 +56,9 @@ export default function EditFaqDialog({ faq }) {
   return (
     <Dialog dir="rtl" open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button
-          variant="outline"
-          size="icon"
-          className="size-9 rounded-full border-0 bg-[#E6FFE6] text-[#10B981] hover:bg-[#10B981] hover:text-white"
-          title="تعديل"
-        >
-          <Pencil className="size-4" />
-        </Button>
+        <button type="button" className={SETTINGS_EDIT_TRIGGER_CLASS}>
+          تعديل
+        </button>
       </DialogTrigger>
       <DialogContent closeButton={false} className="max-w-2xl">
         <DialogHeader>

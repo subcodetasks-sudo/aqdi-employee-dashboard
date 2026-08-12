@@ -18,7 +18,8 @@ import {
 import { useCustomerMessages } from "@/src/hooks/use-customer-messages";
 import { axiosInstance } from "@/src/utils/axios";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Loader2, Plus, X } from "lucide-react";
+import { Loader2, X } from "lucide-react";
+import { SETTINGS_EDIT_TRIGGER_CLASS, SettingsAddTrigger } from "@/components/SystemSettings/shared";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
@@ -79,12 +80,11 @@ export default function AddNewMessageForClientDialog({ isEdit, messageAlert }) {
     <Dialog dir="rtl" open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {isEdit ? (
-          <Button className="bg-red-500/20 text-red-500 text-xs">تعديل</Button>
+          <button type="button" className={SETTINGS_EDIT_TRIGGER_CLASS}>
+            تعديل
+          </button>
         ) : (
-          <Button className="bg-brand-hover text-white h-12">
-            إضافة رسالة جديدة
-            <Plus className="w-4 h-4" />
-          </Button>
+          <SettingsAddTrigger>إضافة</SettingsAddTrigger>
         )}
       </DialogTrigger>
       <DialogContent closeButton={false} className="max-w-3xl">

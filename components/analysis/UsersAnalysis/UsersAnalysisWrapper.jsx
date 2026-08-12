@@ -1,6 +1,5 @@
 'use client'
-import React, { useEffect, useState } from 'react'
-import SubPageHeader from '../../home/SubPageHeader'
+import React, { useState } from 'react'
 import greenRial from '@/public/images/greenRial.svg'
 import Image from 'next/image'
 import whatsappIcon from '@/public/images/waIcon.svg'
@@ -12,11 +11,26 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { axiosInstance } from '@/src/utils/axios'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import Loader from '../../home/loader'
-import { ChevronRight, ChevronLeft, FolderX, FolderCheck, Loader2, X } from 'lucide-react'
+import { ChevronRight, ChevronLeft, FolderX, FolderCheck, Loader2, X, Search, RefreshCw } from 'lucide-react'
 import SendOrderSmsButton from '@/components/Orders/shared/send-order-sms-button'
+import { usePeriodFilter } from '@/components/analysis/shared/usePeriodFilter'
 
-export default function UsersAnalysisWrapper({ id }) {
-    const [title, setTitle] = useState('')
+const SEGMENT_OPTIONS = [
+    { id: 'total', label: 'إجمالي المستخدمين' },
+    { id: 'day', label: 'الجدد / اليــوم' },
+    { id: 'week', label: 'الجدد / الأسبوع' },
+    { id: 'month', label: 'الجدد / الشهر' },
+    { id: 'year', label: 'الجدد / السنة' },
+    { id: 'top_completed_orders', label: 'أكثر العملاء طلب مكتمل' },
+    { id: 'top_incompleted_orders', label: 'أكثر العملاء طلب غير مكتمل' },
+    { id: 'top_orders', label: 'أكثر العملاء طلبات' },
+    { id: 'top_refunds', label: 'أكثر العملاء استرجاع' },
+    { id: 'top_properties', label: 'أكثر العملاء عقارات' },
+    { id: 'top_units', label: 'أكثر العملاء وحدات' },
+];
+
+export default function UsersAnalysisWrapper() {
+    const { period: id, setPeriod: setId } = usePeriodFilter('segment')
     const [deleteModalOpen, setDeleteModalOpen] = useState(false)
     const [suspendModalOpen, setSuspendModalOpen] = useState(false)
     const [selectedUserId, setSelectedUserId] = useState(null)
@@ -25,47 +39,6 @@ export default function UsersAnalysisWrapper({ id }) {
     const [searchQuery, setSearchQuery] = useState('')
     const [togglingUserId, setTogglingUserId] = useState(null)
     const queryClient = useQueryClient()
-
-    useEffect(() => {
-        switch (id) {
-            case 'day':
-                setTitle('المستخدمين الجدد  / اليــوم')
-                break;
-            case 'week':
-                setTitle('المستخدمين الجدد / الأسبوع')
-                break;
-            case 'month':
-                setTitle('المستخدمين الجدد / الشهر')
-                break;
-            case 'year':
-                setTitle('المستخدمين الجدد / السنة')
-                break;
-            case 'total':
-                setTitle('إجمالي المستخدمين الجدد')
-                break;
-            case 'top_completed_orders':
-                setTitle('أكثر العملاء طلب مكتمل')
-                break;
-            case 'top_incompleted_orders':
-                setTitle('أكثر العملاء طلب غير مكتمل')
-                break;
-            case 'top_orders':
-                setTitle('أكثر العملاء طلبات')
-                break;
-            case 'top_refunds':
-                setTitle('أكثر العملاء استرجاع')
-                break;
-            case 'top_properties':
-                setTitle('أكثر العملاء عقارات')
-                break;
-            case 'top_units':
-                setTitle('أكثر العملاء وحدات')
-                break;
-            default:
-                setTitle('المستخدمين')
-                break;
-        }
-    }, [id])
 
     const tableHeaders = [
         "الاسم",
@@ -222,21 +195,45 @@ export default function UsersAnalysisWrapper({ id }) {
     if (isError) return <div className="text-center p-8 text-[#FA5252] text-[15px]">حدث خطأ أثناء تحميل البيانات</div>
 
     return (
-        <div className="flex flex-col gap-6 p-6 min-h-screen" dir="rtl">
-            <SubPageHeader
-                title={title}
-                isMain={false}
-                first="الرئيــسية"
-                firstURL="/"
-                second="التحليــلات"
-                secondURL="/home/analysis"
-                third={title}
-                thirdURL={`/home/user-analysis/${id}`}
-                searchQuery={searchQuery}
-                onSearchChange={setSearchQuery}
-                onRefresh={handleRefresh}
-            />
-            
+        <div className="flex flex-col gap-6" dir="rtl">
+            <div className="flex flex-wrap gap-2">
+                {SEGMENT_OPTIONS.map((option) => (
+                    <button
+                        key={option.id}
+                        type="button"
+                        onClick={() => setId(option.id)}
+                        className={`h-9 px-4 rounded-full text-[13px] font-bold transition-all whitespace-nowrap ${
+                            id === option.id
+                                ? "bg-brand-main text-white"
+                                : "bg-white text-ink-body border border-surface-border hover:bg-surface-muted"
+                        }`}
+                    >
+                        {option.label}
+                    </button>
+                ))}
+            </div>
+
+            <div className="flex items-center gap-3 w-full">
+                <div className="relative flex-1 min-w-[140px]">
+                    <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-ink-placeholder size-5 pointer-events-none" />
+                    <input
+                        type="text"
+                        placeholder="البحث الذكي...!"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full h-[46px] bg-surface-input border border-surface-border rounded-full pr-12 pl-4 text-[14px] focus:outline-none focus:border-brand-main focus:bg-white transition-all shadow-inner"
+                    />
+                </div>
+                <button
+                    type="button"
+                    onClick={handleRefresh}
+                    className="w-[46px] h-[46px] flex items-center justify-center rounded-full border border-surface-border bg-brand-accent text-white hover:bg-brand-accent-hover transition-all shadow-sm shrink-0"
+                    title="تحديث"
+                >
+                    <RefreshCw className="size-5" />
+                </button>
+            </div>
+
             <div className="w-full overflow-x-auto bg-white rounded-[24px] border border-[#E4E4E4]">
                 <table className="w-full border-collapse">
                     <thead className="bg-[#FAFAFA]">
@@ -340,7 +337,7 @@ export default function UsersAnalysisWrapper({ id }) {
                                                     <DropdownMenuContent className="w-56">
                                                         <DropdownMenuItem className="cursor-pointer p-0" asChild>
                                                             <Link
-                                                                href={`/home/users/${row.id}?from=${encodeURIComponent(`/home/user-analysis/${id}`)}`}
+                                                                href={`/home/users/${row.id}?from=${encodeURIComponent(`/home/reports?tab=users&segment=${id}`)}`}
                                                                 className="flex items-center w-full px-2 py-1.5 cursor-pointer"
                                                             >
                                                                 <i className="fa-regular fa-eye ml-2 text-[#A3A3A3]"></i>

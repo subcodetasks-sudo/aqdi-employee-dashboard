@@ -10,6 +10,7 @@ import {
 import { axiosInstance } from "@/src/utils/axios";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2, Trash2 } from "lucide-react";
+import { SETTINGS_DELETE_TRIGGER_CLASS } from "@/components/SystemSettings/shared";
 import { toast } from "sonner";
 
 export default function DeleteFaqDialog({ faq }) {
@@ -31,14 +32,9 @@ export default function DeleteFaqDialog({ faq }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button
-          variant="outline"
-          size="icon"
-          className="size-9 rounded-full border-0 bg-[#FFEBEB] text-[#FF4D4F] hover:bg-[#FF4D4F] hover:text-white"
-          title="حذف"
-        >
-          <Trash2 className="size-4" />
-        </Button>
+        <button type="button" className={SETTINGS_DELETE_TRIGGER_CLASS}>
+          حذف
+        </button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden rounded-[32px] border-0" dir="rtl">
         <div className="p-8 flex flex-col items-center text-center gap-6">

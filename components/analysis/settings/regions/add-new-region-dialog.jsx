@@ -9,7 +9,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { axiosInstance } from '@/src/utils/axios';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Loader2, Plus, X } from 'lucide-react';
+import { Loader2, X } from 'lucide-react';
+import { SettingsAddTrigger } from '@/components/SystemSettings/shared';
 import { useState } from 'react';
 import { toast } from 'sonner';
 export default function AddNewRegionDialog() {
@@ -44,11 +45,8 @@ export default function AddNewRegionDialog() {
   };
   return (
     <Dialog dir='rtl' open={open} onOpenChange={setOpen}>
-      <DialogTrigger>
-        <Button className='bg-brand-hover text-white h-12'>
-          إضافة منطقة جديدة 
-          <Plus className='w-4 h-4' />
-        </Button>
+      <DialogTrigger asChild>
+        <SettingsAddTrigger>إضافة</SettingsAddTrigger>
       </DialogTrigger>
       <DialogContent closeButton={false} className="max-w-3xl">
         <DialogHeader>

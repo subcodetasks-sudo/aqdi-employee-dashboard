@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { axiosInstance } from "@/src/utils/axios";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2, X } from "lucide-react";
+import { SETTINGS_EDIT_TRIGGER_CLASS, SettingsAddTrigger } from "@/components/SystemSettings/shared";
 import { toast } from "sonner";
 
 const couponSchema = z.object({
@@ -97,13 +98,11 @@ export default function AddCouponDialog({ isEdit = false, coupon }) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {isEdit ? (
-          <button className="flex-1 h-12 rounded-[16px] bg-[#E8EBFD] text-[#3F51B5] font-black text-[14px] hover:bg-[#3F51B5] hover:text-white transition-all duration-200 flex items-center justify-center">
-            <span>تعديل</span>
+          <button type="button" className={SETTINGS_EDIT_TRIGGER_CLASS}>
+            تعديل
           </button>
         ) : (
-          <Button className="bg-brand-hover text-white h-12 rounded-full font-bold px-6 flex items-center gap-2 shadow-lg shadow-brand-main/20 hover:scale-105 active:scale-95 transition-all">
-            <span>+ إضافة خصم جديد</span>
-          </Button>
+          <SettingsAddTrigger>إضافة</SettingsAddTrigger>
         )}
       </DialogTrigger>
 

@@ -38,8 +38,8 @@ export default function RealEstateDetailsWrapper() {
         isMain={false}
         first="الرئيــسية"
         firstURL="/"
-        second="التحليــلات"
-        secondURL="/home/analysis"
+        second="التقارير"
+        secondURL="/home/reports?tab=properties"
         third={pageTitle}
         thirdURL={`/home/real-estates/${id}`}
       />

@@ -7,8 +7,9 @@ import { useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Eye } from "lucide-react";
 import { toast } from "sonner";
-import Header from "../../home/Header";
 import Loader from "../../home/loader";
+import { usePeriodFilter } from "@/components/analysis/shared/usePeriodFilter";
+import PeriodFilterBar from "@/components/analysis/shared/PeriodFilterBar";
 import greenRial from "@/public/images/greenRial.svg";
 import waIcon from "@/public/images/waIcon.svg";
 import orangerial from "@/public/images/orangerial.svg";
@@ -32,7 +33,6 @@ import {
   REFUNDS_CONTRACTS_API,
   canManageAdminRefund,
   extractRefundsContractsPayload,
-  getReturnAnalysisTitle,
   isAdminRefundApproved,
   mapCreatedAtFilter,
   normalizeRefundContract,
@@ -98,10 +98,10 @@ const tableHeaders = [
   "عرض العقــد",
 ];
 
-export default function ReturnedAnalysisWrapper({ id }) {
+export default function ReturnedAnalysisWrapper() {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const [title, setTitle] = useState("");
+  const { period: id, setPeriod } = usePeriodFilter();
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -115,10 +115,6 @@ export default function ReturnedAnalysisWrapper({ id }) {
     clear,
     getPageSelectionState,
   } = useOrdersSelection();
-
-  useEffect(() => {
-    setTitle(getReturnAnalysisTitle(id));
-  }, [id]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -190,21 +186,9 @@ export default function ReturnedAnalysisWrapper({ id }) {
     );
   }
 
-  const pageTitle = payload.labelAr || title;
-
   return (
-    <div className="flex flex-col gap-6 p-6 min-h-screen" dir="rtl">
-      <Header
-        page="welcome"
-        title={pageTitle}
-        isMain={false}
-        first="الرئيــسية"
-        firstURL="/"
-        second="التحليــلات"
-        secondURL="/home/analysis"
-        third={pageTitle}
-        thirdURL={`/home/return-analysis/${id}`}
-      />
+    <div className="flex flex-col gap-6" dir="rtl">
+      <PeriodFilterBar period={id} onChange={setPeriod} />
 
       {(managementApproval?.approved != null ||
         managementApproval?.not_approved != null) && (

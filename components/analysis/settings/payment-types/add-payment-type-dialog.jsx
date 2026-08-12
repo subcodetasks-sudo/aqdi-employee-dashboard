@@ -17,14 +17,16 @@ import {
 } from "@/components/ui/select";
 import { axiosInstance } from "@/src/utils/axios";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Loader2, Plus, X } from "lucide-react";
+import { Loader2, X } from "lucide-react";
+import { SettingsAddTrigger } from "@/components/SystemSettings/shared";
 import { useState } from "react";
 import { toast } from "sonner";
 
-export default function AddPaymentTypeDialog({ activeTab = "housing" }) {
+export default function AddPaymentTypeDialog() {
   const [open, setOpen] = useState(false);
   const [nameAr, setNameAr] = useState("");
   const [nameEn, setNameEn] = useState("");
+  const [contractType, setContractType] = useState("housing");
   const queryClient = useQueryClient();
 
   const { mutate, isPending } = useMutation({
@@ -32,13 +34,14 @@ export default function AddPaymentTypeDialog({ activeTab = "housing" }) {
       axiosInstance.post("/admin/payment-types/create", {
         name_ar: nameAr,
         name_en: nameEn,
-        contract_type: activeTab,
+        contract_type: contractType,
       }),
     onSuccess: (res) => {
       toast.success(res?.data?.message || "تم إضافة طريقة الدفع بنجاح");
       setOpen(false);
       setNameAr("");
       setNameEn("");
+      setContractType("housing");
       queryClient.invalidateQueries({ queryKey: ["payment-types"] });
     },
     onError: (error) => {
@@ -49,17 +52,12 @@ export default function AddPaymentTypeDialog({ activeTab = "housing" }) {
   return (
     <Dialog dir="rtl" open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-brand-hover text-white h-12">
-          إضافة طريقة دفع
-          <Plus className="w-4 h-4" />
-        </Button>
+        <SettingsAddTrigger>إضافة</SettingsAddTrigger>
       </DialogTrigger>
       <DialogContent closeButton={false} className="max-w-3xl">
         <DialogHeader>
           <div className="flex items-center justify-between border-b pb-6">
-            <h2 className="text-xl font-bold">
-              إضافة طريقة دفع - {activeTab === "commercial" ? "تجاري" : "سكني"}
-            </h2>
+            <h2 className="text-xl font-bold">إضافة طريقة دفع</h2>
             <Button variant="ghost" onClick={() => setOpen(false)}>
               <X className="w-4 h-4" />
             </Button>
@@ -92,8 +90,10 @@ export default function AddPaymentTypeDialog({ activeTab = "housing" }) {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">نوع العقد</label>
-              <Select value={activeTab} disabled>
+              <label className="text-sm font-medium">
+                نوع العقد <span className="text-red-500">*</span>
+              </label>
+              <Select dir="rtl" value={contractType} onValueChange={setContractType}>
                 <SelectTrigger className="h-12">
                   <SelectValue />
                 </SelectTrigger>

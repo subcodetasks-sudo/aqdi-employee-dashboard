@@ -1,6 +1,5 @@
 "use client";
 import React from "react";
-import Header from "../home/Header";
 import DayCard from "./finAnalysis/DayCard";
 import UserCard from "./finAnalysis/UserCard";
 import OrderCard from "./finAnalysis/OrderCard";
@@ -29,28 +28,28 @@ function mapPersonNames(rawValue, formattedValue) {
 
 const getControlPanelLink = (label) => {
     if (!label) return null;
-    if (label.includes("الموظفين")) return "/home/employees";
+    if (label.includes("الموظفين")) return "/home/roles-and-employees?tab=employees";
     if (label.includes("المستخدمين")) return null;
     if (label.includes("المدن")) return "/home/settings/cities";
     if (label.includes("الوحدات")) return "/home/settings/unit-types";
     if (label.includes("العقود الغير المكتملة") || label.includes("عقود غير مكتملة")) {
-        return "/home/incolpleted-orders-analysis/total";
+        return "/home/orders?tab=incomplete";
     }
     if (label.includes("العقود المكتملة") || label.includes("عقود مكتملة")) {
-        return "/home/completed-orders";
+        return "/home/orders?tab=completed";
     }
     return null;
 };
 
 const getOrderAnalyticsLink = (label) => {
-    if (!label) return "/home/orders-analysis";
-    if (label.includes("الطلبات المكتملة")) return "/home/completed-orders?created_at=total";
-    if (label.includes("الطلبات غير المكتملة")) return "/home/incolpleted-orders-analysis/total";
+    if (!label) return "/home/orders?tab=whatsapp-completed";
+    if (label.includes("الطلبات المكتملة")) return "/home/orders?tab=completed&created_at=total";
+    if (label.includes("الطلبات غير المكتملة")) return "/home/orders?tab=incomplete&period=total";
     if (label.includes("واتساب مكتملة") || label.includes("واتساب المكتملة")) {
-        return "/home/completed-whatsapp";
+        return "/home/orders?tab=whatsapp-completed";
     }
     if (label.includes("واتساب غير مكتملة") || label.includes("واتساب الغير مكتملة")) {
-        return "/home/incompleted-whatsapp";
+        return "/home/orders?tab=whatsapp-incomplete";
     }
     if (label.includes("مسترجعه") || label.includes("مسترجعة")) {
         return "/home/return-orders?created_at=total";
@@ -93,7 +92,7 @@ export default function Statistics() {
 
     const financial = apiData.financial_analytics;
 
-    const financialIncomes = formatMap(financial.income, "/home/financial-analysis").map((card) => ({
+    const financialIncomes = formatMap(financial.income, (key) => `/home/reports?tab=financial&period=${key}`).map((card) => ({
         ...card,
         variant: "income",
     }));
@@ -104,12 +103,12 @@ export default function Statistics() {
         valueType: "count",
         percentage: formatPercentage(item?.percentage_change),
         type: key === "total" ? "total-regular" : key,
-        link: `/home/completed-orders?created_at=${key}`,
+        link: `/home/orders?tab=completed&created_at=${key}`,
     }));
 
     const financialIncomplete = formatMap(
         financial.incomplete_orders,
-        "/home/incolpleted-orders-analysis",
+        (key) => `/home/orders?tab=incomplete&period=${key}`,
         "count"
     );
 
@@ -122,11 +121,11 @@ export default function Statistics() {
         link: `/home/return-orders?created_at=${key}`,
     }));
 
-    const financialExpenses = formatMap(financial.expenses, "/home/expense-analysis");
+    const financialExpenses = formatMap(financial.expenses, (key) => `/home/reports?tab=expenses&period=${key}`);
 
     const userAnalytics = apiData.user_analytics ?? {};
 
-    const usersAnalysis = formatMap(userAnalytics.new_users, "/home/user-analysis", "count");
+    const usersAnalysis = formatMap(userAnalytics.new_users, (key) => `/home/reports?tab=users&segment=${key}`, "count");
 
     const userActivity = [
         userAnalytics.user_activity_rate && {
@@ -144,7 +143,7 @@ export default function Statistics() {
             ),
             showAvatars: true,
             type: "onlyNumber",
-            link: "/home/user-analysis/top_completed_orders",
+            link: "/home/reports?tab=users&segment=top_completed_orders",
         },
         userAnalytics.most_clients_incomplete_requests && {
             name: userAnalytics.most_clients_incomplete_requests.label_ar,
@@ -155,7 +154,7 @@ export default function Statistics() {
             ),
             showAvatars: true,
             type: "onlyNumberTwoSpace",
-            link: "/home/user-analysis/top_incompleted_orders",
+            link: "/home/reports?tab=users&segment=top_incompleted_orders",
         },
     ].filter(Boolean);
 
@@ -169,7 +168,7 @@ export default function Statistics() {
             ),
             showAvatars: true,
             type: "onlyButton",
-            link: "/home/user-analysis/top_orders",
+            link: "/home/reports?tab=users&segment=top_orders",
         },
         userAnalytics.most_clients_returns && {
             name: userAnalytics.most_clients_returns.label_ar,
@@ -180,7 +179,7 @@ export default function Statistics() {
             ),
             showAvatars: true,
             type: "onlyButton",
-            link: "/home/user-analysis/top_refunds",
+            link: "/home/reports?tab=users&segment=top_refunds",
         },
         userAnalytics.most_clients_real_estate && {
             name: userAnalytics.most_clients_real_estate.label_ar,
@@ -191,7 +190,7 @@ export default function Statistics() {
             ),
             showAvatars: true,
             type: "onlyButton",
-            link: "/home/user-analysis/top_properties",
+            link: "/home/reports?tab=users&segment=top_properties",
         },
         userAnalytics.most_clients_units && {
             name: userAnalytics.most_clients_units.label_ar,
@@ -202,7 +201,7 @@ export default function Statistics() {
             ),
             showAvatars: true,
             type: "onlyNumberTwoSpace",
-            link: "/home/user-analysis/top_units",
+            link: "/home/reports?tab=users&segment=top_units",
         },
     ].filter(Boolean);
 
@@ -261,19 +260,19 @@ export default function Statistics() {
             valueType: item.type === "currency" ? "price" : "count",
             type: nameList.length > 0 ? "arrayOfNames" : "regular",
             showAvatars: !isEmployeeCountCard,
-            link: `/home/staff-analysis/${cardId}`,
+            link: `/home/reports?tab=staff&metric=${cardId}`,
         };
     });
 
     const propertiesAnalysis = formatMap(
         apiData.real_estate_and_units_analytics.real_estates,
-        "/home/Properties-analysis",
+        (key) => `/home/reports?tab=properties&period=${key}`,
         "count"
     );
 
     const unitsAnalysis = formatMap(
         apiData.real_estate_and_units_analytics.units,
-        "/home/Units-analysis",
+        (key) => `/home/reports?tab=units&period=${key}`,
         "count"
     );
 
@@ -290,7 +289,6 @@ export default function Statistics() {
         value: formatMetricValue(item),
         valueType: "count",
         type: "regular",
-        link: "/home/layering-analysis/regular",
     }));
 
     const employeesRow1 = employeesAnalysis.slice(0, 3);
@@ -298,17 +296,8 @@ export default function Statistics() {
 
     return (
         <>
-            <Header
-                page="welcome"
-                title={"التحليــلات"}
-                isMain={false}
-                first="الرئيــسية"
-                firstURL="/"
-                second="التحليــلات"
-                secondURL="/home/analysis"
-            />
             <div
-                className="flex flex-col gap-2 min-h-screen w-full min-w-0 max-w-full  px-4 py-6  rounded-tl-[24px]"
+                className="flex flex-col gap-2 w-full min-w-0 max-w-full"
                 dir="rtl"
             >
                 <AnalysisSection title="التحليــلات المــاليــة :">

@@ -9,7 +9,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 
-export default function DeleteUserDialog({ user, redirectTo = "/home/user-analysis/total" }) {
+export default function DeleteUserDialog({ user, redirectTo = "/home/reports?tab=users" }) {
   const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
   const router = useRouter();

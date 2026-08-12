@@ -9,7 +9,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { axiosInstance } from '@/src/utils/axios';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Edit, Loader2, Plus, X } from 'lucide-react';
+import { Loader2, X } from 'lucide-react';
+import { SETTINGS_EDIT_TRIGGER_CLASS } from '@/components/SystemSettings/shared';
 import { useState } from 'react';
 import { toast } from 'sonner';
 export default function EditRegionDialog({region}) {
@@ -43,10 +44,10 @@ export default function EditRegionDialog({region}) {
   };
   return (
     <Dialog dir='rtl' open={open} onOpenChange={setOpen}>
-      <DialogTrigger>
-        <Button variant="outline" size="icon">
-          <Edit  />
-        </Button>
+      <DialogTrigger asChild>
+        <button type="button" className={SETTINGS_EDIT_TRIGGER_CLASS}>
+          تعديل
+        </button>
       </DialogTrigger>
       <DialogContent closeButton={false} className="max-w-3xl">
         <DialogHeader>

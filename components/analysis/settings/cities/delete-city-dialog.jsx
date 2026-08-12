@@ -9,7 +9,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { axiosInstance } from '@/src/utils/axios';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Loader2, Plus, Trash2, X } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
+import { SETTINGS_DELETE_TRIGGER_CLASS } from '@/components/SystemSettings/shared';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
@@ -36,10 +37,10 @@ export default function DeleteCityDialog({ city }) {
   return (
     <Dialog Dialog open={open} onOpenChange={setOpen} >
 
-      <DialogTrigger>
-        <Button size="icon" variant="destructive">
-          <Trash2 />
-        </Button>
+      <DialogTrigger asChild>
+        <button type="button" className={SETTINGS_DELETE_TRIGGER_CLASS}>
+          حذف
+        </button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden rounded-[32px] border-0" dir="rtl">
 

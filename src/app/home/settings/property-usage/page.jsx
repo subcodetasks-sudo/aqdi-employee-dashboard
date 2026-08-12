@@ -1,105 +1,89 @@
-"use client"
-import Header from '@/components/home/Header'
-import React, { useState } from 'react'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Building2, Loader2, Pentagon } from 'lucide-react';
-import AddNewTypeDialog from '@/components/analysis/settings/unit-types/add-new-type-dialog';
-import { axiosInstance } from '@/src/utils/axios';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Button } from '@/components/ui/button';
-import { toast } from 'sonner';
-import EditTypeUnitDialog from '@/components/analysis/settings/unit-types/edit-type-unit-dialog';
-import AddNewPropertyTypeDialog from '@/components/analysis/settings/property-types/add-new-property-type-dialog';
-import EditTypePropertyDialog from '@/components/analysis/settings/property-types/edit-type-property-dialog';
-import AddNewPropertyUsageDialog from '@/components/analysis/settings/property-usage/add-new-property-usage-dialog';
-import EditUsagePropertyDialog from '@/components/analysis/settings/property-usage/edit-usage-property-dialog';
-export default function PropertyTypesPage() {
-  const [activeTab, setActiveTab] = useState("housing");
+"use client";
+
+import AddNewPropertyUsageDialog from "@/components/analysis/settings/property-usage/add-new-property-usage-dialog";
+import EditUsagePropertyDialog from "@/components/analysis/settings/property-usage/edit-usage-property-dialog";
+import {
+  SETTINGS_DELETE_TRIGGER_CLASS,
+  SettingsEmptyRow,
+  SettingsListHeader,
+  SettingsTable,
+  SettingsTableRow,
+  SettingsTd,
+} from "@/components/SystemSettings/shared";
+import {
+  contractTypeLabel,
+  extractItems,
+  fetchBothContractTypes,
+} from "@/components/SystemSettings/settings-list/fetch-contract-type-lists";
+import { axiosInstance } from "@/src/utils/axios";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+
+const HEADERS = [
+  "الاسم",
+  { label: "تصنيف العقار", className: "text-center" },
+  { label: "الإجراءات", className: "text-left" },
+];
+
+export default function PropertyUsagePage() {
   const queryClient = useQueryClient();
 
-  // get all unit types
-  function getPropertyUsage() {
-    return axiosInstance(`/admin/real-estate-usages?contract_type=${activeTab}`);
-  }
+  const { data = [], isLoading } = useQuery({
+    queryKey: ["property-usage"],
+    queryFn: () =>
+      fetchBothContractTypes("/admin/real-estate-usages", extractItems),
+  });
 
-  const { data: propertyTypes, isLoading: propertyTypesLoading } = useQuery({
-    queryKey: ["property-usage", activeTab],
-    queryFn: getPropertyUsage,
-  })
-
-  const data = propertyTypes?.data?.data?.items;
-
-
-  // delete unit type
-  function deleteUnitType(id) {
-    return axiosInstance.post(`/admin/real-estate-usages/${id}/delete`);
-  }
-
-  const { mutate: deleteUnitTypeMutate, isPending: deleteUnitTypePending } = useMutation({
-    mutationFn: deleteUnitType,
+  const { mutate: deleteItem, isPending } = useMutation({
+    mutationFn: (id) =>
+      axiosInstance.post(`/admin/real-estate-usages/${id}/delete`),
     onSuccess: (res) => {
-      toast.success(res?.data?.message || "تم حذف نوع العقار بنجاح");
-      queryClient.invalidateQueries({
-        queryKey: ["property-usage"]
-      });
+      toast.success(res?.data?.message || "تم حذف استخدام العقار بنجاح");
+      queryClient.invalidateQueries({ queryKey: ["property-usage"] });
     },
     onError: (error) => {
-      toast.error(error?.response?.data?.message || "حدث خطأ أثناء حذف نوع العقار");
-    }
-  })
-
-
+      toast.error(
+        error?.response?.data?.message || "حدث خطأ أثناء حذف استخدام العقار"
+      );
+    },
+  });
 
   return (
-    <div className='p-6'>
-      <Header page='welcome' title={"الإعـدادات"} isMain={false} first="الرئيــسية" firstURL="/" second='الإعـدادات' secondURL="/home/settings" third="استخدام العقارات" thirdURL="/home/settings/property-usage" />
-      <div>
-        <Tabs dir='rtl' defaultValue={activeTab} className="w-full">
-          <div className='flex items-center justify-between mb-4'>
-            <TabsList className="bg-transparent gap-4">
-              <TabsTrigger value="housing" onClick={() => setActiveTab("housing")} className="data-[state=active]:bg-brand-hover data-[state=active]:text-white font-bold p-4 px-8 rounded-full gap-2 bg-gray-200"> <Pentagon className='w-4 h-4' />سكني</TabsTrigger>
-              <TabsTrigger value="commercial" onClick={() => setActiveTab("commercial")} className="data-[state=active]:bg-brand-hover data-[state=active]:text-white font-bold p-4 px-8 rounded-full gap-2 bg-gray-200"> <Building2 className='w-4 h-4' />تجاري</TabsTrigger>
-            </TabsList>
-            <AddNewPropertyUsageDialog />
-          </div >
-          <TabsContent value="housing" className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
-            {data?.map((item) => (
-              <div className='bg-gray-200 rounded-[16px] border border-[#E4E4E4] p-4    transition-all group' key={item.id}>
-                <h3>استخدام العقار</h3>
-                <div className=' mt-4'>
-                  <p>{item.name_ar}</p>
-                  <div className='flex items-center justify-end gap-2 mt-4'>
-                    <EditUsagePropertyDialog unit={item} />
-                    <Button disabled={deleteUnitTypePending} onClick={() => deleteUnitTypeMutate(item.id)} className='bg-red-500/20 text-red-500 text-xs'>
-                      حذف
-                    </Button>
-                  </div>
+    <div className="flex flex-col gap-5 min-h-full" dir="rtl">
+      <SettingsListHeader
+        title="استخدام العقار"
+        action={<AddNewPropertyUsageDialog />}
+      />
 
+      <SettingsTable headers={HEADERS} minWidth="640px">
+        {isLoading ? (
+          <SettingsEmptyRow colSpan={3} message="جاري التحميل..." />
+        ) : data.length === 0 ? (
+          <SettingsEmptyRow colSpan={3} />
+        ) : (
+          data.map((item) => (
+            <SettingsTableRow key={item.id}>
+              <SettingsTd>{item.name_ar}</SettingsTd>
+              <SettingsTd className="text-center">
+                {contractTypeLabel(item.contract_type)}
+              </SettingsTd>
+              <SettingsTd>
+                <div className="flex items-center justify-end gap-2">
+                  <EditUsagePropertyDialog unit={item} />
+                  <button
+                    type="button"
+                    disabled={isPending}
+                    onClick={() => deleteItem(item.id)}
+                    className={SETTINGS_DELETE_TRIGGER_CLASS}
+                  >
+                    حذف
+                  </button>
                 </div>
-              </div>
-            ))}
-          </TabsContent>
-          <TabsContent value="commercial" className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
-            {data?.map((item) => (
-              <div className='bg-gray-200 rounded-[16px] border border-[#E4E4E4] p-4    transition-all group' key={item.id}>
-                <h3>استخدام العقار</h3>
-                <div className=' mt-4'>
-                  <p>{item.name_ar}</p>
-                  <div className='flex items-center justify-end  gap-2 mt-4'>
-                    <EditUsagePropertyDialog unit={item} />
-                    <Button disabled={deleteUnitTypePending} onClick={() => deleteUnitTypeMutate(item.id)} className='bg-red-500/20 text-red-500 text-xs'>
-                      حذف
-                    </Button>
-                  </div>
-
-                </div>
-              </div>
-            ))}
-          </TabsContent>
-        </Tabs>
-
-      </div>
-
+              </SettingsTd>
+            </SettingsTableRow>
+          ))
+        )}
+      </SettingsTable>
     </div>
-  )
+  );
 }

@@ -1,38 +1,51 @@
+"use client";
 
-import Header from '@/components/home/Header';
-import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
-import AddNewMessageForClientDialog from '@/components/analysis/settings/message-for-clients/add-message-for-client';
-import DisplayMessageForClientDialog from '@/components/analysis/settings/message-for-clients/display-message-for-client';
-export default function TermsPage() {
+import AddNewMessageForClientDialog from "@/components/analysis/settings/message-for-clients/add-message-for-client";
+import DisplayMessageForClientDialog from "@/components/analysis/settings/message-for-clients/display-message-for-client";
+import {
+  SettingsEmptyRow,
+  SettingsListHeader,
+  SettingsTable,
+  SettingsTableRow,
+  SettingsTd,
+} from "@/components/SystemSettings/shared";
 
+const MOCK_ITEMS = [
+  "نوع الوثيقة",
+  "رقم وثيقة الملكية",
+  "تاريخ وثيقة الملكية",
+  "نوع الوحدة",
+];
+
+const HEADERS = [
+  "القسم",
+  "البند",
+  { label: "الإجراءات", className: "text-left" },
+];
+
+export default function OwnerMessagesPage() {
   return (
-    <div className="min-h-screen p-6">
-      <Header page='welcome' title={"الإعـدادات"} isMain={false} first="الرئيــسية" firstURL="/" second='الإعـدادات' secondURL="/home/settings" third="رســائل توضيحية للملاك" thirdURL="/home/settings/message-for-clients" />
+    <div className="flex flex-col gap-5 min-h-full" dir="rtl">
+      <SettingsListHeader title="رسائل توضيحية للملاك" action={<AddNewMessageForClientDialog />} />
 
-      <div className='flex items-center justify-between'>
-        <h2 className='text-xl font-bold'>رســائل توضيحية للمــلاك</h2>
-        <AddNewMessageForClientDialog />
-      </div>
-
-      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4'>
-        {["نــوع الوثيــقة", "رقم وثيــقة الملكية", "تــاريخ وثيــقة الملكية", "نوع الوحده"].map((item, index) => (
-          <div className='bg-gray-200 rounded-[16px] border border-[#E4E4E4] p-4    transition-all group' key={index}>
-            <div className='flex items-center justify-between'>
-              <h3>قسم الصك</h3>
-              <div className='flex items-center gap-2'>
-                <Switch dir='ltr' checked={true} />
-                <AddNewMessageForClientDialog isEdit={true} />
-              </div>
-            </div>
-            <div className=' mt-4 flex items-center justify-between'>
-              <p>{item}</p>
-              <DisplayMessageForClientDialog />
-            </div>
-          </div>
-        ))}
-      </div>
-
+      <SettingsTable headers={HEADERS} minWidth="640px">
+        {MOCK_ITEMS.length === 0 ? (
+          <SettingsEmptyRow colSpan={3} />
+        ) : (
+          MOCK_ITEMS.map((item) => (
+            <SettingsTableRow key={item}>
+              <SettingsTd>قسم الصك</SettingsTd>
+              <SettingsTd>{item}</SettingsTd>
+              <SettingsTd>
+                <div className="flex items-center justify-end gap-2">
+                  <DisplayMessageForClientDialog />
+                  <AddNewMessageForClientDialog isEdit />
+                </div>
+              </SettingsTd>
+            </SettingsTableRow>
+          ))
+        )}
+      </SettingsTable>
     </div>
   );
 }

@@ -7,7 +7,6 @@ import { useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Copy } from "lucide-react";
 import { toast } from "sonner";
-import Header from "@/components/home/Header";
 import Loader from "@/components/home/loader";
 import OrdersToolbar from "@/components/Orders/shared/orders-toolbar";
 import OrdersPagination from "@/components/Orders/shared/orders-pagination";
@@ -85,20 +84,8 @@ export default function InCompletedWhatsappWrapper() {
   if (isLoading) return <Loader />;
 
   return (
-    <div className="flex flex-col gap-6 p-6 min-h-screen" dir="rtl">
-      <Header
-        page="welcome"
-        title="طلبات واتساب غير مكتملة"
-        isMain={false}
-        first="الرئيــسية"
-        firstURL="/"
-        second="التحليــلات"
-        secondURL="/home/analysis"
-        third="طلبات واتساب غير مكتملة"
-        thirdURL="/home/incompleted-whatsapp"
-      />
-
-      <div className="flex flex-col gap-6 mt-4 relative z-10">
+    <div className="flex flex-col gap-6" dir="rtl">
+      <div className="flex flex-col gap-6 relative z-10">
         <OrdersToolbar
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}

@@ -19,21 +19,24 @@ import { axiosInstance } from "@/src/utils/axios";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import PaperworkIconField from "@/components/analysis/settings/paperworks/paperwork-icon-field";
 import { buildPaperworkFormData } from "@/components/analysis/settings/paperworks/paperwork-form-data";
-import { Loader2, Plus, X } from "lucide-react";
+import { Loader2, X } from "lucide-react";
+import { SettingsAddTrigger } from "@/components/SystemSettings/shared";
 import { useState } from "react";
 import { toast } from "sonner";
 
-export default function AddPaperworkDialog({ activeTab = "housing" }) {
+export default function AddPaperworkDialog() {
   const [open, setOpen] = useState(false);
   const [nameAr, setNameAr] = useState("");
   const [nameEn, setNameEn] = useState("");
   const [iconFile, setIconFile] = useState(null);
+  const [contractType, setContractType] = useState("housing");
   const queryClient = useQueryClient();
 
   const resetForm = () => {
     setNameAr("");
     setNameEn("");
     setIconFile(null);
+    setContractType("housing");
   };
 
   const { mutate, isPending } = useMutation({
@@ -43,7 +46,7 @@ export default function AddPaperworkDialog({ activeTab = "housing" }) {
         buildPaperworkFormData({
           nameAr,
           nameEn,
-          contractType: activeTab,
+          contractType,
           iconFile,
         }),
         {
@@ -71,17 +74,12 @@ export default function AddPaperworkDialog({ activeTab = "housing" }) {
       }}
     >
       <DialogTrigger asChild>
-        <Button className="bg-brand-hover text-white h-12">
-          إضافة ورقة عمل
-          <Plus className="w-4 h-4" />
-        </Button>
+        <SettingsAddTrigger>إضافة</SettingsAddTrigger>
       </DialogTrigger>
       <DialogContent closeButton={false} className="max-w-3xl">
         <DialogHeader>
           <div className="flex items-center justify-between border-b pb-6">
-            <h2 className="text-xl font-bold">
-              إضافة ورقة عمل - {activeTab === "commercial" ? "تجاري" : "سكني"}
-            </h2>
+            <h2 className="text-xl font-bold">إضافة ورقة عمل</h2>
             <Button variant="ghost" onClick={() => setOpen(false)}>
               <X className="w-4 h-4" />
             </Button>
@@ -116,8 +114,10 @@ export default function AddPaperworkDialog({ activeTab = "housing" }) {
             <PaperworkIconField file={iconFile} onFileChange={setIconFile} />
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">نوع العقد</label>
-              <Select value={activeTab} disabled>
+              <label className="text-sm font-medium">
+                نوع العقد <span className="text-red-500">*</span>
+              </label>
+              <Select dir="rtl" value={contractType} onValueChange={setContractType}>
                 <SelectTrigger className="h-12">
                   <SelectValue />
                 </SelectTrigger>

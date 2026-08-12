@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Header from "@/components/home/Header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -12,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { SettingsContentCard, SettingsListHeader } from "@/components/SystemSettings/shared";
 import { Loader2, Send } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -21,7 +21,6 @@ import {
 import RecipientPicker from "./recipient-picker";
 
 const PAGE_TITLE = "الإشعارات";
-const PAGE_PATH = "/home/settings/notifications";
 const TARGET_OPTIONS = Object.values(NOTIFICATION_TARGETS);
 
 const INITIAL_FORM = {
@@ -84,26 +83,11 @@ export default function SendNotificationPage() {
   };
 
   return (
-    <div className="min-h-screen p-6" dir="rtl">
-      <Header
-        page="welcome"
-        title="الإعـدادات"
-        isMain={false}
-        first="الرئيــسية"
-        firstURL="/"
-        second="الإعـدادات"
-        secondURL="/home/settings"
-        third={PAGE_TITLE}
-        thirdURL={PAGE_PATH}
-      />
+    <div className="flex flex-col gap-5 min-h-full" dir="rtl">
+      <SettingsListHeader title={PAGE_TITLE} subtitle="إرسال إشعار للمستخدمين أو الموظفين" />
 
-      <div className="mt-6 w-full">
-        <h2 className="text-xl font-bold mb-4">{PAGE_TITLE}</h2>
-
-        <form
-          onSubmit={handleSubmit}
-          className="bg-white rounded-[20px] border border-[#E4E4E4] p-6 space-y-5 w-full"
-        >
+      <SettingsContentCard>
+        <form onSubmit={handleSubmit} className="space-y-5 w-full">
           <div className="space-y-2">
             <label className="text-sm font-medium">
               نوع الإرسال <span className="text-red-500">*</span>
@@ -191,7 +175,7 @@ export default function SendNotificationPage() {
             )}
           </Button>
         </form>
-      </div>
+      </SettingsContentCard>
     </div>
   );
 }

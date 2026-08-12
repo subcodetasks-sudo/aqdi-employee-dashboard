@@ -19,7 +19,8 @@ import { getContractTypeLabel } from "@/src/lib/contract-period-utils";
 import { getInstrumentTypeOptions } from "@/src/lib/instrument-types";
 import { axiosInstance } from "@/src/utils/axios";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Loader2, Plus, X } from "lucide-react";
+import { Loader2, X } from "lucide-react";
+import { SettingsAddTrigger } from "@/components/SystemSettings/shared";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -28,15 +29,16 @@ export default function AddNewDurationDialog({ activeTab = "housing" }) {
   const [durationName, setDurationName] = useState("");
   const [price, setPrice] = useState("");
   const [instrumentType, setInstrumentType] = useState("");
+  const [contractType, setContractType] = useState(activeTab);
   const queryClient = useQueryClient();
-  const contractLabel = getContractTypeLabel(activeTab);
+  const contractLabel = getContractTypeLabel(contractType);
 
   const { mutate, isPending } = useMutation({
     mutationFn: () =>
       axiosInstance.post("/admin/contract-periods/create", {
         period: durationName,
         price: Number(price),
-        contract_type: activeTab,
+        contract_type: contractType,
         instrument_type: instrumentType,
         note_ar: durationName,
       }),
@@ -46,6 +48,7 @@ export default function AddNewDurationDialog({ activeTab = "housing" }) {
       setDurationName("");
       setPrice("");
       setInstrumentType("");
+      setContractType(activeTab);
       queryClient.invalidateQueries({ queryKey: ["contract-periods"] });
     },
     onError: (error) => {
@@ -59,10 +62,7 @@ export default function AddNewDurationDialog({ activeTab = "housing" }) {
   return (
     <Dialog dir="rtl" open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-brand-hover text-white h-12">
-          إضافة مدة جديدة
-          <Plus className="w-4 h-4" />
-        </Button>
+        <SettingsAddTrigger>إضافة</SettingsAddTrigger>
       </DialogTrigger>
       <DialogContent closeButton={false} className="max-w-3xl">
         <DialogHeader>
@@ -100,6 +100,21 @@ export default function AddNewDurationDialog({ activeTab = "housing" }) {
                   className="h-12"
                 />
               </div>
+            </div>
+
+            <div className="space-y-2 text-right">
+              <label className="text-sm font-medium">
+                نوع العقد <span className="text-red-500">*</span>
+              </label>
+              <Select dir="rtl" value={contractType} onValueChange={setContractType}>
+                <SelectTrigger className="h-12">
+                  <SelectValue placeholder="اختر نوع العقد" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="housing">سكني</SelectItem>
+                  <SelectItem value="commercial">تجاري</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2 text-right">

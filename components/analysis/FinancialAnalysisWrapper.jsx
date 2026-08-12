@@ -1,6 +1,5 @@
 'use client'
-import React, { useEffect, useState } from 'react'
-import Header from '../home/Header'
+import React from 'react'
 import greenRial from '@/public/images/greenRial.svg'
 import Image from 'next/image'
 import waIcon from '@/public/images/waIcon.svg'
@@ -8,34 +7,11 @@ import blueRial from '@/public/images/blueRial.svg'
 import Link from 'next/link'
 import { useQuery } from '@tanstack/react-query'
 import { axiosInstance } from '@/src/utils/axios'
+import { usePeriodFilter } from '@/components/analysis/shared/usePeriodFilter'
+import PeriodFilterBar from '@/components/analysis/shared/PeriodFilterBar'
 
-export default function FinancialAnalysisWrapper({ id }) {
-    const [title, setTitle] = useState('')
-
-    useEffect(() => {
-        switch (id) {
-            case 'day':
-                setTitle('دخل اليــوم')
-                break;
-            case 'week':
-                setTitle('دخل الأسبوع')
-                break;
-            case 'month':
-                setTitle('دخل الشهر')
-                break;
-            case 'year':
-                setTitle('دخل العام')
-                break;
-            case 'total':
-                setTitle('إجمالي الدخــل')
-                break;
-            default:
-                setTitle('دخل اليــوم')
-                break;
-        }
-    }, [id])
-
-    const doneImojy = "✅"
+export default function FinancialAnalysisWrapper() {
+    const { period: id, setPeriod } = usePeriodFilter()
 
     const tableHeaders = [
         "رقــم الجوال",
@@ -62,7 +38,6 @@ export default function FinancialAnalysisWrapper({ id }) {
             return res.data.data
         }
     })
-    console.log(data)
 
     const paymentsList = Array.isArray(data) ? data : (data?.data || []);
 
@@ -172,19 +147,9 @@ export default function FinancialAnalysisWrapper({ id }) {
     };
 
     return (
-        <div className="flex flex-col gap-6 p-6 min-h-screen" dir="rtl">
-            <Header
-                page='welcome'
-                title={title}
-                isMain={false}
-                first="الرئيــسية"
-                firstURL="/"
-                second='التحليــلات'
-                secondURL="/home/analysis"
-                third={title}
-                thirdURL={`/home/financial-analysis/${id}`}
-            />
-            <div className="w-full overflow-x-auto bg-white rounded-[24px] border border-[#E4E4E4] mt-4">
+        <div className="flex flex-col gap-6" dir="rtl">
+            <PeriodFilterBar period={id} onChange={setPeriod} />
+            <div className="w-full overflow-x-auto bg-white rounded-[24px] border border-[#E4E4E4]">
                 <table className="w-full border-collapse">
                     <thead className="bg-[#FAFAFA]">
                         <tr>
@@ -200,19 +165,6 @@ export default function FinancialAnalysisWrapper({ id }) {
                     </tbody>
                 </table>
             </div>
-{/* 
-            <div className="flex items-center justify-center gap-2.5 mt-4">
-                <button className="w-9 h-9 rounded-full border border-[#E4E4E4] flex items-center justify-center text-[#A3A3A3] hover:bg-brand-main hover:text-white transition-all">
-                    <i className="fa-solid fa-chevron-right text-[12px]"></i>
-                </button>
-                <button className="w-9 h-9 rounded-full bg-brand-main text-white flex items-center justify-center text-[13px] font-medium shadow-lg shadow-brand-main/20">1</button>
-                <button className="w-9 h-9 rounded-full border border-[#E4E4E4] flex items-center justify-center text-[#A3A3A3] hover:bg-[#f5f5f5] transition-all text-[13px]">2</button>
-                <span className="text-[#A3A3A3]">...</span>
-                <button className="w-9 h-9 rounded-full border border-[#E4E4E4] flex items-center justify-center text-[#A3A3A3] hover:bg-[#f5f5f5] transition-all text-[13px]">40</button>
-                <button className="w-9 h-9 rounded-full border border-[#E4E4E4] flex items-center justify-center text-[#A3A3A3] hover:bg-brand-main hover:text-white transition-all">
-                    <i className="fa-solid fa-chevron-left text-[12px]"></i>
-                </button>
-            </div> */}
         </div>
     );
 }

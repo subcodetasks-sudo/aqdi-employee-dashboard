@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { axiosInstance } from "@/src/utils/axios";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2, Trash2 } from "lucide-react";
+import { SETTINGS_DELETE_TRIGGER_CLASS } from "@/components/SystemSettings/shared";
 import { toast } from "sonner";
 
 export default function DeleteCouponDialog({ coupon }) {
@@ -28,8 +29,8 @@ export default function DeleteCouponDialog({ coupon }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <button className="flex-1 h-12 rounded-[16px] bg-[#FDE8E8] text-[#E53935] font-black text-[14px] hover:bg-[#E53935] hover:text-white transition-all duration-200 flex items-center justify-center">
-          <span>حـذف</span>
+        <button type="button" className={SETTINGS_DELETE_TRIGGER_CLASS}>
+          حذف
         </button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden rounded-[32px] border-0 shadow-2xl" dir="rtl">

@@ -25,7 +25,8 @@ import {
 } from "@/src/hooks/use-admin-tenant-roles";
 import { TENANT_ROLES_QUERY_KEY } from "@/src/hooks/use-tenant-roles";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Loader2, Pencil, Plus, X } from "lucide-react";
+import { Loader2, X } from "lucide-react";
+import { SETTINGS_EDIT_TRIGGER_CLASS, SettingsAddTrigger } from "@/components/SystemSettings/shared";
 import { toast } from "sonner";
 import TextEditor from "@/components/analysis/settings/terms/TextEditor";
 
@@ -127,18 +128,11 @@ export default function TenantRoleFormDialog({ role = null }) {
     <Dialog dir="rtl" open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {isEdit ? (
-          <Button
-            type="button"
-            className="bg-brand-hover/15 text-brand-hover text-xs h-9 px-3 hover:bg-brand-hover/25"
-          >
-            <Pencil className="size-3.5" />
+          <button type="button" className={SETTINGS_EDIT_TRIGGER_CLASS}>
             تعديل
-          </Button>
+          </button>
         ) : (
-          <Button className="bg-brand-hover text-white h-12 rounded-full font-bold px-6 flex items-center gap-2 shadow-lg shadow-brand-main/20">
-            <Plus className="size-4" />
-            إضافة صلاحية
-          </Button>
+          <SettingsAddTrigger>إضافة</SettingsAddTrigger>
         )}
       </DialogTrigger>
 

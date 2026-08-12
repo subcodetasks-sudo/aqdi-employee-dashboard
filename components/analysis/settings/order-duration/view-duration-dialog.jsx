@@ -12,6 +12,7 @@ import {
   getContractPeriodLabel,
 } from "@/src/lib/contract-period-utils";
 import { getInstrumentTypeLabel } from "@/src/lib/instrument-types";
+import { SETTINGS_VIEW_TRIGGER_CLASS } from "@/components/SystemSettings/shared";
 import { X } from "lucide-react";
 import { useState } from "react";
 
@@ -21,7 +22,9 @@ export default function ViewDurationDialog({ duration }) {
   return (
     <Dialog dir="rtl" open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-green-500/20 text-green-600 text-xs">عرض</Button>
+        <button type="button" className={SETTINGS_VIEW_TRIGGER_CLASS}>
+          عرض
+        </button>
       </DialogTrigger>
       <DialogContent closeButton={false} className="max-w-lg">
         <DialogHeader>

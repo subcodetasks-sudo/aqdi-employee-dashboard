@@ -14,7 +14,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, X, Loader2 } from 'lucide-react';
+import { X, Loader2 } from 'lucide-react';
+import { SETTINGS_EDIT_TRIGGER_CLASS, SettingsAddTrigger } from '@/components/SystemSettings/shared';
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { axiosInstance } from '@/src/utils/axios';
@@ -24,6 +25,7 @@ export default function AddNewSectionItemDialog({ isEdit, item, defaultType }) {
   const [open, setOpen] = useState(false);
   const [nameAr, setNameAr] = useState("");
   const [sectionId, setSectionId] = useState("");
+  const [type, setType] = useState(defaultType || item?.type || "client");
 
   const queryClient = useQueryClient();
 
@@ -31,14 +33,14 @@ export default function AddNewSectionItemDialog({ isEdit, item, defaultType }) {
     if (open) {
       setNameAr(item?.name_ar || "");
       setSectionId(item?.message_alert_section_id?.toString() || "");
+      setType(item?.type || defaultType || "client");
     }
-  }, [open, item]);
+  }, [open, item, defaultType]);
 
-  // Fetch sections options for dropdown selection
   const { data: sectionsResponse } = useQuery({
-    queryKey: ["message-alert-sections-for-items", defaultType],
-    queryFn: () => axiosInstance.get(`admin/message-alert-sections/${defaultType}/options/list`).then(res => res.data),
-    enabled: open
+    queryKey: ["message-alert-sections-for-items", type],
+    queryFn: () => axiosInstance.get(`admin/message-alert-sections/${type}/options/list`).then(res => res.data),
+    enabled: open && Boolean(type)
   });
 
   const sections = sectionsResponse?.data?.items || sectionsResponse?.data || [];
@@ -78,14 +80,11 @@ export default function AddNewSectionItemDialog({ isEdit, item, defaultType }) {
     <Dialog dir='rtl' open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {isEdit ? (
-          <Button className='bg-red-500/20 text-red-500 text-xs'>
+          <button type="button" className={SETTINGS_EDIT_TRIGGER_CLASS}>
             تعديل
-          </Button>
+          </button>
         ) : (
-          <Button className='bg-brand-hover text-white h-12'>
-            إضافة بند جديد
-            <Plus className='w-4 h-4' />
-          </Button>
+          <SettingsAddTrigger>إضافة</SettingsAddTrigger>
         )}
       </DialogTrigger>
       <DialogContent closeButton={false} className="max-w-3xl">
@@ -99,7 +98,29 @@ export default function AddNewSectionItemDialog({ isEdit, item, defaultType }) {
 
           <div className='space-y-4'>
             <div dir='rtl' className='space-y-4 text-right'>
-              {/* اختر القسم */}
+              <div className="space-y-2 grow">
+                <label className="text-sm font-medium">
+                  النوع <span className="text-red-500">*</span>
+                </label>
+                <Select
+                  dir="rtl"
+                  value={type}
+                  onValueChange={(value) => {
+                    setType(value);
+                    setSectionId("");
+                  }}
+                >
+                  <SelectTrigger className="h-12">
+                    <SelectValue placeholder="اختر النوع ..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="client">عميل</SelectItem>
+                    <SelectItem value="employee">موظف</SelectItem>
+                    <SelectItem value="property">عقار</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
               <div className="space-y-2 grow">
                 <label className="text-sm font-medium">
                   اختر القسم <span className="text-red-500">*</span>

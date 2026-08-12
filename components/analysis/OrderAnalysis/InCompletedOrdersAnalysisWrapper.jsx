@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import Header from "@/components/home/Header";
 import { axiosInstance } from "@/src/utils/axios";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Loader from "@/components/home/loader";
@@ -19,13 +18,15 @@ import {
   OrdersContractStatusFilterBar,
   useOrdersContractStatusFilter,
 } from "@/components/Orders/shared/use-orders-contract-status-filter";
+import { usePeriodFilter } from "@/components/analysis/shared/usePeriodFilter";
+import PeriodFilterBar from "@/components/analysis/shared/PeriodFilterBar";
 
 const INCOMPLETE_ORDERS_API = "/admin/orders/incomplete/list";
 
-export default function InCompletedOrdersAnalysisWrapper({ id }) {
+export default function InCompletedOrdersAnalysisWrapper() {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const [title, setTitle] = useState("");
+  const { period: id, setPeriod } = usePeriodFilter();
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -71,29 +72,6 @@ export default function InCompletedOrdersAnalysisWrapper({ id }) {
   useEffect(() => {
     clear();
   }, [id, debouncedSearchQuery, advancedFilters, activeFilter, clear]);
-
-  useEffect(() => {
-    switch (id) {
-      case "day":
-        setTitle("طلبات اليــوم الغيــر المكتمله");
-        break;
-      case "week":
-        setTitle("طلبات الأسبوع الغيــر المكتمله");
-        break;
-      case "month":
-        setTitle("طلبات الشهر الغيــر المكتمله");
-        break;
-      case "year":
-        setTitle("طلبات السنة الغيــر المكتمله");
-        break;
-      case "total":
-        setTitle("إجمالي الطلبات الغيــر المكتمله");
-        break;
-      default:
-        setTitle("الطلبات الغيــر المكتملة");
-        break;
-    }
-  }, [id]);
 
   const { data, isLoading } = useQuery({
     queryKey: [
@@ -151,20 +129,9 @@ export default function InCompletedOrdersAnalysisWrapper({ id }) {
   if (isLoading || statusLoading || countsLoading) return <Loader />;
 
   return (
-    <div className="flex flex-col gap-6 p-6 min-h-screen" dir="rtl">
-      <Header
-        page="welcome"
-        title={title}
-        isMain={false}
-        first="الرئيــسية"
-        firstURL="/"
-        second="التحليــلات"
-        secondURL="/home/analysis"
-        third={title}
-        thirdURL={`/home/incolpleted-orders-analysis/${id}`}
-      />
-
-      <div className="flex flex-col gap-6 mt-4 relative z-10">
+    <div className="flex flex-col gap-6" dir="rtl">
+      <div className="flex flex-col gap-6 relative z-10">
+        <PeriodFilterBar period={id} onChange={setPeriod} />
         <OrdersContractStatusFilterBar
           activeFilter={activeFilter}
           onFilterChange={setActiveFilter}

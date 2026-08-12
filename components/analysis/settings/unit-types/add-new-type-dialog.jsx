@@ -6,7 +6,8 @@ import {
   DialogHeader,
   DialogTrigger
 } from "@/components/ui/dialog"
-import { Loader2, Plus, X } from 'lucide-react'
+import { Loader2, X } from 'lucide-react'
+import { SettingsAddTrigger } from '@/components/SystemSettings/shared'
 import { useState } from 'react';
 import { Input } from "@/components/ui/input";
 import {
@@ -54,11 +55,8 @@ export default function AddNewTypeDialog() {
   };
   return (
     <Dialog dir='rtl' open={open} onOpenChange={setOpen}>
-      <DialogTrigger>
-        <Button className='bg-brand-hover text-white h-12'>
-          إضافة نوع جديد
-          <Plus className='w-4 h-4' />
-        </Button>
+      <DialogTrigger asChild>
+        <SettingsAddTrigger>إضافة</SettingsAddTrigger>
       </DialogTrigger>
       <DialogContent closeButton={false} className="max-w-3xl">
         <DialogHeader>

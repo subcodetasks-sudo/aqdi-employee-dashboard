@@ -6,7 +6,7 @@ import {
   DialogHeader,
   DialogTrigger
 } from "@/components/ui/dialog"
-import { Edit, Loader2, Plus, X } from 'lucide-react'
+import { Loader2, X } from 'lucide-react'
 import { useState } from 'react';
 import { Input } from "@/components/ui/input";
 import {
@@ -19,6 +19,7 @@ import {
 import { axiosInstance } from '@/src/utils/axios';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { SETTINGS_EDIT_TRIGGER_CLASS } from '@/components/SystemSettings/shared';
 export default function EditCityDialog({city}) {
   const [open, setOpen] = useState(false);
   const [cityName, setCityName] = useState(city?.name_ar);
@@ -60,10 +61,10 @@ export default function EditCityDialog({city}) {
   };
   return (
     <Dialog dir='rtl' open={open} onOpenChange={setOpen}>
-      <DialogTrigger>
-        <Button variant="outline" size="icon">
-          <Edit className='w-4 h-4' />
-        </Button>
+      <DialogTrigger asChild>
+        <button type="button" className={SETTINGS_EDIT_TRIGGER_CLASS}>
+          تعديل
+        </button>
       </DialogTrigger>
       <DialogContent closeButton={false} className="max-w-3xl">
         <DialogHeader>

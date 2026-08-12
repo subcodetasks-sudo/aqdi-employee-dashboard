@@ -1,39 +1,17 @@
 'use client'
-import React, { useEffect, useState } from 'react'
-import Header from '../../home/Header'
+import React, { useState } from 'react'
 import greenRial from '@/public/images/greenRial.svg'
 import Image from 'next/image'
 import { axiosInstance } from '@/src/utils/axios'
 import { useQuery } from '@tanstack/react-query'
 import Loader from '../../home/loader'
 import { ChevronRight, ChevronLeft } from 'lucide-react'
+import { usePeriodFilter } from '@/components/analysis/shared/usePeriodFilter'
+import PeriodFilterBar from '@/components/analysis/shared/PeriodFilterBar'
 
-export default function ExpenseAnalysisWrapper({ id }) {
-    const [title, setTitle] = useState('')
+export default function ExpenseAnalysisWrapper() {
+    const { period: id, setPeriod } = usePeriodFilter()
     const [currentPage, setCurrentPage] = useState(1)
-
-    useEffect(() => {
-        switch (id) {
-            case 'day':
-                setTitle('مصروفات اليــوم')
-                break;
-            case 'week':
-                setTitle('مصروفات الأسبوع')
-                break;
-            case 'month':
-                setTitle('مصروفات الشهر')
-                break;
-            case 'year':
-                setTitle('مصروفات السنة')
-                break;
-            case 'total':
-                setTitle('إجمالي المصروفات')
-                break;
-            default:
-                setTitle('مصروفات اليــوم')
-                break;
-        }
-    }, [id])
 
     const tableHeaders = [
         "تاريخ الإضافة",
@@ -59,10 +37,10 @@ export default function ExpenseAnalysisWrapper({ id }) {
     if (isError) return <div className="text-center p-8 text-[#FA5252] text-[15px]">حدث خطأ أثناء تحميل البيانات</div>
 
     return (
-        <div className="flex flex-col gap-6 p-6 min-h-screen" dir="rtl">
-            <Header page='welcome' title={title} isMain={false} first="الرئيــسية" firstURL="/" second='التحليــلات' secondURL="/home/analysis" third={title} thirdURL={`/home/expense-analysis/${id}`} />
-            
-            <div className="w-full overflow-x-auto bg-white rounded-[24px] border border-[#E4E4E4] mt-4 shadow-sm">
+        <div className="flex flex-col gap-6" dir="rtl">
+            <PeriodFilterBar period={id} onChange={setPeriod} />
+
+            <div className="w-full overflow-x-auto bg-white rounded-[24px] border border-[#E4E4E4] shadow-sm">
                 <table className="w-full border-collapse">
                     <thead className="bg-[#FAFAFA]">
                         <tr>

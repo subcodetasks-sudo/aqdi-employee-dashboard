@@ -6,7 +6,8 @@ import {
   DialogHeader,
   DialogTrigger
 } from "@/components/ui/dialog"
-import { Loader2, Plus, X } from 'lucide-react'
+import { Loader2, X } from 'lucide-react'
+import { SETTINGS_EDIT_TRIGGER_CLASS } from '@/components/SystemSettings/shared'
 import { useState } from 'react';
 import { Input } from "@/components/ui/input";
 import {
@@ -54,10 +55,10 @@ export default function EditUsageUnitDialog({unit}) {
   };
   return (
     <Dialog dir='rtl' open={open} onOpenChange={setOpen}>
-      <DialogTrigger>
-        <Button className='bg-brand-hover/20 text-brand-hover text-xs'>
+      <DialogTrigger asChild>
+        <button type="button" className={SETTINGS_EDIT_TRIGGER_CLASS}>
           تعديل
-        </Button>
+        </button>
       </DialogTrigger>
       <DialogContent closeButton={false} className="max-w-3xl">
         <DialogHeader>

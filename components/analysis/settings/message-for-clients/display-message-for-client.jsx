@@ -7,6 +7,7 @@ import {
   DialogTrigger
 } from "@/components/ui/dialog";
 import { X } from 'lucide-react';
+import { SETTINGS_VIEW_TRIGGER_CLASS } from '@/components/SystemSettings/shared';
 import { useState } from 'react';
 
 export default function DisplayMessageForClientDialog({ messageAlert }) {
@@ -15,9 +16,9 @@ export default function DisplayMessageForClientDialog({ messageAlert }) {
   return (
     <Dialog dir='rtl' open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className='bg-green-500/20 text-green-500 text-xs'>
+        <button type="button" className={SETTINGS_VIEW_TRIGGER_CLASS}>
           عرض
-        </Button>
+        </button>
       </DialogTrigger>
       <DialogContent closeButton={false} className="max-w-3xl">
         <DialogHeader>

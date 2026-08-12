@@ -1,6 +1,5 @@
 'use client'
 import React, { useState } from 'react'
-import Header from '../home/Header'
 import greenRial from '@/public/images/greenRial.svg'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -41,20 +40,8 @@ export default function TotalStaff() {
     if (isError) return <div className="text-center p-8 text-[#FA5252] text-[15px]">حدث خطأ أثناء تحميل البيانات</div>
 
     return (
-        <div className="flex flex-col gap-6 p-6 min-h-screen" dir="rtl">
-            <Header
-                page='welcome'
-                title={"عدد الموظفين"}
-                isMain={false}
-                first="الرئيــسية"
-                firstURL="/"
-                second='التحليــلات'
-                secondURL="/home/analysis"
-                third="عدد الموظفين"
-                thirdURL={`/home/staff-analysis/total`}
-            />
-            
-            <div className="w-full overflow-x-auto bg-white rounded-[24px] border border-[#E4E4E4] mt-4 shadow-sm">
+        <div className="flex flex-col gap-6" dir="rtl">
+            <div className="w-full overflow-x-auto bg-white rounded-[24px] border border-[#E4E4E4] shadow-sm">
                 <table className="w-full border-collapse">
                     <thead className="bg-[#FAFAFA]">
                         <tr>
@@ -105,7 +92,7 @@ export default function TotalStaff() {
                                     <td className="p-[15px_20px] text-[#616161] text-[13px]">{staff.email || '---'}</td>
                                     <td className="p-[15px_20px]">
                                         <div className="flex items-center gap-2">
-                                            <Link href={`/home/employees/${staff.id}`} className="w-8 h-8 rounded-full flex items-center justify-center text-[#4D4D4D] hover:bg-brand-main hover:text-white transition-all text-[12px] border border-[#eee] hover:border-brand-main">
+                                            <Link href={`/home/roles-and-employees/employees/${staff.id}`} className="w-8 h-8 rounded-full flex items-center justify-center text-[#4D4D4D] hover:bg-brand-main hover:text-white transition-all text-[12px] border border-[#eee] hover:border-brand-main">
                                                 <Eye className="size-4" />
                                             </Link>
                                             <BlockEmployeeDialog employee={staff} />

@@ -14,7 +14,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, X, Loader2 } from 'lucide-react';
+import { X, Loader2 } from 'lucide-react';
+import { SETTINGS_EDIT_TRIGGER_CLASS, SettingsAddTrigger } from '@/components/SystemSettings/shared';
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { axiosInstance } from '@/src/utils/axios';
@@ -90,14 +91,11 @@ export default function AddNewMessageForPropertyDialog({ isEdit, messageAlert })
     <Dialog dir='rtl' open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {isEdit ? (
-          <Button className='bg-red-500/20 text-red-500 text-xs'>
+          <button type="button" className={SETTINGS_EDIT_TRIGGER_CLASS}>
             تعديل
-          </Button>
+          </button>
         ) : (
-          <Button className='bg-brand-hover text-white h-12'>
-            إضافة رساله جديدة
-            <Plus className='w-4 h-4' />
-          </Button>
+          <SettingsAddTrigger>إضافة</SettingsAddTrigger>
         )}
       </DialogTrigger>
       <DialogContent closeButton={false} className="max-w-3xl">

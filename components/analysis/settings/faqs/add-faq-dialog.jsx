@@ -12,7 +12,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { axiosInstance } from "@/src/utils/axios";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Loader2, Plus, X } from "lucide-react";
+import { Loader2, X } from "lucide-react";
+import { SettingsAddTrigger } from "@/components/SystemSettings/shared";
 import { toast } from "sonner";
 
 export default function AddFaqDialog() {
@@ -54,10 +55,7 @@ export default function AddFaqDialog() {
   return (
     <Dialog dir="rtl" open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-brand-hover text-white h-12 rounded-full font-bold px-6 flex items-center gap-2 shadow-lg shadow-brand-main/20 hover:scale-105 active:scale-95 transition-all">
-          <Plus className="size-4" />
-          <span>إضافة سؤال جديد</span>
-        </Button>
+        <SettingsAddTrigger>إضافة</SettingsAddTrigger>
       </DialogTrigger>
       <DialogContent closeButton={false} className="max-w-2xl">
         <DialogHeader>

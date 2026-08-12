@@ -1,18 +1,55 @@
 "use client";
 
-import React, { useState } from "react";
-import Header from "@/components/home/Header";
-import { useQuery } from "@tanstack/react-query";
-import { axiosInstance } from "@/src/utils/axios";
-import Loader from "@/components/home/loader";
-import CouponCard from "@/components/analysis/settings/coupons/coupon-card";
+import { useState } from "react";
 import AddCouponDialog from "@/components/analysis/settings/coupons/add-coupon-dialog";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import DeleteCouponDialog from "@/components/analysis/settings/coupons/delete-coupon-dialog";
+import {
+  SettingsEmptyRow,
+  SettingsListHeader,
+  SettingsPagination,
+  SettingsTable,
+  SettingsTableRow,
+  SettingsTd,
+  StatusBadge,
+} from "@/components/SystemSettings/shared";
+import { Switch } from "@/components/ui/switch";
+import { axiosInstance } from "@/src/utils/axios";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+
+const HEADERS = [
+  "الاسم",
+  "الكود",
+  { label: "النوع", className: "text-center" },
+  { label: "القيمة", className: "text-center" },
+  { label: "البداية", className: "text-center" },
+  { label: "النهاية", className: "text-center" },
+  { label: "الحالة", className: "text-center" },
+  { label: "الإجراءات", className: "text-left" },
+];
+
+function formatDate(dateString) {
+  if (!dateString) return "—";
+  try {
+    return new Date(dateString).toLocaleDateString("ar-EG", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    });
+  } catch {
+    return dateString;
+  }
+}
+
+function couponTypeLabel(type) {
+  if (type === "ratio" || type === "percentage") return "نسبة مئوية";
+  return "مبلغ ثابت";
+}
 
 export default function CouponsPage() {
   const [currentPage, setCurrentPage] = useState(1);
+  const queryClient = useQueryClient();
 
-  // Fetch Coupons from Server
   const { data: serverCouponsData, isLoading } = useQuery({
     queryKey: ["coupons", currentPage],
     queryFn: () => axiosInstance.get(`/admin/coupons?page=${currentPage}`).then((res) => res?.data),
@@ -21,116 +58,83 @@ export default function CouponsPage() {
   const displayCoupons = serverCouponsData?.data?.items || serverCouponsData?.items || [];
   const pagination = serverCouponsData?.data?.pagination || serverCouponsData?.pagination;
 
-  if (isLoading) {
-    return <Loader />;
-  }
+  const { mutate: toggleStatus, isPending: isToggling } = useMutation({
+    mutationFn: ({ id, checked }) => {
+      const actionPath = checked ? "activate" : "inactive";
+      return axiosInstance.post(`/admin/coupons/${id}/${actionPath}`);
+    },
+    onSuccess: (res) => {
+      toast.success(res?.data?.message || "تم تحديث حالة الخصم بنجاح");
+      queryClient.invalidateQueries({ queryKey: ["coupons"] });
+    },
+    onError: (err) => {
+      toast.error(err?.response?.data?.message || "حدث خطأ أثناء تغيير حالة الخصم");
+    },
+  });
 
   return (
-    <div className="min-h-screen p-6 flex flex-col gap-6" dir="rtl">
-      {/* App Header */}
-      <Header 
-        page="welcome" 
-        title="الإعـدادات" 
-        isMain={false} 
-        first="الرئيــسية" 
-        firstURL="/" 
-        second="الإعـدادات" 
-        secondURL="/home/settings" 
-        third="الخصومات" 
-        thirdURL="/home/settings/coupons" 
+    <div className="flex flex-col gap-5 min-h-full" dir="rtl">
+      <SettingsListHeader title="الخصومات (الكوبونات)" action={<AddCouponDialog />} />
+
+      <SettingsTable headers={HEADERS} minWidth="980px">
+        {isLoading ? (
+          <SettingsEmptyRow colSpan={8} message="جاري التحميل..." />
+        ) : displayCoupons.length === 0 ? (
+          <SettingsEmptyRow colSpan={8} />
+        ) : (
+          displayCoupons.map((coupon) => {
+            const type = coupon.type_coupon || coupon.type || "value";
+            const isActive =
+              typeof coupon.is_active === "boolean"
+                ? coupon.is_active
+                : coupon.is_active === 1 || coupon.is_active === "1";
+            const value = coupon.value_coupon || coupon.value || 0;
+            const isPercentage = type === "ratio" || type === "percentage";
+
+            return (
+              <SettingsTableRow key={coupon.id}>
+                <SettingsTd>{coupon.name}</SettingsTd>
+                <SettingsTd className="font-mono" dir="ltr">
+                  {coupon.code_coupon || coupon.code || "—"}
+                </SettingsTd>
+                <SettingsTd className="text-center">{couponTypeLabel(type)}</SettingsTd>
+                <SettingsTd className="text-center tabular-nums">
+                  {isPercentage ? `${value}%` : value}
+                </SettingsTd>
+                <SettingsTd className="text-center">
+                  {formatDate(coupon.date_start || coupon.start_date)}
+                </SettingsTd>
+                <SettingsTd className="text-center">
+                  {formatDate(coupon.date_end || coupon.end_date)}
+                </SettingsTd>
+                <SettingsTd className="text-center">
+                  <div className="inline-flex items-center gap-2">
+                    <StatusBadge active={isActive} />
+                    <Switch
+                      dir="ltr"
+                      checked={isActive}
+                      disabled={isToggling}
+                      onCheckedChange={(checked) => toggleStatus({ id: coupon.id, checked })}
+                    />
+                  </div>
+                </SettingsTd>
+                <SettingsTd>
+                  <div className="flex items-center justify-end gap-2">
+                    <AddCouponDialog isEdit coupon={coupon} />
+                    <DeleteCouponDialog coupon={coupon} />
+                  </div>
+                </SettingsTd>
+              </SettingsTableRow>
+            );
+          })
+        )}
+      </SettingsTable>
+
+      <SettingsPagination
+        page={currentPage}
+        lastPage={pagination?.last_page}
+        onPageChange={setCurrentPage}
       />
-
-      {/* Page Header */}
-      <div className="flex items-center justify-between pb-6 border-b border-[#F5F5F5] mt-4">
-        <div className="flex flex-col gap-1.5 text-right">
-          <h2 className="text-[22px] font-black text-black">الخصومات (الكوبونات)</h2>
-          <p className="text-[13px] text-gray-500 font-medium">إدارة كوبونات خصومات النظام وربط حدود استخدامها للمستخدمين</p>
-        </div>
-        
-        <AddCouponDialog />
-      </div>
-
-      {/* Cards Grid */}
-      {displayCoupons.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-4">
-          {displayCoupons.map((coupon) => (
-            <CouponCard
-              key={coupon.id}
-              coupon={coupon}
-            />
-          ))}
-        </div>
-      ) : (
-        <div className="bg-white rounded-[32px] border border-[#F0F0F0] p-12 text-center text-gray-400 font-bold text-sm shadow-sm mt-4">
-          لا يوجد كوبونات خصم مسجلة حالياً. اضغط على &quot;إضافة خصم جديد&quot; للبدء.
-        </div>
-      )}
-
-      {/* Pagination Controls */}
-      {pagination && pagination.last_page > 1 && (
-        <div className="flex items-center justify-center gap-2.5 mt-8" dir="rtl">
-          <button
-            onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-            disabled={currentPage === 1}
-            className="w-9 h-9 rounded-full border border-[#E4E4E4] flex items-center justify-center text-[#A3A3A3] hover:bg-brand-main hover:text-white transition-all disabled:opacity-50 disabled:hover:bg-transparent"
-          >
-            <ChevronRight className="size-4" />
-          </button>
-
-          {(() => {
-            const pages = [];
-            const { last_page } = pagination;
-            const range = 1;
-            const start = Math.max(1, currentPage - range);
-            const end = Math.min(last_page, currentPage + range);
-
-            if (start > 1) {
-              pages.push(1);
-              if (start > 2) pages.push('...');
-            }
-
-            for (let i = start; i <= end; i++) {
-              pages.push(i);
-            }
-
-            if (end < last_page) {
-              if (end < last_page - 1) pages.push('...');
-              pages.push(last_page);
-            }
-
-            return pages.map((page, idx) => {
-              if (page === '...') {
-                return (
-                  <span key={`dots-${idx}`} className="text-[#A3A3A3] px-1">
-                    ...
-                  </span>
-                );
-              }
-              return (
-                <button
-                  key={page}
-                  onClick={() => setCurrentPage(page)}
-                  className={`w-9 h-9 rounded-full flex items-center justify-center text-[13px] font-medium transition-all ${
-                    currentPage === page
-                      ? "bg-brand-main text-white shadow-lg shadow-brand-main/20"
-                      : "border border-[#E4E4E4] text-[#A3A3A3] hover:bg-[#f5f5f5]"
-                  }`}
-                >
-                  {page}
-                </button>
-              );
-            });
-          })()}
-
-          <button
-            onClick={() => setCurrentPage((prev) => Math.min(pagination.last_page, prev + 1))}
-            disabled={currentPage === pagination.last_page}
-            className="w-9 h-9 rounded-full border border-[#E4E4E4] flex items-center justify-center text-[#A3A3A3] hover:bg-brand-main hover:text-white transition-all disabled:opacity-50 disabled:hover:bg-transparent"
-          >
-            <ChevronLeft className="size-4" />
-          </button>
-        </div>
-      )}
     </div>
   );
 }
