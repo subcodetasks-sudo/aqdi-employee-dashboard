@@ -76,46 +76,52 @@ export function hasPermission(permissions, section, action = 'view') {
   return permissions.includes(key) || permissions.includes(`${section}.*`);
 }
 
+/** `section` may be a single section key or an array of section keys (ANY-of / OR semantics). */
 export function canAccess(permissions, user, section, action = 'view') {
   if (isSuperAdmin(user, permissions)) return true;
+  if (Array.isArray(section)) return section.some((s) => hasPermission(permissions, s, action));
   return hasPermission(permissions, section, action);
 }
 
-/** Longest-prefix wins. `section: null` = any authenticated user. */
+/** ANY-of section groups shared between `ROUTE_SECTION_RULES` (page-level gate) and `SIDEBAR_NAV` (link visibility). */
+const ORDERS_SECTIONS = [
+  PERMISSION_SECTIONS.all_requests,
+  PERMISSION_SECTIONS.completed_request,
+  PERMISSION_SECTIONS.incomplete_request,
+  PERMISSION_SECTIONS.request_classification,
+  PERMISSION_SECTIONS.completed_whatsapp_request,
+  PERMISSION_SECTIONS.incomplete_whatsapp_request,
+];
+
+const REALTIME_ORDERS_SECTIONS = [
+  ...ORDERS_SECTIONS,
+  PERMISSION_SECTIONS.returned_request,
+];
+
+const ROLES_AND_EMPLOYEES_SECTIONS = [
+  PERMISSION_SECTIONS.employees,
+  PERMISSION_SECTIONS.roles,
+  PERMISSION_SECTIONS.employee_salaries,
+];
+
+/**
+ * Longest-prefix wins. `section: null` = any authenticated user.
+ * `section` may also be an array of section keys — access is granted if the user has `view` on ANY of them
+ * (used for merged pages that gate individual tabs more narrowly than the page itself).
+ */
 export const ROUTE_SECTION_RULES = [
   { prefix: '/home/contract-settings', section: PERMISSION_SECTIONS.settings },
   { prefix: '/home/settings', section: PERMISSION_SECTIONS.settings },
-  { prefix: '/home/salaries', section: PERMISSION_SECTIONS.employee_salaries },
-  { prefix: '/home/employees', section: PERMISSION_SECTIONS.employees },
-  { prefix: '/home/roles', section: PERMISSION_SECTIONS.roles },
-  { prefix: '/home/sorting-orders', section: PERMISSION_SECTIONS.request_classification },
-  { prefix: '/home/draft-contract-statuses', section: PERMISSION_SECTIONS.request_classification },
-  { prefix: '/home/draft-completed-orders', section: PERMISSION_SECTIONS.request_classification },
-  { prefix: '/home/reliable-orders', section: PERMISSION_SECTIONS.request_classification },
-  { prefix: '/home/canceled-orders', section: PERMISSION_SECTIONS.request_classification },
+  { prefix: '/home/roles-and-employees', section: ROLES_AND_EMPLOYEES_SECTIONS },
   { prefix: '/home/return-orders', section: PERMISSION_SECTIONS.returned_request },
-  { prefix: '/home/incompleted-whatsapp', section: PERMISSION_SECTIONS.incomplete_whatsapp_request },
-  { prefix: '/home/completed-whatsapp', section: PERMISSION_SECTIONS.completed_whatsapp_request },
-  { prefix: '/home/incolpleted-orders-analysis', section: PERMISSION_SECTIONS.incomplete_request },
-  { prefix: '/home/completed-orders', section: PERMISSION_SECTIONS.completed_request },
-  { prefix: '/home/received-orders', section: PERMISSION_SECTIONS.completed_request },
-  { prefix: '/home/draft-contracts', section: PERMISSION_SECTIONS.all_requests },
-  { prefix: '/home/contract-paid', section: PERMISSION_SECTIONS.all_requests },
-  { prefix: '/home/orders', section: PERMISSION_SECTIONS.all_requests },
-  {
-    prefix: '/home/analysis',
-    section: PERMISSION_SECTIONS.analytics,
-  },
-  { prefix: '/home/staff-analysis', section: PERMISSION_SECTIONS.analytics },
-  { prefix: '/home/financial-analysis', section: PERMISSION_SECTIONS.analytics },
-  { prefix: '/home/expense-analysis', section: PERMISSION_SECTIONS.analytics },
-  { prefix: '/home/Properties-analysis', section: PERMISSION_SECTIONS.analytics },
-  { prefix: '/home/Units-analysis', section: PERMISSION_SECTIONS.analytics },
-  { prefix: '/home/user-analysis', section: PERMISSION_SECTIONS.analytics },
+  { prefix: '/home/orders', section: ORDERS_SECTIONS },
+  { prefix: '/home/reports', section: PERMISSION_SECTIONS.analytics },
   { prefix: '/home/users', section: PERMISSION_SECTIONS.analytics },
-  { prefix: '/home/orders-analysis', section: PERMISSION_SECTIONS.analytics },
-  { prefix: '/home/return-analysis', section: PERMISSION_SECTIONS.analytics },
   { prefix: '/home/real-estates', section: PERMISSION_SECTIONS.analytics },
+  { prefix: '/home/marketing-and-content', section: PERMISSION_SECTIONS.all_requests },
+  { prefix: '/home/clients', section: null },
+  { prefix: '/home/realtime-orders', section: REALTIME_ORDERS_SECTIONS },
+  { prefix: '/home/invoices', section: null },
   { prefix: '/home', section: null },
 ];
 
@@ -135,10 +141,10 @@ export function getSectionForPath(pathname = '') {
 export function getRouteActionRequirement(pathname = '') {
   const path = pathname.split('?')[0];
 
-  if (path === '/home/roles/add') {
+  if (path === '/home/roles-and-employees/roles/add') {
     return { section: PERMISSION_SECTIONS.roles, action: 'create' };
   }
-  if (path.startsWith('/home/roles/edit')) {
+  if (path.startsWith('/home/roles-and-employees/roles/edit')) {
     return { section: PERMISSION_SECTIONS.roles, action: 'edit' };
   }
 
@@ -158,74 +164,22 @@ export function canAccessRoute(pathname, permissions, user) {
 
 export const SIDEBAR_NAV = [
   {
-    group: 'الرئيســية',
+    group: 'main',
     items: [
-      { label: 'التحليــلات', href: '/home/analysis', section: PERMISSION_SECTIONS.analytics },
+      { label: 'الطلبات مباشر', href: '/home/realtime-orders', section: REALTIME_ORDERS_SECTIONS, badge: 'unreceived' },
+      { label: 'العملاء', href: '/home/clients', section: null },
+      { label: 'طلبات الاسترجاع', href: '/home/return-orders', section: PERMISSION_SECTIONS.returned_request },
+      { label: 'الموظفون والأدوار', href: '/home/roles-and-employees', section: ROLES_AND_EMPLOYEES_SECTIONS },
+      { label: 'التسويق والمحتوى', href: '/home/marketing-and-content', section: PERMISSION_SECTIONS.all_requests },
+      { label: 'التقارير', href: '/home/reports', section: PERMISSION_SECTIONS.analytics },
+      { label: 'إعدادات النظام', href: '/home/settings', section: PERMISSION_SECTIONS.settings },
     ],
   },
   {
-    group: 'العقــود',
+    group: 'secondary',
     items: [
-      { label: 'جميع الطلبات', href: '/home/orders', section: PERMISSION_SECTIONS.all_requests },
-      { label: 'مسودة العقود', href: '/home/draft-contracts', section: PERMISSION_SECTIONS.all_requests },
-      { label: 'إنشاء عقد مدفوع', href: '/home/contract-paid', section: PERMISSION_SECTIONS.all_requests },
-      { label: 'طلـب مكتمـــل', href: '/home/completed-orders', section: PERMISSION_SECTIONS.completed_request },
-      { label: 'طلـب مسوده و مكتمــل', href: '/home/draft-completed-orders', section: PERMISSION_SECTIONS.completed_request },
-      {
-        label: 'طلـب غيــر مكتمل',
-        href: '/home/incolpleted-orders-analysis/total',
-        section: PERMISSION_SECTIONS.incomplete_request,
-      },
-      { label: 'طلـب مستــرجع', href: '/home/return-orders', section: PERMISSION_SECTIONS.returned_request },
-
-      {
-        label: 'طلب موثق ',
-        href: '/home/reliable-orders',
-        section: PERMISSION_SECTIONS.request_classification,
-      },
-      {
-        label: 'طلب ملغي ',
-        href: '/home/canceled-orders',
-        section: PERMISSION_SECTIONS.request_classification,
-      },
-      {
-        label: 'تصنيف مسودة العقود',
-        href: '/home/draft-contract-statuses',
-        section: PERMISSION_SECTIONS.request_classification,
-      },
-      {
-        label: 'تصنيــف الطلبـــــات',
-        href: '/home/sorting-orders',
-        section: PERMISSION_SECTIONS.request_classification,
-      },
-    ],
-  },
-
-  {
-    group: 'الموظفيــن والأدوار',
-    items: [
-      { label: 'الأدوار', href: '/home/roles', section: PERMISSION_SECTIONS.roles },
-      { label: 'الموظفيــن', href: '/home/employees', section: PERMISSION_SECTIONS.employees },
-      {
-        label: 'رواتــب الموظفيــن',
-        href: '/home/salaries',
-        section: PERMISSION_SECTIONS.employee_salaries,
-      },
-    ],
-  },
-
-  {
-    group: 'إعــدادت النظام',
-    items: [
-      { label: 'الاعــدادات', href: '/home/settings', section: PERMISSION_SECTIONS.settings },
-      { label: 'اعــدادات العقــود', href: '/home/contract-settings', section: PERMISSION_SECTIONS.settings },
-    ],
-  },
-  {
-    group: 'المحتوي ',
-    items: [
-      { label: 'الصفحه الرئيسيه', href: '/home/content/home', section: PERMISSION_SECTIONS.all_requests },
-      { label: 'صفحة من نحن ', href: '/home/content/about', section: PERMISSION_SECTIONS.all_requests },
+      { label: 'جميع الطلبات', href: '/home/orders', section: ORDERS_SECTIONS },
+      { label: 'الفواتير', href: '/home/invoices', section: null },
     ],
   },
 ];

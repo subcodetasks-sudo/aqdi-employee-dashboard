@@ -40,14 +40,20 @@ export function formatMetricValue(item) {
   return String(value);
 }
 
-export function formatMap(record, basePath, valueType = 'price') {
+/**
+ * `linkFor` may be a static base path (old `${basePath}/${key}` route-segment style)
+ * or a `(key) => string` builder (used for the `/home/reports?tab=...&period=key` query-param style).
+ */
+export function formatMap(record, linkFor, valueType = 'price') {
+  const buildLink = typeof linkFor === 'function' ? linkFor : (key) => (linkFor ? `${linkFor}/${key}` : null);
+
   return Object.entries(toAnalyticsRecord(record)).map(([key, item]) => ({
     name: item?.label_ar ?? item?.label ?? key,
     value: formatMetricValue(item),
     valueType,
     percentage: formatPercentage(item?.percentage_change),
     type: key === 'total' ? (valueType === 'price' ? 'total' : 'total-regular') : key,
-    link: basePath ? `${basePath}/${key}` : null,
+    link: buildLink(key),
   }));
 }
 

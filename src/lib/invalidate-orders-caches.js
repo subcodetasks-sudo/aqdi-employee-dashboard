@@ -13,6 +13,9 @@ const ORDER_LIST_ROOTS = [
   "inCompletedOrders",
   "orders-whatsapp-completed",
   "orders-whatsapp-incompleted",
+  "realtime-new-orders",
+  "realtime-orders",
+  "all-orders",
 ];
 
 function toKey(queryKey) {
