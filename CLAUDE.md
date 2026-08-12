@@ -46,7 +46,7 @@ Don't assume one `lib` or one `components` dir — check whether an import is `@
 
 ### Route structure
 
-Feature pages live under `src/app/home/<feature>/page.jsx` (one directory per sidebar item — `orders`, `employees`, `roles`, `salaries`, `settings`, `content/home`, `content/about`, the various `*-analysis` sections, etc.), with `[id]/page.jsx` for detail views. Corresponding non-page components (forms, tables, cards) live in root `components/<Feature>/...`, mirrored by feature name (e.g. `components/content/home/*-section-form.jsx` for `src/app/home/content/home`).
+Feature pages live under `src/app/home/<feature>/page.jsx` (one directory per sidebar item — `orders`, `roles-and-employees`, `clients`, `realtime-orders`, `marketing-and-content`, `settings`, `reports`, `return-orders`, `invoices`), with `[id]/page.jsx` for detail views. Several of these are single routes with an internal `Tabs` UI that consolidates what used to be many separate pages (e.g. `/home/orders` hosts the former draft/completed/reliable/whatsapp/etc. order-status pages as `?tab=` panels; `/home/reports` hosts the former `*-analysis` pages the same way). Corresponding non-page components (forms, tables, cards) live in root `components/<Feature>/...`, mirrored by feature name (e.g. `components/content/home/*-section-form.jsx` for the "المحتوى" tab of `/home/marketing-and-content`).
 
 ### Forms
 
