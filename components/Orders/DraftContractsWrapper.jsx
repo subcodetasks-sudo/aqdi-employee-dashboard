@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import Header from "../home/Header";
 import { axiosInstance } from "@/src/utils/axios";
 import { useQuery } from "@tanstack/react-query";
 import Loader from "../home/loader";
@@ -139,18 +138,8 @@ export default function DraftContractsWrapper() {
   }
 
   return (
-    <div className="flex flex-col gap-6 p-6 min-h-screen" dir="rtl">
-      <Header
-        page="welcome"
-        title="مسودة العقود"
-        isMain={false}
-        first="الرئيــسية"
-        firstURL="/"
-        second="مسودة العقود"
-        secondURL="/home/draft-contracts"
-      />
-
-      <div className="flex flex-col gap-6 mt-4 relative z-10">
+    <div className="flex flex-col gap-6" dir="rtl">
+      <div className="flex flex-col gap-6 relative z-10">
         {statusItems.length > 0 ? (
           <OrdersStatusCards
             statusItems={statusItems}

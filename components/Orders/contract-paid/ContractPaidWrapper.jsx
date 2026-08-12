@@ -13,7 +13,6 @@ import {
 import PaymentLinkDialog from "@/components/Orders/shared/payment-link-dialog";
 import { fetchContractPaidPaymentLink } from "@/components/Orders/shared/payment-gateway";
 import { fetchAllPaginatedOrders } from "@/components/Orders/shared/orders-export";
-import Header from "@/components/home/Header";
 import Loader from "@/components/home/loader";
 import OrdersPagination from "@/components/Orders/shared/orders-pagination";
 import { Button } from "@/components/ui/button";
@@ -243,17 +242,7 @@ export default function ContractPaidWrapper() {
   }
 
   return (
-    <div className="flex flex-col gap-6 p-6 min-h-screen" dir="rtl">
-      <Header
-        page="welcome"
-        title="إنشاء عقد مدفوع"
-        isMain={false}
-        first="الرئيــسية"
-        firstURL="/"
-        second="إنشاء عقد مدفوع"
-        secondURL="/home/contract-paid"
-      />
-
+    <div className="flex flex-col gap-6" dir="rtl">
       <div className="flex max-md:flex-wrap items-center gap-3 w-full">
         <CreateContractPaidDialog />
 

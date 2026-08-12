@@ -19,7 +19,7 @@ const defaultQuickLinks = [
   {
     emoji: "✅",
     label: "تم التوثيق",
-    href: "/home/completed-orders",
+    href: "/home/orders?tab=completed",
     match: ["توثيق", "وثق", "مكتمل"],
   },
   {
