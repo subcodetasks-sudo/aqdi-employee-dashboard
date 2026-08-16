@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2, Plus, Trash2 } from "lucide-react";
 import { useEffect } from "react";
-import { getStringValue } from "@/src/lib/content-admin";
+import { buildSectionFormData, getStringValue } from "@/src/lib/content-admin";
 import { axiosInstance } from "@/src/utils/axios";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useFieldArray, useForm } from "react-hook-form";
@@ -100,17 +100,15 @@ export default function AboutBeneficiariesSectionForm({
   });
 
   const onSubmit = (values) => {
-    const formData = new FormData();
-    formData.append("beneficiaries[badge_text]", values.badgeText.trim());
-    formData.append("beneficiaries[main_title]", values.mainTitle.trim());
-    formData.append("beneficiaries[description]", values.description.trim());
-    values.cards.forEach((card, index) => {
-      if (card.id) formData.append(`beneficiaries[cards][${index}][id]`, String(card.id));
-      formData.append(`beneficiaries[cards][${index}][title]`, card.title.trim());
-      formData.append(
-        `beneficiaries[cards][${index}][description]`,
-        card.description.trim()
-      );
+    const formData = buildSectionFormData("beneficiaries", {
+      badge_text: values.badgeText.trim(),
+      main_title: values.mainTitle.trim(),
+      description: values.description.trim(),
+      cards: values.cards.map((card) => ({
+        id: card.id ?? null,
+        title: card.title.trim(),
+        description: card.description.trim(),
+      })),
     });
     saveSection(formData);
   };

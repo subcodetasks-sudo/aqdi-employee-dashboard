@@ -14,7 +14,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { ImageUp, Loader2, Trash2 } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { createImageAsset, getStringValue } from "@/src/lib/content-admin";
+import {
+  assetFormValue,
+  buildSectionFormData,
+  createImageAsset,
+  getStringValue,
+} from "@/src/lib/content-admin";
 import { axiosInstance } from "@/src/utils/axios";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
@@ -280,35 +285,28 @@ export default function AboutVisionMissionSectionForm({
   });
 
   const onSubmit = (values) => {
-    const formData = new FormData();
-    formData.append("vision_mission[section_title]", values.sectionTitle.trim());
-    formData.append("vision_mission[section_description]", values.sectionDescription.trim());
-    formData.append("vision_mission[mission][badge_text]", values.mission.badgeText.trim());
-    formData.append("vision_mission[mission][title]", values.mission.title.trim());
-    formData.append(
-      "vision_mission[mission][description]",
-      values.mission.description.trim()
-    );
-    if (values.mission.image instanceof File) {
-      formData.append("vision_mission[mission][image]", values.mission.image);
-    } else if (!missionPreview && values.mission.existingImageUrl) {
-      formData.append("vision_mission[mission][keep_image]", "0");
-    } else {
-      formData.append("vision_mission[mission][keep_image]", "1");
-    }
-    formData.append("vision_mission[vision][badge_text]", values.vision.badgeText.trim());
-    formData.append("vision_mission[vision][title]", values.vision.title.trim());
-    formData.append(
-      "vision_mission[vision][description]",
-      values.vision.description.trim()
-    );
-    if (values.vision.image instanceof File) {
-      formData.append("vision_mission[vision][image]", values.vision.image);
-    } else if (!visionPreview && values.vision.existingImageUrl) {
-      formData.append("vision_mission[vision][keep_image]", "0");
-    } else {
-      formData.append("vision_mission[vision][keep_image]", "1");
-    }
+    const formData = buildSectionFormData("vision_mission", {
+      section_title: values.sectionTitle.trim(),
+      section_description: values.sectionDescription.trim(),
+      mission: {
+        badge_text: values.mission.badgeText.trim(),
+        title: values.mission.title.trim(),
+        description: values.mission.description.trim(),
+        ...assetFormValue(
+          values.mission.image,
+          !missionPreview && values.mission.existingImageUrl
+        ),
+      },
+      vision: {
+        badge_text: values.vision.badgeText.trim(),
+        title: values.vision.title.trim(),
+        description: values.vision.description.trim(),
+        ...assetFormValue(
+          values.vision.image,
+          !visionPreview && values.vision.existingImageUrl
+        ),
+      },
+    });
     saveSection(formData);
   };
 

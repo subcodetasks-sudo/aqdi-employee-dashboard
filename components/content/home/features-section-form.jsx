@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2, Trash2 } from "lucide-react";
 import { useEffect } from "react";
-import { getStringValue } from "@/src/lib/content-admin";
+import { buildSectionFormData, getStringValue } from "@/src/lib/content-admin";
 import { axiosInstance } from "@/src/utils/axios";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useFieldArray, useForm } from "react-hook-form";
@@ -101,14 +101,15 @@ export default function FeaturesSectionForm({
   });
 
   const onSubmit = (values) => {
-    const formData = new FormData();
-    formData.append("features[badge_text]", values.badgeText.trim());
-    formData.append("features[main_title]", values.mainTitle.trim());
-    formData.append("features[description]", values.description.trim());
-    values.cards.forEach((card, index) => {
-      if (card.id) formData.append(`features[cards][${index}][id]`, String(card.id));
-      formData.append(`features[cards][${index}][title]`, card.title.trim());
-      formData.append(`features[cards][${index}][description]`, card.description.trim());
+    const formData = buildSectionFormData("features", {
+      badge_text: values.badgeText.trim(),
+      main_title: values.mainTitle.trim(),
+      description: values.description.trim(),
+      cards: values.cards.map((card) => ({
+        id: card.id ?? null,
+        title: card.title.trim(),
+        description: card.description.trim(),
+      })),
     });
     saveSection(formData);
   };
