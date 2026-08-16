@@ -1,59 +1,28 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
-import { axiosInstance } from "@/src/utils/axios";
+import {
+  useReferenceListQuery,
+  getReferenceLabel,
+  mapReferenceToOptions,
+} from "@/src/hooks/use-reference-list";
 
-function normalizePaymentTypes(response) {
-  const payload = response?.data ?? response;
-  if (Array.isArray(payload?.items)) return payload.items;
-  if (Array.isArray(payload?.data?.items)) return payload.data.items;
-  if (Array.isArray(payload?.data)) return payload.data;
-  if (Array.isArray(payload)) return payload;
-  return [];
-}
+export const getPaymentTypeLabel = getReferenceLabel;
 
-async function fetchPaymentTypes(contractType) {
-  const res = await axiosInstance.get("/admin/payment-types", {
-    params: {
-      contract_type: contractType,
-      per_page: 100,
-    },
-  });
-  return normalizePaymentTypes(res.data);
+export function mapPaymentTypesToOptions(items = []) {
+  return mapReferenceToOptions(items, getPaymentTypeLabel);
 }
 
 export function usePaymentTypes(contractType, enabled = true) {
-  const query = useQuery({
+  const { items, isLoading } = useReferenceListQuery({
     queryKey: ["payment-types", contractType],
-    queryFn: () => fetchPaymentTypes(contractType),
+    endpoint: "/admin/payment-types",
+    params: { contract_type: contractType, per_page: 100 },
     enabled: enabled && !!contractType,
-    staleTime: 60_000,
   });
-
-  const items = query.data ?? [];
 
   return {
     items,
     options: mapPaymentTypesToOptions(items),
-    isLoading: query.isLoading,
+    isLoading,
   };
-}
-
-export function getPaymentTypeLabel(item = {}) {
-  return (
-    item?.name_trans ||
-    item?.name_ar ||
-    item?.name ||
-    item?.name_en ||
-    (item?.id != null ? String(item.id) : "—")
-  );
-}
-
-export function mapPaymentTypesToOptions(items = []) {
-  return items
-    .filter((item) => item?.id != null)
-    .map((item) => ({
-      value: String(item.id),
-      label: String(getPaymentTypeLabel(item)).trim() || String(item.id),
-    }));
 }
