@@ -1,5 +1,5 @@
-import * as XLSX from "xlsx";
 import { axiosInstance } from "@/src/utils/axios";
+import { writeExcelFile } from "@/src/lib/xlsx-export";
 import {
   getOrderAdminApprovalStatus,
   isAdminRefundApproved,
@@ -40,18 +40,6 @@ function formatCustomerRefunded(value) {
 
 function formatAdminApproval(value) {
   return isAdminRefundApproved(value) ? "تم الموافقة" : "لم تتم الموافقة";
-}
-
-function writeExcelFile(rows, { filename = "orders", sheetName = "الطلبات" } = {}) {
-  if (!rows?.length) return false;
-
-  const worksheet = XLSX.utils.json_to_sheet(rows);
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
-
-  const dateStamp = new Date().toISOString().slice(0, 10);
-  XLSX.writeFile(workbook, `${filename}-${dateStamp}.xlsx`);
-  return true;
 }
 
 function withPerPage(url, perPage) {

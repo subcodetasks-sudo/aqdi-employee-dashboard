@@ -1,4 +1,4 @@
-import * as XLSX from "xlsx";
+import { writeExcelFile } from "@/src/lib/xlsx-export";
 import { normalizePaymentLinkPayload } from "@/components/Orders/shared/payment-gateway";
 
 export const CONTRACT_PAID_API = "/admin/contract-paid-by-employees";
@@ -74,16 +74,6 @@ export function mapContractPaidToExportRow(row) {
 }
 
 export function exportContractPaidToExcel(rows, { filename = "contract-paid" } = {}) {
-  if (!rows?.length) {
-    return false;
-  }
-
-  const data = rows.map(mapContractPaidToExportRow);
-  const worksheet = XLSX.utils.json_to_sheet(data);
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, "العقود المدفوعة");
-
-  const dateStamp = new Date().toISOString().slice(0, 10);
-  XLSX.writeFile(workbook, `${filename}-${dateStamp}.xlsx`);
-  return true;
+  const data = rows?.map(mapContractPaidToExportRow);
+  return writeExcelFile(data, { filename, sheetName: "العقود المدفوعة" });
 }

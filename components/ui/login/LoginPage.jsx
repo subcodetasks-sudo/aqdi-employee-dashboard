@@ -53,7 +53,6 @@ export default function LoginPage() {
       } catch (error) {
         console.warn("[firebase] FCM token unavailable during login:", error);
       }
-console.log({fcm_token});
 
       const payload = {
         email: data.email,
