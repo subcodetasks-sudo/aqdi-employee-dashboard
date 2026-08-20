@@ -9,6 +9,7 @@ import { REPORT_TABS } from "./mock-data";
 import OrdersReportTab from "./tabs/OrdersReportTab";
 import SalesReportTab from "./tabs/SalesReportTab";
 import ProfitsReportTab from "./tabs/ProfitsReportTab";
+import OperatingExpensesReportTab from "./tabs/OperatingExpensesReportTab";
 import EmployeesReportTab from "./tabs/EmployeesReportTab";
 import CustomersReportTab from "./tabs/CustomersReportTab";
 import MarketingReportTab from "./tabs/MarketingReportTab";
@@ -17,7 +18,7 @@ import PerformanceReportTab from "./tabs/PerformanceReportTab";
 const TAB_ALIASES = {
   overview: "orders",
   financial: "sales",
-  expenses: "profits",
+  expenses: "operating-expenses",
   staff: "employees",
   users: "customers",
   properties: "orders",
@@ -29,6 +30,7 @@ const TAB_COMPONENTS = {
   orders: OrdersReportTab,
   sales: SalesReportTab,
   profits: ProfitsReportTab,
+  "operating-expenses": OperatingExpensesReportTab,
   employees: EmployeesReportTab,
   customers: CustomersReportTab,
   marketing: MarketingReportTab,
@@ -55,8 +57,10 @@ export default function ReportsWrapper() {
 
   const activeTab = resolveTab(searchParams.get("tab"));
   const [period, setPeriod] = useState(searchParams.get("period") ?? "all");
-  const [contractType, setContractType] = useState(searchParams.get("contract") ?? "all");
-  const [employee, setEmployee] = useState(searchParams.get("employee") ?? "all");
+  const [dateFrom, setDateFrom] = useState(searchParams.get("date_from") ?? "");
+  const [dateTo, setDateTo] = useState(searchParams.get("date_to") ?? "");
+  const [contractType, setContractType] = useState(searchParams.get("contract_type") ?? "all");
+  const [employee, setEmployee] = useState(searchParams.get("employee_id") ?? "all");
 
   const lastUpdated = useMemo(() => formatLastUpdated(), []);
 
@@ -70,6 +74,19 @@ export default function ReportsWrapper() {
     setter(value);
     const params = new URLSearchParams(searchParams.toString());
     params.set(key, value);
+    router.replace(`${pathname}?${params.toString()}`);
+  };
+
+  const updatePeriod = (value) => {
+    setPeriod(value);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("period", value);
+    if (value !== "custom") {
+      params.delete("date_from");
+      params.delete("date_to");
+      setDateFrom("");
+      setDateTo("");
+    }
     router.replace(`${pathname}?${params.toString()}`);
   };
 
@@ -114,14 +131,18 @@ export default function ReportsWrapper() {
 
       <ReportsFilters
         period={period}
-        onPeriodChange={(value) => updateFilter("period", value, setPeriod)}
+        onPeriodChange={updatePeriod}
+        dateFrom={dateFrom}
+        dateTo={dateTo}
+        onDateFromChange={(value) => updateFilter("date_from", value, setDateFrom)}
+        onDateToChange={(value) => updateFilter("date_to", value, setDateTo)}
         contractType={contractType}
-        onContractTypeChange={(value) => updateFilter("contract", value, setContractType)}
+        onContractTypeChange={(value) => updateFilter("contract_type", value, setContractType)}
         employee={employee}
-        onEmployeeChange={(value) => updateFilter("employee", value, setEmployee)}
+        onEmployeeChange={(value) => updateFilter("employee_id", value, setEmployee)}
       />
 
-      <ActivePanel />
+      <ActivePanel period={period} dateFrom={dateFrom} dateTo={dateTo} contractType={contractType} employee={employee} />
     </div>
   );
 }

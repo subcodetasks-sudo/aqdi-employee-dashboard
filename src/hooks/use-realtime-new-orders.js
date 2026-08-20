@@ -23,7 +23,8 @@ export function extractOrdersPayload(response) {
       ? payload.data.items
       : [];
   const pagination = payload?.pagination ?? payload?.data?.pagination ?? null;
-  return { items, pagination };
+  const summary = payload?.summary ?? payload?.data?.summary ?? null;
+  return { items, pagination, summary };
 }
 
 export function buildAdminOrdersParams({
@@ -31,19 +32,24 @@ export function buildAdminOrdersParams({
   perPage = TABLE_PER_PAGE,
   search,
   contractStatusId,
+  statusId,
   isCompleted,
   isReceived,
   employeeId,
   contractType,
 } = {}) {
   const params = { page, per_page: perPage };
+  const resolvedStatusId =
+    statusId != null && statusId !== "" ? statusId : contractStatusId;
 
   if (search) params.search = search;
-  if (contractStatusId != null && contractStatusId !== "") {
-    params.contract_status_id = contractStatusId;
+  if (resolvedStatusId != null && resolvedStatusId !== "") {
+    params.status_id = resolvedStatusId;
   }
-  if (isCompleted === 0 || isCompleted === 1 || isCompleted === "0" || isCompleted === "1") {
-    params.is_completed = isCompleted;
+  if (isCompleted === 1 || isCompleted === "1") {
+    params.complete = 1;
+  } else if (isCompleted === 0 || isCompleted === "0") {
+    params.incomplete = 1;
   }
   if (isReceived === true || isReceived === false || isReceived === "true" || isReceived === "false") {
     params.is_received = isReceived;
@@ -68,10 +74,11 @@ export function buildAdminOrdersUrl(params) {
 
 async function fetchAdminOrders(params) {
   const response = await axiosInstance.get(ADMIN_ORDERS_API, { params });
-  const { items, pagination } = extractOrdersPayload(response);
+  const { items, pagination, summary } = extractOrdersPayload(response);
   return {
     items,
     pagination,
+    summary,
     total: pagination?.total ?? items.length,
   };
 }
@@ -104,6 +111,7 @@ async function fetchOrdersByContractStatus(statusId, { perPage = DEFAULT_NEW_PER
   return {
     items: allItems,
     pagination: first.pagination,
+    summary: first.summary,
     total: first.pagination?.total ?? allItems.length,
   };
 }
@@ -129,6 +137,7 @@ export function useRealtimeNewOrders({
     items,
     total: query.data?.total ?? items.length,
     pagination: query.data?.pagination,
+    summary: query.data?.summary ?? null,
     isLoading: query.isLoading,
     isFetching: query.isFetching,
     refetch: query.refetch,
@@ -157,6 +166,7 @@ export function useRealtimeOrdersList({
     items,
     total: query.data?.total ?? items.length,
     pagination: query.data?.pagination,
+    summary: query.data?.summary ?? null,
     isLoading: query.isLoading,
     isFetching: query.isFetching,
     refetch: query.refetch,

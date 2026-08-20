@@ -3,19 +3,22 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { axiosInstance } from "@/src/utils/axios";
+import { getDefaultOrdersPageStatusId } from "@/src/lib/orders-page-statuses";
 import {
-  getDefaultOrdersPageStatusId,
-} from "@/src/lib/orders-page-statuses";
+  CONTRACT_STATUSES_ACTIVE_API,
+  CONTRACT_STATUSES_ACTIVE_QUERY_KEY,
+  extractContractStatusItems,
+} from "@/src/lib/contract-statuses";
 import { useOrderStatusCounts } from "./use-order-status-counts";
 import OrdersStatusCards from "./orders-status-cards";
 
 /**
  * Shared contract-status filter tabs for order list pages.
- * Shows all statuses from /admin/contract-statuses. Default selection is جديد.
+ * Shows active statuses from /admin/contract-statuses/active. Default selection is جديد.
  */
 export function useOrdersContractStatusFilter({
   countsBaseUrl = "/admin/orders",
-  statusParam = "contract_status_id",
+  statusParam = "status_id",
   countsExtraParams = "",
   enabled = true,
 } = {}) {
@@ -23,13 +26,13 @@ export function useOrdersContractStatusFilter({
   const [activeFilter, setActiveFilter] = useState(null);
 
   const { data: statusData, isLoading: statusLoading } = useQuery({
-    queryKey: ["status"],
-    queryFn: () => axiosInstance("/admin/contract-statuses"),
+    queryKey: [CONTRACT_STATUSES_ACTIVE_QUERY_KEY],
+    queryFn: () => axiosInstance(CONTRACT_STATUSES_ACTIVE_API),
     enabled,
   });
 
   const statusItems = useMemo(
-    () => statusData?.data?.data?.items ?? [],
+    () => extractContractStatusItems(statusData),
     [statusData]
   );
 

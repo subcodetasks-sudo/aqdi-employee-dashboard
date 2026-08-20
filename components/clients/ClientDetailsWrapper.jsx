@@ -408,7 +408,7 @@ export default function ClientDetailsWrapper() {
                       </td>
                       <td className="px-4 py-3.5 text-left">
                         <Link
-                          href={`/home/realtime-orders/${order.id}?from=${encodeURIComponent(
+                          href={`/home/orders/${order.id}?from=${encodeURIComponent(
                             `/home/users/${clientId}?from=${encodeURIComponent(backUrl)}`
                           )}`}
                           className={cn(

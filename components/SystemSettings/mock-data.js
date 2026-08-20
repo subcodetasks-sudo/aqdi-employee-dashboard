@@ -11,14 +11,6 @@ export const CONTRACT_SUB_TABS = [
   { id: "payment-messages", label: "إعدادات رسائل الدفع" },
 ];
 
-export const SITE_APP_SETTINGS = [
-  { id: "website", label: "الموقع", enabled: true },
-  { id: "appleStore", label: "متجر Apple", enabled: false },
-  { id: "androidStore", label: "متجر Android", enabled: true },
-  { id: "websiteStatus", label: "حالة الموقع", enabled: true },
-  { id: "thankYouCard", label: "بطاقة الشكر", enabled: true },
-];
-
 export const SYSTEM_CATEGORIES = [
   { id: "unit-types", label: "أنواع الوحدات", subtitle: "قائمة بـ 10 عناصر", href: "/home/settings/unit-types" },
   { id: "unit-usage", label: "استخدام الوحدة", subtitle: "قائمة بـ 5 عناصر", href: "/home/settings/unit-usage" },

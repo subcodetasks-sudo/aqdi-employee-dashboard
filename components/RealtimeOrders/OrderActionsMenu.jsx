@@ -23,7 +23,6 @@ import waIcon from "@/public/images/waIcon.svg";
 import { cn } from "@/lib/utils";
 import { axiosInstance } from "@/src/utils/axios";
 import { printOrderContract } from "@/components/Orders/single-order/print-contract";
-import { MOCK_ORDER_STATUSES } from "./order-detail-mock";
 import AddContractStatusDialog from "./AddContractStatusDialog";
 import { openDialogAfterMenuClose } from "@/src/lib/open-dialog-after-menu-close";
 
@@ -34,6 +33,8 @@ function toMenuStatus(status) {
     label: status.label ?? status.name,
     name: status.name ?? status.label,
     color: status.color,
+    color_text: status.color_text,
+    status_case: status.status_case ?? null,
   };
 }
 
@@ -48,7 +49,7 @@ export default function OrderActionsMenu({
 }) {
   const [isPrinting, setIsPrinting] = useState(false);
   const [isAddOpen, setIsAddOpen] = useState(false);
-  const statusItems = (Array.isArray(statuses) ? statuses : MOCK_ORDER_STATUSES)
+  const statusItems = (Array.isArray(statuses) ? statuses : [])
     .map(toMenuStatus)
     .filter(Boolean);
   const currentLabel =

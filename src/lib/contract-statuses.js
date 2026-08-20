@@ -1,12 +1,23 @@
 import { findOrdersPageStatusIdByLabel } from "@/src/lib/orders-page-statuses";
 
 export const CONTRACT_STATUSES_API = "/admin/contract-statuses";
+export const CONTRACT_STATUSES_ACTIVE_API = "/admin/contract-statuses/active";
 export const CONTRACT_STATUSES_QUERY_KEY = "status";
+export const CONTRACT_STATUSES_ACTIVE_QUERY_KEY = "contract-statuses-active";
 
 export const NEW_CONTRACT_STATUS_ID = 1;
 export const RECEIVED_CONTRACT_STATUS_ID = 6;
 export const RETURN_CONTRACT_STATUS_ID = 2;
 export const CANCELED_CONTRACT_STATUS_ID = 4;
+
+export const emptyContractStatusForm = {
+  name: "",
+  color: "#22C55E",
+  color_text: "#FFFFFF",
+  client_explanation: "",
+  description: "",
+  is_active: true,
+};
 
 export function extractContractStatusItems(response) {
   const body = response?.data ?? response;
@@ -17,6 +28,33 @@ export function extractContractStatusItems(response) {
     return Array.isArray(body.data) ? body.data : [];
   }
   return [];
+}
+
+/** Body for POST /admin/contract-statuses and POST /admin/contract-statuses/:id */
+export function buildContractStatusWritePayload(form = {}) {
+  return {
+    name: String(form.name ?? "").trim(),
+    color: form.color || "#000000",
+    client_explanation: form.client_explanation?.trim?.()
+      ? form.client_explanation.trim()
+      : form.client_explanation || null,
+    is_active: form.is_active !== false && form.is_active !== 0 && form.is_active !== "0",
+    ...(form.color_text ? { color_text: form.color_text } : {}),
+    ...(form.description != null
+      ? { description: String(form.description).trim() || null }
+      : {}),
+  };
+}
+
+export function formFromContractStatus(status = {}) {
+  return {
+    name: status.name ?? "",
+    color: status.color || "#22C55E",
+    color_text: status.color_text || "#FFFFFF",
+    client_explanation: status.client_explanation ?? "",
+    description: status.description ?? "",
+    is_active: status.is_active !== false && status.is_active !== 0,
+  };
 }
 
 function findExactStatusId(statusItems = [], name) {
@@ -66,6 +104,7 @@ function isPillCoveredStatus(name = "") {
   const normalized = String(name).trim();
   if (!normalized) return true;
   if (normalized === "جديد") return true;
+  if (normalized === "مستلم") return true;
   if (
     normalized === "استرجاع" ||
     normalized.includes("استرجاع") ||

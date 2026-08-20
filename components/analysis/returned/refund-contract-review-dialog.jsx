@@ -70,7 +70,7 @@ export default function RefundContractReviewDialog({
         admin_confirmed: true,
         refund_amount: amount,
         notes: notes.trim() || null,
-      });
+      }, { order, refund });
     },
     onSuccess: (res) => {
       const message =

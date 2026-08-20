@@ -35,8 +35,9 @@ export default function ControllableDataTable({
   return (
     <div
       className={cn(
+        // design.html .tblwrap — white card, #ECECEA border, 16px radius
         "w-full overflow-x-auto rounded-2xl border",
-        "bg-white border-[#E6EBE9] shadow-[0_1px_2px_rgba(11,83,69,0.04)]",
+        "bg-white border-[#ECECEA] shadow-[0_1px_2px_rgba(11,83,69,0.04)]",
         "dark:bg-[#0F1C16] dark:border-white/[0.08] dark:shadow-none",
         className
       )}
@@ -44,7 +45,8 @@ export default function ControllableDataTable({
     >
       <table className={cn("w-full border-collapse", tableClassName)}>
         <thead>
-          <tr className="bg-[#F8FAF9] dark:bg-[#162820]">
+          {/* design.html th — bg #FAFBFB, text #75827C, border-bottom #F0F0ED */}
+          <tr className="bg-[#FAFBFB] dark:bg-[#162820]">
             {visible.map((col) => (
               <th
                 key={col.id}
@@ -52,8 +54,10 @@ export default function ControllableDataTable({
                   "text-right font-semibold border-b whitespace-nowrap",
                   cellPad,
                   textSize,
-                  "text-[#9CA3AF] border-[#EEF1F0]",
+                  "text-[#75827C] border-[#F0F0ED]",
                   "dark:text-white/55 dark:border-white/[0.08]",
+                  col.sticky &&
+                    "sticky start-0 z-20 bg-[#FAFBFB] dark:bg-[#162820]",
                   col.headerClassName
                 )}
               >
@@ -69,7 +73,7 @@ export default function ControllableDataTable({
                 colSpan={Math.max(visible.length, 1)}
                 className={cn(
                   "text-center p-12 text-sm font-medium",
-                  "text-[#9CA3AF] dark:text-white/35"
+                  "text-[#8A8A84] dark:text-white/35"
                 )}
               >
                 جاري التحميل ...
@@ -81,7 +85,7 @@ export default function ControllableDataTable({
                 colSpan={Math.max(visible.length, 1)}
                 className={cn(
                   "text-center p-12 text-sm font-medium",
-                  "text-[#9CA3AF] dark:text-white/35"
+                  "text-[#8A8A84] dark:text-white/35"
                 )}
               >
                 {emptyMessage}
@@ -93,13 +97,11 @@ export default function ControllableDataTable({
                 key={getRowKey(row, index)}
                 onClick={() => onRowClick?.(row)}
                 className={cn(
-                  "border-b last:border-0 transition-colors",
+                  // design.html tbody tr has no zebra striping — plain rows, hover only
+                  "group border-b last:border-0 transition-colors bg-white dark:bg-transparent",
                   onRowClick && "cursor-pointer",
-                  "border-[#F3F4F6] dark:border-white/[0.04]",
-                  index % 2 === 1
-                    ? "bg-[#FAFBFA] dark:bg-white/[0.03]"
-                    : "bg-white dark:bg-transparent",
-                  "hover:bg-[#F3F9F6] dark:hover:bg-white/[0.06]"
+                  "border-[#F6F6F4] dark:border-white/[0.04]",
+                  "hover:bg-[#F7FAF9] dark:hover:bg-white/[0.06]"
                 )}
               >
                 {visible.map((col) => (
@@ -108,7 +110,9 @@ export default function ControllableDataTable({
                     className={cn(
                       cellPad,
                       textSize,
-                      "text-[#111827] dark:text-white/90",
+                      "text-[#22302C] dark:text-white/90",
+                      col.sticky &&
+                        "sticky start-0 z-10 bg-white dark:bg-[#0F1C16] group-hover:bg-[#F7FAF9] dark:group-hover:bg-white/[0.06]",
                       col.cellClassName
                     )}
                     onClick={

@@ -1,4 +1,5 @@
 import { axiosInstance } from "@/src/utils/axios";
+import { postOrderStatus, postReturnContractStatusForOrder } from "@/src/lib/order-status-api";
 
 /** Contract status id for "استرجاع" — required before submitting a refund request. */
 export const RETURN_CONTRACT_STATUS_ID = 2;
@@ -242,12 +243,7 @@ export async function ensureReturnContractStatus(orderId, returnStatusId = RETUR
     throw new Error("تعذر تحديد الطلب لتغيير الحالة");
   }
 
-  const response = await axiosInstance.post(
-    `/admin/orders/${orderId}/contract-status`,
-    {
-      contract_status_id: returnStatusId,
-    }
-  );
+  const response = await postOrderStatus(orderId, { statusId: returnStatusId });
 
   if (response?.data?.success === false) {
     throw new Error(
@@ -881,10 +877,32 @@ export function buildRefundApprovedCustomerMessage(refund) {
 شكراً لتفهمكم.`;
 }
 
-export function updateRefundContract(refundKey, body) {
-  return axiosInstance.post(`/admin/analytics/refunds/contracts/${refundKey}`, {
+export async function updateRefundContract(refundKey, body, orderContext = {}) {
+  const response = await axiosInstance.post(`/admin/analytics/refunds/contracts/${refundKey}`, {
     admin_confirmed: body.admin_confirmed,
     refund_amount: body.refund_amount,
     notes: body.notes ?? null,
   });
+
+  if (response?.data?.success === false) {
+    return response;
+  }
+
+  if (body?.admin_confirmed === true) {
+    const order = {
+      ...(orderContext.refund ?? {}),
+      ...(orderContext.order ?? {}),
+    };
+    const orderId =
+      orderContext.orderId ??
+      order?.id ??
+      order?.uuid ??
+      order?.contract_id ??
+      order?.contractId ??
+      order?.orderId ??
+      order?.order_id;
+    await postReturnContractStatusForOrder(order, orderId, true);
+  }
+
+  return response;
 }

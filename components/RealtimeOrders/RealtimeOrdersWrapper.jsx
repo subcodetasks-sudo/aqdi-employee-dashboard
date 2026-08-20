@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import {
@@ -13,7 +12,6 @@ import NewRequestsSection from "./NewRequestsSection";
 import RealtimeOrdersToolbar from "./RealtimeOrdersToolbar";
 import { buildRealtimeOrderColumns } from "./realtime-orders-columns";
 import {
-  getContractTypeKey,
   mapRealtimeNewOrder,
   mapRealtimeTableOrder,
 } from "./map-realtime-order";
@@ -29,13 +27,15 @@ import {
   useRealtimeNewOrders,
   useRealtimeOrdersList,
 } from "@/src/hooks/use-realtime-new-orders";
-import { axiosInstance } from "@/src/utils/axios";
-import { invalidateOrdersCaches } from "@/src/lib/invalidate-orders-caches";
-import {
-  RECEIVED_CONTRACT_STATUS_ID,
-  getRealtimeExtraFilterStatuses,
-} from "@/src/lib/contract-statuses";
+import { useChangeOrderStatus } from "@/src/hooks/use-change-order-status";
+import { getRealtimeExtraFilterStatuses } from "@/src/lib/contract-statuses";
+import { useReceiveContract } from "@/src/hooks/use-receive-contract";
 import { STATUS_FILTER_PILLS } from "./mock-data";
+import ChangeOrderStatusFieldsDialog, {
+  getStatusCaseFields,
+  statusRequiresExtraFields,
+} from "./ChangeOrderStatusFieldsDialog";
+import ManageContractStatusesDialog from "./ManageContractStatusesDialog";
 import { useUserStore } from "@/src/stores/user-store";
 import ReturnRequestDialog from "@/components/Orders/return-request-dialog";
 import WhatsAppPaymentLinkDialog from "./WhatsAppPaymentLinkDialog";
@@ -135,7 +135,6 @@ function TablePagination({ pagination, currentPage, onPageChange, dark }) {
 
 export default function RealtimeOrdersWrapper() {
   const router = useRouter();
-  const queryClient = useQueryClient();
   const isDark = useIsDark();
   const { toggleTheme } = useToggleTheme();
   const { can, isAdmin } = usePermissions();
@@ -158,6 +157,9 @@ export default function RealtimeOrdersWrapper() {
     can(PERMISSION_SECTIONS.all_requests, "edit");
   const canAddStatus =
     isAdmin || can(PERMISSION_SECTIONS.request_classification, "create");
+  const canEditStatus =
+    isAdmin || can(PERMISSION_SECTIONS.request_classification, "edit");
+  const canManageStatuses = canAddStatus || canEditStatus;
   const canExport =
     isAdmin ||
     can(PERMISSION_SECTIONS.all_requests, "view") ||
@@ -187,6 +189,9 @@ export default function RealtimeOrdersWrapper() {
   const [returnDialogOpen, setReturnDialogOpen] = useState(false);
   const [returnOrder, setReturnOrder] = useState(null);
   const [paymentLinkOpen, setPaymentLinkOpen] = useState(false);
+  const [statusFieldsOpen, setStatusFieldsOpen] = useState(false);
+  const [pendingStatusChange, setPendingStatusChange] = useState(null);
+  const [manageStatusesOpen, setManageStatusesOpen] = useState(false);
 
   const {
     activeItems: statusItems,
@@ -203,6 +208,7 @@ export default function RealtimeOrdersWrapper() {
   const {
     items: newOrderItems,
     total: newOrdersTotal,
+    summary: newOrdersSummary,
     isLoading: newOrdersLoading,
   } = useRealtimeNewOrders({
     statusId: newStatusId,
@@ -232,25 +238,21 @@ export default function RealtimeOrdersWrapper() {
     const hasCompletionFilter = hasAuthenticated || hasIncomplete;
 
     const hasExtraStatus = extraStatusId != null && extraStatusId !== "";
+    const statusId = hasExtraStatus
+      ? extraStatusId
+      : hasReturned
+        ? returnedStatusId
+        : hasCompletionFilter || !canViewReceivedQueue
+          ? undefined
+          : receivedStatusId;
 
     return buildAdminOrdersParams({
       page: currentPage,
       search: debouncedSearch,
       isCompleted: hasAuthenticated ? 1 : hasIncomplete ? 0 : undefined,
-      contractStatusId: hasExtraStatus
-        ? extraStatusId
-        : hasReturned
-          ? returnedStatusId
-          : undefined,
+      statusId,
       employeeId: hasMyFiles ? employeeId : undefined,
       contractType: contractType || undefined,
-      isReceived:
-        hasCompletionFilter ||
-        hasReturned ||
-        hasExtraStatus ||
-        !canViewReceivedQueue
-          ? undefined
-          : true,
     });
   }, [
     activeFilters,
@@ -259,6 +261,7 @@ export default function RealtimeOrdersWrapper() {
     debouncedSearch,
     employeeId,
     extraStatusId,
+    receivedStatusId,
     returnedStatusId,
     canViewReceivedQueue,
   ]);
@@ -272,49 +275,29 @@ export default function RealtimeOrdersWrapper() {
     autoRefresh,
   });
 
-  const tableOrders = useMemo(() => {
-    const rows = tableItems.map(mapRealtimeTableOrder);
-    if (contractType !== "housing" && contractType !== "commercial") return rows;
-    return rows.filter((row) => getContractTypeKey(row) === contractType);
-  }, [tableItems, contractType]);
+  const tableOrders = useMemo(
+    () => tableItems.map(mapRealtimeTableOrder),
+    [tableItems]
+  );
 
   const goToDetails = (row) => {
-    router.push(`/home/realtime-orders/${row.id ?? row.uuid}`);
+    router.push(
+      `/home/orders/${row.id ?? row.uuid}?from=${encodeURIComponent("/home/realtime-orders")}`
+    );
   };
 
   const { mutate: receiveOrder, isPending: isReceiving, variables: receivingOrder } =
-    useMutation({
-      mutationFn: (order) =>
-        axiosInstance.post(`/admin/orders/${order.id}/contract-status`, {
-          contract_status_id: receivedStatusId ?? RECEIVED_CONTRACT_STATUS_ID,
-        }),
-      onSuccess: (res, order) => {
-        invalidateOrdersCaches(queryClient, { orderId: order.id });
-        toast.success(res?.data?.message || "تم استلام الطلب");
-      },
-      onError: (err) => {
-        toast.error(err?.response?.data?.message || "حدث خطأ أثناء استلام الطلب");
-      },
-    });
+    useReceiveContract();
 
   const {
     mutate: changeStatus,
     isPending: isChangingStatus,
     variables: changingStatusId,
-  } = useMutation({
-    mutationFn: (statusId) =>
-      axiosInstance.post(`/admin/orders/${statusId.orderId}/contract-status`, {
-        contract_status_id: statusId.statusId,
-      }),
-    onSuccess: (res, vars) => {
-      invalidateOrdersCaches(queryClient, {
-        queryKey: [REALTIME_ORDERS_QUERY_KEY],
-        orderId: vars.orderId,
-      });
-      toast.success(res?.data?.message || "تم تغيير حالة الطلب");
-    },
-    onError: (err) => {
-      toast.error(err?.response?.data?.message || "حدث خطأ أثناء تغيير حالة الطلب");
+  } = useChangeOrderStatus({
+    queryKey: [REALTIME_ORDERS_QUERY_KEY],
+    onSuccess: () => {
+      setStatusFieldsOpen(false);
+      setPendingStatusChange(null);
     },
   });
 
@@ -324,6 +307,7 @@ export default function RealtimeOrdersWrapper() {
       name: status.name ?? status.label,
       label: status.label ?? status.name,
       color: status.color,
+      status_case: status.status_case ?? null,
     };
 
     if (isReturnContractStatus(menuStatus)) {
@@ -338,6 +322,12 @@ export default function RealtimeOrdersWrapper() {
       }
       setReturnOrder(normalized);
       openDialogAfterMenuClose(() => setReturnDialogOpen(true));
+      return;
+    }
+
+    if (statusRequiresExtraFields(menuStatus)) {
+      setPendingStatusChange({ order: row, status: menuStatus });
+      openDialogAfterMenuClose(() => setStatusFieldsOpen(true));
       return;
     }
 
@@ -435,12 +425,15 @@ export default function RealtimeOrdersWrapper() {
         dark={isDark}
         onToggleTheme={toggleTheme}
         onOpenPaymentLink={() => setPaymentLinkOpen(true)}
+        canManageStatuses={canManageStatuses}
+        onManageStatuses={() => setManageStatusesOpen(true)}
       />
 
       {canViewNewRequests ? (
       <NewRequestsSection
         orders={newRequests}
         totalCount={newOrdersTotal}
+        summary={newOrdersSummary}
         expanded={expandedNew}
         onExpandedChange={setExpandedNew}
         onReceive={receiveOrder}
@@ -481,6 +474,32 @@ export default function RealtimeOrdersWrapper() {
       <WhatsAppPaymentLinkDialog
         open={paymentLinkOpen}
         onOpenChange={setPaymentLinkOpen}
+      />
+
+      <ChangeOrderStatusFieldsDialog
+        open={statusFieldsOpen}
+        onOpenChange={(next) => {
+          setStatusFieldsOpen(next);
+          if (!next) setPendingStatusChange(null);
+        }}
+        status={pendingStatusChange?.status}
+        isPending={isChangingStatus}
+        onSubmit={(extraValues) => {
+          if (!pendingStatusChange) return;
+          changeStatus({
+            orderId: pendingStatusChange.order.id,
+            statusId: pendingStatusChange.status.id,
+            extraValues,
+            fields: getStatusCaseFields(pendingStatusChange.status),
+          });
+        }}
+      />
+
+      <ManageContractStatusesDialog
+        open={manageStatusesOpen}
+        onOpenChange={setManageStatusesOpen}
+        canCreate={canAddStatus}
+        canEdit={canEditStatus}
       />
     </div>
   );

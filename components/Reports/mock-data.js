@@ -4,6 +4,7 @@ export const REPORT_TABS = [
   { id: "orders", label: "الطلبات" },
   { id: "sales", label: "المبيعات والإيرادات", badge: "Financial" },
   { id: "profits", label: "الأرباح والتكاليف", badge: "Financial" },
+  { id: "operating-expenses", label: "المصروفات التشغيلية", badge: "Financial" },
   { id: "employees", label: "الموظفون" },
   { id: "customers", label: "العملاء" },
   { id: "marketing", label: "المصادر والتسويق" },
@@ -12,15 +13,15 @@ export const REPORT_TABS = [
 
 export const PERIOD_FILTERS = [
   { id: "all", label: "الكل" },
-  { id: "month", label: "هذا الشهر" },
-  { id: "week", label: "آخر 7 أيام" },
+  { id: "last_30_days", label: "آخر 30 يوماً" },
+  { id: "last_7_days", label: "آخر 7 أيام" },
   { id: "today", label: "اليوم" },
   { id: "custom", label: "مدة محددة" },
 ];
 
 export const CONTRACT_TYPES = [
   { id: "all", label: "كل الأنواع" },
-  { id: "residential", label: "سكني" },
+  { id: "housing", label: "سكني" },
   { id: "commercial", label: "تجاري" },
 ];
 
@@ -144,64 +145,10 @@ export const PROFIT_SETTINGS = [
   { key: "marketing", label: "ميزانية التسويق", value: "15,000", unit: "ريال" },
 ];
 
-export const EMPLOYEES_KPIS = [
-  { key: "count", label: "عدد الموظفين", value: 3, icon: "users" },
-  { key: "assigned", label: "طلبات مسندة", value: 33, icon: "file" },
-  { key: "completed", label: "عقود مكتملة", value: 8, icon: "checkCircle" },
-  { key: "late", label: "طلبات متأخرة", value: 0, icon: "clock", tone: "danger" },
-  { key: "avgTime", label: "متوسط مدة المعالجة", value: "1 س و 55 د", icon: "clock", isText: true },
-];
-
-export const SHIFT_PERFORMANCE = [
-  {
-    name: "ريان",
-    shift: "9:00 – 17:00",
-    status: "on_duty",
-    received: 30,
-    open: 4,
-    late: 0,
-    done: 7,
-    avgReceipt: "3 د",
-    sla: "98%",
-    score: 92,
-  },
-  {
-    name: "أحمد",
-    shift: "13:00 – 21:00",
-    status: "off_duty",
-    received: 2,
-    open: 1,
-    late: 0,
-    done: 0,
-    avgReceipt: "5 د",
-    sla: "100%",
-    score: 78,
-  },
-  {
-    name: "نورة",
-    shift: "9:00 – 17:00",
-    status: "on_duty",
-    received: 1,
-    open: 0,
-    late: 0,
-    done: 1,
-    avgReceipt: "2 د",
-    sla: "100%",
-    score: 95,
-  },
-];
-
-export const EMPLOYEE_DETAIL = [
-  { name: "ريان", assigned: 30, completed: 7, late: 0, returned: 1, avgProcess: "1 س 20 د", revenue: 12400 },
-  { name: "أحمد", assigned: 2, completed: 0, late: 0, returned: 0, avgProcess: "—", revenue: 0 },
-  { name: "نورة", assigned: 1, completed: 1, late: 0, returned: 0, avgProcess: "45 د", revenue: 1800 },
-];
-
-export const COMPLETED_BY_EMPLOYEE = [
-  { label: "ريان", value: 7, color: "#0B5345" },
-  { label: "نورة", value: 1, color: "#0D9488" },
-  { label: "أحمد", value: 0, color: "#D1D5DB" },
-];
+/**
+ * Employees-tab data now comes from the real `/admin/employees/kpis` API
+ * (see src/hooks/use-employee-kpis.js) instead of mock data.
+ */
 
 export const CUSTOMERS_KPIS = [
   { key: "total", label: "إجمالي العملاء", value: 56, icon: "users" },

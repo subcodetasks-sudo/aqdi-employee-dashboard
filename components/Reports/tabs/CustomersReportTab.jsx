@@ -3,24 +3,27 @@
 import { ReportKpiGrid } from "../shared/ReportKpiCard";
 import HorizontalBarChart from "../shared/HorizontalBarChart";
 import ReportSectionCard from "../shared/ReportSectionCard";
-import {
-  CUSTOMER_SEGMENTS,
-  CUSTOMERS_KPIS,
-  TOP_CUSTOMERS,
-} from "../mock-data";
+import Loader from "@/components/home/loader";
+import { useCustomersReport } from "@/src/hooks/use-reports";
+import ReportError from "../shared/ReportError";
 
 const TH =
-  "px-3 py-3 text-[12px] font-semibold text-[#9CA3AF] border-b border-[#EEF1F0] whitespace-nowrap text-right";
-const TD = "px-3 py-3 text-[13px] text-[#374151] border-b border-[#F3F4F6] whitespace-nowrap";
+  "px-3 py-3 text-[12px] font-semibold text-[#9CA3AF] border-b border-[#EEF1F0] whitespace-nowrap text-right dark:text-white/50 dark:border-white/10";
+const TD = "px-3 py-3 text-[13px] text-[#374151] border-b border-[#F3F4F6] whitespace-nowrap dark:text-white/70 dark:border-white/10";
 
-export default function CustomersReportTab() {
+export default function CustomersReportTab({ period, dateFrom, dateTo }) {
+  const { data, isLoading, isError, error } = useCustomersReport(period, dateFrom, dateTo);
+  if (isLoading) return <Loader />;
+  if (isError) return <ReportError title="العملاء" error={error} fallback="تعذّر تحميل تقرير العملاء." />;
+  const k = data?.kpis ?? {};
+  const kpis = [["total", "إجمالي العملاء", k.total, "users"], ["new", "عملاء جدد", k.new, "userPlus"], ["returning", "عملاء عائدون", k.returning, "userCheck"], ["avg", "متوسط العقود لكل عميل", k.avg_contracts_per_customer, "file"], ["incomplete", "لم يكملوا الطلب", k.incomplete, "xCircle"]].map(([key, label, value, icon]) => ({ key, label, value: value ?? 0, icon, isText: key === "avg" }));
   return (
     <div className="flex flex-col gap-5">
-      <ReportKpiGrid items={CUSTOMERS_KPIS} columns="grid-cols-2 sm:grid-cols-3 lg:grid-cols-5" />
+      <ReportKpiGrid items={kpis} columns="grid-cols-2 sm:grid-cols-3 lg:grid-cols-5" />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <ReportSectionCard title="العملاء الجدد مقابل العائدين">
-          <HorizontalBarChart items={CUSTOMER_SEGMENTS} />
+          <HorizontalBarChart items={data?.segments ?? []} />
         </ReportSectionCard>
 
         <ReportSectionCard title="أفضل العملاء من حيث القيمة">
@@ -36,16 +39,16 @@ export default function CustomersReportTab() {
                 </tr>
               </thead>
               <tbody>
-                {TOP_CUSTOMERS.map((row) => (
-                  <tr key={row.mobile}>
-                    <td className={`${TD} font-semibold text-[#111827]`}>{row.name}</td>
+                {(data?.top_customers ?? []).map((row) => (
+                  <tr key={row.customer_id ?? row.mobile}>
+                    <td className={`${TD} font-semibold text-[#111827] dark:text-white`}>{row.name}</td>
                     <td className={`${TD} tabular-nums`} dir="ltr">
                       {row.mobile}
                     </td>
-                    <td className={TD}>{row.contracts}</td>
-                    <td className={TD}>{row.paid}</td>
+                    <td className={TD}>{row.contracts_count}</td>
+                    <td className={TD}>{row.paid_count}</td>
                     <td className={`${TD} tabular-nums font-semibold`}>
-                      {row.spending.toLocaleString("en-US")} ريال
+                      {Number(row.total_spending ?? 0).toLocaleString("en-US")} ريال
                     </td>
                   </tr>
                 ))}

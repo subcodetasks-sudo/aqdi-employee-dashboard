@@ -1,126 +1,200 @@
 "use client";
 
+import { useMemo } from "react";
 import { cn } from "@/lib/utils";
+import Loader from "@/components/home/loader";
+import { useAllEmployeesKpis } from "@/src/hooks/use-employee-kpis";
 import { ReportKpiGrid } from "../shared/ReportKpiCard";
 import HorizontalBarChart from "../shared/HorizontalBarChart";
 import ReportSectionCard from "../shared/ReportSectionCard";
-import {
-  COMPLETED_BY_EMPLOYEE,
-  EMPLOYEE_DETAIL,
-  EMPLOYEES_KPIS,
-  SHIFT_PERFORMANCE,
-} from "../mock-data";
 
 const TH =
-  "px-3 py-3 text-[12px] font-semibold text-[#9CA3AF] border-b border-[#EEF1F0] whitespace-nowrap text-right";
+  "px-3 py-3 text-[12px] font-semibold text-[#9CA3AF] border-b border-[#EEF1F0] whitespace-nowrap text-right dark:text-white/50 dark:border-white/10";
 
-const TD = "px-3 py-3 text-[13px] text-[#374151] border-b border-[#F3F4F6] whitespace-nowrap";
+const TD = "px-3 py-3 text-[13px] text-[#374151] border-b border-[#F3F4F6] whitespace-nowrap dark:text-white/70 dark:border-white/10";
 
-function StatusPill({ status }) {
-  const onDuty = status === "on_duty";
+const CHART_COLORS = ["#0B5345", "#0D9488", "#1E40AF", "#7C3AED", "#CA8A04", "#DC2626", "#6B7280"];
+
+function StatusPill({ isOnDuty, label }) {
   return (
     <span
       className={cn(
         "inline-flex px-2.5 py-0.5 rounded-full text-[11px] font-bold",
-        onDuty
-          ? "bg-[#DCFCE7] text-[#15803D]"
-          : "bg-[#F3F4F6] text-[#6B7280]"
+        isOnDuty
+          ? "bg-[#DCFCE7] text-[#15803D] dark:bg-emerald-500/15 dark:text-emerald-300"
+          : "bg-[#F3F4F6] text-[#6B7280] dark:bg-white/10 dark:text-white/60"
       )}
     >
-      {onDuty ? "في الخدمة" : "خارج الخدمة"}
+      {label ?? (isOnDuty ? "في الخدمة" : "خارج الخدمة")}
     </span>
   );
 }
 
-export default function EmployeesReportTab() {
+function cardValue(item, key) {
+  return item.cards?.find((card) => card.key === key)?.value ?? 0;
+}
+
+function averageValue(items, selector) {
+  const values = items.map(selector).filter((value) => typeof value === "number");
+  return values.length > 0 ? values.reduce((sum, value) => sum + value, 0) / values.length : null;
+}
+
+function formatRevenue(value) {
+  return value != null ? `${Number(value).toLocaleString("en-US")} ر.س` : "—";
+}
+
+export default function EmployeesReportTab({ period, dateFrom, dateTo }) {
+  const { data, isLoading, isError } = useAllEmployeesKpis(period, dateFrom, dateTo);
+  const items = useMemo(() => data?.items ?? [], [data]);
+
+  const kpis = useMemo(() => {
+    const summary = data?.summary;
+    const received = summary?.received_total ?? items.reduce((sum, item) => sum + cardValue(item, "received"), 0);
+    const completed = summary?.completed_total ?? items.reduce((sum, item) => sum + cardValue(item, "completed"), 0);
+    const late = summary?.late_over_24h_total ?? items.reduce((sum, item) => sum + cardValue(item, "late_over_24h"), 0);
+    const assigned = summary?.assigned_total ?? items.reduce((sum, item) => sum + cardValue(item, "assigned"), 0);
+    const returned = summary?.returned_total ?? items.reduce((sum, item) => sum + cardValue(item, "returned"), 0);
+    const avgReceive = summary?.avg_receive_work_minutes ?? averageValue(items, (item) => item.avg_receive?.value);
+    const avgProcess = summary?.avg_process_minutes ?? averageValue(items, (item) => item.avg_process?.value);
+    const revenue = summary?.revenue_sar_total ?? items.reduce((sum, item) => sum + (item.revenue?.value ?? 0), 0);
+
+    return [
+      { key: "count", label: "عدد الموظفين", value: items.length, icon: "users" },
+      { key: "received", label: "استلم بالفترة", value: received, icon: "file" },
+      { key: "completed", label: "منجز بالفترة", value: completed, icon: "checkCircle" },
+      { key: "assigned", label: "طلبات مسندة", value: assigned, icon: "file" },
+      { key: "returned", label: "مسترجع", value: returned, icon: "xCircle", tone: returned > 0 ? "warning" : "default" },
+      {
+        key: "late",
+        label: "متأخر > 24 س",
+        value: late,
+        icon: "clock",
+        tone: late > 0 ? "danger" : "default",
+      },
+      {
+        key: "avgReceive",
+        label: "متوسط الاستلام (د عمل)",
+        value: avgReceive != null ? `${avgReceive.toFixed(1)} د` : "—",
+        icon: "clock",
+        isText: true,
+      },
+      {
+        key: "avgProcess",
+        label: "متوسط المعالجة",
+        value: avgProcess != null ? `${avgProcess.toFixed(1)} د` : "—",
+        icon: "clock",
+        isText: true,
+      },
+      { key: "revenue", label: "إيراد محقق", value: formatRevenue(revenue), icon: "creditCard", isText: true },
+    ];
+  }, [data, items]);
+
+  const completedByEmployee = useMemo(
+    () =>
+      items.map((item, index) => ({
+        label: item.employee?.name ?? "—",
+        value: cardValue(item, "completed"),
+        color: CHART_COLORS[index % CHART_COLORS.length],
+      })),
+    [items]
+  );
+
+  if (isLoading) return <Loader />;
+
+  if (isError) {
+    return (
+      <ReportSectionCard title="الموظفون">
+        <p className="text-[13px] text-[#DC2626]">
+          تعذّر تحميل بيانات أداء الموظفين من الخادم. حاول تحديث الصفحة.
+        </p>
+      </ReportSectionCard>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-5">
-      <ReportKpiGrid items={EMPLOYEES_KPIS} columns="grid-cols-2 sm:grid-cols-3 lg:grid-cols-5" />
+      <ReportKpiGrid items={kpis} columns="grid-cols-2 sm:grid-cols-3 lg:grid-cols-5" />
 
-      <div className="grid grid-cols-1 xl:grid-cols-5 gap-4">
-        <ReportSectionCard
-          title="ملخص الورديات والأداء – SLA استلام 5 دقائق"
-          className="xl:col-span-3"
-        >
-          <div className="overflow-x-auto -mx-1">
-            <table className="w-full min-w-[720px] border-collapse">
-              <thead>
-                <tr>
-                  <th className={TH}>الموظف</th>
-                  <th className={TH}>الوردية</th>
-                  <th className={TH}>الحالة</th>
-                  <th className={TH}>مستلم</th>
-                  <th className={TH}>مفتوح</th>
-                  <th className={TH}>متأخر (+24 س)</th>
-                  <th className={TH}>منجز</th>
-                  <th className={TH}>متوسط الاستلام</th>
-                  <th className={TH}>التزام الاستلام</th>
-                  <th className={TH}>الدرجة</th>
-                </tr>
-              </thead>
-              <tbody>
-                {SHIFT_PERFORMANCE.map((row) => (
-                  <tr key={row.name}>
-                    <td className={cn(TD, "font-semibold text-[#111827]")}>{row.name}</td>
-                    <td className={TD}>{row.shift}</td>
-                    <td className={TD}>
-                      <StatusPill status={row.status} />
-                    </td>
-                    <td className={TD}>{row.received}</td>
-                    <td className={cn(TD, row.open > 0 && "text-[#DC2626] font-semibold")}>
-                      {row.open}
-                    </td>
-                    <td className={TD}>{row.late}</td>
-                    <td className={TD}>{row.done}</td>
-                    <td className={TD}>{row.avgReceipt}</td>
-                    <td className={TD}>{row.sla}</td>
-                    <td className={cn(TD, "font-bold")}>{row.score}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <p className="text-[11px] text-[#9CA3AF] mt-2">
-            * يُحسب SLA الاستلام من لحظة وصول الطلب حتى أول إجراء من الموظف.
-          </p>
-        </ReportSectionCard>
+      <ReportSectionCard title="ملخص الورديات والأداء – SLA استلام 5 دقائق">
+        <div className="overflow-x-auto -mx-1">
+          <table className="w-full min-w-[1100px] border-collapse">
+            <thead>
+              <tr>
+                <th className={TH}>الموظف</th>
+                <th className={TH}>الوردية</th>
+                <th className={TH}>الحالة</th>
+                <th className={TH}>مستلم</th>
+                <th className={TH}>مسند</th>
+                <th className={TH}>مسترجع</th>
+                <th className={TH}>مفتوح</th>
+                <th className={TH}>متأخر (+24 س)</th>
+                <th className={TH}>منجز</th>
+                <th className={TH}>متوسط الاستلام</th>
+                <th className={TH}>التزام الاستلام</th>
+                <th className={TH}>متوسط المعالجة</th>
+                <th className={TH}>الإيراد</th>
+              </tr>
+            </thead>
+            <tbody>
+              {items.length > 0 ? (
+                items.map((item) => {
+                  const openNow = cardValue(item, "open_now");
+                  const avgReceiveLabel = item.avg_receive?.value_label ?? "—";
+                  const avgReceiveUnit = item.avg_receive?.value != null ? ` ${item.avg_receive.unit ?? ""}` : "";
+                  const slaPercent = item.receive_sla?.percent;
 
-        <ReportSectionCard title="أداء الموظفين – تفصيلي" className="xl:col-span-2">
-          <div className="overflow-x-auto -mx-1">
-            <table className="w-full min-w-[480px] border-collapse">
-              <thead>
+                  return (
+                    <tr key={item.employee?.id}>
+                      <td className={cn(TD, "font-semibold text-[#111827] dark:text-white")}>
+                        {item.employee?.name_label ?? item.employee?.name}
+                      </td>
+                      <td className={TD}>{item.shift?.label_ar ?? "—"}</td>
+                      <td className={TD}>
+                        <StatusPill isOnDuty={item.shift?.is_on_duty} label={item.shift?.duty_status_label_ar} />
+                      </td>
+                      <td className={TD}>{cardValue(item, "received")}</td>
+                      <td className={TD}>{cardValue(item, "assigned")}</td>
+                      <td className={TD}>{cardValue(item, "returned")}</td>
+                      <td className={cn(TD, openNow > 0 && "text-[#DC2626] font-semibold dark:text-red-300")}>{openNow}</td>
+                      <td className={TD}>{cardValue(item, "late_over_24h")}</td>
+                      <td className={TD}>{cardValue(item, "completed")}</td>
+                      <td className={TD}>
+                        {avgReceiveLabel}
+                        {avgReceiveUnit}
+                      </td>
+                      <td className={TD}>{slaPercent != null ? `${slaPercent}%` : "—"}</td>
+                      <td className={TD}>{item.avg_process?.value_label ?? "—"}</td>
+                      <td className={TD}>{formatRevenue(item.revenue?.value)}</td>
+                    </tr>
+                  );
+                })
+              ) : (
                 <tr>
-                  <th className={TH}>الموظف</th>
-                  <th className={TH}>مسند</th>
-                  <th className={TH}>مكتمل</th>
-                  <th className={TH}>متأخر</th>
-                  <th className={TH}>مسترجع</th>
-                  <th className={TH}>متوسط المعالجة</th>
-                  <th className={TH}>إيراد محقق</th>
+                  <td colSpan={13} className="text-center p-6 text-[#9CA3AF] text-sm dark:text-white/50">
+                    لا توجد بيانات لعرضها في هذه الفترة.
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {EMPLOYEE_DETAIL.map((row) => (
-                  <tr key={row.name}>
-                    <td className={cn(TD, "font-semibold text-[#111827]")}>{row.name}</td>
-                    <td className={TD}>{row.assigned}</td>
-                    <td className={TD}>{row.completed}</td>
-                    <td className={TD}>{row.late}</td>
-                    <td className={TD}>{row.returned}</td>
-                    <td className={TD}>{row.avgProcess}</td>
-                    <td className={cn(TD, "tabular-nums")}>
-                      {row.revenue.toLocaleString("en-US")} ريال
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </ReportSectionCard>
-      </div>
+              )}
+            </tbody>
+          </table>
+        </div>
+        <p className="text-[11px] text-[#9CA3AF] mt-2 dark:text-white/50">
+          * يُحسب SLA الاستلام من لحظة وصول الطلب حتى أول إجراء من الموظف.
+        </p>
+      </ReportSectionCard>
 
       <ReportSectionCard title="العقود المكتملة حسب الموظف" className="max-w-xl">
-        <HorizontalBarChart items={COMPLETED_BY_EMPLOYEE} />
+        {completedByEmployee.length > 0 ? (
+          <HorizontalBarChart items={completedByEmployee} />
+        ) : (
+          <p className="text-[13px] text-[#9CA3AF] dark:text-white/50">لا توجد بيانات لعرضها.</p>
+        )}
+      </ReportSectionCard>
+
+      <ReportSectionCard title="أداء الموظفين – تفصيلي">
+        <p className="text-[13px] text-[#6B7280] leading-relaxed dark:text-white/60">
+          تشمل هذه البيانات الطلبات المسندة والمسترجعة ومتوسط المعالجة والإيراد المحقق لكل موظف.
+        </p>
       </ReportSectionCard>
     </div>
   );

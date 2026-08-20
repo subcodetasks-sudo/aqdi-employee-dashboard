@@ -81,7 +81,8 @@ export default function RefundContractActionsMenu({
   };
 
   const { mutate: updateRefund, isPending } = useMutation({
-    mutationFn: ({ refundId: id, body }) => updateRefundContract(id, body),
+    mutationFn: ({ refundId: id, body }) =>
+      updateRefundContract(id, body, { order, refund: enrichedRefund }),
     onSuccess: (res, variables) => {
       if (variables.action === "reject") {
         invalidate();

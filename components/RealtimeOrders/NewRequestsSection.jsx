@@ -1,8 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import {
   ChevronLeft,
   Maximize2,
+  Minimize2,
   Plus,
   RefreshCw,
   X,
@@ -82,6 +84,7 @@ function StatCard({ value, total, label, hint, barColor, valueColor, dark }) {
 export default function NewRequestsSection({
   orders = [],
   totalCount,
+  summary,
   expanded,
   onExpandedChange,
   onReceive,
@@ -93,20 +96,45 @@ export default function NewRequestsSection({
   dark = false,
   isLoading = false,
 }) {
-  const total = totalCount ?? orders.length;
-  const over15 = orders.filter((o) => getWaitingMinutes(o) >= 15).length;
-  const over30 = orders.filter((o) => getWaitingMinutes(o) >= 30).length;
+  const total = summary?.total_new_orders ?? totalCount ?? orders.length;
+  const over15 =
+    summary?.exceeded_15_minutes ??
+    orders.filter((o) => getWaitingMinutes(o) >= 15).length;
+  const over30 =
+    summary?.exceeded_30_minutes ??
+    orders.filter((o) => getWaitingMinutes(o) >= 30).length;
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const preview = orders.slice(0, previewCount);
+  const cards = Array.isArray(summary?.cards) && summary.cards.length > 0
+    ? summary.cards
+    : [
+        {
+          key: "total_new_orders",
+          label: summary?.total_new_orders_label || "إجمالي الطلبات الجديدة",
+          count: total,
+        },
+        {
+          key: "exceeded_15_minutes",
+          label: summary?.exceeded_15_minutes_label || "تجاوزت 15 دقيقة",
+          count: over15,
+        },
+        {
+          key: "exceeded_30_minutes",
+          label: summary?.exceeded_30_minutes_label || "تجاوزت 30 دقيقة",
+          count: over30,
+        },
+      ];
 
   return (
     <>
       {/* Collapsed strip — always on the page */}
       <section
         className={cn(
-          "rounded-[22px] border p-4 sm:p-5 space-y-4",
+          // design.html .newstrip — 14px radius, soft green gradient, #DAEAE2 border
+          "rounded-[14px] border p-4 sm:p-5 space-y-4",
           dark
             ? "bg-[#0F1C16] border-white/[0.08]"
-            : "bg-[#EAF3EF] border-[#D7E8E0]"
+            : "bg-gradient-to-l from-[#EDF7F2] to-[#F4FAF7] border-[#DAEAE2]"
         )}
       >
         <div className="flex items-center justify-between gap-3 flex-wrap">
@@ -120,7 +148,7 @@ export default function NewRequestsSection({
             <h2
               className={cn(
                 "text-[15px] font-black truncate",
-                dark ? "text-white" : "text-[#0B5345]"
+                dark ? "text-white" : "text-[#0E5F4E]"
               )}
             >
               طلبات جديدة
@@ -200,14 +228,21 @@ export default function NewRequestsSection({
       </section>
 
       {/* Full view as dialog */}
-      <Dialog open={expanded} onOpenChange={onExpandedChange}>
+      <Dialog
+        open={expanded}
+        onOpenChange={(open) => {
+          if (!open) setIsFullscreen(false);
+          onExpandedChange?.(open);
+        }}
+      >
         <DialogContent
           closeButton={false}
           dir="rtl"
           className={cn(
-            "max-w-[min(1200px,calc(100vw-2rem))] w-full p-0 gap-0 overflow-hidden border-0 shadow-2xl",
-            "max-h-[min(920px,calc(100vh-2rem))] flex flex-col",
-            "rounded-2xl translate-x-[-50%] translate-y-[-50%]",
+            "w-full p-0 gap-0 overflow-hidden border-0 shadow-2xl flex flex-col",
+            isFullscreen
+              ? "left-0 top-0 h-screen w-screen max-w-none max-h-none translate-x-0 translate-y-0 rounded-none sm:rounded-none"
+              : "max-w-[min(1200px,calc(100vw-2rem))] max-h-[min(920px,calc(100vh-2rem))] rounded-2xl translate-x-[-50%] translate-y-[-50%]",
             dark ? "bg-[#0B1411]" : "bg-[#F4F6F5]"
           )}
         >
@@ -257,10 +292,15 @@ export default function NewRequestsSection({
               </button>
               <button
                 type="button"
-                aria-label="توسيع"
+                aria-label={isFullscreen ? "تصغير" : "توسيع"}
+                onClick={() => setIsFullscreen((value) => !value)}
                 className="size-9 rounded-lg bg-white/10 text-white flex items-center justify-center hover:bg-white/15 transition-colors"
               >
-                <Maximize2 className="size-4" />
+                {isFullscreen ? (
+                  <Minimize2 className="size-4" />
+                ) : (
+                  <Maximize2 className="size-4" />
+                )}
               </button>
               <button
                 type="button"
@@ -280,33 +320,37 @@ export default function NewRequestsSection({
             )}
           >
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <StatCard
-                value={total}
-                total={Math.max(total, 40)}
-                label="إجمالي الطلبات الجديدة"
-                hint="بانتظار الاستلام - من سعة 40"
-                barColor={RT.brand}
-                valueColor={dark ? "#6EE7B7" : RT.brand}
-                dark={dark}
-              />
-              <StatCard
-                value={over15}
-                total={total}
-                label="تجاوزت 15 دقيقة"
-                hint={`${over15} من ${total} طلباً - تحذير متوسط`}
-                barColor={RT.warningBar}
-                valueColor={RT.warningNum}
-                dark={dark}
-              />
-              <StatCard
-                value={over30}
-                total={total}
-                label="تجاوزت 30 دقيقة"
-                hint={`${over30} من ${total} طلباً - تحذير حرج`}
-                barColor={RT.dangerBar}
-                valueColor={RT.dangerNum}
-                dark={dark}
-              />
+              {cards.map((card, index) => {
+                const count = card.count ?? 0;
+                const isTotal = card.key === "total_new_orders" || index === 0;
+                const isCritical = card.key === "exceeded_30_minutes";
+                return (
+                  <StatCard
+                    key={card.key || card.label}
+                    value={count}
+                    total={isTotal ? Math.max(count, 1) : total}
+                    label={card.label}
+                    hint={
+                      isTotal
+                        ? "بانتظار الاستلام"
+                        : `${count} من ${total} طلباً`
+                    }
+                    barColor={
+                      isTotal ? RT.brand : isCritical ? RT.dangerBar : RT.warningBar
+                    }
+                    valueColor={
+                      isTotal
+                        ? dark
+                          ? "#6EE7B7"
+                          : RT.brand
+                        : isCritical
+                          ? RT.dangerNum
+                          : RT.warningNum
+                    }
+                    dark={dark}
+                  />
+                );
+              })}
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-3">

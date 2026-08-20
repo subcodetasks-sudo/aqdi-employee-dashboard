@@ -10,7 +10,7 @@ import { useSidebarStore } from '@/src/stores/sidebar-store';
 const POLL_INTERVAL = 30_000;
 
 const fetchUnreceivedOrdersTotal = async () => {
-  const response = await axiosInstance.get('/admin/orders?is_received=false&per_page=1&page=1');
+  const response = await axiosInstance.get('/admin/orders?status_id=1&per_page=1&page=1');
   return response?.data?.data?.pagination?.total ?? 0;
 };
 

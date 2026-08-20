@@ -1,4 +1,5 @@
 import { DRAFT_CONTRACT_STATUSES_QUERY_KEY } from "@/src/lib/draft-contract-statuses";
+import { CONTRACT_STATUSES_ACTIVE_QUERY_KEY } from "@/src/lib/contract-statuses";
 
 /** List / analysis query roots that can go stale after an order mutation. */
 const ORDER_LIST_ROOTS = [
@@ -102,6 +103,7 @@ export function invalidateRefundCaches(queryClient, { queryKey, orderId } = {}) 
  */
 export function invalidateContractStatusCaches(queryClient) {
   invalidate(queryClient, ["status"]);
+  invalidate(queryClient, [CONTRACT_STATUSES_ACTIVE_QUERY_KEY]);
   invalidateOrdersCaches(queryClient);
 }
 

@@ -15,11 +15,25 @@ import {
   normalizeOrderForReturnRequest,
 } from "@/components/analysis/returned/refund-contract-utils"
 import { openDialogAfterMenuClose } from "@/src/lib/open-dialog-after-menu-close"
-import { invalidateOrdersCaches } from "@/src/lib/invalidate-orders-caches"
+import { invalidateOrdersCaches, invalidateContractStatusCaches } from "@/src/lib/invalidate-orders-caches"
+import {
+  CONTRACT_STATUSES_ACTIVE_API,
+  CONTRACT_STATUSES_ACTIVE_QUERY_KEY,
+  CONTRACT_STATUSES_API,
+  buildContractStatusWritePayload,
+  extractContractStatusItems,
+} from "@/src/lib/contract-statuses"
+import ChangeOrderStatusFieldsDialog, {
+  getStatusCaseFields,
+  statusRequiresExtraFields,
+} from "@/components/RealtimeOrders/ChangeOrderStatusFieldsDialog"
+import { postOrderStatus } from "@/src/lib/order-status-api"
 
 export default function ChangeStatusDialog({ orderId, order, queryKey }) {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [returnDialogOpen, setReturnDialogOpen] = useState(false);
+  const [statusFieldsOpen, setStatusFieldsOpen] = useState(false);
+  const [pendingStatus, setPendingStatus] = useState(null);
   const [newCategory, setNewCategory] = useState({
     name: '',
     description: '',
@@ -32,15 +46,15 @@ export default function ChangeStatusDialog({ orderId, order, queryKey }) {
   const currentStatus = getOrderContractStatusDisplay(order ?? returnOrder)
 
   function getStatus() {
-    return axiosInstance("/admin/contract-statuses")
+    return axiosInstance(CONTRACT_STATUSES_ACTIVE_API)
   }
   const { data: statusData } = useQuery({
-    queryKey: ["status"],
+    queryKey: [CONTRACT_STATUSES_ACTIVE_QUERY_KEY],
     queryFn: getStatus
   })
 
   const statusItems = useMemo(() => {
-    const items = statusData?.data?.data?.items ?? []
+    const items = extractContractStatusItems(statusData)
     const currentId = currentStatus?.id
 
     if (currentId == null || currentId === "") return items
@@ -51,30 +65,32 @@ export default function ChangeStatusDialog({ orderId, order, queryKey }) {
   }, [statusData, currentStatus?.id])
 
   function addStatus() {
-    return axiosInstance.post("/admin/contract-statuses", newCategory)
+    return axiosInstance.post(
+      CONTRACT_STATUSES_API,
+      buildContractStatusWritePayload(newCategory)
+    )
   }
   const { mutate: addStatusMutate, isPending: addStatusPending } = useMutation({
     mutationFn: addStatus,
     onSuccess: (res) => {
       setIsAddModalOpen(false);
       setNewCategory({ name: '', description: '', color_text: '#000000', color: '#000000' });
-      queryClient.invalidateQueries({ queryKey: ["status"] });
-      invalidateOrdersCaches(queryClient);
-      changeStatusMutate(res?.data?.data?.id)
+      invalidateContractStatusCaches(queryClient);
+      changeStatusMutate({ statusId: res?.data?.data?.id })
     },
     onError: (error) => {
       toast.error(error.response.data.message);
     }
   })
 
-  function changeStatus(statusId) {
-    return axiosInstance.post(`/admin/orders/${orderId}/contract-status`, {
-      contract_status_id: statusId
-    })
+  function changeStatus({ statusId, extraValues, fields }) {
+    return postOrderStatus(orderId, { statusId, extraValues, fields })
   }
   const { mutate: changeStatusMutate, isPending: changeStatusPending } = useMutation({
     mutationFn: changeStatus,
     onSuccess: (res) => {
+      setStatusFieldsOpen(false)
+      setPendingStatus(null)
       toast.success(res?.data?.message || "تم تغيير حالة الطلب")
       invalidateOrdersCaches(queryClient, { queryKey, orderId })
     },
@@ -109,7 +125,13 @@ export default function ChangeStatusDialog({ orderId, order, queryKey }) {
       return
     }
 
-    changeStatusMutate(status.id)
+    if (statusRequiresExtraFields(status)) {
+      setPendingStatus(status)
+      openDialogAfterMenuClose(() => setStatusFieldsOpen(true))
+      return
+    }
+
+    changeStatusMutate({ statusId: status.id })
   }
 
   return (
@@ -119,7 +141,7 @@ export default function ChangeStatusDialog({ orderId, order, queryKey }) {
         <button
           type="button"
           onClick={(e) => e.stopPropagation()}
-          className="w-8 h-8 rounded-full flex items-center justify-center bg-[#F5F5F5] text-[#4D4D4D] hover:bg-brand-main hover:text-white transition-all"
+          className="size-8 rounded-lg border border-[#E6EBE9] flex items-center justify-center bg-white text-[#6B7280] hover:text-[#0B5345] hover:border-[#0B5345]/30 transition-colors"
           aria-label="إجراءات الطلب"
         >
           <i className="fa-solid fa-ellipsis-vertical text-[14px]"></i>
@@ -193,10 +215,28 @@ export default function ChangeStatusDialog({ orderId, order, queryKey }) {
         queryKey={queryKey}
       />
       
+      <ChangeOrderStatusFieldsDialog
+        open={statusFieldsOpen}
+        onOpenChange={(next) => {
+          setStatusFieldsOpen(next)
+          if (!next) setPendingStatus(null)
+        }}
+        status={pendingStatus}
+        isPending={changeStatusPending}
+        onSubmit={(extraValues) => {
+          if (!pendingStatus) return
+          changeStatusMutate({
+            statusId: pendingStatus.id,
+            extraValues,
+            fields: getStatusCaseFields(pendingStatus),
+          })
+        }}
+      />
+
       <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
-        <DialogContent className="sm:max-w-[600px] p-8 rounded-[32px] border-0" dir="rtl">
+        <DialogContent className="sm:max-w-[600px] p-8 rounded-[18px] border-0" dir="rtl">
           <DialogHeader className="mb-6">
-            <DialogTitle className="text-[22px] font-black text-black border-b border-[#F5F5F5] pb-4">إضافة حالة العقد</DialogTitle>
+            <DialogTitle className="text-[18px] font-black text-[#22302C] border-b border-[#EEF1EF] pb-4">إضافة حالة العقد</DialogTitle>
           </DialogHeader>
 
           <div className="flex flex-col gap-6">

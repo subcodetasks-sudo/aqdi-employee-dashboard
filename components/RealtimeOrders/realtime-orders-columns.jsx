@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { toast } from "sonner";
 import {
   Check,
@@ -10,7 +9,6 @@ import {
   X,
 } from "lucide-react";
 import greenRial from "@/public/images/greenRial.svg";
-import waIcon from "@/public/images/waIcon.svg";
 import { cn } from "@/lib/utils";
 import { RT } from "./theme";
 import OrderActionsMenu from "./OrderActionsMenu";
@@ -34,6 +32,8 @@ function getReceivedUrgency(dateString) {
   return "ok";
 }
 
+// Fallback badge colors when the API doesn't supply status.color — mirrors
+// design.html's .schip status-dot palette (.s-received/.s-draftrev/.s-raised/...)
 function statusBadgeStyle(name = "", apiColor, apiTextColor) {
   if (apiColor) {
     return {
@@ -41,16 +41,20 @@ function statusBadgeStyle(name = "", apiColor, apiTextColor) {
       color: apiTextColor || apiColor,
     };
   }
-  if (name.includes("مستلم")) {
-    return { backgroundColor: "#E0E7FF", color: "#3730A3" };
-  }
-  if (name.includes("مسودة")) {
-    return { backgroundColor: "#FFEDD5", color: "#C2410C" };
-  }
-  if (name.includes("تحديث") || name.includes("مرفوع")) {
-    return { backgroundColor: "#FEF3C7", color: "#B45309" };
-  }
-  return { backgroundColor: "#F3F4F6", color: "#4B5563" };
+  const dotColor = name.includes("مستلم")
+    ? RT.statusDot.received
+    : name.includes("مسودة")
+      ? RT.statusDot.draftrev
+      : name.includes("تحديث") || name.includes("مرفوع")
+        ? RT.statusDot.raised
+        : name.includes("ملغ")
+          ? RT.statusDot.cancelled
+          : name.includes("مسترجع") || name.includes("استرجاع")
+            ? RT.statusDot.refunded
+            : name.includes("موثق") || name.includes("مكتمل")
+              ? RT.statusDot.done
+              : "#4B5563";
+  return { backgroundColor: "#F1F3F2", color: dotColor };
 }
 
 /**
@@ -124,47 +128,6 @@ export function buildRealtimeOrderColumns({
       ),
     },
     {
-      id: "mobile",
-      label: "جوال العميل",
-      hideable: true,
-      cell: (row) => (
-        <div className="flex items-center gap-2" dir="ltr">
-          <span
-            className={cn(
-              "tabular-nums font-medium",
-              dark ? "text-white/90" : "text-[#111827]"
-            )}
-          >
-            {row?.user_mobile}
-          </span>
-          <Link
-            href={`https://wa.me/${row?.user_mobile}`}
-            target="_blank"
-            onClick={(e) => e.stopPropagation()}
-            className="hover:scale-110 transition-transform"
-            aria-label="واتساب"
-          >
-            <Image src={waIcon} alt="wa" width={18} height={18} />
-          </Link>
-        </div>
-      ),
-    },
-    {
-      id: "documentType",
-      label: "نوع الوثيقة",
-      hideable: true,
-      cell: (row) => (
-        <span
-          className={cn(
-            "font-medium",
-            dark ? "text-white/65" : "text-[#4B5563]"
-          )}
-        >
-          {row?.instrument_type ?? "---"}
-        </span>
-      ),
-    },
-    {
       id: "payment",
       label: "الدفع",
       hideable: true,
@@ -203,6 +166,7 @@ export function buildRealtimeOrderColumns({
       label: "مستلم منذ",
       hideable: true,
       cell: (row) => {
+        const label = row?.received_since || formatRelativeShort(row?.received_at);
         const urgency = getReceivedUrgency(row?.received_at);
         const styles =
           urgency === "critical"
@@ -219,7 +183,7 @@ export function buildRealtimeOrderColumns({
             style={{ backgroundColor: styles.bg, color: styles.color }}
           >
             <Clock className="size-3" strokeWidth={2.5} />
-            {formatRelativeShort(row?.received_at)}
+            {label}
           </span>
         );
       },

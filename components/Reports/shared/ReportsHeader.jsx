@@ -57,9 +57,9 @@ export default function ReportsHeader({ lastUpdated }) {
             key={id}
             type="button"
             onClick={() => handleAction(id)}
-            className="h-9 px-4 rounded-lg border border-[#E6EBE9] bg-white text-[13px] font-semibold text-[#374151] hover:bg-[#F9FAFB] transition-colors flex items-center gap-2"
+            className="h-9 px-4 rounded-lg border border-[#E6EBE9] bg-white text-[13px] font-semibold text-[#374151] hover:bg-[#F9FAFB] transition-colors flex items-center gap-2 dark:bg-[#13241C] dark:border-white/10 dark:text-white/70 dark:hover:bg-white/5"
           >
-            <Icon className="size-4 text-[#6B7280]" />
+            <Icon className="size-4 text-[#6B7280] dark:text-white/50" />
             {label}
           </button>
         ))}

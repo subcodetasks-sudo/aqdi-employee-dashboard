@@ -15,7 +15,6 @@ import {
 import Image from "next/image";
 import greenRial from "@/public/images/greenRial.svg";
 import { cn } from "@/lib/utils";
-import { toast } from "sonner";
 import { RT } from "../theme";
 
 function GroupTitle({ children, end }) {
@@ -29,11 +28,11 @@ function GroupTitle({ children, end }) {
   );
 }
 
-function EditBtn({ className }) {
+function EditBtn({ className, onClick }) {
   return (
     <button
       type="button"
-      onClick={() => toast.message("تعديل (واجهة تجريبية)")}
+      onClick={onClick}
       className={cn(
         "size-8 rounded-full border border-[#E6EBE9] dark:border-white/10 bg-white dark:bg-white/[0.04]",
         "text-[#9CA3AF] hover:text-[#0B5345] hover:border-[#0B5345]/30 flex items-center justify-center transition-colors",
@@ -54,6 +53,7 @@ function AccentCard({
   badge,
   badgeClassName,
   missingCount,
+  onEdit,
   children,
   className,
 }) {
@@ -104,7 +104,7 @@ function AccentCard({
                 {missingCount} ناقص
               </span>
             ) : null}
-            <EditBtn />
+            {onEdit ? <EditBtn onClick={onEdit} /> : null}
           </div>
         </div>
 
@@ -158,8 +158,8 @@ function Money({ value, className }) {
   );
 }
 
-export default function OrderGroupsLayout({ order }) {
-  const unitCount = order.units?.length ?? 0;
+export default function OrderGroupsLayout({ order, onEdit }) {
+  const unitCount = order.units_count ?? order.units?.length ?? 0;
   const financial = order.financial ?? {};
 
   return (
@@ -172,6 +172,7 @@ export default function OrderGroupsLayout({ order }) {
           accent={RT.brand}
           icon={FileText}
           title="الصك والملاك"
+          onEdit={() => onEdit?.("deed")}
         >
           <div className="rounded-xl bg-[#F0F7F4] dark:bg-white/[0.03] px-3 py-2 flex items-center gap-2">
             <FileText className="size-3.5 text-[#0B5345] dark:text-[#6EE7B7] shrink-0" />
@@ -181,6 +182,7 @@ export default function OrderGroupsLayout({ order }) {
           </div>
 
           <div className="space-y-2">
+            <Field label="اسم المالك" value={order.deed?.owner_name} />
             <Field label="رقم الصك" value={order.deed?.number} />
             <Field label="هوية المالك" value={order.deed?.owner_id} />
             <Field label="جوال المالك" value={order.deed?.owner_phone} />
@@ -188,26 +190,29 @@ export default function OrderGroupsLayout({ order }) {
 
           <div className="rounded-xl bg-[#F3F4F6] dark:bg-white/[0.04] px-3 py-2.5 flex items-center justify-between gap-2">
             <span className="text-[12px] font-bold text-[#4B5563] dark:text-white/70 truncate">
-              {order.deed?.file_name}
+              {order.deed?.file_name || "لا يوجد مرفق"}
             </span>
-            <div className="flex items-center gap-3 shrink-0">
-              <button
-                type="button"
-                onClick={() => toast.message("عرض المرفق (تجريبي)")}
-                className="text-[12px] font-bold text-[#0B5345] dark:text-[#6EE7B7] hover:underline inline-flex items-center gap-1"
-              >
-                <Eye className="size-3.5" />
-                عرض
-              </button>
-              <button
-                type="button"
-                onClick={() => toast.message("تحميل المرفق (تجريبي)")}
-                className="text-[12px] font-bold text-[#6B7280] dark:text-white/55 hover:underline inline-flex items-center gap-1"
-              >
-                <Download className="size-3.5" />
-                تحميل
-              </button>
-            </div>
+            {order.deed?.file_url ? (
+              <div className="flex items-center gap-3 shrink-0">
+                <a
+                  href={order.deed.file_url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-[12px] font-bold text-[#0B5345] dark:text-[#6EE7B7] hover:underline inline-flex items-center gap-1"
+                >
+                  <Eye className="size-3.5" />
+                  عرض
+                </a>
+                <a
+                  href={order.deed.file_url}
+                  download
+                  className="text-[12px] font-bold text-[#6B7280] dark:text-white/55 hover:underline inline-flex items-center gap-1"
+                >
+                  <Download className="size-3.5" />
+                  تحميل
+                </a>
+              </div>
+            ) : null}
           </div>
         </AccentCard>
 
@@ -215,6 +220,7 @@ export default function OrderGroupsLayout({ order }) {
           accent="#3B82F6"
           icon={MapPin}
           title="العنوان الوطني"
+          onEdit={() => onEdit?.("address")}
           badge={
             <>
               <MapPin className="size-3" />
@@ -240,6 +246,7 @@ export default function OrderGroupsLayout({ order }) {
           accent={RT.brand}
           icon={UserRound}
           title="المستأجر"
+          onEdit={() => onEdit?.("tenant")}
           badge={
             <>
               <UserRound className="size-3" />
@@ -256,6 +263,7 @@ export default function OrderGroupsLayout({ order }) {
           icon={Wallet}
           title="البيانات المالية"
           missingCount={financial.missing_count}
+          onEdit={() => onEdit?.("financial")}
         >
           <div className="flex flex-wrap items-center gap-1.5">
             {financial.payment_method ? (
@@ -318,9 +326,19 @@ export default function OrderGroupsLayout({ order }) {
           المجموعة 3 - الوحدات
         </GroupTitle>
 
-        <AccentCard accent="#C4A574" icon={Building2} title="الوحدات">
+        <AccentCard
+          accent="#C4A574"
+          icon={Building2}
+          title="الوحدات"
+          onEdit={() => onEdit?.("units")}
+        >
           <div className="space-y-3">
-            {order.units?.map((unit) => (
+            {(order.units ?? []).length === 0 ? (
+              <p className="text-[12px] text-[#9CA3AF] font-medium py-4 text-center">
+                لا توجد وحدات مرتبطة بهذا الطلب
+              </p>
+            ) : (
+            order.units.map((unit) => (
               <div
                 key={unit.id}
                 className="relative rounded-xl border-2 p-3 bg-white dark:bg-[#0F1C16]"
@@ -336,7 +354,7 @@ export default function OrderGroupsLayout({ order }) {
                       {unit.badge}
                     </span>
                   </div>
-                  <EditBtn />
+                  <EditBtn onClick={() => onEdit?.("units")} />
                 </div>
 
                 <div className="grid grid-cols-3 gap-x-3 gap-y-2.5">
@@ -352,7 +370,8 @@ export default function OrderGroupsLayout({ order }) {
                   <GridField label="مؤثثة" value={unit.furnished} />
                 </div>
               </div>
-            ))}
+            ))
+            )}
           </div>
         </AccentCard>
       </section>

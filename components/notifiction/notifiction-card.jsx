@@ -1,30 +1,15 @@
 "use client"
 import React from 'react'
 import { Clock, Hand, Loader2 } from 'lucide-react'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { axiosInstance } from '@/src/utils/axios'
-import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
-import { invalidateOrdersCaches } from '@/src/lib/invalidate-orders-caches'
-
-const RECEIVED_CONTRACT_STATUS_ID = 6
+import { useReceiveContract } from '@/src/hooks/use-receive-contract'
 
 export default function NotifictionCard({ order }) {
-  const queryClient = useQueryClient()
   const router = useRouter()
-  const { mutate: acceptOrder, isPending } = useMutation({
-    mutationFn: () =>
-      axiosInstance.post(`/admin/orders/${order?.id}/contract-status`, {
-        contract_status_id: RECEIVED_CONTRACT_STATUS_ID,
-      }),
-    onSuccess: (res) => {
-      invalidateOrdersCaches(queryClient, { orderId: order?.id })
-      toast.success(res?.data?.message || "تم استلام الطلب")
+  const { mutate: acceptOrder, isPending } = useReceiveContract({
+    onSuccess: () => {
       router.push(`/home/orders/${order?.id}`)
     },
-    onError: (err) => {
-      toast.error(err?.response?.data?.message || "حدث خطأ أثناء استلام الطلب")
-    }
   })
 
   return (
@@ -53,7 +38,7 @@ export default function NotifictionCard({ order }) {
           <h4 className='text-[16px] font-black text-black leading-none'>طلب جديد</h4>
           <span className='text-[13px] text-[#A3A3A3] font-bold mt-1'>{order?.uuid}</span>
         </div>
-        <button onClick={acceptOrder} disabled={isPending} className='bg-[#00801E] hover:bg-[#006418] transition-all duration-300 text-white h-[36px] px-5 rounded-[18px] flex items-center gap-2 font-bold text-[13px]'>
+        <button onClick={() => acceptOrder(order)} disabled={isPending} className='bg-[#00801E] hover:bg-[#006418] transition-all duration-300 text-white h-[36px] px-5 rounded-[18px] flex items-center gap-2 font-bold text-[13px]'>
           <span>استلام</span>
           {
             isPending ? <Loader2 className='animate-spin h-4 w-4' /> : <Hand size={15} strokeWidth={2.5} className="rotate-[15deg]" />

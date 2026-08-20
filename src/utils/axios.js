@@ -20,6 +20,10 @@ export const axiosInstance = axios.create({
 });
 
 axiosInstance.interceptors.request.use((config) => {
+    if (typeof FormData !== "undefined" && config.data instanceof FormData) {
+        delete config.headers["Content-Type"];
+    }
+
     let token = useUserStore.getState().token;
     if (!token && typeof window !== 'undefined') {
         token = localStorage.getItem('token') || sessionStorage.getItem('token');

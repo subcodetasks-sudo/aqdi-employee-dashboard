@@ -4,6 +4,8 @@ import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { axiosInstance } from "@/src/utils/axios";
 import {
+  CONTRACT_STATUSES_ACTIVE_API,
+  CONTRACT_STATUSES_ACTIVE_QUERY_KEY,
   CONTRACT_STATUSES_API,
   CONTRACT_STATUSES_QUERY_KEY,
   extractContractStatusItems,
@@ -13,10 +15,15 @@ import {
   resolveReturnedContractStatusId,
 } from "@/src/lib/contract-statuses";
 
-export function useContractStatuses({ enabled = true } = {}) {
+export function useContractStatuses({ enabled = true, activeOnly = true } = {}) {
   const query = useQuery({
-    queryKey: [CONTRACT_STATUSES_QUERY_KEY],
-    queryFn: () => axiosInstance(CONTRACT_STATUSES_API),
+    queryKey: [
+      activeOnly ? CONTRACT_STATUSES_ACTIVE_QUERY_KEY : CONTRACT_STATUSES_QUERY_KEY,
+    ],
+    queryFn: () =>
+      axiosInstance(
+        activeOnly ? CONTRACT_STATUSES_ACTIVE_API : CONTRACT_STATUSES_API
+      ),
     enabled,
     staleTime: 60_000,
   });

@@ -70,7 +70,7 @@ export default function NewRequestCard({
         <span
           className={cn(
             "text-[13px] font-black tabular-nums",
-            dark ? "text-white" : "text-[#0B5345]"
+            dark ? "text-white" : "text-[#0E5F4E]"
           )}
         >
           #{order?.uuid}

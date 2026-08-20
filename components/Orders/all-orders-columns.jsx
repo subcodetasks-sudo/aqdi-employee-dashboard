@@ -36,6 +36,7 @@ export function buildAllOrderColumns({
       id: "contractType",
       label: "نوع العقد",
       hideable: false,
+      sticky: true,
       cell: (row) => (
         <span
           className={cn(
@@ -131,7 +132,7 @@ export function buildAllOrderColumns({
         </span>
       ),
       cell: (row) => {
-        const label = formatRelativeShort(row?.received_at);
+        const label = row?.received_since || formatRelativeShort(row?.received_at);
         if (!label) {
           return (
             <span className={dark ? "text-white/35" : "text-[#9CA3AF]"}>—</span>
