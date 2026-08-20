@@ -14,7 +14,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { ImageUp, Loader2, Trash2 } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { getStringValue } from "@/src/lib/content-admin";
+import {
+  assetFormValue,
+  buildSectionFormData,
+  getStringValue,
+} from "@/src/lib/content-admin";
 import { axiosInstance } from "@/src/utils/axios";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
@@ -80,18 +84,13 @@ export default function ContactSectionForm({
   });
 
   const onSubmit = (values) => {
-    const formData = new FormData();
-    formData.append("contact[badge_text]", values.badgeText.trim());
-    formData.append("contact[main_title]", values.mainTitle.trim());
-    formData.append("contact[description]", values.description.trim());
-    formData.append("contact[contact_number]", values.contactNumber.trim());
-    if (values.image instanceof File) {
-      formData.append("contact[image]", values.image);
-    } else if (removeImage) {
-      formData.append("contact[keep_image]", "0");
-    } else {
-      formData.append("contact[keep_image]", "1");
-    }
+    const formData = buildSectionFormData("contact", {
+      badge_text: values.badgeText.trim(),
+      main_title: values.mainTitle.trim(),
+      description: values.description.trim(),
+      contact_number: values.contactNumber.trim(),
+      ...assetFormValue(values.image, removeImage),
+    });
     saveSection(formData);
   };
 

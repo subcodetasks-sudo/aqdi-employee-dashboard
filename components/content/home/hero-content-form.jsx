@@ -15,7 +15,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { ImageUp, Loader2, Trash2 } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { getStringValue } from "@/src/lib/content-admin";
+import {
+  assetFormValue,
+  buildSectionFormData,
+  getStringValue,
+} from "@/src/lib/content-admin";
 import { axiosInstance } from "@/src/utils/axios";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
@@ -79,17 +83,12 @@ export default function HeroContentForm({
   });
 
   const onSubmit = (values) => {
-    const formData = new FormData();
-    formData.append("hero[badge_text]", values.badgeText.trim());
-    formData.append("hero[main_title]", values.mainTitle.trim());
-    formData.append("hero[description]", values.description.trim());
-    if (values.image instanceof File) {
-      formData.append("hero[image]", values.image);
-    } else if (removeImage) {
-      formData.append("hero[keep_image]", "0");
-    } else {
-      formData.append("hero[keep_image]", "1");
-    }
+    const formData = buildSectionFormData("hero", {
+      badge_text: values.badgeText.trim(),
+      main_title: values.mainTitle.trim(),
+      description: values.description.trim(),
+      ...assetFormValue(values.image, removeImage),
+    });
     saveSection(formData);
   };
 

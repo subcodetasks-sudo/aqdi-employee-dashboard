@@ -15,6 +15,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { FileText, ImageUp, Loader2, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
+  assetFormValue,
+  buildSectionFormData,
   createFileAsset,
   createImageAsset,
   getStringValue,
@@ -174,36 +176,26 @@ export default function OfficialAuthoritiesForm({
   });
 
   const onSubmit = (values) => {
-    const formData = new FormData();
-    formData.append("official_authorities[badge_text]", values.badgeText.trim());
-    formData.append("official_authorities[main_title]", values.mainTitle.trim());
-    formData.append("official_authorities[description]", values.description.trim());
-    values.cards.forEach((card, index) => {
-      if (card.id) {
-        formData.append(`official_authorities[cards][${index}][id]`, String(card.id));
-      }
-      formData.append(`official_authorities[cards][${index}][title]`, card.title.trim());
-      formData.append(
-        `official_authorities[cards][${index}][description]`,
-        card.description.trim()
-      );
-      if (card.image instanceof File) {
-        formData.append(`official_authorities[cards][${index}][image]`, card.image);
-      } else if (!cardAssets[index]?.image?.previewUrl && card.existingImageUrl) {
-        formData.append(`official_authorities[cards][${index}][keep_image]`, "0");
-      } else {
-        formData.append(`official_authorities[cards][${index}][keep_image]`, "1");
-      }
-      if (card.license instanceof File) {
-        formData.append(
-          `official_authorities[cards][${index}][license_file]`,
-          card.license
-        );
-      } else if (!cardAssets[index]?.license?.previewUrl && card.existingLicenseUrl) {
-        formData.append(`official_authorities[cards][${index}][keep_license]`, "0");
-      } else {
-        formData.append(`official_authorities[cards][${index}][keep_license]`, "1");
-      }
+    const formData = buildSectionFormData("official_authorities", {
+      badge_text: values.badgeText.trim(),
+      main_title: values.mainTitle.trim(),
+      description: values.description.trim(),
+      cards: values.cards.map((card, index) => ({
+        id: card.id ?? null,
+        title: card.title.trim(),
+        description: card.description.trim(),
+        ...assetFormValue(
+          card.image,
+          !cardAssets[index]?.image?.previewUrl && card.existingImageUrl,
+          "image"
+        ),
+        ...assetFormValue(
+          card.license,
+          !cardAssets[index]?.license?.previewUrl && card.existingLicenseUrl,
+          "license_file",
+          "license"
+        ),
+      })),
     });
     saveSection(formData);
   };

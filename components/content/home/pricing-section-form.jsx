@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2, Plus, Trash2 } from "lucide-react";
 import { useEffect } from "react";
-import { getStringValue } from "@/src/lib/content-admin";
+import { buildSectionFormData, getStringValue } from "@/src/lib/content-admin";
 import { axiosInstance } from "@/src/utils/axios";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useFieldArray, useForm } from "react-hook-form";
@@ -168,31 +168,21 @@ export default function PricingSectionForm({
   });
 
   const onSubmit = (values) => {
-    const formData = new FormData();
-    formData.append("pricing[badge_text]", values.badgeText.trim());
-    formData.append("pricing[main_title]", values.mainTitle.trim());
-    formData.append("pricing[description]", values.description.trim());
-    values.cards.forEach((card, index) => {
-      if (card.id) formData.append(`pricing[cards][${index}][id]`, String(card.id));
-      formData.append(`pricing[cards][${index}][title]`, card.title.trim());
-      formData.append(`pricing[cards][${index}][subtitle]`, card.subtitle.trim());
-      formData.append(`pricing[cards][${index}][price]`, card.price.trim());
-      formData.append(
-        `pricing[cards][${index}][duration_label]`,
-        card.durationLabel.trim()
-      );
-      card.features.forEach((feature, featureIndex) => {
-        if (feature.id) {
-          formData.append(
-            `pricing[cards][${index}][features][${featureIndex}][id]`,
-            String(feature.id)
-          );
-        }
-        formData.append(
-          `pricing[cards][${index}][features][${featureIndex}][text]`,
-          feature.text.trim()
-        );
-      });
+    const formData = buildSectionFormData("pricing", {
+      badge_text: values.badgeText.trim(),
+      main_title: values.mainTitle.trim(),
+      description: values.description.trim(),
+      cards: values.cards.map((card) => ({
+        id: card.id ?? null,
+        title: card.title.trim(),
+        subtitle: card.subtitle.trim(),
+        price: card.price.trim(),
+        duration_label: card.durationLabel.trim(),
+        features: card.features.map((feature) => ({
+          id: feature.id ?? null,
+          text: feature.text.trim(),
+        })),
+      })),
     });
     saveSection(formData);
   };
