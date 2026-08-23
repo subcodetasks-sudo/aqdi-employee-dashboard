@@ -4,12 +4,18 @@ export const PRIMARY_TABS = [
 ];
 
 export const CONTRACT_SUB_TABS = [
-  { id: "guidance", label: "محتوى إرشادي للعقود" },
+  { id: "popup-contracts", label: "محتوى إرشادي للعقود" },
   { id: "instrument-types", label: "أنواع الصكوك" },
-  { id: "sms", label: "إعدادات رسائل SMS" },
+  { id: "sms-settings", label: "إعدادات رسائل SMS" },
   { id: "meter-fees", label: "رسوم العدادات" },
   { id: "payment-messages", label: "إعدادات رسائل الدفع" },
 ];
+
+/** Legacy `?sub=` values from the pre-wiring mock tabs. */
+export const CONTRACT_SUB_TAB_ALIASES = {
+  guidance: "popup-contracts",
+  sms: "sms-settings",
+};
 
 export const SYSTEM_CATEGORIES = [
   { id: "unit-types", label: "أنواع الوحدات", subtitle: "قائمة بـ 10 عناصر", href: "/home/settings/unit-types" },
@@ -27,7 +33,6 @@ export const SYSTEM_CATEGORIES = [
   { id: "coupons", label: "الخصومات (الكوبونات)", subtitle: "كوبونات 5 عناصر", href: "/home/settings/coupons" },
   { id: "blogs", label: "المدونة", subtitle: "رابط", href: "/home/settings/blogs" },
   { id: "faqs", label: "الأسئلة الشائعة", subtitle: "أسئلة وأجوبة 2 عنصر", href: "/home/settings/faqs" },
-  { id: "instructions", label: "التعليمات (صور إرشادية)", subtitle: "سجلات 9 عناصر", href: "/home/settings/instructions" },
   { id: "terms", label: "الشروط والأحكام", subtitle: "محتوى نصي", href: "/home/settings/terms" },
   { id: "privacy", label: "سياسة الخصوصية", subtitle: "محتوى نصي", href: "/home/settings/privacy" },
   { id: "notifications", label: "الإشعارات", subtitle: "نموذج إرسال", href: "/home/settings/notifications" },

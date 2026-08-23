@@ -6,6 +6,14 @@ import StoreHydrator from '@/components/auth/StoreHydrator';
 import FirebaseMessagingProvider from '@/components/firebase/FirebaseMessagingProvider';
 import ThemeProvider from '@/components/theme/theme-provider';
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 0.80,
+  minimumScale: 0.80,
+  maximumScale: 1,
+  userScalable: false,
+};
+
 export async function generateMetadata() {
   return {
     title: 'Aakdi',
@@ -26,6 +34,9 @@ export async function generateMetadata() {
       ],
       type: 'website',
       locale: 'ar_SA',
+    },
+    other: {
+      viewport: 'width=device-width, initial-scale=0.80, minimum-scale=0.80, maximum-scale=1, user-scalable=no',
     },
   };
 }

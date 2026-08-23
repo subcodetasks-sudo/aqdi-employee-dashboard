@@ -5,14 +5,21 @@ import { cn } from "@/lib/utils";
 import SystemSettingsHeader from "./SystemSettingsHeader";
 import GeneralSettingsTab from "./GeneralSettingsTab";
 import ContractSettingsTab from "./ContractSettingsTab";
-import { CONTRACT_SUB_TABS, PRIMARY_TABS } from "./mock-data";
+import {
+  CONTRACT_SUB_TAB_ALIASES,
+  CONTRACT_SUB_TABS,
+  PRIMARY_TABS,
+} from "./mock-data";
 
 function resolveTab(raw) {
   return PRIMARY_TABS.some((tab) => tab.id === raw) ? raw : "general";
 }
 
 function resolveSub(raw) {
-  return CONTRACT_SUB_TABS.some((tab) => tab.id === raw) ? raw : "guidance";
+  const normalized = CONTRACT_SUB_TAB_ALIASES[raw] ?? raw;
+  return CONTRACT_SUB_TABS.some((tab) => tab.id === normalized)
+    ? normalized
+    : "popup-contracts";
 }
 
 export default function SystemSettingsWrapper() {

@@ -45,7 +45,6 @@ export default function ControllableDataTable({
     >
       <table className={cn("w-full border-collapse", tableClassName)}>
         <thead>
-          {/* design.html th — bg #FAFBFB, text #75827C, border-bottom #F0F0ED */}
           <tr className="bg-[#FAFBFB] dark:bg-[#162820]">
             {visible.map((col) => (
               <th
@@ -72,7 +71,7 @@ export default function ControllableDataTable({
               <td
                 colSpan={Math.max(visible.length, 1)}
                 className={cn(
-                  "text-center p-12 text-sm font-medium",
+                  "text-center p-12 text-xs font-medium",
                   "text-[#8A8A84] dark:text-white/35"
                 )}
               >
@@ -84,7 +83,7 @@ export default function ControllableDataTable({
               <td
                 colSpan={Math.max(visible.length, 1)}
                 className={cn(
-                  "text-center p-12 text-sm font-medium",
+                  "text-center p-12 text-xs font-medium",
                   "text-[#8A8A84] dark:text-white/35"
                 )}
               >

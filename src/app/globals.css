@@ -105,6 +105,7 @@
     -moz-osx-font-smoothing: grayscale;
     max-width: 100vw;
     overflow-x: hidden;
+    font-size: 12px;
   }
   
   * {
@@ -165,24 +166,3 @@ a {
   color: inherit;
 }
 
-/* Table headers — light by default, dark when html.dark */
-table thead,
-table thead tr {
-  background-color: #f2f2f2 !important;
-}
-
-table thead th {
-  color: #000000 !important;
-  font-weight: 700 !important;
-  border-bottom-color: #e4e4e4 !important;
-}
-
-.dark table thead,
-.dark table thead tr {
-  background-color: #162820 !important;
-}
-
-.dark table thead th {
-  color: rgba(255, 255, 255, 0.55) !important;
-  border-bottom-color: rgba(255, 255, 255, 0.08) !important;
-}

@@ -1,23 +1,25 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { CONTRACT_SUB_TABS } from "./mock-data";
-import GuidanceContentTab from "./tabs/GuidanceContentTab";
-import InstrumentTypesTab from "./tabs/InstrumentTypesTab";
-import SmsSettingsTab from "./tabs/SmsSettingsTab";
-import MeterFeesTab from "./tabs/MeterFeesTab";
-import PaymentMessagesTab from "./tabs/PaymentMessagesTab";
+import PopupContractsTab from "@/components/contract-settings/popup-contracts/popup-contracts-tab";
+import InstrumentTypesTab from "@/components/contract-settings/instrument-types/instrument-types-tab";
+import SmsSettingsTab from "@/components/contract-settings/sms-settings/sms-settings-tab";
+import MeterFeeSettingsTab from "@/components/contract-settings/meter-fees/meter-fee-settings-tab";
+import PaymentMessagesTab from "@/components/contract-settings/payment-messages/payment-messages-tab";
+import {
+  CONTRACT_SUB_TABS,
+} from "./mock-data";
 
 const SUB_TAB_PANELS = {
-  guidance: GuidanceContentTab,
+  "popup-contracts": PopupContractsTab,
   "instrument-types": InstrumentTypesTab,
-  sms: SmsSettingsTab,
-  "meter-fees": MeterFeesTab,
+  "sms-settings": SmsSettingsTab,
+  "meter-fees": MeterFeeSettingsTab,
   "payment-messages": PaymentMessagesTab,
 };
 
 export default function ContractSettingsTab({ activeSub, onSubChange }) {
-  const Panel = SUB_TAB_PANELS[activeSub] ?? GuidanceContentTab;
+  const Panel = SUB_TAB_PANELS[activeSub] ?? PopupContractsTab;
 
   return (
     <div className="flex flex-col gap-5">
