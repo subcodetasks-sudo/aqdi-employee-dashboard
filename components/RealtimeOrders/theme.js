@@ -51,6 +51,17 @@ export const RT = {
   viewBtnBg: "#F0F8F4",
   viewBtnText: "#0B5F4C",
   checkboxBlue: "#1F6FEB",
+  // design.html .newstrip — gradient card housing the new-requests preview
+  cardBorder: "#E8EEEC",
+  stripBgFrom: "#EDF7F2",
+  stripBgTo: "#F4FAF7",
+  stripBorder: "#DAEAE2",
+  mutedGray: "#9CA3AF",
+  textSecondary: "#4B5563",
+  white: "#FFFFFF",
+  whiteMuted40: "rgba(255,255,255,0.4)",
+  whiteMuted55: "rgba(255,255,255,0.55)",
+  whiteMuted70: "rgba(255,255,255,0.7)",
   // Status-dot colors (design.html .s-new/.s-received/.s-raised/.s-draftrev/
   // .s-done/.s-refunded/.s-cancelled/.s-live) — used as the fallback badge
   // palette when an order status has no API-provided color.
@@ -71,4 +82,17 @@ export const RT = {
     rejected: { bg: "#F7E1DE", text: "#B3472A" },
     processing: { bg: "#E7EEF7", text: "#3A5F8A" },
   },
+};
+
+/**
+ * Exact pixel tokens pulled from design.html that fall outside Tailwind's
+ * default scale (kept here instead of inline "magic numbers" in components).
+ */
+export const RT_SIZES = {
+  stripRadius: 14,
+  cardMinWidth: 188,
+  cardSkeletonHeight: 132,
+  fontHeading: 15,
+  fontLabel: 12.5,
+  fontEmpty: 13,
 };

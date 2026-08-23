@@ -1,0 +1,139 @@
+"use client";
+
+import { useState } from "react";
+import { toast } from "sonner";
+import { fetchContractPaymentLink } from "@/components/Orders/shared/payment-gateway";
+import { getOrderContractUuid } from "@/components/Orders/messages/order-section-message-utils";
+import {
+  canRequestOrderReturn,
+  isReturnContractStatus,
+  normalizeOrderForReturnRequest,
+} from "@/components/analysis/returned/refund-contract-utils";
+import { openDialogAfterMenuClose } from "@/src/lib/open-dialog-after-menu-close";
+import { statusRequiresExtraFields } from "@/components/RealtimeOrders/ChangeOrderStatusFieldsDialog";
+import { useChangeOrderStatus } from "@/src/hooks/use-change-order-status";
+
+const EMPTY_PAYMENT_LINK = {
+  paymentUrl: "",
+  cartAmount: null,
+  alreadyPaid: false,
+  message: null,
+  payment: null,
+};
+
+export function useOrderDetailsDialogs({ orderData, id, canReturn, refetch }) {
+  const [editorSection, setEditorSection] = useState(null);
+  const [sectionErrorContext, setSectionErrorContext] = useState(null);
+  const [returnDialogOpen, setReturnDialogOpen] = useState(false);
+  const [returnOrder, setReturnOrder] = useState(null);
+  const [propertyUpdateOpen, setPropertyUpdateOpen] = useState(false);
+  const [sendDraftOpen, setSendDraftOpen] = useState(false);
+  const [correctionRequestOpen, setCorrectionRequestOpen] = useState(false);
+  const [ejarDocumentationOpen, setEjarDocumentationOpen] = useState(false);
+  const [statusFieldsOpen, setStatusFieldsOpen] = useState(false);
+  const [pendingStatusChange, setPendingStatusChange] = useState(null);
+  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
+  const [paymentLink, setPaymentLink] = useState(EMPTY_PAYMENT_LINK);
+
+  const { mutate: changeStatus, isPending: isChangingStatus } = useChangeOrderStatus({
+    queryKey: ["single-order", id],
+    onSuccess: () => {
+      setStatusFieldsOpen(false);
+      setPendingStatusChange(null);
+      refetch();
+    },
+  });
+
+  const openReturn = (source = orderData) => {
+    if (!canReturn) {
+      toast.error("ليست لديك صلاحية طلب الاسترجاع");
+      return;
+    }
+    const normalized = normalizeOrderForReturnRequest(source, source?.id ?? id);
+    if (!canRequestOrderReturn(normalized)) {
+      toast.info("يوجد طلب استرجاع مسبقاً لهذا الطلب");
+      return;
+    }
+    setReturnOrder(normalized);
+    openDialogAfterMenuClose(() => setReturnDialogOpen(true));
+  };
+
+  const handleStatusChange = (_row, status) => {
+    const menuStatus = {
+      id: status.id,
+      name: status.name ?? status.label,
+      label: status.label ?? status.name,
+      color: status.color,
+      status_case: status.status_case ?? null,
+    };
+
+    if (isReturnContractStatus(menuStatus)) {
+      openReturn(orderData);
+      return;
+    }
+
+    if (statusRequiresExtraFields(menuStatus)) {
+      setPendingStatusChange({ orderId: orderData.id, status: menuStatus });
+      openDialogAfterMenuClose(() => setStatusFieldsOpen(true));
+      return;
+    }
+
+    changeStatus({ orderId: orderData.id, statusId: status.id });
+  };
+
+  const handlePayLink = async () => {
+    const uuid = getOrderContractUuid(orderData);
+    if (!uuid) {
+      toast.error("رقم الطلب غير متوفر");
+      return;
+    }
+    try {
+      const result = await fetchContractPaymentLink(uuid);
+      setPaymentLink({
+        paymentUrl: result.paymentUrl || "",
+        cartAmount: result.cartAmount,
+        alreadyPaid: result.alreadyPaid,
+        message: result.message,
+        payment: result.payment,
+      });
+      setPaymentDialogOpen(true);
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.gateway_error ||
+          error?.response?.data?.message ||
+          error?.message ||
+          "تعذر إنشاء رابط الدفع"
+      );
+    }
+  };
+
+  return {
+    editorSection,
+    setEditorSection,
+    sectionErrorContext,
+    setSectionErrorContext,
+    returnDialogOpen,
+    setReturnDialogOpen,
+    returnOrder,
+    propertyUpdateOpen,
+    setPropertyUpdateOpen,
+    sendDraftOpen,
+    setSendDraftOpen,
+    correctionRequestOpen,
+    setCorrectionRequestOpen,
+    ejarDocumentationOpen,
+    setEjarDocumentationOpen,
+    statusFieldsOpen,
+    setStatusFieldsOpen,
+    pendingStatusChange,
+    setPendingStatusChange,
+    paymentDialogOpen,
+    setPaymentDialogOpen,
+    paymentLink,
+    isChangingStatus,
+    changeStatus,
+    openReturn,
+    handleStatusChange,
+    handlePayLink,
+  };
+}

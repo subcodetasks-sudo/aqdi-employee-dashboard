@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import {
   AlertTriangle,
   BadgeCheck,
+  Bell,
   Building2,
   CalendarDays,
   ChevronDown,
@@ -17,6 +18,7 @@ import {
   Phone,
   Printer,
   Send,
+  Settings2,
   Undo2,
   Upload,
 } from "lucide-react";
@@ -24,6 +26,10 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import waIcon from "@/public/images/waIcon.svg";
@@ -32,6 +38,7 @@ import OrderActionsMenu from "../OrderActionsMenu";
 import { RT } from "../theme";
 import { printOrderContract } from "@/components/Orders/single-order/print-contract";
 import SendOrderSmsButton from "@/components/Orders/shared/send-order-sms-button";
+import { getSendErrorTitle } from "@/components/Orders/messages/order-send-error-utils";
 
 const ACTION_PILLS = [
   { id: "view_file", label: "عرض ملف", Icon: FileText },
@@ -41,6 +48,15 @@ const ACTION_PILLS = [
   { id: "missing_attachment", label: "طلب مرفق ناقص", Icon: AlertTriangle },
   { id: "ejar_documentation", label: "موثق في إيجار", Icon: BadgeCheck },
   { id: "refund", label: "رفع طلب استرجاع", Icon: Undo2 },
+];
+
+const SECTION_ERROR_CONTEXTS = [
+  "owner",
+  "agent",
+  "propertyAddress",
+  "contractTenant",
+  "financialTerms",
+  "unitDetails",
 ];
 
 export default function OrderDetailsHeader({
@@ -56,6 +72,7 @@ export default function OrderDetailsHeader({
   onSendDraft,
   onMissingAttachment,
   onEjarDocumentation,
+  onSendSectionError,
   statuses = [],
   canChangeStatus = true,
   canAddStatus = false,
@@ -243,20 +260,66 @@ export default function OrderDetailsHeader({
       </div>
 
       <div className="flex flex-wrap gap-2">
-        {ACTION_PILLS.map((pill) => {
-          const Icon = pill.Icon;
-          return (
+        <DropdownMenu dir="rtl" modal={false}>
+          <DropdownMenuTrigger asChild>
             <button
-              key={pill.id}
               type="button"
-              onClick={() => handlePill(pill.id)}
-              className="h-9 px-3 rounded-full border border-[#E6EBE9] dark:border-white/10 bg-white dark:bg-white/[0.03] text-[12px] font-bold text-[#374151] dark:text-white/75 hover:border-[#0B5345]/35 inline-flex items-center gap-1.5"
+              className="h-9 px-3.5 rounded-full bg-[#0B5345] text-white text-[12.5px] font-bold inline-flex items-center gap-1.5 hover:bg-[#0B5345]/90"
             >
-              <Icon className="size-3.5 opacity-60" />
-              {pill.label}
+              <Settings2 className="size-3.5" />
+              إجراءات
+              <ChevronDown className="size-3.5 opacity-80" />
             </button>
-          );
-        })}
+          </DropdownMenuTrigger>
+
+          <DropdownMenuContent
+            align="start"
+            sideOffset={6}
+            className="w-[260px] rounded-2xl border border-[#E8EEEC] dark:border-white/10 bg-white dark:bg-[#13241C] p-1.5 overflow-hidden shadow-[0_10px_40px_rgba(0,0,0,0.12)]"
+          >
+            {ACTION_PILLS.map((pill) => {
+              const Icon = pill.Icon;
+              return (
+                <DropdownMenuItem
+                  key={pill.id}
+                  onSelect={() => handlePill(pill.id)}
+                  className="rounded-xl px-3 py-2.5 cursor-pointer gap-2.5 focus:bg-[#F3F9F6] dark:focus:bg-white/[0.06]"
+                >
+                  <Icon className="size-4 text-[#6B7280] dark:text-white/50 shrink-0" />
+                  <span className="flex-1 text-[13px] font-bold text-[#111827] dark:text-white/90 text-right">
+                    {pill.label}
+                  </span>
+                </DropdownMenuItem>
+              );
+            })}
+
+            <DropdownMenuSeparator className="bg-[#EEEEEE] dark:bg-white/10 my-1" />
+
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger className="rounded-xl px-3 py-2.5 cursor-pointer gap-2.5 focus:bg-[#F3F9F6] dark:focus:bg-white/[0.06]">
+                <Bell className="size-4 text-[#6B7280] dark:text-white/50 shrink-0" />
+                <span className="flex-1 text-[13px] font-bold text-[#111827] dark:text-white/90 text-right">
+                  إرسال خطأ للعميل
+                </span>
+              </DropdownMenuSubTrigger>
+              <DropdownMenuSubContent
+                className="w-[260px] rounded-2xl border border-[#E8EEEC] dark:border-white/10 bg-white dark:bg-[#13241C] p-1.5 overflow-hidden shadow-[0_10px_40px_rgba(0,0,0,0.12)]"
+              >
+                {SECTION_ERROR_CONTEXTS.map((context) => (
+                  <DropdownMenuItem
+                    key={context}
+                    onSelect={() => onSendSectionError?.(context)}
+                    className="rounded-xl px-3 py-2.5 cursor-pointer gap-2.5 focus:bg-[#F3F9F6] dark:focus:bg-white/[0.06]"
+                  >
+                    <span className="flex-1 text-[13px] font-bold text-[#111827] dark:text-white/90 text-right">
+                      {getSendErrorTitle(context)}
+                    </span>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuSubContent>
+            </DropdownMenuSub>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {order.banner ? (

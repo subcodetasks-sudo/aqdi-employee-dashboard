@@ -73,7 +73,7 @@ export default function SendDraftDialog({
         </button>
 
         <DialogHeader className="mb-6 space-y-0">
-          <div className="flex items-center justify-between gap-3 border-b border-[#F0F0F0] pb-4">
+          <div className="flex items-center gap-3 border-b border-[#F0F0F0] pb-4 pl-12">
             <span className="w-10 h-10 rounded-full bg-[#B45309] text-white flex items-center justify-center shrink-0">
               <Send className="size-[18px]" />
             </span>

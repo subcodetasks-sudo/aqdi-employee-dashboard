@@ -7,11 +7,25 @@ import { getWaitingMinutes } from "./map-realtime-order";
 
 export function formatWaiting(minutes) {
   if (minutes < 1) return "الآن";
-  if (minutes < 60) return `${minutes} دقيقة`;
-  const hours = Math.floor(minutes / 60);
-  const rem = minutes % 60;
-  if (rem === 0) return hours === 1 ? "1 ساعة" : `${hours} ساعة`;
-  return `${hours} ساعة`;
+
+  const days = Math.floor(minutes / 1440);
+  const remainderAfterDays = minutes % 1440;
+  const hours = Math.floor(remainderAfterDays / 60);
+  const mins = remainderAfterDays % 60;
+
+  const parts = [];
+
+  if (days > 0) {
+    parts.push(days === 1 ? "1 يوم" : `${days} أيام`);
+  }
+  if (hours > 0) {
+    parts.push(hours === 1 ? "1 ساعة" : `${hours} ساعات`);
+  }
+  if (mins > 0) {
+    parts.push(mins === 1 ? "دقيقة واحدة" : `${mins} دقيقة`);
+  }
+
+  return parts.join(" و ");
 }
 
 /**
@@ -38,17 +52,31 @@ export default function NewRequestCard({
         : RT.muted;
 
   return (
-    <div
-      className={cn(
-        "rounded-xl border flex flex-col transition-colors",
-        dense ? "p-3 gap-2.5" : "p-3.5 gap-3",
-        "min-w-[188px] shrink-0",
-        dark
-          ? "bg-[#13241C] border-white/[0.08]"
-          : "bg-white border-[#E8EEEC] shadow-[0_1px_3px_rgba(11,83,69,0.06)]",
-        className
-      )}
-    >
+    <>
+      <style>{`
+        .card-gradient-top::before {
+          content: "";
+          position: absolute;
+          top: 0;
+          right: 0;
+          left: 0;
+          height: 3px;
+          border-radius: 12px 12px 0 0;
+          background: linear-gradient(90deg, #1F9E86, #0E5F4E);
+        }
+      `}</style>
+      <div
+        className={cn(
+          "rounded-xl border flex flex-col transition-colors relative overflow-hidden",
+          dense ? "p-3 gap-2.5" : "p-3.5 gap-3",
+          "min-w-[188px] shrink-0",
+          dark
+            ? "bg-[#13241C] border-white/[0.08]"
+            : "bg-white border-[#E8EEEC] shadow-[0_1px_3px_rgba(11,83,69,0.06)]",
+          "card-gradient-top",
+          className
+        )}
+      >
       {/* Top: type · id · status */}
       <div className="flex items-center justify-between gap-1.5">
         <span
@@ -90,7 +118,7 @@ export default function NewRequestCard({
 
       {/* Waiting time */}
       <div
-        className="flex items-center justify-center gap-1.5 text-[12px] font-bold"
+        className="flex items-center justify-center gap-1.5 text-xs"
         style={{ color: timeColor }}
       >
         {isCritical || isWarning ? (
@@ -119,5 +147,6 @@ export default function NewRequestCard({
       </button>
       ) : null}
     </div>
+    </>
   );
 }

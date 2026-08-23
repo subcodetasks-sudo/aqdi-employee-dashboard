@@ -37,6 +37,7 @@ export function buildAdminOrdersParams({
   isReceived,
   employeeId,
   contractType,
+  userId,
 } = {}) {
   const params = { page, per_page: perPage };
   const resolvedStatusId =
@@ -58,6 +59,7 @@ export function buildAdminOrdersParams({
     params.employee_id = employeeId;
   }
   if (contractType) params.contract_type = contractType;
+  if (userId != null && userId !== "") params.user_id = userId;
 
   return params;
 }
