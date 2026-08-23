@@ -8,23 +8,21 @@ import {
   ChevronLeft,
   FileText,
   Home,
+  Loader2,
+  ShieldCheck,
   Tag,
-  TriangleAlert,
+  Trash2,
 } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa6";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import {
-  CLIENT_ORDER_STATUS,
-  PLATFORM,
-  getMockClientDetail,
-} from "./mock-data";
+import { useClientDetail, useBlockClient, useDeleteClient } from "@/src/hooks/use-clients";
+import { isDraftOrderRow } from "@/src/lib/draft-contract-statuses";
 
 const FILTER_TABS = [
   { id: "all", label: "الكل" },
   { id: "completed", label: "مكتمل" },
   { id: "draft", label: "مسودة" },
-  { id: "incomplete", label: "غير مكتمل" },
   { id: "returned", label: "مسترجع" },
   { id: "canceled", label: "ملغي" },
   { id: "processing", label: "قيد المعالجة" },
@@ -37,7 +35,7 @@ const STAT_DEFS = [
   { key: "properties", label: "عقارات", bar: "#0B5345", barDark: "#34D399" },
   { key: "units", label: "وحدات", bar: "#0B5345", barDark: "#6EE7B7" },
   {
-    key: "returned",
+    key: "refundedAmount",
     label: "مسترجع (ر.س)",
     bar: "#EF4444",
     barDark: "#F87171",
@@ -95,6 +93,19 @@ function whatsappHref(phone) {
   return `https://wa.me/${normalized}`;
 }
 
+/** Best-effort status bucket for the filter tabs — mirrors the substring conventions
+ *  already used by src/lib/contract-statuses.js (no canonical status enum from the API). */
+function classifyOrderStatus(order = {}) {
+  const statusName = order?.status?.name || order?.status_name || "";
+  if (order?.return_contract === true || /مسترجع|استرجاع/.test(statusName)) {
+    return "returned";
+  }
+  if (/ملغ/.test(statusName)) return "canceled";
+  if (isDraftOrderRow(order)) return "draft";
+  if (order?.is_completed) return "completed";
+  return "processing";
+}
+
 export default function ClientDetailsWrapper() {
   const params = useParams();
   const searchParams = useSearchParams();
@@ -103,20 +114,57 @@ export default function ClientDetailsWrapper() {
   const from = searchParams.get("from") || "/home/clients";
   const backUrl = from.startsWith("/") ? from : "/home/clients";
 
-  const detail = useMemo(() => getMockClientDetail(clientId), [clientId]);
   const [filter, setFilter] = useState("all");
 
-  const orders = detail?.orders ?? [];
+  const { client, contracts, isLoading, isError } = useClientDetail(clientId);
+  const { mutate: toggleBlock, isPending: isBlocking } = useBlockClient();
+  const { mutate: deleteClient, isPending: isDeleting } = useDeleteClient();
+
+  const orders = useMemo(
+    () =>
+      (contracts ?? []).map((order) => ({
+        ...order,
+        statusKey: classifyOrderStatus(order),
+      })),
+    [contracts]
+  );
+
   const filterCounts = useMemo(() => {
     const counts = { all: orders.length };
     for (const tab of FILTER_TABS) {
       if (tab.id === "all") continue;
-      counts[tab.id] = orders.filter((o) => o.status === tab.id).length;
+      counts[tab.id] = orders.filter((o) => o.statusKey === tab.id).length;
     }
     return counts;
   }, [orders]);
 
-  if (!detail) {
+  const filteredOrders =
+    filter === "all" ? orders : orders.filter((o) => o.statusKey === filter);
+
+  const handleBlock = () => {
+    if (!clientId) return;
+    toggleBlock(clientId);
+  };
+
+  const handleDelete = () => {
+    if (!clientId) return;
+    if (!window.confirm("هل أنت متأكد من حذف هذا العميل؟ لا يمكن التراجع عن هذا الإجراء.")) {
+      return;
+    }
+    deleteClient(clientId, {
+      onSuccess: () => router.push(backUrl),
+    });
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[50vh]" dir="rtl">
+        <Loader2 className="size-6 animate-spin text-[#0B5345] dark:text-emerald-300" />
+      </div>
+    );
+  }
+
+  if (isError || !client) {
     return (
       <div className="flex flex-col gap-4 min-h-full" dir="rtl">
         <button
@@ -128,17 +176,13 @@ export default function ClientDetailsWrapper() {
           رجوع للعملاء
         </button>
         <div className="rounded-2xl border border-[#E8EEEC] bg-white dark:bg-[#0F1C16] dark:border-white/[0.08] p-10 text-center text-[#FA5252] text-[15px] font-medium">
-          لم يتم العثور على ملف العميل
+          تعذر تحميل ملف العميل من الخادم
         </div>
       </div>
     );
   }
 
-  const { client, stats, notice } = detail;
-  const platform = PLATFORM[client.platform] || PLATFORM.website;
-  const wa = whatsappHref(client.displayPhone || client.mobile);
-  const filteredOrders =
-    filter === "all" ? orders : orders.filter((o) => o.status === filter);
+  const wa = whatsappHref(client.mobile);
 
   return (
     <div className="flex flex-col gap-5 min-h-full transition-colors" dir="rtl">
@@ -164,32 +208,31 @@ export default function ClientDetailsWrapper() {
         </div>
 
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 shrink-0">
-          {notice ? (
-            <div className="inline-flex items-start gap-2 max-w-md rounded-xl border border-[#FCD34D]/60 bg-[#FFFBEB] dark:bg-amber-500/10 dark:border-amber-400/30 px-3 py-2 text-[11px] leading-relaxed text-[#92400E] dark:text-amber-200">
-              <TriangleAlert className="size-3.5 shrink-0 mt-0.5" />
-              <span>{notice}</span>
-            </div>
-          ) : null}
-
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={() =>
-                toast.message("حظر العميل (واجهة تجريبية — غير مربوط بعد)")
-              }
+              onClick={handleBlock}
+              disabled={isBlocking}
               className={cn(
-                "inline-flex items-center gap-1.5 h-9 px-3.5 rounded-full border text-[12px] font-bold transition-colors",
-                "border-red-200 bg-white text-[#DC2626] hover:bg-red-50",
-                "dark:border-rose-400/30 dark:bg-transparent dark:text-rose-300 dark:hover:bg-rose-500/10"
+                "inline-flex items-center gap-1.5 h-9 px-3.5 rounded-full border text-[12px] font-bold transition-colors disabled:opacity-50",
+                client.blocked
+                  ? "border-emerald-200 bg-white text-[#0B5345] hover:bg-emerald-50 dark:border-emerald-400/30 dark:bg-transparent dark:text-emerald-300 dark:hover:bg-emerald-500/10"
+                  : "border-red-200 bg-white text-[#DC2626] hover:bg-red-50 dark:border-rose-400/30 dark:bg-transparent dark:text-rose-300 dark:hover:bg-rose-500/10"
               )}
             >
-              <Ban className="size-3.5 shrink-0" />
-              حظر العميل
+              {isBlocking ? (
+                <Loader2 className="size-3.5 shrink-0 animate-spin" />
+              ) : client.blocked ? (
+                <ShieldCheck className="size-3.5 shrink-0" />
+              ) : (
+                <Ban className="size-3.5 shrink-0" />
+              )}
+              {client.blocked ? "إلغاء حظر العميل" : "حظر العميل"}
             </button>
             <button
               type="button"
               onClick={() =>
-                toast.message("خصم/إعفاء مخصص (واجهة تجريبية — غير مربوط بعد)")
+                toast.message("خصم/إعفاء مخصص (غير مربوط بالباك اند بعد)")
               }
               className={cn(
                 "inline-flex items-center gap-1.5 h-9 px-3.5 rounded-full border text-[12px] font-bold transition-colors",
@@ -199,6 +242,23 @@ export default function ClientDetailsWrapper() {
             >
               <Tag className="size-3.5 shrink-0" />
               خصم/إعفاء مخصص
+            </button>
+            <button
+              type="button"
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className={cn(
+                "inline-flex items-center gap-1.5 h-9 px-3.5 rounded-full border text-[12px] font-bold transition-colors disabled:opacity-50",
+                "border-red-200 bg-white text-[#DC2626] hover:bg-red-50",
+                "dark:border-rose-400/30 dark:bg-transparent dark:text-rose-300 dark:hover:bg-rose-500/10"
+              )}
+            >
+              {isDeleting ? (
+                <Loader2 className="size-3.5 shrink-0 animate-spin" />
+              ) : (
+                <Trash2 className="size-3.5 shrink-0" />
+              )}
+              حذف العميل
             </button>
           </div>
         </div>
@@ -213,8 +273,13 @@ export default function ClientDetailsWrapper() {
         )}
       >
         <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-5">
-          <div className="size-16 sm:size-[72px] shrink-0 rounded-full bg-[#DBEAFE] dark:bg-sky-500/20 flex items-center justify-center text-[28px] font-bold text-[#1D4ED8] dark:text-sky-300">
-            {client.initial || (client.name || "؟").charAt(0)}
+          <div className="size-16 sm:size-[72px] shrink-0 rounded-full bg-[#DBEAFE] dark:bg-sky-500/20 flex items-center justify-center text-[28px] font-bold text-[#1D4ED8] dark:text-sky-300 overflow-hidden">
+            {client.photo ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={client.photo} alt={client.name} className="size-full object-cover" />
+            ) : (
+              (client.name || "؟").trim().charAt(0)
+            )}
           </div>
 
           <div className="flex-1 min-w-0 flex flex-col gap-2.5">
@@ -229,16 +294,23 @@ export default function ClientDetailsWrapper() {
                 className="text-[13px] font-medium text-[#374151] dark:text-white/70 tabular-nums"
                 dir="ltr"
               >
-                {client.displayPhone || client.mobile}
+                {client.mobile}
               </span>
-              <span
-                className={cn(
-                  "inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold",
-                  platform.badgeClass
-                )}
-              >
-                {platform.label}
-              </span>
+              {client.email ? (
+                <span className="text-[12px] font-medium text-[#9CA3AF] dark:text-white/45">
+                  {client.email}
+                </span>
+              ) : null}
+              {client.platformLabel ? (
+                <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold bg-[#DCFCE7] text-[#15803D] dark:bg-emerald-500/20 dark:text-emerald-300">
+                  {client.platformLabel}
+                </span>
+              ) : null}
+              {client.blocked ? (
+                <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold bg-[#FEE2E2] text-[#DC2626] dark:bg-rose-500/20 dark:text-rose-300">
+                  محظور
+                </span>
+              ) : null}
               <span className="text-[12px] font-medium text-[#9CA3AF] dark:text-white/45 tabular-nums">
                 انضم {formatJoinedShort(client.joinedAt)}
               </span>
@@ -287,7 +359,7 @@ export default function ClientDetailsWrapper() {
               {def.label}
             </p>
             <p className="text-[18px] font-bold text-[#111827] dark:text-white tabular-nums leading-none pr-1">
-              {def.money ? formatMoney(stats[def.key]) : stats[def.key] ?? 0}
+              {def.money ? formatMoney(client[def.key]) : client[def.key] ?? 0}
             </p>
           </div>
         ))}
@@ -352,7 +424,7 @@ export default function ClientDetailsWrapper() {
           <table className="w-full border-collapse min-w-[720px]">
             <thead>
               <tr className="bg-[#FAFBFA] dark:bg-white/[0.03]">
-                {["الطلب", "النوع", "الحالة", "الرسوم", ""].map((h) => (
+                {["الطلب", "النوع", "الحالة", "حالة الدفع", ""].map((h) => (
                   <th
                     key={h || "actions"}
                     className="px-4 py-3 text-[12px] font-semibold text-[#9CA3AF] dark:text-white/45 text-right whitespace-nowrap border-b border-[#EEF1F0] dark:border-white/[0.08]"
@@ -373,56 +445,48 @@ export default function ClientDetailsWrapper() {
                   </td>
                 </tr>
               ) : (
-                filteredOrders.map((order) => {
-                  const status =
-                    CLIENT_ORDER_STATUS[order.status] ||
-                    CLIENT_ORDER_STATUS.processing;
-                  return (
-                    <tr
-                      key={order.id}
-                      className="border-b border-[#F3F4F6] dark:border-white/[0.05] last:border-0 hover:bg-[#F8FAF9]/80 dark:hover:bg-white/[0.04] transition-colors"
-                    >
-                      <td className="px-4 py-3.5 text-[13px] font-bold text-[#111827] dark:text-white tabular-nums whitespace-nowrap">
-                        #{order.id}
-                      </td>
-                      <td className="px-4 py-3.5 text-[13px] font-medium text-[#374151] dark:text-white/70 whitespace-nowrap">
-                        {order.type}
-                      </td>
-                      <td className="px-4 py-3.5 whitespace-nowrap">
+                filteredOrders.map((order) => (
+                  <tr
+                    key={order.id}
+                    className="border-b border-[#F3F4F6] dark:border-white/[0.05] last:border-0 hover:bg-[#F8FAF9]/80 dark:hover:bg-white/[0.04] transition-colors"
+                  >
+                    <td className="px-4 py-3.5 text-[13px] font-bold text-[#111827] dark:text-white tabular-nums whitespace-nowrap">
+                      #{order.id}
+                    </td>
+                    <td className="px-4 py-3.5 text-[13px] font-medium text-[#374151] dark:text-white/70 whitespace-nowrap">
+                      {order.contract_type || "—"}
+                    </td>
+                    <td className="px-4 py-3.5 whitespace-nowrap">
+                      <span className="inline-flex items-center gap-1.5 text-[12px] font-bold">
                         <span
-                          className={cn(
-                            "inline-flex items-center gap-1.5 text-[12px] font-bold",
-                            status.text
-                          )}
-                        >
-                          <span
-                            className="size-1.5 rounded-full shrink-0"
-                            style={{ backgroundColor: status.dot }}
-                            aria-hidden
-                          />
-                          {status.label}
+                          className="size-1.5 rounded-full shrink-0"
+                          style={{ backgroundColor: order.status?.color || "#9CA3AF" }}
+                          aria-hidden
+                        />
+                        <span style={{ color: order.status?.color || undefined }}>
+                          {order.status?.name || order.status_name || "—"}
                         </span>
-                      </td>
-                      <td className="px-4 py-3.5 text-[13px] font-bold text-[#111827] dark:text-white tabular-nums whitespace-nowrap">
-                        {formatMoney(order.fee)} ر.س
-                      </td>
-                      <td className="px-4 py-3.5 text-left">
-                        <Link
-                          href={`/home/orders/${order.id}?from=${encodeURIComponent(
-                            `/home/users/${clientId}?from=${encodeURIComponent(backUrl)}`
-                          )}`}
-                          className={cn(
-                            "inline-flex items-center justify-center h-8 px-3.5 rounded-full border text-[12px] font-bold transition-colors",
-                            "border-[#0B5345]/25 bg-[#E8F5F1] text-[#0B5345] hover:bg-[#0B5345] hover:text-white",
-                            "dark:border-emerald-400/30 dark:bg-emerald-500/15 dark:text-emerald-300 dark:hover:bg-emerald-500 dark:hover:text-white"
-                          )}
-                        >
-                          فتح
-                        </Link>
-                      </td>
-                    </tr>
-                  );
-                })
+                      </span>
+                    </td>
+                    <td className="px-4 py-3.5 text-[13px] font-medium text-[#374151] dark:text-white/70 whitespace-nowrap">
+                      {order.payment_label_ar || "—"}
+                    </td>
+                    <td className="px-4 py-3.5 text-left">
+                      <Link
+                        href={`/home/orders/${order.id}?from=${encodeURIComponent(
+                          `/home/users/${clientId}?from=${encodeURIComponent(backUrl)}`
+                        )}`}
+                        className={cn(
+                          "inline-flex items-center justify-center h-8 px-3.5 rounded-full border text-[12px] font-bold transition-colors",
+                          "border-[#0B5345]/25 bg-[#E8F5F1] text-[#0B5345] hover:bg-[#0B5345] hover:text-white",
+                          "dark:border-emerald-400/30 dark:bg-emerald-500/15 dark:text-emerald-300 dark:hover:bg-emerald-500 dark:hover:text-white"
+                        )}
+                      >
+                        فتح
+                      </Link>
+                    </td>
+                  </tr>
+                ))
               )}
             </tbody>
           </table>
@@ -448,7 +512,7 @@ export default function ClientDetailsWrapper() {
           )}
         >
           <Home className="size-4 shrink-0" />
-          فتح عقارات ووحدات العميل ({stats.properties} عقار – {stats.units}{" "}
+          فتح عقارات ووحدات العميل ({client.properties} عقار – {client.units}{" "}
           وحدة)
         </Link>
       </section>

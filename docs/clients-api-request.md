@@ -1,149 +1,106 @@
-# Backend request: `/home/clients` endpoints
+# Backend request: /home/clients endpoints (current)
 
-The "العملاء" (Clients) section of the dashboard (`/home/clients` list, client detail, client
-properties) is currently built against local mock data only
-(`components/clients/mock-data.js`) — no real endpoints are wired up yet. This doc lists what
-the frontend needs so the backend team can confirm/adjust paths, params, and response shapes.
+Updated: 2026-08-23
 
-Existing convention we're following (from already-working features): all admin endpoints are
-under `/admin/...`, authenticated via Bearer token, list responses shaped as
-`{ data: { items: [...], pagination: { current_page, last_page, total } } }`, single-resource
-responses as `{ data: {...} }`.
+This document now keeps only what the frontend currently uses and still needs from backend.
+The clients screens use /admin/users* (no separate /admin/clients* namespace).
 
-There's a closely related existing endpoint, `GET /admin/users` + `GET /admin/users/{id}`
-(used by the "Users Analysis" report), which returns most of the fields we need already. Please
-tell us: **should the clients screens reuse/extend `/admin/users*`, or do you want a separate
-`/admin/clients*` namespace?** The table below assumes a separate `clients` namespace for
-clarity, but we're flexible either way — whichever is less work on your end.
+## 1) Live endpoints used by the current UI
 
----
+Used by:
+- /home/clients (list)
+- /home/users/{id}?from=/home/clients (client file)
+- orders table inside the client file
 
-## 1. Clients list — `GET /admin/clients`
+Endpoints:
+- GET /admin/users
+- GET /admin/users/{id}
+- POST /admin/users/{id}/block
+- POST /admin/users/{id}/delete
+- GET /admin/orders?user_id={id}
 
-Powers the client table + summary cards at `/home/clients`.
+Frontend source of truth:
+- src/hooks/use-clients.js
+- components/clients/ClientsWrapper.jsx
+- components/clients/ClientDetailsWrapper.jsx
 
-**Query params needed:**
-| Param | Type | Notes |
-|---|---|---|
-| `page` | int | |
-| `per_page` | int | default page size options: 10 / 25 / 50 |
-| `search` | string | matches against name, mobile, client code |
-| `sort_by` | string | e.g. `joined_at` |
-| `sort_dir` | `asc`\|`desc` | |
-| `platform` | string (optional) | filter by `website`\|`google_play`\|`app_store` |
-| `blocked` | bool (optional) | filter blocked clients |
+## 2) Endpoint checks performed (production)
 
-**Response — per item:**
-```
-id, client_code, name, mobile, joined_at (datetime),
-platform (website | google_play | app_store),
-for_programmer (bool),          // "طلبات تجريبية/داخلية" flag shown as a badge
-completed_orders_count, draft_orders_count,
-properties_count, units_count,
-returned_amount, paid_amount, net_amount
-```
-Plus `pagination: { current_page, last_page, total }`.
+Test account used:
+- mohammed@aqdi.com
 
-**Question:** is `for_programmer` a real field on your side, or should we drop that badge from
-the UI?
+Checked against:
+- https://aqid.subcodeco.com/api
 
-## 2. Clients summary stats — `GET /admin/clients/stats`
+Results:
+- GET /admin/users?page=1&per_page=10 -> 200
+- GET /admin/users/new -> 200
+- GET /admin/users/contracts-complete -> 200
+- GET /admin/users/27 -> 200
+- GET /admin/orders?user_id=27 -> 200
+- POST /admin/users/999999/block -> 404 (expected for missing user; route exists)
+- POST /admin/users/999999/delete -> 404 (expected for missing user; route exists)
 
-Powers the stat cards above the table. Could be folded into the list response instead if
-that's easier for you — let us know.
+Note:
+- Previous SQL 500 errors are no longer reproducible.
 
-**Response:**
-```
-{ total, blocked, website, google_play, app_store }
-```
+## 3) Minimum response fields currently required by frontend
 
-## 3. Clients export — `GET /admin/clients/export`
+GET /admin/users expects data.summary, data.items, data.pagination.
 
-Same filter params as the list endpoint. Returns a file (CSV or XLSX — either is fine, tell us
-which). Currently this button is a no-op in the UI.
+From each item in data.items, the UI currently reads these fields (fallbacks supported in code):
+- id
+- customer_number
+- full_name or name
+- mobile or phone
+- email
+- photo_path
+- joined_at or created_at
+- platform
+- platform_label
+- completed_orders_count or completed
+- draft_orders_count or draft
+- incomplete_orders_count or uncompleted_orders_count
+- real_estate_count or properties_count or real_estates
+- units_count or units
+- total_paid_amount or paid
+- refunded_amount or refunded
+- net_amount or net
+- is_banned
+- contracts
 
-## 4. Client detail — `GET /admin/clients/{id}`
+Pagination currently used:
+- current_page
+- last_page
+- total
+- per_page
 
-Powers `/home/users/{id}` when opened from the clients list (this route is currently shared
-with the legacy "Users Analysis" detail page).
+GET /admin/users/{id} expects data.user (or data payload directly), and contracts for the orders section.
 
-**Response:**
-```
-client: {
-  id, client_code, name, mobile, display_phone, platform,
-  joined_at, initial (avatar letter)
-}
-stats: {
-  completed, draft, incomplete, properties, units,
-  returned (amount), paid (amount), net (amount)
-}
-orders: [
-  { id, type ("سكني" | "تجاري"), status, fee }
-]
-```
+GET /admin/orders?user_id={id} is already used and returns contract rows for that user.
 
-We also need the possible values/labels for order `status` (there are 7 filter tabs in the UI
-today: all / completed / draft / incomplete / returned / canceled / processing) — please confirm
-the exact status codes/names you use so we can map them correctly.
+## 4) What we still need from backend (only missing integrations)
 
-## 5. Block client — `POST /admin/clients/{id}/block`
+1. Export endpoint for clients list
+- Current UI export button is not wired yet.
+- Requested endpoint: GET /admin/users/export
+- Use same filters as GET /admin/users (at minimum: page, per_page, search if applicable).
+- Response: file download (CSV or XLSX).
 
-Toggles the client's blocked state. (Mirrors the existing
-`POST /admin/users/{id}/block` used elsewhere — reuse that one if it already covers clients.)
+2. Custom discount/waiver action on client file
+- Current "خصم/إعفاء مخصص" button is a no-op.
+- Needed endpoint (proposal): POST /admin/users/{id}/discount
+- Need confirmed request schema and business rules.
 
-**Response:** `{ message }`
+3. Client properties/units backend for /home/users/{id}/properties
+- Current page uses mock data only (not connected to API).
+- Needed:
+  - GET /admin/users/{id}/properties
+  - DELETE /admin/users/{id}/properties/{propertyId}
+  - DELETE /admin/users/{id}/units/{unitId}
+  - GET /admin/users/{id}/properties/{propertyId}/deed (or equivalent file endpoint)
 
-## 6. Custom discount / waiver — `POST /admin/clients/{id}/discount`
+## 5) Not needed for this clients UI right now
 
-New endpoint, no existing analogue. The UI currently has a "خصم/إعفاء مخصص" button that's a
-no-op — we need to know the intended request shape before we can build the form/dialog for it.
-
-**Questions for backend:**
-- Is this a flat discount amount, a percentage, or a waiver of a specific charge?
-- Does it need a reason/note field?
-- Does it apply going forward, or against a specific existing order?
-
-Proposed request body (please correct): `{ type: "amount" | "percentage" | "waiver", value, reason }`
-**Response:** `{ message }`
-
-## 7. Client properties/units — `GET /admin/clients/{id}/properties`
-
-Powers `/home/users/{id}/properties`.
-
-**Response:**
-```
-properties: [
-  {
-    id, city, district, street, building_number, added_at,
-    order_id, property_name, document_type, deed_number, region,
-    owner_id, owner_mobile,
-    units: [
-      { id, type (شقة|دور|محل|مكتب|فيلا), number, area, floor, rooms, usage (سكني|تجاري) }
-    ]
-  }
-]
-totals: { properties, units }
-```
-
-## 8. Delete property — `DELETE /admin/clients/{id}/properties/{propertyId}`
-
-Currently a no-op button. **Response:** `{ message }`
-
-## 9. Delete unit — `DELETE /admin/clients/{id}/units/{unitId}`
-
-Currently a no-op button. **Response:** `{ message }`
-
-## 10. View deed document — `GET /admin/clients/{id}/properties/{propertyId}/deed`
-
-Currently a no-op ("عرض الصك") button. Need to know: does this return a file directly, a
-signed URL, or JSON with a `file_url` field?
-
----
-
-## Permissions note (for us to resolve, FYI to backend)
-
-`/home/clients` itself is currently open to any authenticated user in the frontend's permission
-config, but the detail routes it links to (`/home/users/[id]` and `.../properties`) are gated
-behind the `analytics` permission section. We'll need to decide whether clients gets its own
-permission section or reuses `analytics` — flagging here in case that affects how you scope
-these endpoints on your side too.
+- No /admin/clients* namespace is needed.
+- /admin/users/new and /admin/users/contracts-complete are not consumed by /home/clients at the moment.

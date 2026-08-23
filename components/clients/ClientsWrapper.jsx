@@ -1,60 +1,22 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-  ArrowDownWideNarrow,
   ChevronLeft,
   ChevronRight,
   Download,
+  Loader2,
   PanelLeft,
   Search,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useSidebarStore } from "@/src/stores/sidebar-store";
-import { MOCK_CLIENTS, MOCK_CLIENT_STATS, PLATFORM } from "./mock-data";
+import { useClientsList } from "@/src/hooks/use-clients";
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50];
-
-const STAT_CARDS = [
-  {
-    key: "app_store",
-    label: "عملاء آبل ستور",
-    value: MOCK_CLIENT_STATS.app_store,
-    bar: "#6B7280",
-    barDark: "#9CA3AF",
-  },
-  {
-    key: "google_play",
-    label: "عملاء جوجل بلاي",
-    value: MOCK_CLIENT_STATS.google_play,
-    bar: "#3B82F6",
-    barDark: "#60A5FA",
-  },
-  {
-    key: "website",
-    label: "عملاء الموقع",
-    value: MOCK_CLIENT_STATS.website,
-    bar: "#0B5345",
-    barDark: "#34D399",
-  },
-  {
-    key: "blocked",
-    label: "المحظورون",
-    value: MOCK_CLIENT_STATS.blocked,
-    bar: "#F97316",
-    barDark: "#FB923C",
-  },
-  {
-    key: "total",
-    label: "إجمالي العملاء",
-    value: MOCK_CLIENT_STATS.total,
-    bar: "#10B981",
-    barDark: "#34D399",
-  },
-];
 
 const TH =
   "px-3 py-3.5 text-[12px] font-semibold text-[#9CA3AF] dark:text-white/45 border-b border-[#EEF1F0] dark:border-white/[0.08] whitespace-nowrap";
@@ -68,7 +30,9 @@ function formatMoney(value) {
 }
 
 function splitDateTime(iso) {
+  if (!iso) return { time: "—", date: "—" };
   const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return { time: "—", date: String(iso) };
   const time = d.toLocaleTimeString("en-GB", {
     hour: "2-digit",
     minute: "2-digit",
@@ -95,9 +59,6 @@ function CountBadge({ value, tone = "muted" }) {
       "bg-[#FEF3C7] text-[#B45309] dark:bg-amber-500/20 dark:text-amber-300",
     property:
       "bg-[#F5E6D3] text-[#92400E] dark:bg-amber-700/25 dark:text-amber-200",
-    unit: "bg-[#D1FAE5] text-[#047857] dark:bg-emerald-500/20 dark:text-emerald-300",
-    returned:
-      "bg-[#FEE2E2] text-[#BE123C] dark:bg-rose-500/20 dark:text-rose-300",
     muted:
       "bg-[#F3F4F6] text-[#4B5563] dark:bg-white/10 dark:text-white/70",
   };
@@ -133,53 +94,44 @@ function MoneyPill({ value }) {
 export default function ClientsWrapper() {
   const router = useRouter();
   const { isSidebarOpen, toggleSidebar } = useSidebarStore();
+  const [searchInput, setSearchInput] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [pageSize, setPageSize] = useState(25);
   const [currentPage, setCurrentPage] = useState(1);
-  const [sortDir, setSortDir] = useState(null);
 
-  const filtered = useMemo(() => {
-    const q = searchQuery.trim().toLowerCase();
-    let list = [...MOCK_CLIENTS];
+  useEffect(() => {
+    const handler = setTimeout(() => setSearchQuery(searchInput.trim()), 500);
+    return () => clearTimeout(handler);
+  }, [searchInput]);
 
-    if (q) {
-      list = list.filter((row) =>
-        [row.name, row.mobile, row.clientCode, row.id]
-          .filter(Boolean)
-          .some((v) => String(v).toLowerCase().includes(q))
-      );
-    }
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, pageSize]);
 
-    if (sortDir) {
-      list.sort((a, b) => {
-        const ta = new Date(a.joinedAt).getTime();
-        const tb = new Date(b.joinedAt).getTime();
-        return sortDir === "desc" ? tb - ta : ta - tb;
-      });
-    }
+  const { rows, meta, summary, isLoading, isFetching, isError } = useClientsList({
+    page: currentPage,
+    perPage: pageSize,
+    search: searchQuery,
+  });
 
-    return list;
-  }, [searchQuery, sortDir]);
+  const statCards = summary
+    ? [
+        { key: "total", value: summary.total_customers, label: summary.total_customers_label, bar: "#10B981" },
+        { key: "website", value: summary.website_customers, label: summary.website_customers_label, bar: "#0B5345" },
+        { key: "google_play", value: summary.google_play_customers, label: summary.google_play_customers_label, bar: "#3B82F6" },
+        { key: "apple_store", value: summary.apple_store_customers, label: summary.apple_store_customers_label, bar: "#6B7280" },
+        { key: "banned", value: summary.banned, label: summary.banned_label, bar: "#F97316" },
+      ]
+    : [];
 
-  const total = filtered.length;
-  const lastPage = Math.max(1, Math.ceil(total / pageSize));
+  const total = meta.total;
+  const lastPage = Math.max(1, meta.lastPage);
   const page = Math.min(currentPage, lastPage);
   const start = total === 0 ? 0 : (page - 1) * pageSize + 1;
   const end = Math.min(page * pageSize, total);
-  const pageRows = filtered.slice((page - 1) * pageSize, page * pageSize);
-
-  const handleSearch = (value) => {
-    setSearchQuery(value);
-    setCurrentPage(1);
-  };
-
-  const handlePageSize = (value) => {
-    setPageSize(Number(value));
-    setCurrentPage(1);
-  };
 
   const handleExport = () => {
-    toast.success("تصدير CSV (واجهة تجريبية — لا ملف حقيقي بعد)");
+    toast.success("تصدير CSV (لم يتم ربطه بالباك اند بعد)");
   };
 
   return (
@@ -215,44 +167,41 @@ export default function ClientsWrapper() {
               العملاء
             </h1>
             <p className="text-[13px] text-[#9CA3AF] dark:text-white/45 font-medium leading-relaxed">
-              كل عملاء عقدي حسب المنصة - اضغط «عرض» لملف العميل الكامل
+              كل عملاء عقدي - اضغط «عرض» لملف العميل الكامل
             </p>
           </div>
         </div>
       </div>
 
       {/* Summary stats */}
-      <div className="grid grid-cols-5 gap-3 max-[1200px]:grid-cols-3 max-[768px]:grid-cols-2 max-[480px]:grid-cols-1">
-        {STAT_CARDS.map((card) => (
-          <div
-            key={card.key}
-            className={cn(
-              "relative overflow-hidden rounded-2xl border transition-colors",
-              "bg-white border-[#E8EEEC] shadow-[0_1px_3px_rgba(11,83,69,0.05)]",
-              "dark:bg-[#13241C] dark:border-white/[0.08] dark:shadow-none"
-            )}
-          >
-            <span
-              aria-hidden
-              className="absolute inset-y-2 right-0 w-[4px] rounded-full dark:hidden"
-              style={{ backgroundColor: card.bar }}
-            />
-            <span
-              aria-hidden
-              className="absolute inset-y-2 right-0 w-[4px] rounded-full hidden dark:block"
-              style={{ backgroundColor: card.barDark }}
-            />
-            <div className="px-4 py-4 text-center">
-              <div className="text-[28px] font-black tabular-nums text-[#111827] dark:text-white leading-none mb-2">
-                {card.value}
-              </div>
-              <div className="text-[12px] font-medium text-[#6B7280] dark:text-white/50 whitespace-nowrap">
-                {card.label}
+      {statCards.length > 0 ? (
+        <div className="grid grid-cols-5 gap-3 max-[1200px]:grid-cols-3 max-[768px]:grid-cols-2 max-[480px]:grid-cols-1">
+          {statCards.map((card) => (
+            <div
+              key={card.key}
+              className={cn(
+                "relative overflow-hidden rounded-2xl border transition-colors",
+                "bg-white border-[#E8EEEC] shadow-[0_1px_3px_rgba(11,83,69,0.05)]",
+                "dark:bg-[#13241C] dark:border-white/[0.08] dark:shadow-none"
+              )}
+            >
+              <span
+                aria-hidden
+                className="absolute inset-y-2 right-0 w-[4px] rounded-full"
+                style={{ backgroundColor: card.bar }}
+              />
+              <div className="px-4 py-4 text-center">
+                <div className="text-[28px] font-black tabular-nums text-[#111827] dark:text-white leading-none mb-2">
+                  {card.value ?? 0}
+                </div>
+                <div className="text-[12px] font-medium text-[#6B7280] dark:text-white/50 whitespace-nowrap">
+                  {card.label}
+                </div>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      ) : null}
 
       {/* Search + export */}
       <div className="flex items-center gap-3 max-[640px]:flex-col max-[640px]:items-stretch">
@@ -260,9 +209,9 @@ export default function ClientsWrapper() {
           <Search className="absolute right-3.5 top-1/2 -translate-y-1/2 size-[18px] text-[#9CA3AF] dark:text-white/35 pointer-events-none" />
           <input
             type="text"
-            value={searchQuery}
-            onChange={(e) => handleSearch(e.target.value)}
-            placeholder="بحث بالاسم أو الجوال أو رقم العميل أو رقم الطلب..."
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            placeholder="بحث بالاسم أو الجوال..."
             className={cn(
               "w-full h-[44px] rounded-xl border pr-11 pl-4 text-[13px] transition-all",
               "bg-white border-[#E5E7EB] text-[#111827] placeholder:text-[#9CA3AF]",
@@ -289,7 +238,8 @@ export default function ClientsWrapper() {
 
       {/* Pagination bar */}
       <div className="flex flex-wrap items-center justify-between gap-3 text-[13px]">
-        <div className="text-[#6B7280] dark:text-white/45 font-medium">
+        <div className="text-[#6B7280] dark:text-white/45 font-medium inline-flex items-center gap-2">
+          {isFetching ? <Loader2 className="size-3.5 animate-spin" /> : null}
           يعرض {start}-{end} من {total} عميل
         </div>
 
@@ -321,7 +271,7 @@ export default function ClientsWrapper() {
           <div className="flex items-center gap-1.5 mr-1">
             <select
               value={pageSize}
-              onChange={(e) => handlePageSize(e.target.value)}
+              onChange={(e) => setPageSize(Number(e.target.value))}
               className={cn(
                 "h-8 rounded-lg border px-2 text-[12px] font-semibold focus:outline-none",
                 "bg-white border-[#E5E7EB] text-[#111827] focus:border-[#0B5345]",
@@ -349,28 +299,10 @@ export default function ClientsWrapper() {
           "dark:bg-[#0F1C16] dark:border-white/[0.08] dark:shadow-none"
         )}
       >
-        <table className="w-full border-collapse min-w-[1100px]">
+        <table className="w-full border-collapse min-w-[1000px]">
           <thead>
             <tr className="bg-[#F8FAF9] dark:bg-[#13241C]">
-              <th className={cn(TH, "text-right px-4")}>
-                <button
-                  type="button"
-                  onClick={() =>
-                    setSortDir((d) =>
-                      d === null || d === "asc" ? "desc" : "asc"
-                    )
-                  }
-                  className="inline-flex items-center gap-1.5 hover:text-[#0B5345] dark:hover:text-emerald-300 transition-colors"
-                >
-                  تاريخ الانضمام والساعة
-                  <ArrowDownWideNarrow
-                    className={cn(
-                      "size-3.5 transition-transform",
-                      sortDir === "asc" && "rotate-180"
-                    )}
-                  />
-                </button>
-              </th>
+              <th className={cn(TH, "text-right px-4")}>تاريخ الانضمام</th>
               <th className={cn(TH, "text-right")}>رقم العميل</th>
               <th className={cn(TH, "text-right")}>اسم العميل</th>
               <th className={cn(TH, "text-right")}>رقم الجوال</th>
@@ -385,7 +317,25 @@ export default function ClientsWrapper() {
             </tr>
           </thead>
           <tbody>
-            {pageRows.length === 0 ? (
+            {isLoading ? (
+              <tr>
+                <td
+                  colSpan={12}
+                  className="text-center py-16 text-[13px] text-[#9CA3AF] dark:text-white/35 font-medium"
+                >
+                  <Loader2 className="size-5 animate-spin inline-block" />
+                </td>
+              </tr>
+            ) : isError ? (
+              <tr>
+                <td
+                  colSpan={12}
+                  className="text-center py-16 text-[13px] text-[#FA5252] font-medium"
+                >
+                  تعذر تحميل قائمة العملاء من الخادم
+                </td>
+              </tr>
+            ) : rows.length === 0 ? (
               <tr>
                 <td
                   colSpan={12}
@@ -395,9 +345,8 @@ export default function ClientsWrapper() {
                 </td>
               </tr>
             ) : (
-              pageRows.map((row) => {
+              rows.map((row) => {
                 const { time, date } = splitDateTime(row.joinedAt);
-                const platform = PLATFORM[row.platform] || PLATFORM.website;
 
                 return (
                   <tr
@@ -412,14 +361,6 @@ export default function ClientsWrapper() {
                         <span className="text-[12px] text-[#6B7280] dark:text-white/45 tabular-nums leading-none">
                           {date}
                         </span>
-                        <span
-                          className={cn(
-                            "mt-0.5 inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold whitespace-nowrap",
-                            platform.badgeClass
-                          )}
-                        >
-                          {platform.label}
-                        </span>
                       </div>
                     </td>
 
@@ -428,16 +369,19 @@ export default function ClientsWrapper() {
                     </td>
 
                     <td className="px-3 py-3.5 whitespace-nowrap">
-                      <div className="inline-flex items-center gap-2">
-                        <span className="text-[13px] font-bold text-[#111827] dark:text-white">
-                          {row.name}
+                      <span className="text-[13px] font-bold text-[#111827] dark:text-white">
+                        {row.name}
+                      </span>
+                      {row.platformLabel ? (
+                        <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded-md bg-[#DCFCE7] text-[#15803D] dark:bg-emerald-500/20 dark:text-emerald-300 text-[10px] font-bold">
+                          {row.platformLabel}
                         </span>
-                        {row.forProgrammer ? (
-                          <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-[#FEF3C7] text-[#B45309] dark:bg-amber-500/20 dark:text-amber-300 text-[10px] font-bold">
-                            للمبرمج
-                          </span>
-                        ) : null}
-                      </div>
+                      ) : null}
+                      {row.blocked ? (
+                        <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded-md bg-[#FEE2E2] text-[#DC2626] dark:bg-rose-500/20 dark:text-rose-300 text-[10px] font-bold">
+                          محظور
+                        </span>
+                      ) : null}
                     </td>
 
                     <td
@@ -460,7 +404,7 @@ export default function ClientsWrapper() {
                       <CountBadge value={row.units} tone="completed" />
                     </td>
                     <td className="px-2.5 py-3.5 text-center">
-                      <CountBadge value={row.returned} tone="returned" />
+                      <MoneyPill value={row.refundedAmount} />
                     </td>
                     <td className="px-2.5 py-3.5 text-center">
                       <MoneyPill value={row.paid} />
