@@ -1,7 +1,22 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { Edit, FileText, Loader2, Plus, Save, Trash2, X } from "lucide-react";
+import {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useState,
+} from "react";
+import {
+  ChevronDown,
+  Edit,
+  FileText,
+  Loader2,
+  Plus,
+  Save,
+  Trash2,
+  X,
+} from "lucide-react";
 import { toast } from "sonner";
 import {
   buildContractUpdatePayload,
@@ -60,6 +75,30 @@ const CALENDAR_TYPE_TO_DATE_KEYS = {
 
 const inputClass =
   "w-full h-[48px] bg-white border border-[#EEEEEE] rounded-[14px] px-4 text-[14px] focus:outline-none focus:border-brand-hover transition-all";
+
+const selectClass =
+  "w-full h-[48px] appearance-none bg-white border border-[#EEEEEE] rounded-[14px] ps-4 pe-10 text-[14px] focus:outline-none focus:border-brand-hover transition-all disabled:opacity-60";
+
+/** Native <select> styled to match `inputClass`, with a custom RTL-aware chevron
+ *  (the browser's own arrow renders inconsistently across browsers/OSes, especially in RTL). */
+function NativeSelect({ className = "", ...props }) {
+  return (
+    <div className="relative">
+      <select className={`${selectClass} ${className}`.trim()} {...props} />
+      <ChevronDown className="pointer-events-none absolute end-4 top-1/2 size-4 -translate-y-1/2 text-[#9CA3AF]" />
+    </div>
+  );
+}
+
+/** Accent used for the "form only" dialog redesign (Save button, badges) — matches the approved mockup, distinct from the app's default green brand color. */
+const GOLD = "#B8860B";
+
+function isFieldEmpty(value) {
+  if (value === null || value === undefined) return true;
+  if (typeof value === "string") return value.trim() === "";
+  if (Array.isArray(value)) return value.length === 0;
+  return false;
+}
 
 function isFieldVisible(field, formValues) {
   if (!field) return false;
@@ -424,14 +463,13 @@ function OtherConditionsListField({ formValues, onPatch, fieldErrors = {} }) {
         <label className="text-[13px] font-bold text-black text-right">
           هل توجد شروط أخرى؟
         </label>
-        <select
+        <NativeSelect
           value={enabled ? "1" : "0"}
           onChange={(e) => setEnabled(e.target.value === "1")}
-          className={inputClass}
         >
           <option value="1">نعم</option>
           <option value="0">لا</option>
-        </select>
+        </NativeSelect>
       </div>
 
       {enabled ? (
@@ -515,6 +553,24 @@ function ContractFormField({
     return null;
   }
 
+  if (field.locked) {
+    return (
+      <div className={`flex flex-col gap-2 ${field.colSpan === 2 ? "md:col-span-2" : ""}`}>
+        <div className="flex items-center justify-between gap-2">
+          <label className="text-[13px] font-bold text-black text-right">
+            {field.label}
+          </label>
+          <span className="rounded-full bg-[#F0F0F0] px-2.5 py-1 text-[11px] font-bold text-[#8A8A8A]">
+            مقفل
+          </span>
+        </div>
+        <div className="flex h-[48px] w-full items-center rounded-[14px] border border-[#EEEEEE] bg-[#F9F9F9] px-4 text-[14px] text-[#4D4D4D]">
+          {field.displayValue ?? value ?? "—"}
+        </div>
+      </div>
+    );
+  }
+
   if (field.type === "tenant-roles") {
     return (
       <TenantRolesMultiField
@@ -540,6 +596,7 @@ function ContractFormField({
       <div className={`flex flex-col gap-2 ${field.colSpan === 2 ? "md:col-span-2" : ""} ${field.colSpan === 3 ? "md:col-span-3" : ""}`}>
         <label htmlFor={id} className="text-[13px] font-bold text-black text-right">
           {field.label}
+          {field.required ? <span className="text-[#E24444]"> *</span> : null}
         </label>
         <textarea
           id={id}
@@ -559,16 +616,16 @@ function ContractFormField({
       <div className="flex flex-col gap-2">
         <label htmlFor={id} className="text-[13px] font-bold text-black text-right">
           {field.label}
+          {field.required ? <span className="text-[#E24444]"> *</span> : null}
         </label>
-        <select
+        <NativeSelect
           id={id}
           value={value === 1 || value === "1" ? "1" : "0"}
           onChange={(e) => onChange(e.target.value === "1" ? 1 : 0)}
-          className={inputClass}
         >
           <option value="1">نعم</option>
           <option value="0">لا</option>
-        </select>
+        </NativeSelect>
         {error ? <p className="text-[12px] text-[#E24444]">{error}</p> : null}
       </div>
     );
@@ -635,12 +692,23 @@ function ContractFormField({
           ]
         : selectOptions;
 
+    const isApprovedListField =
+      Array.isArray(field.options) && field.options.length > 0 && !field.optionsSource;
+
     return (
       <div className="flex flex-col gap-2">
-        <label htmlFor={id} className="text-[13px] font-bold text-black text-right">
-          {field.label}
-        </label>
-        <select
+        <div className="flex items-center justify-between gap-2">
+          <label htmlFor={id} className="text-[13px] font-bold text-black text-right">
+            {field.label}
+          {field.required ? <span className="text-[#E24444]"> *</span> : null}
+          </label>
+          {isApprovedListField ? (
+            <span className="rounded-full bg-[#FEF3C7] px-2.5 py-1 text-[11px] font-bold text-[#92400E]">
+              قائمة معتمدة
+            </span>
+          ) : null}
+        </div>
+        <NativeSelect
           id={id}
           value={selectValue}
           disabled={optionsLoading}
@@ -652,7 +720,6 @@ function ContractFormField({
             }
             onChange(/^\d+$/.test(next) ? Number(next) : next);
           }}
-          className={inputClass}
         >
           <option value="">
             {optionsLoading
@@ -668,7 +735,7 @@ function ContractFormField({
               {opt.label}
             </option>
           ))}
-        </select>
+        </NativeSelect>
         {error ? <p className="text-[12px] text-[#E24444]">{error}</p> : null}
       </div>
     );
@@ -685,6 +752,7 @@ function ContractFormField({
       <div className="flex flex-col gap-2">
         <label htmlFor={id} className="text-[13px] font-bold text-black text-right">
           {field.label}
+          {field.required ? <span className="text-[#E24444]"> *</span> : null}
           <span className="mr-2 text-[11px] font-medium text-[#A3A3A3]">
             ({typeLabel})
           </span>
@@ -705,6 +773,7 @@ function ContractFormField({
       <div className={`flex flex-col gap-2 ${field.colSpan === 2 ? "md:col-span-2" : ""} ${field.colSpan === 3 ? "md:col-span-3" : ""}`}>
         <label htmlFor={id} className="text-[13px] font-bold text-black text-right">
           {field.label}
+          {field.required ? <span className="text-[#E24444]"> *</span> : null}
         </label>
         <input
           id={id}
@@ -744,27 +813,42 @@ function ContractFormField({
   );
 }
 
-export function ContractStepEditor({
-  title,
-  step,
-  fields,
-  children,
-  className = "",
-  showEdit = true,
-  /** Override form seed values (e.g. per-unit edit). Merged over step values. */
-  initialValues = null,
-  /** When true, form is seeded only from initialValues (no contract step merge). */
-  seedFromInitialValuesOnly = false,
-  /** Extra keys always merged into the save payload (e.g. real_units_id). */
-  payloadExtras = null,
-  /** Custom save — receives changed-fields payload. Skips default contract update. */
-  onSave = null,
-  /** Override saving spinner (e.g. unit mutation pending). */
-  isSaving: isSavingProp = null,
-}) {
+export const ContractStepEditor = forwardRef(function ContractStepEditor(
+  {
+    title,
+    step,
+    fields: fieldsProp,
+    /** Alternative to `fields`: an array of { title, fields } rendered as titled subsections within one shared form/footer. */
+    fieldGroups = null,
+    children,
+    className = "",
+    showEdit = true,
+    /** Override form seed values (e.g. per-unit edit). Merged over step values. */
+    initialValues = null,
+    /** When true, form is seeded only from initialValues (no contract step merge). */
+    seedFromInitialValuesOnly = false,
+    /** Extra keys always merged into the save payload (e.g. real_units_id). */
+    payloadExtras = null,
+    /** Custom save — receives changed-fields payload. Skips default contract update. */
+    onSave = null,
+    /** Override saving spinner (e.g. unit mutation pending). */
+    isSaving: isSavingProp = null,
+    /** When true, the editor opens directly in edit mode instead of read-only preview. */
+    startInEditing = false,
+    /** When true, renders as a standalone form only: no preview/toggle, Save/Cancel as a bottom footer. */
+    formOnly = false,
+    /** When true (with formOnly), suppresses the internal Save/Cancel footer — an external control drives save() via ref. */
+    hideFooter = false,
+  },
+  ref
+) {
+  const fields = useMemo(
+    () => fieldGroups?.length ? fieldGroups.flatMap((g) => g.fields) : fieldsProp ?? [],
+    [fieldGroups, fieldsProp]
+  );
   const { orderData, updateContract, isSaving: contextSaving } = useSingleOrderContext();
   const isSaving = isSavingProp ?? contextSaving;
-  const [editing, setEditing] = useState(false);
+  const [editing, setEditing] = useState(startInEditing);
   const [form, setForm] = useState({});
   const [initial, setInitial] = useState({});
   const [fieldErrors, setFieldErrors] = useState({});
@@ -819,6 +903,20 @@ export function ContractStepEditor({
 
   const handleSave = async () => {
     const editableKeys = new Set(fields.map((f) => f.key));
+
+    const requiredErrors = {};
+    for (const field of fields) {
+      if (!field.required) continue;
+      if (!isFieldVisible(field, form)) continue;
+      if (isFieldEmpty(form[field.key])) {
+        requiredErrors[field.key] = "هذا الحقل مطلوب";
+      }
+    }
+    if (Object.keys(requiredErrors).length > 0) {
+      setFieldErrors((prev) => ({ ...prev, ...requiredErrors }));
+      toast.error("يرجى تعبئة الحقول المطلوبة");
+      return;
+    }
 
     if (editableKeys.has("tenant_role_ids")) {
       const roleErrors = validateTenantRoleSelection(
@@ -913,8 +1011,97 @@ export function ContractStepEditor({
     setEditing(false);
   };
 
+  useImperativeHandle(ref, () => ({
+    save: handleSave,
+    cancel: handleCancel,
+  }));
+
+  const handleFieldChange = (field, val) => {
+    setForm((prev) => {
+      const next = { ...prev, [field.key]: val };
+
+      // Region change: reset city so it stays within the selected region.
+      if (
+        field.key === "property_place_id" &&
+        String(prev.property_place_id ?? "") !== String(val ?? "")
+      ) {
+        next.property_city_id = "";
+      }
+
+      // Switching Hijri/Gregorian: convert linked date fields.
+      const linkedDateKeys = CALENDAR_TYPE_TO_DATE_KEYS[field.key];
+      if (linkedDateKeys) {
+        const fromType = resolveCalendarType(prev[field.key], prev[linkedDateKeys[0]]);
+        const toType = resolveCalendarType(val, prev[linkedDateKeys[0]]);
+        for (const dateKey of linkedDateKeys) {
+          if (!prev[dateKey]) continue;
+          next[dateKey] = convertDateBetweenCalendars(
+            prev[dateKey],
+            fromType,
+            toType
+          );
+          if (dateKey === "tenant_dob" && next[dateKey]) {
+            const parts = String(next[dateKey]).split("-");
+            if (parts.length === 3) {
+              next.tenant_dob_day = parts[0];
+              next.tenant_dob_month = parts[1];
+              next.tenant_dob_year = parts[2];
+            }
+          }
+          if (dateKey === "dob_of_property_tenant_agent" && next[dateKey]) {
+            const parts = String(next[dateKey]).split("-");
+            if (parts.length === 3) {
+              next.dob_of_property_tenant_agent_day = parts[0];
+              next.dob_of_property_tenant_agent_month = parts[1];
+              next.dob_of_property_tenant_agent_year = parts[2];
+            }
+          }
+        }
+      }
+
+      // Keep day/month/year parts in sync when the main date changes.
+      if (field.type === "date" && typeof val === "string") {
+        const parts = val.split("-");
+        if (parts.length === 3) {
+          if (field.key === "tenant_dob") {
+            next.tenant_dob_day = parts[0];
+            next.tenant_dob_month = parts[1];
+            next.tenant_dob_year = parts[2];
+          }
+          if (field.key === "dob_of_property_tenant_agent") {
+            next.dob_of_property_tenant_agent_day = parts[0];
+            next.dob_of_property_tenant_agent_month = parts[1];
+            next.dob_of_property_tenant_agent_year = parts[2];
+          }
+        }
+      }
+
+      return next;
+    });
+  };
+
+  const renderField = (field) => (
+    <ContractFormField
+      key={field.key}
+      field={field}
+      value={form[field.key]}
+      formValues={form}
+      orderData={orderData}
+      error={fieldErrors[field.key]}
+      fieldErrors={fieldErrors}
+      onPatch={(patch) => setForm((prev) => ({ ...prev, ...patch }))}
+      onChange={(val) => handleFieldChange(field, val)}
+    />
+  );
+
   return (
     <div className={className} dir="rtl">
+      {title && !fieldGroups?.length && formOnly ? (
+        <h4 className="mb-4 text-[13px] font-bold text-gray-500 text-right border-b border-[#EEEEEE] pb-2">
+          {title}
+        </h4>
+      ) : null}
+      {title && !fieldGroups?.length && !formOnly ? (
       <div className="mb-4 flex flex-wrap items-center gap-3 px-2">
       <div className="flex items-center gap-2">
           <FileText className="size-4 text-green-600" />
@@ -961,94 +1148,71 @@ export function ContractStepEditor({
         ) : null}
 
       </div>
+      ) : null}
 
-      {editing ? (
-        <div className="rounded-[28px] border border-[#EEEEEE] bg-[#F9F9F9] p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {fields
-              .filter((field) => isFieldVisible(field, form))
-              .map((field) => (
-              <ContractFormField
-                key={field.key}
-                field={field}
-                value={form[field.key]}
-                formValues={form}
-                orderData={orderData}
-                error={fieldErrors[field.key]}
-                fieldErrors={fieldErrors}
-                onPatch={(patch) =>
-                  setForm((prev) => ({ ...prev, ...patch }))
-                }
-                onChange={(val) =>
-                  setForm((prev) => {
-                    const next = { ...prev, [field.key]: val };
+      {editing || formOnly ? (
+        <div
+          className={
+            formOnly
+              ? "space-y-6"
+              : "rounded-[28px] border border-[#EEEEEE] bg-[#F9F9F9] p-6"
+          }
+        >
+          {fieldGroups?.length ? (
+            fieldGroups.map((group, groupIndex) => {
+              const visibleFields = group.fields.filter((field) =>
+                isFieldVisible(field, form)
+              );
+              if (visibleFields.length === 0) return null;
+              return (
+                <div key={group.title ?? groupIndex} className="space-y-4">
+                  {group.title ? (
+                    <h4 className="text-[13px] font-bold text-gray-500 text-right border-b border-[#EEEEEE] pb-2">
+                      {group.title}
+                    </h4>
+                  ) : null}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {visibleFields.map(renderField)}
+                  </div>
+                </div>
+              );
+            })
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {fields.filter((field) => isFieldVisible(field, form)).map(renderField)}
+            </div>
+          )}
 
-                    // Region change: reset city so it stays within the selected region.
-                    if (
-                      field.key === "property_place_id" &&
-                      String(prev.property_place_id ?? "") !== String(val ?? "")
-                    ) {
-                      next.property_city_id = "";
-                    }
-
-                    // Switching Hijri/Gregorian: convert linked date fields.
-                    const linkedDateKeys = CALENDAR_TYPE_TO_DATE_KEYS[field.key];
-                    if (linkedDateKeys) {
-                      const fromType = resolveCalendarType(prev[field.key], prev[linkedDateKeys[0]]);
-                      const toType = resolveCalendarType(val, prev[linkedDateKeys[0]]);
-                      for (const dateKey of linkedDateKeys) {
-                        if (!prev[dateKey]) continue;
-                        next[dateKey] = convertDateBetweenCalendars(
-                          prev[dateKey],
-                          fromType,
-                          toType
-                        );
-                        if (dateKey === "tenant_dob" && next[dateKey]) {
-                          const parts = String(next[dateKey]).split("-");
-                          if (parts.length === 3) {
-                            next.tenant_dob_day = parts[0];
-                            next.tenant_dob_month = parts[1];
-                            next.tenant_dob_year = parts[2];
-                          }
-                        }
-                        if (dateKey === "dob_of_property_tenant_agent" && next[dateKey]) {
-                          const parts = String(next[dateKey]).split("-");
-                          if (parts.length === 3) {
-                            next.dob_of_property_tenant_agent_day = parts[0];
-                            next.dob_of_property_tenant_agent_month = parts[1];
-                            next.dob_of_property_tenant_agent_year = parts[2];
-                          }
-                        }
-                      }
-                    }
-
-                    // Keep day/month/year parts in sync when the main date changes.
-                    if (field.type === "date" && typeof val === "string") {
-                      const parts = val.split("-");
-                      if (parts.length === 3) {
-                        if (field.key === "tenant_dob") {
-                          next.tenant_dob_day = parts[0];
-                          next.tenant_dob_month = parts[1];
-                          next.tenant_dob_year = parts[2];
-                        }
-                        if (field.key === "dob_of_property_tenant_agent") {
-                          next.dob_of_property_tenant_agent_day = parts[0];
-                          next.dob_of_property_tenant_agent_month = parts[1];
-                          next.dob_of_property_tenant_agent_year = parts[2];
-                        }
-                      }
-                    }
-
-                    return next;
-                  })
-                }
-              />
-            ))}
-          </div>
+          {formOnly && !hideFooter ? (
+            <div className="mt-6 flex flex-col sm:flex-row gap-3">
+              <button
+                type="button"
+                onClick={handleSave}
+                disabled={isSaving}
+                className="flex-1 flex items-center justify-center gap-2 h-[52px] rounded-full text-white text-[15px] font-bold disabled:opacity-60 transition-opacity hover:opacity-90"
+                style={{ backgroundColor: GOLD }}
+              >
+                {isSaving ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <Save size={18} />
+                )}
+                حفظ التعديلات
+              </button>
+              <button
+                type="button"
+                onClick={handleCancel}
+                disabled={isSaving}
+                className="h-[52px] px-8 rounded-full border border-[#E4E4E4] text-[15px] font-bold text-[#737373] hover:bg-[#F5F5F5] disabled:opacity-60"
+              >
+                إلغاء
+              </button>
+            </div>
+          ) : null}
         </div>
       ) : (
         children
       )}
     </div>
   );
-}
+});

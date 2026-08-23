@@ -1,140 +1,24 @@
 "use client";
 
-import { useCallback, useMemo } from "react";
-import { Copy, Inbox, Trash2 } from "lucide-react";
+import { useCallback, useMemo, useRef, useState } from "react";
+import { Inbox, Loader2, Save, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import dynamic from "next/dynamic";
 import { ContractStepEditor } from "./contract-edit/contract-step-editor";
 import {
   ADMIN_UNIT_CORE_FIELDS,
   ADMIN_UNIT_ROOM_FIELDS,
   ADMIN_UNIT_SERVICE_FIELDS,
 } from "./contract-edit/contract-field-schemas";
-import {
-  formatDisplayValue,
-  isEmptyDisplayValue,
-  SECTION_ERROR_BUTTON_CLASS,
-} from "./contract-summary-view";
-import { asYesNo } from "./frontend-contract-fields";
 import { normalizeFieldValue } from "@/src/lib/contract-update";
 import { useSingleOrderContext } from "./single-order-context";
 
-const OrderSectionErrorMenu = dynamic(
-  () => import("@/components/Orders/messages/order-section-error-menu"),
-  { ssr: false }
-);
+const GOLD = "#B8860B";
 
-const BORDER_COLORS = [
-  "border-blue-500",
-  "border-amber-500",
-  "border-indigo-600",
-  "border-sky-400",
-  "border-orange-500",
-  "border-rose-500",
-  "border-purple-500",
-  "border-green-500",
-  "border-teal-500",
-  "border-gray-400",
+const UNIT_FIELD_GROUPS = [
+  { title: "بيانات الوحدة", fields: ADMIN_UNIT_CORE_FIELDS },
+  { title: "تفاصيل الغرف", fields: ADMIN_UNIT_ROOM_FIELDS },
+  { title: "الخدمات", fields: ADMIN_UNIT_SERVICE_FIELDS },
 ];
-
-const copy = (value) => {
-  if (isEmptyDisplayValue(value)) return;
-  navigator.clipboard.writeText(String(value));
-  toast.success("تم النسخ بنجاح");
-};
-
-const DetailCard = ({
-  label,
-  value,
-  copyable = false,
-  borderColor = "border-gray-200",
-}) => {
-  const empty = isEmptyDisplayValue(value);
-  return (
-    <div
-      className={`rounded-[16px] border-r-4 bg-white p-4 shadow-sm ${borderColor} ${
-        empty ? "opacity-45" : ""
-      }`}
-    >
-      <span className="mb-1 block text-right text-xs font-medium text-gray-400">
-        {label}
-      </span>
-      <p
-        className={`flex items-center justify-end gap-2 text-sm font-bold lg:text-base ${
-          empty ? "text-[#A3A3A3]" : "text-gray-800"
-        }`}
-      >
-        {copyable && !empty ? (
-          <button
-            type="button"
-            onClick={() => copy(value)}
-            className="text-gray-400 hover:text-brand-main"
-            title="نسخ"
-          >
-            <Copy size={14} />
-          </button>
-        ) : null}
-        <span>{formatDisplayValue(value)}</span>
-      </p>
-    </div>
-  );
-};
-
-function ownershipLabel(value) {
-  if (value === "owner") return "المالك";
-  if (value === "tenant") return "المستأجر";
-  return value;
-}
-
-/** API stores type_furnished as 0|1 — display Arabic labels. */
-function furnishedTypeLabel(value) {
-  if (value === true || value === 1 || value === "1") return "جديد";
-  if (value === false || value === 0 || value === "0") return "مستعمل";
-  return value;
-}
-
-/** Source of truth: unit object only — never contract root / step2. */
-function resolveUnitFieldValue(field, unit) {
-  const displayKey = field.displayKey;
-  const rawValue =
-    displayKey && unit?.[displayKey] != null && unit[displayKey] !== ""
-      ? unit[displayKey]
-      : unit?.[field.key];
-
-  if (field.type === "boolean") {
-    if (rawValue === null || rawValue === undefined || rawValue === "") {
-      return null;
-    }
-    return asYesNo(rawValue);
-  }
-
-  if (field.key === "type_furnished") {
-    return furnishedTypeLabel(rawValue);
-  }
-
-  if (
-    field.key === "electricity_meter_ownership" ||
-    field.key === "water_meter_ownership"
-  ) {
-    return ownershipLabel(rawValue);
-  }
-
-  return rawValue;
-}
-
-function buildSectionItems(fields, unit) {
-  return fields.map((field, index) => ({
-    label: field.label,
-    value: resolveUnitFieldValue(field, unit),
-    borderColor: BORDER_COLORS[index % BORDER_COLORS.length],
-    copyable:
-      field.type !== "boolean" &&
-      (field.key.includes("meter") ||
-        field.key.includes("number") ||
-        field.key.includes("unit_number") ||
-        field.key.includes("id")),
-  }));
-}
 
 const ALL_UNIT_FIELDS = [
   ...ADMIN_UNIT_CORE_FIELDS,
@@ -201,7 +85,7 @@ function isSelectedUnit(unit, data) {
   return Number(unit.id) === Number(selectedId);
 }
 
-function SingleUnitBlock({ unit, data, index }) {
+function SingleUnitBlock({ unit, data, index, formRef }) {
   const { updateUnit, deleteUnit, isSavingUnit, isDeletingUnit } =
     useSingleOrderContext();
   const selected = isSelectedUnit(unit, data);
@@ -211,22 +95,12 @@ function SingleUnitBlock({ unit, data, index }) {
       ? `الوحدة رقم ${unit.unit_number}`
       : `وحدة #${unit?.id ?? index + 1}`;
 
-  const coreItems = buildSectionItems(ADMIN_UNIT_CORE_FIELDS, unit);
-  const roomItems = buildSectionItems(ADMIN_UNIT_ROOM_FIELDS, unit);
-  const serviceItems = buildSectionItems(ADMIN_UNIT_SERVICE_FIELDS, unit);
-
-  const coreInitial = useMemo(
-    () => getUnitInitialValues(unit, ADMIN_UNIT_CORE_FIELDS),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    unitFormDeps(unit)
-  );
-  const roomInitial = useMemo(
-    () => getUnitInitialValues(unit, ADMIN_UNIT_ROOM_FIELDS),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    unitFormDeps(unit)
-  );
-  const serviceInitial = useMemo(
-    () => getUnitInitialValues(unit, ADMIN_UNIT_SERVICE_FIELDS),
+  const initialValues = useMemo(
+    () => ({
+      ...getUnitInitialValues(unit, ADMIN_UNIT_CORE_FIELDS),
+      ...getUnitInitialValues(unit, ADMIN_UNIT_ROOM_FIELDS),
+      ...getUnitInitialValues(unit, ADMIN_UNIT_SERVICE_FIELDS),
+    }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     unitFormDeps(unit)
   );
@@ -290,63 +164,18 @@ function SingleUnitBlock({ unit, data, index }) {
         ) : null}
       </div>
 
-      <div className="space-y-6">
-        <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-          <ContractStepEditor
-            title="بيانات الوحدة"
-            step="step2"
-            fields={ADMIN_UNIT_CORE_FIELDS}
-            initialValues={coreInitial}
-            seedFromInitialValuesOnly
-            onSave={handleSaveSection}
-            isSaving={isSavingUnit}
-          >
-            <div className="rounded-[20px] border border-gray-100 bg-white p-5">
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                {coreItems.map((item) => (
-                  <DetailCard key={item.label} {...item} />
-                ))}
-              </div>
-            </div>
-          </ContractStepEditor>
-
-          <ContractStepEditor
-            title="تفاصيل الغرف"
-            step="step2"
-            fields={ADMIN_UNIT_ROOM_FIELDS}
-            initialValues={roomInitial}
-            seedFromInitialValuesOnly
-            onSave={handleSaveSection}
-            isSaving={isSavingUnit}
-          >
-            <div className="rounded-[20px] border border-gray-100 bg-white p-5">
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                {roomItems.map((item) => (
-                  <DetailCard key={item.label} {...item} />
-                ))}
-              </div>
-            </div>
-          </ContractStepEditor>
-        </div>
-
-        <ContractStepEditor
-          title="الخدمات"
-          step="step2"
-          fields={ADMIN_UNIT_SERVICE_FIELDS}
-          initialValues={serviceInitial}
-          seedFromInitialValuesOnly
-          onSave={handleSaveSection}
-          isSaving={isSavingUnit}
-        >
-          <div className="rounded-[20px] border border-gray-100 bg-white p-5">
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {serviceItems.map((item) => (
-                <DetailCard key={item.label} {...item} />
-              ))}
-            </div>
-          </div>
-        </ContractStepEditor>
-      </div>
+      <ContractStepEditor
+        ref={formRef}
+        step="step2"
+        fieldGroups={UNIT_FIELD_GROUPS}
+        initialValues={initialValues}
+        seedFromInitialValuesOnly
+        onSave={handleSaveSection}
+        isSaving={isSavingUnit}
+        startInEditing
+        formOnly
+        hideFooter
+      />
     </section>
   );
 }
@@ -365,41 +194,69 @@ const UnitDetailes = ({ data }) => {
   const units = Array.isArray(data?.units) ? data.units : [];
   const unitsCount = data?.units_count ?? units.length;
   const isEmpty = unitsCount === 0 || units.length === 0;
+  const unitRefs = useRef(new Map());
+  const [isSavingAll, setIsSavingAll] = useState(false);
+
+  const handleSaveAll = async () => {
+    setIsSavingAll(true);
+    try {
+      await Promise.all(
+        Array.from(unitRefs.current.values())
+          .filter(Boolean)
+          .map((formHandle) => formHandle.save())
+      );
+    } finally {
+      setIsSavingAll(false);
+    }
+  };
 
   return (
     <div className="space-y-6 p-4 lg:p-6" dir="rtl">
-      <div className="flex items-start justify-between gap-4">
-        <div className="min-w-0 flex-1 space-y-6">
-          <div className="flex flex-wrap items-center gap-2 px-1">
-            <p className="text-sm font-bold text-gray-800">
-              وحدات العقد
-              <span className="mr-2 rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-bold text-gray-600">
-                {unitsCount}
-              </span>
-            </p>
-          </div>
+      <div className="flex flex-wrap items-center gap-2 px-1">
+        <p className="text-sm font-bold text-gray-800">
+          وحدات العقد
+          <span className="mr-2 rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-bold text-gray-600">
+            {unitsCount}
+          </span>
+        </p>
+      </div>
 
-          {isEmpty ? (
-            <UnitsEmptyState />
-          ) : (
-            units.map((unit, index) => (
+      {isEmpty ? (
+        <UnitsEmptyState />
+      ) : (
+        <>
+          <div className="space-y-6">
+            {units.map((unit, index) => (
               <SingleUnitBlock
                 key={unit?.id ?? `unit-${index}`}
                 unit={unit}
                 data={data}
                 index={index}
+                formRef={(handle) => {
+                  const key = unit?.id ?? `unit-${index}`;
+                  if (handle) unitRefs.current.set(key, handle);
+                  else unitRefs.current.delete(key);
+                }}
               />
-            ))
-          )}
-        </div>
+            ))}
+          </div>
 
-        <OrderSectionErrorMenu
-          label="إرسال خطأ للعميل"
-          orderData={data}
-          context="unitDetails"
-          buttonClassName={SECTION_ERROR_BUTTON_CLASS}
-        />
-      </div>
+          <button
+            type="button"
+            onClick={handleSaveAll}
+            disabled={isSavingAll}
+            className="flex w-full items-center justify-center gap-2 h-[52px] rounded-full text-white text-[15px] font-bold disabled:opacity-60 transition-opacity hover:opacity-90"
+            style={{ backgroundColor: GOLD }}
+          >
+            {isSavingAll ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <Save size={18} />
+            )}
+            حفظ التعديلات
+          </button>
+        </>
+      )}
     </div>
   );
 };
