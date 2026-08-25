@@ -74,11 +74,11 @@ export default function Roles() {
   return (
     <div className="flex flex-col gap-5" dir="rtl">
       <div className="flex items-center justify-between gap-4">
-        <h2 className="text-[18px] font-bold text-[#111827]">إدارة الأدوار</h2>
+        <h2 className="text-lg font-bold text-gray-900">إدارة الأدوار</h2>
         <PermissionGate section={PERMISSION_SECTIONS.roles} action="create">
           <Link
             href="/home/roles-and-employees/roles/add"
-            className="inline-flex items-center gap-1.5 h-10 px-5 rounded-lg border border-[#D1D5DB] bg-white text-[#374151] text-[13px] font-semibold hover:bg-[#F9FAFB] transition-colors"
+            className="inline-flex items-center gap-1.5 h-10 px-5 rounded-lg border border-[#D1D5DB] bg-white text-gray-700 text-13 font-semibold hover:bg-[#F9FAFB] transition-colors"
           >
             + إضافة دور جديد
           </Link>
@@ -109,7 +109,7 @@ export default function Roles() {
                 return (
                   <tr
                     key={role.id}
-                    className="border-b border-[#F3F4F6] last:border-0 hover:bg-[#FAFAFA] transition-colors"
+                    className="border-b border-status-neutral-bg last:border-0 hover:bg-neutral-50 transition-colors"
                   >
                     <td className="px-4 py-3.5">
                       <RoleBadge
@@ -118,15 +118,15 @@ export default function Roles() {
                       />
                     </td>
                     <td className="px-4 py-3.5">
-                      <span className="text-[13px] text-[#374151]">{employeeNames}</span>
+                      <span className="text-13 text-gray-700">{employeeNames}</span>
                     </td>
                     <td className="px-4 py-3.5">
-                      <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-[#D1FAE5] text-[#047857] text-[12px] font-bold">
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-[#D1FAE5] text-[#047857] text-xs font-bold">
                         {permissionsCount} صلاحية
                       </span>
                     </td>
                     <td className="px-4 py-3.5">
-                      <span className="text-[13px] text-[#6B7280] tabular-nums">
+                      <span className="text-13 text-status-neutral tabular-nums">
                         {role.created_at_label || formatDateShort(role.updated_at)}
                       </span>
                     </td>
@@ -149,7 +149,7 @@ export default function Roles() {
               })
             ) : (
               <tr>
-                <td colSpan={5} className="text-center p-10 text-[#9CA3AF] text-sm">
+                <td colSpan={5} className="text-center p-10 text-gray-400 text-sm">
                   لا يوجد أدوار مسجلة حالياً.
                 </td>
               </tr>
@@ -165,21 +165,21 @@ export default function Roles() {
       />
 
       <Dialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
-        <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden rounded-[32px] border-0" dir="rtl">
+        <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden rounded-32 border-0" dir="rtl">
           {categoryToDelete && (
             <div className="p-8 flex flex-col items-center text-center gap-6">
-              <div className="w-24 h-24 rounded-full bg-[#FFEBEB] text-[#FF4D4F] flex items-center justify-center shadow-inner mt-4">
+              <div className="w-24 h-24 rounded-full bg-[#FFEBEB] text-status-danger flex items-center justify-center shadow-inner mt-4">
                 <i className="fa-solid fa-trash text-[40px]" />
               </div>
 
               <div className="flex flex-col gap-2">
-                <h3 className="text-[22px] font-black text-black">هل أنت متأكد من حذف الدور؟</h3>
-                <p className="text-[18px] font-bold text-[#FF4D4F] bg-[#FFEBEB] px-4 py-1.5 rounded-full inline-block mx-auto">
+                <h3 className="text-22 font-black text-black">هل أنت متأكد من حذف الدور؟</h3>
+                <p className="text-lg font-bold text-status-danger bg-[#FFEBEB] px-4 py-1.5 rounded-full inline-block mx-auto">
                   {categoryToDelete.title_trans || categoryToDelete.title_ar || categoryToDelete.name}
                 </p>
               </div>
 
-              <p className="text-[15px] font-medium text-[#737373]">
+              <p className="text-15 font-medium text-neutral-500">
                 هذا الإجراء لا يمكن التراجع عنه بعد الحذف! سيتم فقدان كافة الصلاحيات المرتبطة بهذا الدور.
               </p>
 
@@ -188,7 +188,7 @@ export default function Roles() {
                   type="button"
                   onClick={confirmDelete}
                   disabled={deleteRolePending}
-                  className="flex-1 h-[54px] bg-[#FF4D4F] text-white rounded-[16px] font-bold text-[16px] hover:bg-[#E03E3E] transition-all shadow-lg shadow-[#FF4D4F]/25 flex items-center justify-center"
+                  className="flex-1 h-13.5 bg-status-danger text-white rounded-2xl font-bold text-base hover:bg-[#E03E3E] transition-all shadow-lg shadow-status-danger/25 flex items-center justify-center"
                 >
                   {deleteRolePending ? <Loader2 className="animate-spin" /> : "تأكيـد الحـذف"}
                 </button>
@@ -196,7 +196,7 @@ export default function Roles() {
                   type="button"
                   onClick={() => setIsDeleteModalOpen(false)}
                   disabled={deleteRolePending}
-                  className="flex-1 h-[54px] bg-[#F5F5F5] text-[#737373] rounded-[16px] font-bold text-[16px] hover:bg-[#EEEEEE] transition-all"
+                  className="flex-1 h-13.5 bg-neutral-100 text-neutral-500 rounded-2xl font-bold text-base hover:bg-surface-border transition-all"
                 >
                   إلغاء
                 </button>

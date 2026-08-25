@@ -21,11 +21,11 @@ import { formatDateShort } from '@/components/roles-and-employees/shared'
 function InfoRow({ label, required, value, children }) {
     return (
         <div className="flex flex-col gap-2 pb-4 border-b border-[#F0F0F0]">
-            <span className="text-[12px] font-bold text-[#A3A3A3]">
+            <span className="text-xs font-bold text-ink-placeholder">
                 {label}
-                {required && <span className="text-[#FF4D4F] mr-1">*</span>}
+                {required && <span className="text-status-danger mr-1">*</span>}
             </span>
-            {children ?? <span className="text-[15px] font-bold text-black">{value}</span>}
+            {children ?? <span className="text-15 font-bold text-black">{value}</span>}
         </div>
     );
 }
@@ -173,8 +173,8 @@ export default function EditRole() {
     };
 
     const PermissionSection = ({ section }) => (
-        <div className="bg-[#FAFAFA] border border-[#F0F0F0] rounded-[24px] p-6 hover:shadow-md transition-all">
-            <h3 className="text-[16px] font-black text-black mb-5 pb-3 border-b border-[#EEEEEE]">
+        <div className="bg-neutral-50 border border-[#F0F0F0] rounded-3xl p-6 hover:shadow-md transition-all">
+            <h3 className="text-base font-black text-black mb-5 pb-3 border-b border-surface-border">
                 {section.section_label?.ar ?? section.section_key}
             </h3>
             <div className="flex flex-col gap-4">
@@ -183,7 +183,7 @@ export default function EditRole() {
                         key={perm.id}
                         className="flex items-center justify-between group cursor-pointer"
                     >
-                        <span className="text-[14px] font-bold text-[#737373] group-hover:text-black transition-all">
+                        <span className="text-sm font-bold text-neutral-500 group-hover:text-black transition-all">
                             {perm.action_label?.ar ?? perm.action}
                         </span>
                         <div className="relative flex items-center">
@@ -192,9 +192,9 @@ export default function EditRole() {
                                 checked={selectedPermissionIds.has(perm.id)}
                                 onChange={() => handlePermissionChange(perm.id)}
                                 disabled={isPending}
-                                className="peer appearance-none w-6 h-6 border-2 border-[#E4E4E4] rounded-[6px] checked:bg-brand-main checked:border-brand-main transition-all cursor-pointer disabled:opacity-50"
+                                className="peer appearance-none w-6 h-6 border-2 border-neutral-200 rounded-[6px] checked:bg-brand-main checked:border-brand-main transition-all cursor-pointer disabled:opacity-50"
                             />
-                            <i className="fa-solid fa-check absolute left-1 text-white text-[10px] opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none"></i>
+                            <i className="fa-solid fa-check absolute left-1 text-white text-10 opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none"></i>
                         </div>
                     </label>
                 ))}
@@ -204,7 +204,7 @@ export default function EditRole() {
 
     if (!roleId) {
         return (
-            <div className="p-6 text-center text-[#FF4D4F]" dir="rtl">
+            <div className="p-6 text-center text-status-danger" dir="rtl">
                 معرف الدور غير موجود.
                 <button
                     type="button"
@@ -223,7 +223,7 @@ export default function EditRole() {
 
     if (roleError || permissionsError) {
         return (
-            <div className="p-6 text-center text-[#FF4D4F]" dir="rtl">
+            <div className="p-6 text-center text-status-danger" dir="rtl">
                 تعذر تحميل بيانات الدور.
                 <button
                     type="button"
@@ -250,15 +250,15 @@ export default function EditRole() {
                 thirdURL={`/home/roles-and-employees/roles/edit?id=${roleId}`}
             />
 
-            <div className="bg-white rounded-[32px] border border-[#F0F0F0] p-8 mt-4 shadow-sm relative z-10" dir="rtl">
-                <div className="flex flex-col gap-8 pb-8 border-b border-[#F5F5F5]">
+            <div className="bg-white rounded-32 border border-[#F0F0F0] p-8 mt-4 shadow-sm relative z-10" dir="rtl">
+                <div className="flex flex-col gap-8 pb-8 border-b border-neutral-100">
                     {/* Identity header */}
                     <div className="relative flex flex-col items-center text-center gap-1 pt-2">
                         <button
                             type="button"
                             onClick={handleSubmit}
                             disabled={isPending}
-                            className="absolute top-0 left-0 px-6 py-2.5 bg-brand-main text-white rounded-full font-bold text-[13px] hover:bg-brand-main/90 transition-all shadow-lg shadow-brand-main/20 min-w-[110px] disabled:opacity-60 flex items-center justify-center gap-2"
+                            className="absolute top-0 left-0 px-6 py-2.5 bg-brand-main text-white rounded-full font-bold text-13 hover:bg-brand-main/90 transition-all shadow-lg shadow-brand-main/20 min-w-[110px] disabled:opacity-60 flex items-center justify-center gap-2"
                         >
                             {isPending ? (
                                 <>
@@ -277,15 +277,15 @@ export default function EditRole() {
                             {formData.title_ar || 'دور بدون اسم'}
                         </h2>
                         {role?.name && (
-                            <p className="text-[13px] font-medium text-[#A3A3A3]" dir="ltr">
+                            <p className="text-13 font-medium text-ink-placeholder" dir="ltr">
                                 {role.name}
                             </p>
                         )}
                         <div className="flex items-center gap-3 mt-3">
                             <span
                                 className={cn(
-                                    "inline-flex items-center rounded-full px-3.5 py-1.5 text-[12px] font-bold",
-                                    formData.is_active ? "bg-[#DCFCE7] text-[#15803D]" : "bg-[#F3F4F6] text-[#6B7280]"
+                                    "inline-flex items-center rounded-full px-3.5 py-1.5 text-xs font-bold",
+                                    formData.is_active ? "bg-[#DCFCE7] text-green-700" : "bg-status-neutral-bg text-status-neutral"
                                 )}
                             >
                                 {formData.is_active ? 'نشط' : 'غير نشط'}
@@ -295,10 +295,10 @@ export default function EditRole() {
                                 onClick={() => setFormData(prev => ({ ...prev, is_active: !prev.is_active }))}
                                 disabled={isPending}
                                 className={cn(
-                                    "inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[12px] font-bold transition-all disabled:opacity-60",
+                                    "inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-bold transition-all disabled:opacity-60",
                                     formData.is_active
                                         ? "bg-[#FEF3C7] text-[#B45309] hover:bg-[#FDE7A8]"
-                                        : "bg-[#DCFCE7] text-[#15803D] hover:bg-[#C6F6D9]"
+                                        : "bg-[#DCFCE7] text-green-700 hover:bg-[#C6F6D9]"
                                 )}
                             >
                                 {formData.is_active ? (
@@ -318,7 +318,7 @@ export default function EditRole() {
 
                     {/* Basic info */}
                     <div>
-                        <h3 className="text-[16px] font-black text-black mb-4">بيـــانات الدور:</h3>
+                        <h3 className="text-base font-black text-black mb-4">بيـــانات الدور:</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-1 max-w-[1000px]">
                             <InfoRow label="اللقب" required>
                                 <input
@@ -327,7 +327,7 @@ export default function EditRole() {
                                     value={formData.title_ar}
                                     onChange={(e) => setFormData(prev => ({ ...prev, title_ar: e.target.value }))}
                                     disabled={isPending}
-                                    className="w-full bg-transparent text-[15px] font-bold text-black focus:outline-none disabled:opacity-60 placeholder:text-[#C7C7C7] placeholder:font-medium"
+                                    className="w-full bg-transparent text-15 font-bold text-black focus:outline-none disabled:opacity-60 placeholder:text-[#C7C7C7] placeholder:font-medium"
                                 />
                             </InfoRow>
 
@@ -345,7 +345,7 @@ export default function EditRole() {
                                     disabled={isPending}
                                     dir="rtl"
                                 >
-                                    <SelectTrigger className="h-auto border-0 shadow-none rounded-none bg-transparent px-0 py-0 text-[15px] font-bold text-black focus:ring-0">
+                                    <SelectTrigger className="h-auto border-0 shadow-none rounded-none bg-transparent px-0 py-0 text-15 font-bold text-black focus:ring-0">
                                         <SelectValue placeholder="بدون موظف" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -365,7 +365,7 @@ export default function EditRole() {
 
                     {/* Overview stats */}
                     <div>
-                        <h3 className="text-[16px] font-black text-black mb-4">نظرة عامة:</h3>
+                        <h3 className="text-base font-black text-black mb-4">نظرة عامة:</h3>
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-10 gap-y-1 max-w-[1000px]">
                             <InfoRow label="عدد الصلاحيات المفعّلة" value={selectedPermissionIds.size} />
                             <InfoRow label="عدد الأقسام" value={sections.length} />
@@ -376,26 +376,26 @@ export default function EditRole() {
 
                 <div className="mt-8">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-                        <h2 className="text-[18px] font-black text-black relative pr-4 before:content-[''] before:absolute before:right-0 before:top-1/2 before:-translate-y-1/2 before:w-1.5 before:h-5 before:bg-brand-main before:rounded-full">صلاحيـــات النظـــام:</h2>
-                        <div className="flex items-center gap-3 bg-[#FAFAFA] px-4 py-2.5 rounded-[18px] border border-[#F0F0F0]">
-                            <span className="text-[13px] font-bold text-[#737373]">تفعيل كافة الصلاحيات لهذا الدور</span>
-                            <div className="flex items-center gap-2 pr-4 border-r border-[#EEEEEE]">
+                        <h2 className="text-lg font-black text-black relative pr-4 before:content-[''] before:absolute before:right-0 before:top-1/2 before:-translate-y-1/2 before:w-1.5 before:h-5 before:bg-brand-main before:rounded-full">صلاحيـــات النظـــام:</h2>
+                        <div className="flex items-center gap-3 bg-neutral-50 px-4 py-2.5 rounded-[18px] border border-[#F0F0F0]">
+                            <span className="text-13 font-bold text-neutral-500">تفعيل كافة الصلاحيات لهذا الدور</span>
+                            <div className="flex items-center gap-2 pr-4 border-r border-surface-border">
                                 <Switch
                                     checked={activateAllPermissions}
                                     onCheckedChange={handleActivateAll}
                                     disabled={sections.length === 0 || isPending}
                                     dir="ltr"
                                 />
-                                <span className="text-[13px] font-bold text-black whitespace-nowrap">تحديد الكل</span>
+                                <span className="text-13 font-bold text-black whitespace-nowrap">تحديد الكل</span>
                             </div>
                         </div>
                     </div>
                     {permissionsError ? (
-                        <p className="text-center text-[#FF4D4F] text-sm py-8">
+                        <p className="text-center text-status-danger text-sm py-8">
                             تعذر تحميل الصلاحيات. يرجى المحاولة مرة أخرى.
                         </p>
                     ) : sections.length === 0 ? (
-                        <p className="text-center text-[#A3A3A3] text-sm py-8">
+                        <p className="text-center text-ink-placeholder text-sm py-8">
                             لا توجد صلاحيات متاحة حالياً.
                         </p>
                     ) : (

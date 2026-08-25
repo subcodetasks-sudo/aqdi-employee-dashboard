@@ -119,8 +119,8 @@ export default function AddRole() {
     };
 
     const PermissionSection = ({ section }) => (
-        <div className="bg-[#FAFAFA] border border-[#F0F0F0] rounded-[24px] p-6 hover:shadow-md transition-all">
-            <h3 className="text-[16px] font-black text-black mb-5 pb-3 border-b border-[#EEEEEE]">
+        <div className="bg-neutral-50 border border-[#F0F0F0] rounded-3xl p-6 hover:shadow-md transition-all">
+            <h3 className="text-base font-black text-black mb-5 pb-3 border-b border-surface-border">
                 {section.section_label?.ar ?? section.section_key}
             </h3>
             <div className="flex flex-col gap-4">
@@ -129,7 +129,7 @@ export default function AddRole() {
                         key={perm.id}
                         className="flex items-center justify-between group cursor-pointer"
                     >
-                        <span className="text-[14px] font-bold text-[#737373] group-hover:text-black transition-all">
+                        <span className="text-sm font-bold text-neutral-500 group-hover:text-black transition-all">
                             {perm.action_label?.ar ?? perm.action}
                         </span>
                         <div className="relative flex items-center">
@@ -138,9 +138,9 @@ export default function AddRole() {
                                 checked={selectedPermissionIds.has(perm.id)}
                                 onChange={() => handlePermissionChange(perm.id)}
                                 disabled={isPending}
-                                className="peer appearance-none w-6 h-6 border-2 border-[#E4E4E4] rounded-[6px] checked:bg-brand-main checked:border-brand-main transition-all cursor-pointer disabled:opacity-50"
+                                className="peer appearance-none w-6 h-6 border-2 border-neutral-200 rounded-[6px] checked:bg-brand-main checked:border-brand-main transition-all cursor-pointer disabled:opacity-50"
                             />
-                            <i className="fa-solid fa-check absolute left-1 text-white text-[10px] opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none"></i>
+                            <i className="fa-solid fa-check absolute left-1 text-white text-10 opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none"></i>
                         </div>
                     </label>
                 ))}
@@ -166,28 +166,28 @@ export default function AddRole() {
                 thirdURL="/home/roles-and-employees/roles/add"
             />
 
-            <div className="bg-white rounded-[32px] border border-[#F0F0F0] p-8 mt-4 shadow-sm relative z-10" dir="rtl">
-                <div className="flex flex-col gap-8 pb-8 border-b border-[#F5F5F5]">
+            <div className="bg-white rounded-32 border border-[#F0F0F0] p-8 mt-4 shadow-sm relative z-10" dir="rtl">
+                <div className="flex flex-col gap-8 pb-8 border-b border-neutral-100">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                         <h2 className="text-[20px] font-black text-black relative pr-4 before:content-[''] before:absolute before:right-0 before:top-1/2 before:-translate-y-1/2 before:w-1.5 before:h-6 before:bg-brand-main before:rounded-full">بيـــانات الدور:</h2>
-                        <div className="flex flex-wrap items-center gap-4 bg-[#FAFAFA] p-3 rounded-[18px] border border-[#F0F0F0]">
+                        <div className="flex flex-wrap items-center gap-4 bg-neutral-50 p-3 rounded-[18px] border border-[#F0F0F0]">
                             <div className="flex items-center gap-3 px-3">
-                                <span className="text-[13px] font-bold text-[#737373]">تفعيل كافة الصلاحيات لهذا الدور</span>
-                                <div className="flex items-center gap-2 pr-4 border-r border-[#EEEEEE]">
+                                <span className="text-13 font-bold text-neutral-500">تفعيل كافة الصلاحيات لهذا الدور</span>
+                                <div className="flex items-center gap-2 pr-4 border-r border-surface-border">
                                     <Switch
                                         checked={activateAllPermissions}
                                         onCheckedChange={handleActivateAll}
                                         disabled={sections.length === 0 || isPending}
                                         dir="ltr"
                                     />
-                                    <span className="text-[13px] font-bold text-black whitespace-nowrap">تحديد الكل</span>
+                                    <span className="text-13 font-bold text-black whitespace-nowrap">تحديد الكل</span>
                                 </div>
                             </div>
                             <button
                                 type="button"
                                 onClick={handleSubmit}
                                 disabled={isPending}
-                                className="px-8 py-3 bg-brand-main text-white rounded-full font-bold text-[14px] hover:bg-brand-main/90 transition-all shadow-lg shadow-brand-main/20 min-w-[120px] disabled:opacity-60 flex items-center justify-center gap-2"
+                                className="px-8 py-3 bg-brand-main text-white rounded-full font-bold text-sm hover:bg-brand-main/90 transition-all shadow-lg shadow-brand-main/20 min-w-[120px] disabled:opacity-60 flex items-center justify-center gap-2"
                             >
                                 {isPending ? (
                                     <>
@@ -203,8 +203,8 @@ export default function AddRole() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-[1000px]">
                         <div className="flex flex-col gap-3">
-                            <label className="text-[13px] font-bold text-black px-1">
-                                اللقب <span className="text-[#FF4D4F] mr-1">*</span>
+                            <label className="text-13 font-bold text-black px-1">
+                                اللقب <span className="text-status-danger mr-1">*</span>
                             </label>
                             <div className="relative">
                                 <input
@@ -213,15 +213,15 @@ export default function AddRole() {
                                     value={formData.title_ar}
                                     onChange={(e) => setFormData(prev => ({ ...prev, title_ar: e.target.value }))}
                                     disabled={isPending}
-                                    className="w-full h-[54px] bg-[#F9F9F9] border border-[#EEEEEE] rounded-[16px] px-5 text-[15px] focus:outline-none focus:border-brand-main focus:bg-white transition-all font-medium disabled:opacity-60"
+                                    className="w-full h-13.5 bg-surface-input border border-surface-border rounded-2xl px-5 text-15 focus:outline-none focus:border-brand-main focus:bg-white transition-all font-medium disabled:opacity-60"
                                 />
-                                <i className="fa-solid fa-id-badge absolute left-5 top-1/2 -translate-y-1/2 text-[#A3A3A3]"></i>
+                                <i className="fa-solid fa-id-badge absolute left-5 top-1/2 -translate-y-1/2 text-ink-placeholder"></i>
                             </div>
                         </div>
 
                         <div className="flex flex-col gap-3">
-                            <label className="text-[13px] font-bold text-black px-1">
-                                الاسم (مفتاح النظام) <span className="text-[#FF4D4F] mr-1">*</span>
+                            <label className="text-13 font-bold text-black px-1">
+                                الاسم (مفتاح النظام) <span className="text-status-danger mr-1">*</span>
                             </label>
                             <div className="relative">
                                 <input
@@ -230,15 +230,15 @@ export default function AddRole() {
                                     value={formData.name}
                                     onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                                     disabled={isPending}
-                                    className="w-full h-[54px] bg-[#F9F9F9] border border-[#EEEEEE] rounded-[16px] px-2 text-[15px] focus:outline-none focus:border-brand-main focus:bg-white transition-all font-medium disabled:opacity-60"
+                                    className="w-full h-13.5 bg-surface-input border border-surface-border rounded-2xl px-2 text-15 focus:outline-none focus:border-brand-main focus:bg-white transition-all font-medium disabled:opacity-60"
                                     dir="ltr"
                                 />
-                                {/* <i className="fa-solid fa-user absolute left-5 top-1/2 -translate-y-1/2 text-[#A3A3A3]"></i> */}
+                                {/* <i className="fa-solid fa-user absolute left-5 top-1/2 -translate-y-1/2 text-ink-placeholder"></i> */}
                             </div>
                         </div>
 
                         <div className="flex flex-col gap-3 md:col-span-2">
-                            <label className="text-[13px] font-bold text-black px-1">
+                            <label className="text-13 font-bold text-black px-1">
                                 الوصف
                             </label>
                             <textarea
@@ -247,20 +247,20 @@ export default function AddRole() {
                                 onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                                 disabled={isPending}
                                 rows={3}
-                                className="w-full bg-[#F9F9F9] border border-[#EEEEEE] rounded-[16px] px-5 py-3 text-[15px] focus:outline-none focus:border-brand-main focus:bg-white transition-all font-medium resize-none disabled:opacity-60"
+                                className="w-full bg-surface-input border border-surface-border rounded-2xl px-5 py-3 text-15 focus:outline-none focus:border-brand-main focus:bg-white transition-all font-medium resize-none disabled:opacity-60"
                             />
                         </div>
                     </div>
                 </div>
 
                 <div className="mt-8">
-                    <h2 className="text-[18px] font-black text-black mb-8 relative pr-4 before:content-[''] before:absolute before:right-0 before:top-1/2 before:-translate-y-1/2 before:w-1.5 before:h-5 before:bg-brand-main before:rounded-full">صلاحيـــات النظـــام:</h2>
+                    <h2 className="text-lg font-black text-black mb-8 relative pr-4 before:content-[''] before:absolute before:right-0 before:top-1/2 before:-translate-y-1/2 before:w-1.5 before:h-5 before:bg-brand-main before:rounded-full">صلاحيـــات النظـــام:</h2>
                     {isError ? (
-                        <p className="text-center text-[#FF4D4F] text-sm py-8">
+                        <p className="text-center text-status-danger text-sm py-8">
                             تعذر تحميل الصلاحيات. يرجى المحاولة مرة أخرى.
                         </p>
                     ) : sections.length === 0 ? (
-                        <p className="text-center text-[#A3A3A3] text-sm py-8">
+                        <p className="text-center text-ink-placeholder text-sm py-8">
                             لا توجد صلاحيات متاحة حالياً.
                         </p>
                     ) : (
