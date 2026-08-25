@@ -89,6 +89,20 @@
   --main-color: #10B981;
   --main-hover: #34D399;
   --sec-color: #A8B5A8;
+
+  /* Native <select>/<option> menus ignore most Tailwind; color-scheme
+     forces the browser dropdown to use dark system chrome. */
+  color-scheme: dark;
+}
+
+.dark select,
+.dark select option {
+  color-scheme: dark;
+}
+
+.dark select option {
+  background-color: #0f1c16;
+  color: #f5f5f5;
 }
 
 .active {

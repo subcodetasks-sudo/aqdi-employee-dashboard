@@ -7,6 +7,8 @@
     "build": "npm run generate:firebase-sw && next build",
     "start": "next start",
     "lint": "next lint",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "generate:firebase-sw": "node scripts/generate-firebase-sw.mjs"
   },
   "dependencies": {
@@ -72,11 +74,17 @@
   },
   "devDependencies": {
     "@tanstack/eslint-plugin-query": "^5.91.0",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.6",
     "@types/node": "25.5.2",
+    "@vitejs/plugin-react": "^6.1.0",
     "autoprefixer": "^10.4.20",
     "eslint": "^8",
     "eslint-config-next": "14.2.13",
+    "jsdom": "^29.1.1",
     "postcss": "^8.4.49",
-    "tailwindcss": "^3.4.16"
+    "tailwindcss": "^3.4.16",
+    "vitest": "^4.1.11"
   }
 }

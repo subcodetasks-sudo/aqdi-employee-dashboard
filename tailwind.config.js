@@ -72,6 +72,15 @@ module.exports = {
 					text: '#363636',
 					accent: '#10B981',
 					'accent-hover': '#0E9F6E',
+					// text color used on top of the brand-dark/emerald accent in dark mode
+					ink: '#0B1411',
+				},
+				// recurring "content card" surface used by the client-detail-style pages
+				panel: {
+					border: '#E8EEEC',
+					divider: '#EEF1F0',
+					head: '#FAFBFA',
+					dark: '#0F1C16',
 				},
 				sidebar: {
 					DEFAULT: '#0D3B31',

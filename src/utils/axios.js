@@ -40,7 +40,8 @@ axiosInstance.interceptors.response.use(
         // Skip the login endpoint itself: a 401 there just means wrong credentials,
         // not an expired session, so it shouldn't force-logout/redirect.
         const isLoginRequest = error.config?.url?.includes('/admin/employees/login');
-        if (error.response?.status === 401 && !isLoginRequest) {
+        const skipAuthLogout = error.config?.skipAuthLogout === true;
+        if (error.response?.status === 401 && !isLoginRequest && !skipAuthLogout) {
             const { logout } = useUserStore.getState();
             await logout();
             if (typeof window !== "undefined") {
