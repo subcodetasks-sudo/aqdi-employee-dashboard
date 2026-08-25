@@ -36,7 +36,7 @@ export default function TableSettingsPopover({
           title="إعدادات الجدول"
           className={cn(
             "size-[40px] rounded-xl border flex items-center justify-center transition-all shrink-0",
-            "border-[#E6EBE9] bg-white text-[#4B5563] hover:border-[#0B5345]/35 hover:text-[#0B5345]",
+            "border-surface-border-soft bg-white text-[#4B5563] hover:border-brand-dark/35 hover:text-brand-dark",
             "dark:border-white/10 dark:bg-white/[0.04] dark:text-white/75 dark:hover:bg-white/[0.08]",
             triggerClassName
           )}
@@ -51,11 +51,11 @@ export default function TableSettingsPopover({
         className={cn(
           "w-[268px] rounded-2xl border p-0 shadow-[0_8px_30px_rgba(0,0,0,0.12)]",
           "border-[#E8E8E8] bg-white text-[#212121]",
-          "dark:border-white/10 dark:bg-[#13241C] dark:text-white"
+          "dark:border-white/10 dark:bg-card dark:text-white"
         )}
       >
         <div className="p-4 space-y-2.5">
-          <p className="text-[12.5px] font-bold text-right text-[#6B7280] dark:text-white/55">
+          <p className="text-[12.5px] font-bold text-right text-status-neutral dark:text-white/55">
             كثافة الجدول
           </p>
           <div className="flex rounded-lg border overflow-hidden border-[#E5E7EB] dark:border-white/12">
@@ -67,10 +67,10 @@ export default function TableSettingsPopover({
                   type="button"
                   onClick={() => onDensityChange?.(option.id)}
                   className={cn(
-                    "flex-1 py-[7px] text-[12px] font-bold transition-colors",
+                    "flex-1 py-[7px] text-xs font-bold transition-colors",
                     selected
-                      ? "bg-[#0B5345] text-white"
-                      : "bg-white text-[#374151] hover:bg-[#F9FAFB] dark:bg-transparent dark:text-white/75 dark:hover:bg-white/5"
+                      ? "bg-brand-dark text-white"
+                      : "bg-white text-gray-700 hover:bg-[#F9FAFB] dark:bg-transparent dark:text-white/75 dark:hover:bg-white/5"
                   )}
                 >
                   {option.label}
@@ -80,10 +80,10 @@ export default function TableSettingsPopover({
           </div>
         </div>
 
-        <div className="mx-4 border-t border-[#EEEEEE] dark:border-white/10" />
+        <div className="mx-4 border-t border-surface-border dark:border-white/10" />
 
         <div className="p-4 space-y-2.5">
-          <p className="text-[12.5px] font-bold text-right text-[#6B7280] dark:text-white/55">
+          <p className="text-[12.5px] font-bold text-right text-status-neutral dark:text-white/55">
             الأعمدة الظاهرة
           </p>
           <ul className="space-y-2.5">
@@ -102,7 +102,7 @@ export default function TableSettingsPopover({
                   />
                   <label
                     htmlFor={`col-vis-${col.id}`}
-                    className="text-[13px] font-medium cursor-pointer select-none flex-1 text-right text-[#111827] dark:text-white/90"
+                    className="text-13 font-medium cursor-pointer select-none flex-1 text-right text-gray-900 dark:text-white/90"
                   >
                     {col.label}
                   </label>

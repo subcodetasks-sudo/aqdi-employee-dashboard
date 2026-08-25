@@ -15,5 +15,5 @@ export const DENSITY_CELL_CLASS = {
 export const DENSITY_TEXT_CLASS = {
   comfortable: "text-[13.5px]",
   medium: "text-[12.5px]",
-  compact: "text-[12px]",
+  compact: "text-xs",
 };

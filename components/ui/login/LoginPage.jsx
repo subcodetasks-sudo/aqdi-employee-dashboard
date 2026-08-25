@@ -122,7 +122,7 @@ export default function LoginPage() {
         type="button"
         onClick={toggleTheme}
         aria-label={isDark ? 'الوضع الفاتح' : 'الوضع الداكن'}
-        className="absolute left-4 top-4 z-20 flex size-11 items-center justify-center rounded-full border border-[#E6EBE9] bg-white text-brand-main shadow-[0_2px_12px_rgba(11,83,69,0.08)] transition-colors hover:bg-[#E8F5F1] dark:border-white/10 dark:bg-[#13241C] dark:text-brand-accent dark:hover:bg-[#1A2E24] sm:left-6 sm:top-6"
+        className="absolute left-4 top-4 z-20 flex size-11 items-center justify-center rounded-full border border-surface-border-soft bg-white text-brand-main shadow-[0_2px_12px_rgba(11,83,69,0.08)] transition-colors hover:bg-[#E8F5F1] dark:border-white/10 dark:bg-card dark:text-brand-accent dark:hover:bg-[#1A2E24] sm:left-6 sm:top-6"
       >
         {isDark ? (
           <Sun className="size-5 text-amber-300" strokeWidth={1.75} />
@@ -131,7 +131,7 @@ export default function LoginPage() {
         )}
       </button>
 
-      <div className="relative z-10 w-full max-w-[580px] rounded-[40px] border border-[#E6EBE9] bg-card p-[50px_60px] shadow-[0_4px_24px_rgba(11,83,69,0.08)] dark:border-white/10 dark:bg-[#13241C] dark:shadow-[0_8px_32px_rgba(0,0,0,0.35)] max-[768px]:p-8 max-[480px]:rounded-[24px] max-[480px]:p-6">
+      <div className="relative z-10 w-full max-w-[580px] rounded-[40px] border border-surface-border-soft bg-card p-[50px_60px] shadow-[0_4px_24px_rgba(11,83,69,0.08)] dark:border-white/10 dark:bg-card dark:shadow-[0_8px_32px_rgba(0,0,0,0.35)] max-[768px]:p-8 max-[480px]:rounded-3xl max-[480px]:p-6">
         <div className="mb-10 flex flex-col items-center text-center">
           <Link href="/" className="flex items-center gap-3 transition-transform hover:scale-105">
             <Image
@@ -144,7 +144,7 @@ export default function LoginPage() {
             />
           </Link>
           <Image src={waving} alt="" width={40} height={40} className="mb-4 h-auto w-10 object-contain" aria-hidden />
-          <p className="text-[18px] text-foreground/80 dark:text-white/70">لوحة تحكم الموظفين.</p>
+          <p className="text-lg text-foreground/80 dark:text-white/70">لوحة تحكم الموظفين.</p>
         </div>
         
         <Form {...form}>
@@ -152,33 +152,33 @@ export default function LoginPage() {
             <FormField name="email" control={form.control} render={({ field }) => (
               <FormItem>
                 <div className="flex flex-col gap-2.5">
-                  <FormLabel className="flex items-center gap-1 text-[14px] text-foreground">
+                  <FormLabel className="flex items-center gap-1 text-sm text-foreground">
                     البريـــد الإلكتـــرونـــي <span className="text-destructive">*</span>
                   </FormLabel>
                   <FormControl>
                     <Input 
                         type="email" 
-                        className="h-[54px] rounded-[16px] border-border bg-surface-input px-5 text-right text-[14px] text-foreground placeholder:text-ink-placeholder focus-visible:border-brand-main focus-visible:ring-1 focus-visible:ring-brand-main dark:border-white/10 dark:bg-[#0F1C16] dark:placeholder:text-white/35" 
+                        className="h-13.5 rounded-2xl border-border bg-surface-input px-5 text-right text-sm text-foreground placeholder:text-ink-placeholder focus-visible:border-brand-main focus-visible:ring-1 focus-visible:ring-brand-main dark:border-white/10 dark:bg-[#0F1C16] dark:placeholder:text-white/35" 
                         placeholder="... أدخل بريدك الإلكتروني هنا" 
                         {...field} 
                     />
                   </FormControl>
                 </div>
-                <FormMessage className="mt-1 text-[12px] text-destructive" />
+                <FormMessage className="mt-1 text-xs text-destructive" />
               </FormItem>
             )} />
             
             <FormField name="password" control={form.control} render={({ field }) => (
               <FormItem>
                 <div className="flex flex-col gap-2.5">
-                  <FormLabel className="flex items-center gap-1 text-[14px] text-foreground">
+                  <FormLabel className="flex items-center gap-1 text-sm text-foreground">
                     كلمة المرور <span className="text-destructive">*</span>
                   </FormLabel>
                   <FormControl>
                     <div className="relative">
                       <Input 
                           type={showPassword ? 'text' : 'password'}
-                          className="h-[54px] rounded-[16px] border-border bg-surface-input px-5 pl-12 text-right text-[14px] text-foreground placeholder:text-ink-placeholder focus-visible:border-brand-main focus-visible:ring-1 focus-visible:ring-brand-main dark:border-white/10 dark:bg-[#0F1C16] dark:placeholder:text-white/35" 
+                          className="h-13.5 rounded-2xl border-border bg-surface-input px-5 pl-12 text-right text-sm text-foreground placeholder:text-ink-placeholder focus-visible:border-brand-main focus-visible:ring-1 focus-visible:ring-brand-main dark:border-white/10 dark:bg-[#0F1C16] dark:placeholder:text-white/35" 
                           placeholder="... أدخل كلمة المرور هنا"  
                           {...field} 
                       />
@@ -197,7 +197,7 @@ export default function LoginPage() {
                     </div>
                   </FormControl>
                 </div>
-                <FormMessage className="mt-1 text-[12px] text-destructive" />
+                <FormMessage className="mt-1 text-xs text-destructive" />
               </FormItem>
             )} />
             
@@ -212,9 +212,9 @@ export default function LoginPage() {
                         checked={!!field.value}
                         onChange={field.onChange}
                       />
-                      <i className="fa-solid fa-check pointer-events-none absolute text-[10px] text-white opacity-0 transition-opacity peer-checked:opacity-100" />
+                      <i className="fa-solid fa-check pointer-events-none absolute text-10 text-white opacity-0 transition-opacity peer-checked:opacity-100" />
                     </div>
-                    <span className="text-[14px] text-muted-foreground transition-colors group-hover:text-foreground">
+                    <span className="text-sm text-muted-foreground transition-colors group-hover:text-foreground">
                       تذكرني
                     </span>
                   </label>
@@ -225,7 +225,7 @@ export default function LoginPage() {
             <div className="mt-2">
               <Button
                 type="submit"
-                className="flex h-[58px] w-full items-center justify-between rounded-[20px] bg-brand-main px-6 text-[16px] text-white shadow-none transition-all duration-300 hover:bg-brand-main/90 dark:bg-brand-accent dark:text-[#0B1411] dark:hover:bg-brand-accent-hover"
+                className="flex h-[58px] w-full items-center justify-between rounded-20 bg-brand-main px-6 text-base text-white shadow-none transition-all duration-300 hover:bg-brand-main/90 dark:bg-brand-accent dark:text-[#0B1411] dark:hover:bg-brand-accent-hover"
                 disabled={isPending}
               >
                 <span>{isPending ? 'جار التحقق ...' : 'تسجيل الدخول'}</span>

@@ -18,6 +18,7 @@ export default function ControllableDataTable({
   isColumnVisible,
   getRowKey = (row, index) => row?.id ?? index,
   onRowClick,
+  getRowHighlight,
   emptyMessage = "لا توجد بيانات متوفرة حالياً",
   isLoading = false,
   className,
@@ -91,40 +92,58 @@ export default function ControllableDataTable({
               </td>
             </tr>
           ) : (
-            data.map((row, index) => (
-              <tr
-                key={getRowKey(row, index)}
-                onClick={() => onRowClick?.(row)}
-                className={cn(
-                  // design.html tbody tr has no zebra striping — plain rows, hover only
-                  "group border-b last:border-0 transition-colors bg-white dark:bg-transparent",
-                  onRowClick && "cursor-pointer",
-                  "border-[#F6F6F4] dark:border-white/[0.04]",
-                  "hover:bg-[#F7FAF9] dark:hover:bg-white/[0.06]"
-                )}
-              >
-                {visible.map((col) => (
-                  <td
-                    key={col.id}
-                    className={cn(
-                      cellPad,
-                      textSize,
-                      "text-[#22302C] dark:text-white/90",
-                      col.sticky &&
-                        "sticky start-0 z-10 bg-white dark:bg-[#0F1C16] group-hover:bg-[#F7FAF9] dark:group-hover:bg-white/[0.06]",
-                      col.cellClassName
-                    )}
-                    onClick={
-                      col.stopRowClick
-                        ? (e) => e.stopPropagation()
-                        : undefined
-                    }
-                  >
-                    {col.cell?.(row, index)}
-                  </td>
-                ))}
-              </tr>
-            ))
+            data.map((row, index) => {
+              const highlighted = getRowHighlight?.(row);
+              return (
+                <tr
+                  key={getRowKey(row, index)}
+                  onClick={() => onRowClick?.(row)}
+                  className={cn(
+                    // design.html tbody tr has no zebra striping — plain rows, hover only
+                    "group border-b last:border-0 transition-colors",
+                    highlighted
+                      ? "bg-[#FFFBEB] dark:bg-[#3A2A0F]/40"
+                      : "bg-white dark:bg-transparent",
+                    onRowClick && "cursor-pointer",
+                    "border-[#F6F6F4] dark:border-white/[0.04]",
+                    highlighted
+                      ? "hover:bg-[#FEF3C7] dark:hover:bg-[#3A2A0F]/60"
+                      : "hover:bg-[#F7FAF9] dark:hover:bg-white/[0.06]"
+                  )}
+                  style={
+                    highlighted
+                      ? { boxShadow: "inset -3px 0 0 #F59E0B" }
+                      : undefined
+                  }
+                >
+                  {visible.map((col) => (
+                    <td
+                      key={col.id}
+                      className={cn(
+                        cellPad,
+                        textSize,
+                        "text-[#22302C] dark:text-white/90",
+                        col.sticky &&
+                          cn(
+                            "sticky start-0 z-10",
+                            highlighted
+                              ? "bg-[#FFFBEB] dark:bg-[#2A1F0A] group-hover:bg-[#FEF3C7] dark:group-hover:bg-[#3A2A0F]"
+                              : "bg-white dark:bg-[#0F1C16] group-hover:bg-[#F7FAF9] dark:group-hover:bg-white/[0.06]"
+                          ),
+                        col.cellClassName
+                      )}
+                      onClick={
+                        col.stopRowClick
+                          ? (e) => e.stopPropagation()
+                          : undefined
+                      }
+                    >
+                      {col.cell?.(row, index)}
+                    </td>
+                  ))}
+                </tr>
+              );
+            })
           )}
         </tbody>
       </table>
