@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { useSidebarStore } from "@/src/stores/sidebar-store";
 
 export const SETTINGS_ADD_TRIGGER_CLASS =
-  "h-10 px-4 rounded-xl border border-surface-border-soft bg-white text-13 font-bold text-gray-900 hover:border-[#054D44]/40 hover:text-[#054D44] shadow-sm inline-flex items-center gap-1.5 transition-colors";
+  "h-10 px-4 rounded-xl border border-surface-border-soft bg-white text-13 font-bold text-gray-900 hover:border-[#054D44]/40 hover:text-[#054D44] shadow-sm inline-flex items-center gap-1.5 transition-colors dark:bg-card dark:border-white/10 dark:text-white dark:hover:border-emerald-500/40 dark:hover:text-emerald-300";
 
 export const SETTINGS_EDIT_TRIGGER_CLASS =
   "h-8 px-3.5 rounded-lg border border-[#E5E7EB] bg-white text-xs font-bold text-[#059669] hover:bg-[#ECFDF5] shadow-none inline-flex items-center justify-center transition-colors";
@@ -47,7 +47,7 @@ export function SettingsListHeader({
           <button
             type="button"
             onClick={() => router.push(backHref)}
-            className="inline-flex items-center gap-1.5 text-13 font-semibold text-status-neutral hover:text-[#054D44] transition-colors mb-1.5"
+            className="inline-flex items-center gap-1.5 text-13 font-semibold text-status-neutral hover:text-[#054D44] transition-colors mb-1.5 dark:text-white/50 dark:hover:text-emerald-300"
           >
             <ChevronLeft className="size-4" />
             رجوع
@@ -55,7 +55,7 @@ export function SettingsListHeader({
           <h1 className="text-[24px] font-bold text-gray-900 dark:text-white leading-tight">
             {title}
           </h1>
-          <p className="mt-1 text-13 font-medium text-gray-400">{subtitle}</p>
+          <p className="mt-1 text-13 font-medium text-gray-400 dark:text-white/45">{subtitle}</p>
         </div>
       </div>
 
@@ -96,9 +96,9 @@ export function SectionHeading({ title, description, action }) {
   return (
     <div className="flex flex-wrap items-start justify-between gap-3">
       <div className="min-w-0">
-        <h2 className="text-base font-bold text-[#054D44]">{title}</h2>
+        <h2 className="text-base font-bold text-[#054D44] dark:text-emerald-300">{title}</h2>
         {description ? (
-          <p className="mt-1 text-13 font-medium text-gray-400">{description}</p>
+          <p className="mt-1 text-13 font-medium text-gray-400 dark:text-white/45">{description}</p>
         ) : null}
       </div>
       {action}
@@ -176,12 +176,34 @@ export function SettingsEmptyRow({ colSpan, message = "لا توجد بيانا�
     <tr>
       <td
         colSpan={colSpan}
-        className="px-5 py-16 text-center text-13 font-medium text-gray-400"
+        className="px-5 py-16 text-center text-13 font-medium text-gray-400 dark:text-white/35"
       >
         {message}
       </td>
     </tr>
   );
+}
+
+/** Skeleton rows for settings list tables while data is fetching. */
+export function SettingsLoadingRows({ colSpan = 3, rows = 6 }) {
+  return Array.from({ length: rows }).map((_, rowIndex) => (
+    <tr key={`settings-skel-${rowIndex}`}>
+      {Array.from({ length: colSpan }).map((__, colIndex) => (
+        <td
+          key={`settings-skel-${rowIndex}-${colIndex}`}
+          className="px-5 py-4 border-b border-[#F0F0ED] dark:border-white/[0.06]"
+        >
+          <div
+            className="h-3.5 rounded-md bg-[#EEF1F0] dark:bg-white/[0.06] animate-pulse"
+            style={{
+              width: `${50 + ((rowIndex + colIndex) % 5) * 8}%`,
+              opacity: 1 - rowIndex * 0.08,
+            }}
+          />
+        </td>
+      ))}
+    </tr>
+  ));
 }
 
 export function SettingsPagination({ page, lastPage, onPageChange }) {

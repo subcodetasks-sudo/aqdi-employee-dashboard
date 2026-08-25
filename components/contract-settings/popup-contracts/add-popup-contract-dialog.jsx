@@ -99,7 +99,7 @@ export default function AddPopupContractDialog({ usedInstrumentTypes = [] }) {
       <DialogTrigger asChild>
         <Button
           disabled={!canAddMore}
-          className="flex h-12 items-center gap-2 rounded-full bg-brand-hover px-6 font-bold text-white shadow-lg shadow-brand-main/20 transition-all hover:scale-105 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:scale-100"
+          className="flex h-11 items-center gap-2 rounded-xl bg-[#054D44] px-5 text-13 font-bold text-white shadow-sm transition-colors hover:bg-[#043F38] disabled:cursor-not-allowed disabled:opacity-60"
         >
           <Plus className="size-4" />
           <span>إضافة محتوى جديد</span>

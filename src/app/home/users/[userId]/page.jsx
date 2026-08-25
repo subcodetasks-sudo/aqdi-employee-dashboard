@@ -1,5 +1,6 @@
 "use client";
 
+import { useUnwrapPageProps } from "@/src/hooks/use-unwrap-page-props";
 import ClientDetailsWrapper from "@/components/clients/ClientDetailsWrapper";
 import UserDetailsCard from "@/components/analysis/UsersAnalysis/user-details";
 import UserContractsTable from "@/components/analysis/UsersAnalysis/user-contracts-table";
@@ -14,7 +15,9 @@ function isClientFileRoute(userId, from) {
   return String(userId || "").startsWith("c-");
 }
 
-export default function UserDetailsPage() {
+export default function UserDetailsPage(props) {
+  useUnwrapPageProps(props?.params, props?.searchParams);
+
   const { userId } = useParams();
   const searchParams = useSearchParams();
   const from = searchParams.get("from") || "/home/reports?tab=users";

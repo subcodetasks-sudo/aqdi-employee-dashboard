@@ -42,35 +42,35 @@ export default function MarketingContentWrapper() {
   const ActivePanel = TAB_COMPONENTS[activeTab];
 
   return (
-    <div className="flex flex-col gap-6 p-6 min-h-screen bg-[#F4F6F5]" dir="rtl">
+    <div className="flex flex-col gap-6 p-6 min-h-screen bg-[#F4F6F5] dark:bg-transparent" dir="rtl">
       <div className="flex items-start justify-between gap-4">
         <div className="text-right">
           <button
             type="button"
             onClick={() => router.back()}
-            className="inline-flex items-center gap-1 text-xs text-gray-400 hover:text-gray-700 transition-colors mb-1"
+            className="inline-flex items-center gap-1 text-xs text-gray-400 hover:text-gray-700 transition-colors mb-1 dark:text-white/45 dark:hover:text-white/80"
           >
             رجوع
             <ChevronLeft className="size-3.5" />
           </button>
           <div className="flex flex-wrap items-center gap-2">
-            <h1 className="text-22 font-bold text-gray-900 leading-tight">التسويق والمحتوى</h1>
-            <span className="inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-10 font-bold text-amber-700">
+            <h1 className="text-22 font-bold text-gray-900 leading-tight dark:text-white">التسويق والمحتوى</h1>
+            <span className="inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-10 font-bold text-amber-700 dark:border-amber-400/30 dark:bg-amber-500/10 dark:text-amber-300">
               تحليلات قيد التطوير
             </span>
           </div>
-          <p className="text-xs text-gray-400 mt-1">{SCOPE_BREADCRUMB}</p>
+          <p className="text-xs text-gray-400 mt-1 dark:text-white/45">{SCOPE_BREADCRUMB}</p>
         </div>
 
         <div className="flex-1" />
 
-        <div className="text-13 text-status-neutral shrink-0">{DATE_RANGE_LABEL}</div>
+        <div className="text-13 text-status-neutral shrink-0 dark:text-white/55">{DATE_RANGE_LABEL}</div>
 
         <button
           type="button"
           onClick={() => setFiltersOpen((prev) => !prev)}
           aria-label={filtersOpen ? "طي الفلاتر" : "إظهار الفلاتر"}
-          className="flex flex-col items-center gap-0.5 text-gray-400 hover:text-gray-700 transition-colors mt-1 shrink-0"
+          className="flex flex-col items-center gap-0.5 text-gray-400 hover:text-gray-700 transition-colors mt-1 shrink-0 dark:text-white/45 dark:hover:text-white/80"
         >
           <ChevronUp className="size-3.5" />
           <ChevronDown className="size-3.5" />
@@ -87,15 +87,15 @@ export default function MarketingContentWrapper() {
               className={cn(
                 "pb-3 pt-1 text-sm font-bold whitespace-nowrap border-b-2 transition-colors shrink-0",
                 activeTab === tab.value
-                  ? "text-brand-dark border-brand-dark"
-                  : "text-gray-400 border-transparent hover:text-gray-700"
+                  ? "text-brand-dark border-brand-dark dark:text-emerald-300 dark:border-emerald-400"
+                  : "text-gray-400 border-transparent hover:text-gray-700 dark:text-white/45 dark:hover:text-white/75"
               )}
             >
               {tab.label}
             </button>
           ))}
         </div>
-        <div className="border-b border-surface-border-soft" />
+        <div className="border-b border-surface-border-soft dark:border-white/[0.08]" />
       </div>
 
       <ActivePanel />

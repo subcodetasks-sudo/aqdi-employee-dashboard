@@ -35,7 +35,7 @@ export default function SystemSettingsHeader({ activeTab }) {
           <h1 className="text-[26px] font-bold leading-tight text-gray-900 dark:text-white">
             إعدادات النظام
           </h1>
-          <p className="mt-1.5 text-13 font-medium text-gray-400">
+          <p className="mt-1.5 text-13 font-medium text-gray-400 dark:text-white/45">
             {crumbs.join(" • ")}
           </p>
         </div>

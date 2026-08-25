@@ -1,10 +1,12 @@
 "use client";
 
+import { useUnwrapPageProps } from "@/src/hooks/use-unwrap-page-props";
 import { useEffect, useState } from "react";
 import TenantRoleFormDialog from "@/components/analysis/settings/tenant-roles/tenant-role-form-dialog";
 import DeleteTenantRoleDialog from "@/components/analysis/settings/tenant-roles/delete-tenant-role-dialog";
 import {
   SettingsEmptyRow,
+  SettingsLoadingRows,
   SettingsListHeader,
   SettingsPagination,
   SettingsTable,
@@ -23,7 +25,9 @@ const HEADERS = [
   { label: "الإجراءات", className: "text-left" },
 ];
 
-export default function TenantRolesPage() {
+export default function TenantRolesPage(props) {
+  useUnwrapPageProps(props?.params, props?.searchParams);
+
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -60,7 +64,7 @@ export default function TenantRolesPage() {
 
       <SettingsTable headers={HEADERS} minWidth="860px">
         {isLoading ? (
-          <SettingsEmptyRow colSpan={4} message="جاري التحميل..." />
+          <SettingsLoadingRows colSpan={4} />
         ) : items.length === 0 ? (
           <SettingsEmptyRow colSpan={4} />
         ) : (

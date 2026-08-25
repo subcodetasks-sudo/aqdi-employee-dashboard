@@ -1,10 +1,12 @@
 "use client";
 
+import { useUnwrapPageProps } from "@/src/hooks/use-unwrap-page-props";
 import AddNewUsageDialog from "@/components/analysis/settings/unit-usage/add-new-usage-dialog";
 import EditUsageUnitDialog from "@/components/analysis/settings/unit-usage/edit-usage-unit-dialog";
 import {
   SETTINGS_DELETE_TRIGGER_CLASS,
   SettingsEmptyRow,
+  SettingsLoadingRows,
   SettingsListHeader,
   SettingsTable,
   SettingsTableRow,
@@ -25,7 +27,9 @@ const HEADERS = [
   { label: "الإجراءات", className: "text-left" },
 ];
 
-export default function UnitUsagePage() {
+export default function UnitUsagePage(props) {
+  useUnwrapPageProps(props?.params, props?.searchParams);
+
   const queryClient = useQueryClient();
 
   const { data = [], isLoading } = useQuery({
@@ -50,7 +54,7 @@ export default function UnitUsagePage() {
 
       <SettingsTable headers={HEADERS} minWidth="640px">
         {isLoading ? (
-          <SettingsEmptyRow colSpan={3} message="جاري التحميل..." />
+          <SettingsLoadingRows colSpan={3} />
         ) : data.length === 0 ? (
           <SettingsEmptyRow colSpan={3} />
         ) : (

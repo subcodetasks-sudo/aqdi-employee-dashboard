@@ -5,6 +5,7 @@ import DisplayMessageForClientDialog from "@/components/analysis/settings/messag
 import {
   SETTINGS_DELETE_TRIGGER_CLASS,
   SettingsEmptyRow,
+  SettingsLoadingRows,
   SettingsListHeader,
   SettingsTable,
   SettingsTableRow,
@@ -46,7 +47,7 @@ export default function CustomerAppMessagesPage() {
 
       <SettingsTable headers={HEADERS} minWidth="720px">
         {isLoading ? (
-          <SettingsEmptyRow colSpan={3} message="جاري التحميل..." />
+          <SettingsLoadingRows colSpan={3} />
         ) : messages.length === 0 ? (
           <SettingsEmptyRow colSpan={3} />
         ) : (

@@ -13,6 +13,7 @@ import {
   GENERAL_SETTINGS_API,
   GENERAL_SETTINGS_FIELDS,
   GENERAL_SETTINGS_QUERY_KEY,
+  patchGeneralSettingsCache,
 } from "@/src/lib/general-settings";
 import { SYSTEM_CATEGORIES } from "./mock-data";
 
@@ -29,16 +30,29 @@ export default function GeneralSettingsTab() {
   const { mutate, isPending, variables } = useMutation({
     mutationFn: ({ key, value }) =>
       axiosInstance
-        .put(`${GENERAL_SETTINGS_API}/${key}`, { value })
+        .put(`${GENERAL_SETTINGS_API}/${key}`, { enabled: value })
         .then((res) => res?.data),
-    onSuccess: (response) => {
-      toast.success(response?.message || "تم حفظ الإعداد بنجاح");
-      queryClient.invalidateQueries({ queryKey: [GENERAL_SETTINGS_QUERY_KEY] });
+    onMutate: async ({ key, value }) => {
+      await queryClient.cancelQueries({ queryKey: [GENERAL_SETTINGS_QUERY_KEY] });
+      const previous = queryClient.getQueryData([GENERAL_SETTINGS_QUERY_KEY]);
+      queryClient.setQueryData([GENERAL_SETTINGS_QUERY_KEY], (current) =>
+        patchGeneralSettingsCache(current, key, value)
+      );
+      return { previous };
     },
-    onError: (err) => {
+    onError: (err, _variables, context) => {
+      if (context?.previous !== undefined) {
+        queryClient.setQueryData([GENERAL_SETTINGS_QUERY_KEY], context.previous);
+      }
       toast.error(
         err?.response?.data?.message || err?.message || "تعذر حفظ الإعداد"
       );
+    },
+    onSuccess: (response) => {
+      toast.success(response?.message || "تم حفظ الإعداد بنجاح");
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: [GENERAL_SETTINGS_QUERY_KEY] });
     },
   });
 
@@ -64,7 +78,7 @@ export default function GeneralSettingsTab() {
   return (
     <div className="flex flex-col gap-8">
       <section className="flex flex-col gap-4">
-        <h2 className="text-sm font-bold text-[#054D44]">إعدادات الموقع والتطبيق</h2>
+        <h2 className="text-sm font-bold text-[#054D44] dark:text-emerald-300">إعدادات الموقع والتطبيق</h2>
 
         <div className="grid grid-cols-5 gap-3 max-[1200px]:grid-cols-3 max-[768px]:grid-cols-2 max-[480px]:grid-cols-1">
           {GENERAL_SETTINGS_FIELDS.map((item) => {
@@ -114,7 +128,7 @@ export default function GeneralSettingsTab() {
       </section>
 
       <section className="flex flex-col gap-4">
-        <h2 className="text-sm font-bold text-[#054D44]">
+        <h2 className="text-sm font-bold text-[#054D44] dark:text-emerald-300">
           إعدادات النظام ({SYSTEM_CATEGORIES.length} فئة)
         </h2>
 
@@ -132,11 +146,11 @@ export default function GeneralSettingsTab() {
                 <span className="block truncate text-13 font-bold text-gray-900 dark:text-white">
                   {category.label}
                 </span>
-                <span className="mt-0.5 block truncate text-11 font-medium text-gray-400">
+                <span className="mt-0.5 block truncate text-11 font-medium text-gray-400 dark:text-white/45">
                   {category.subtitle}
                 </span>
               </span>
-              <ChevronLeft className="size-4 shrink-0 text-[#D1D5DB] transition-colors group-hover:text-[#054D44]" />
+              <ChevronLeft className="size-4 shrink-0 text-[#D1D5DB] transition-colors group-hover:text-[#054D44] dark:text-white/25 dark:group-hover:text-emerald-300" />
             </Link>
           ))}
         </div>

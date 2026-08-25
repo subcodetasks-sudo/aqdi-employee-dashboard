@@ -150,7 +150,7 @@ function Toolbar({ editor }) {
           : editor.isActive('heading', { level: 6 }) ? '6'
           : 'paragraph'
         }
-        className="h-9 border rounded px-2 text-sm bg-white min-w-[120px]"
+        className="h-9 border rounded px-2 text-sm bg-white min-w-[120px] dark:bg-[#0F1C16] dark:border-white/10 dark:text-white dark:[color-scheme:dark]"
       >
         <option value="paragraph">فقرة</option>
         <option value="1">عنوان 1</option>
@@ -170,7 +170,7 @@ function Toolbar({ editor }) {
             editor.chain().focus().setFontSize(size).run();
           }
         }}
-        className="h-9 border rounded px-2 text-sm bg-white min-w-[100px]"
+        className="h-9 border rounded px-2 text-sm bg-white min-w-[100px] dark:bg-[#0F1C16] dark:border-white/10 dark:text-white dark:[color-scheme:dark]"
       >
         <option value="default">حجم الخط</option>
         <option value="12px">12px</option>

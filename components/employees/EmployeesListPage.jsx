@@ -84,7 +84,7 @@ export default function EmployeesListPage() {
             placeholder="بحث بالاسم أو البريد أو الجوال..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full h-10 bg-white border border-[#E5E7EB] rounded-lg pr-11 pl-4 text-13 focus:outline-none focus:border-brand-dark transition-colors"
+            className="w-full h-10 bg-white border border-[#E5E7EB] rounded-lg pr-11 pl-4 text-13 focus:outline-none focus:border-brand-dark transition-colors dark:bg-[#0F1C16] dark:border-white/10 dark:text-white dark:placeholder:text-white/35"
           />
         </div>
       </div>
@@ -107,12 +107,12 @@ export default function EmployeesListPage() {
               employees.map((employee, index) => (
                 <tr
                   key={employee.id}
-                  className="border-b border-status-neutral-bg last:border-0 hover:bg-neutral-50 transition-colors"
+                  className="border-b border-status-neutral-bg last:border-0 hover:bg-neutral-50 transition-colors dark:border-white/[0.06] dark:hover:bg-white/[0.04]"
                 >
                   <td className="px-4 py-3.5">
                     <div className="flex items-center gap-2.5">
                       <EmployeeAvatar name={employee.name} image={employee.profile_image} />
-                      <span className="text-13 font-medium text-gray-900">
+                      <span className="text-13 font-medium text-gray-900 dark:text-white">
                         {employee.name || "---"}
                       </span>
                     </div>
@@ -122,20 +122,20 @@ export default function EmployeesListPage() {
                   </td>
                   <td className="px-4 py-3.5">
                     {formatSalary(employee.base_salary) ? (
-                      <span className="text-13 font-semibold text-gray-900 tabular-nums">
+                      <span className="text-13 font-semibold text-gray-900 tabular-nums dark:text-white">
                         {formatSalary(employee.base_salary)} ريال
                       </span>
                     ) : (
-                      <span className="text-xs text-gray-400">غير محدد</span>
+                      <span className="text-xs text-gray-400 dark:text-white/40">غير محدد</span>
                     )}
                   </td>
                   <td className="px-4 py-3.5">
-                    <span className="text-13 text-gray-700 tabular-nums" dir="ltr">
+                    <span className="text-13 text-gray-700 tabular-nums dark:text-white/70" dir="ltr">
                       {employee.phone || "---"}
                     </span>
                   </td>
                   <td className="px-4 py-3.5">
-                    <span className="text-13 text-gray-700">{employee.email || "---"}</span>
+                    <span className="text-13 text-gray-700 dark:text-white/70">{employee.email || "---"}</span>
                   </td>
                   <td className="px-4 py-3.5">
                     <Switch

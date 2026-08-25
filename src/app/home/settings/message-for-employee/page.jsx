@@ -1,10 +1,12 @@
 "use client";
 
+import { useUnwrapPageProps } from "@/src/hooks/use-unwrap-page-props";
 import AddNewMessageForEmployeeDialog from "@/components/analysis/settings/message-for-employees/add-message-for-employee";
 import DisplayMessageForEmployeeDialog from "@/components/analysis/settings/message-for-employees/display-message-for-employee";
 import {
   SETTINGS_DELETE_TRIGGER_CLASS,
   SettingsEmptyRow,
+  SettingsLoadingRows,
   SettingsListHeader,
   SettingsTable,
   SettingsTableRow,
@@ -21,7 +23,9 @@ const HEADERS = [
   { label: "الإجراءات", className: "text-left" },
 ];
 
-export default function EmployeeTermsPage() {
+export default function EmployeeTermsPage(props) {
+  useUnwrapPageProps(props?.params, props?.searchParams);
+
   const queryClient = useQueryClient();
 
   const { data: alertsResponse, isLoading } = useQuery({
@@ -51,7 +55,7 @@ export default function EmployeeTermsPage() {
 
       <SettingsTable headers={HEADERS} minWidth="860px">
         {isLoading ? (
-          <SettingsEmptyRow colSpan={4} message="جاري التحميل..." />
+          <SettingsLoadingRows colSpan={4} />
         ) : alerts.length === 0 ? (
           <SettingsEmptyRow colSpan={4} />
         ) : (

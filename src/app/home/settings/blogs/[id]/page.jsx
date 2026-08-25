@@ -1,12 +1,17 @@
 "use client";
 
+import Loader from "@/components/home/loader";
+
+import { useUnwrapPageProps } from "@/src/hooks/use-unwrap-page-props";
 import BlogDetails from "@/components/analysis/settings/blogs/blog-details";
 import { SettingsContentCard, SettingsListHeader } from "@/components/SystemSettings/shared";
 import { axiosInstance } from "@/src/utils/axios";
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
 
-export default function BlogDetailsPage() {
+export default function BlogDetailsPage(props) {
+  useUnwrapPageProps(props?.params, props?.searchParams);
+
   const params = useParams();
   const blogId = params?.id;
 
@@ -27,9 +32,7 @@ export default function BlogDetailsPage() {
       />
 
       {isLoading ? (
-        <SettingsContentCard>
-          <p className="text-center text-gray-400 py-10">جاري التحميل...</p>
-        </SettingsContentCard>
+        <Loader />
       ) : isError || !blog ? (
         <SettingsContentCard>
           <p className="text-center text-gray-400 py-10">تعذر تحميل المقال.</p>

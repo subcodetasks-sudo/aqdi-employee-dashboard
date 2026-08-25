@@ -1,10 +1,12 @@
 "use client";
 
+import { useUnwrapPageProps } from "@/src/hooks/use-unwrap-page-props";
 import AddNewDurationDialog from "@/components/analysis/settings/order-duration/add-new-duration-dialog";
 import EditDurationDialog from "@/components/analysis/settings/order-duration/edit-duration-dialog";
 import ViewDurationDialog from "@/components/analysis/settings/order-duration/view-duration-dialog";
 import {
   SettingsEmptyRow,
+  SettingsLoadingRows,
   SettingsListHeader,
   SettingsTable,
   SettingsTableRow,
@@ -28,7 +30,9 @@ const HEADERS = [
   { label: "الإجراءات", className: "text-left" },
 ];
 
-export default function OrderDurationPage() {
+export default function OrderDurationPage(props) {
+  useUnwrapPageProps(props?.params, props?.searchParams);
+
   const { data = [], isLoading } = useQuery({
     queryKey: ["contract-periods"],
     queryFn: () =>
@@ -43,7 +47,7 @@ export default function OrderDurationPage() {
 
       <SettingsTable headers={HEADERS} minWidth="860px">
         {isLoading ? (
-          <SettingsEmptyRow colSpan={5} message="جاري التحميل..." />
+          <SettingsLoadingRows colSpan={5} />
         ) : data.length === 0 ? (
           <SettingsEmptyRow colSpan={5} />
         ) : (

@@ -1,5 +1,6 @@
 "use client";
 
+import { useUnwrapPageProps } from "@/src/hooks/use-unwrap-page-props";
 import { useState } from "react";
 import Header from "@/components/home/Header";
 import PopupContractsTab from "@/components/contract-settings/popup-contracts/popup-contracts-tab";
@@ -38,7 +39,9 @@ const CONTRACT_SETTINGS_TABS = [
   },
 ];
 
-export default function ContractSettingsPage() {
+export default function ContractSettingsPage(props) {
+  useUnwrapPageProps(props?.params, props?.searchParams);
+
   const [activeTab, setActiveTab] = useState(CONTRACT_SETTINGS_TABS[0].value);
 
   return (

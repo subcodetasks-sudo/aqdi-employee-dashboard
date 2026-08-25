@@ -1,10 +1,12 @@
 "use client";
 
+import { useUnwrapPageProps } from "@/src/hooks/use-unwrap-page-props";
 import AddNewCityDialog from "@/components/analysis/settings/cities/add-new-city-dialog";
 import DeleteCityDialog from "@/components/analysis/settings/cities/delete-city-dialog";
 import EditCityDialog from "@/components/analysis/settings/cities/edit-city-dialog";
 import {
   SettingsEmptyRow,
+  SettingsLoadingRows,
   SettingsListHeader,
   SettingsTable,
   SettingsTableRow,
@@ -19,7 +21,9 @@ const HEADERS = [
   { label: "الإجراءات", className: "text-left" },
 ];
 
-export default function CitiesPage() {
+export default function CitiesPage(props) {
+  useUnwrapPageProps(props?.params, props?.searchParams);
+
   const { data: cities, isLoading } = useQuery({
     queryKey: ["cities"],
     queryFn: () => axiosInstance.get("/admin/cities"),
@@ -33,7 +37,7 @@ export default function CitiesPage() {
 
       <SettingsTable headers={HEADERS} minWidth="640px">
         {isLoading ? (
-          <SettingsEmptyRow colSpan={3} message="جاري التحميل..." />
+          <SettingsLoadingRows colSpan={3} />
         ) : data.length === 0 ? (
           <SettingsEmptyRow colSpan={3} />
         ) : (

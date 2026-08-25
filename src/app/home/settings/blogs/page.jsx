@@ -1,5 +1,6 @@
 "use client";
 
+import { useUnwrapPageProps } from "@/src/hooks/use-unwrap-page-props";
 import { useState } from "react";
 import Link from "next/link";
 import {
@@ -7,6 +8,7 @@ import {
   SETTINGS_EDIT_TRIGGER_CLASS,
   SETTINGS_VIEW_TRIGGER_CLASS,
   SettingsEmptyRow,
+  SettingsLoadingRows,
   SettingsListHeader,
   SettingsPagination,
   SettingsTable,
@@ -47,7 +49,9 @@ const formatDate = (dateString) => {
   }
 };
 
-export default function BlogsPage() {
+export default function BlogsPage(props) {
+  useUnwrapPageProps(props?.params, props?.searchParams);
+
   const [currentPage, setCurrentPage] = useState(1);
 
   const { data: responseData, isLoading } = useQuery({
@@ -73,7 +77,7 @@ export default function BlogsPage() {
 
       <SettingsTable headers={HEADERS} minWidth="980px">
         {isLoading ? (
-          <SettingsEmptyRow colSpan={6} message="جاري التحميل..." />
+          <SettingsLoadingRows colSpan={6} />
         ) : blogs.length === 0 ? (
           <SettingsEmptyRow colSpan={6} />
         ) : (

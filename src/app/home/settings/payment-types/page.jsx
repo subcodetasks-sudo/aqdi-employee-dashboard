@@ -1,9 +1,11 @@
 "use client";
 
+import { useUnwrapPageProps } from "@/src/hooks/use-unwrap-page-props";
 import AddPaymentTypeDialog from "@/components/analysis/settings/payment-types/add-payment-type-dialog";
 import EditPaymentTypeDialog from "@/components/analysis/settings/payment-types/edit-payment-type-dialog";
 import {
   SettingsEmptyRow,
+  SettingsLoadingRows,
   SettingsListHeader,
   SettingsTable,
   SettingsTableRow,
@@ -22,7 +24,9 @@ const HEADERS = [
   { label: "الإجراءات", className: "text-left" },
 ];
 
-export default function PaymentTypesPage() {
+export default function PaymentTypesPage(props) {
+  useUnwrapPageProps(props?.params, props?.searchParams);
+
   const { data = [], isLoading } = useQuery({
     queryKey: ["payment-types"],
     queryFn: () => fetchBothContractTypes("/admin/payment-types", extractAlertList),
@@ -34,7 +38,7 @@ export default function PaymentTypesPage() {
 
       <SettingsTable headers={HEADERS} minWidth="640px">
         {isLoading ? (
-          <SettingsEmptyRow colSpan={3} message="جاري التحميل..." />
+          <SettingsLoadingRows colSpan={3} />
         ) : data.length === 0 ? (
           <SettingsEmptyRow colSpan={3} />
         ) : (

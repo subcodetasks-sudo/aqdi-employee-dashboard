@@ -1,9 +1,11 @@
 "use client";
 
+import { useUnwrapPageProps } from "@/src/hooks/use-unwrap-page-props";
 import AddNewSectionItemDialog from "@/components/analysis/settings/message-section-items/add-section-item-dialog";
 import {
   SETTINGS_DELETE_TRIGGER_CLASS,
   SettingsEmptyRow,
+  SettingsLoadingRows,
   SettingsListHeader,
   SettingsTable,
   SettingsTableRow,
@@ -25,7 +27,9 @@ const HEADERS = [
   { label: "الإجراءات", className: "text-left" },
 ];
 
-export default function MessageSectionItemsPage() {
+export default function MessageSectionItemsPage(props) {
+  useUnwrapPageProps(props?.params, props?.searchParams);
+
   const queryClient = useQueryClient();
 
   const { data = [], isLoading } = useQuery({
@@ -63,7 +67,7 @@ export default function MessageSectionItemsPage() {
 
       <SettingsTable headers={HEADERS} minWidth="720px">
         {isLoading ? (
-          <SettingsEmptyRow colSpan={4} message="جاري التحميل..." />
+          <SettingsLoadingRows colSpan={4} />
         ) : data.length === 0 ? (
           <SettingsEmptyRow colSpan={4} />
         ) : (

@@ -128,7 +128,7 @@ export default function ReportsTab() {
               />
             </label>
             <Select value={channel} onValueChange={setChannel}>
-              <SelectTrigger className="h-9 w-[140px] rounded-lg border-surface-border-soft text-xs font-semibold bg-white">
+              <SelectTrigger className="h-9 w-[140px] rounded-lg border-surface-border-soft text-xs font-semibold bg-white dark:bg-[#0F1C16] dark:border-white/10 dark:text-white">
                 <SelectValue placeholder="حسب القناة" />
               </SelectTrigger>
               <SelectContent dir="rtl">

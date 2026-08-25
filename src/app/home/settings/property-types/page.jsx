@@ -1,10 +1,12 @@
 "use client";
 
+import { useUnwrapPageProps } from "@/src/hooks/use-unwrap-page-props";
 import AddNewPropertyTypeDialog from "@/components/analysis/settings/property-types/add-new-property-type-dialog";
 import EditTypePropertyDialog from "@/components/analysis/settings/property-types/edit-type-property-dialog";
 import {
   SETTINGS_DELETE_TRIGGER_CLASS,
   SettingsEmptyRow,
+  SettingsLoadingRows,
   SettingsListHeader,
   SettingsTable,
   SettingsTableRow,
@@ -12,7 +14,7 @@ import {
 } from "@/components/SystemSettings/shared";
 import {
   contractTypeLabel,
-  extractNestedData,
+  extractItems,
   fetchBothContractTypes,
 } from "@/components/SystemSettings/settings-list/fetch-contract-type-lists";
 import { axiosInstance } from "@/src/utils/axios";
@@ -25,13 +27,15 @@ const HEADERS = [
   { label: "الإجراءات", className: "text-left" },
 ];
 
-export default function PropertyTypesPage() {
+export default function PropertyTypesPage(props) {
+  useUnwrapPageProps(props?.params, props?.searchParams);
+
   const queryClient = useQueryClient();
 
   const { data = [], isLoading } = useQuery({
     queryKey: ["property-types"],
     queryFn: () =>
-      fetchBothContractTypes("/admin/real-estate-types", extractNestedData),
+      fetchBothContractTypes("/admin/real-estate-types", extractItems),
   });
 
   const { mutate: deleteItem, isPending } = useMutation({
@@ -52,7 +56,7 @@ export default function PropertyTypesPage() {
 
       <SettingsTable headers={HEADERS} minWidth="640px">
         {isLoading ? (
-          <SettingsEmptyRow colSpan={3} message="جاري التحميل..." />
+          <SettingsLoadingRows colSpan={3} />
         ) : data.length === 0 ? (
           <SettingsEmptyRow colSpan={3} />
         ) : (

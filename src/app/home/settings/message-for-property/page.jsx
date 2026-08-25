@@ -1,10 +1,12 @@
 "use client";
 
+import { useUnwrapPageProps } from "@/src/hooks/use-unwrap-page-props";
 import AddNewMessageForPropertyDialog from "@/components/analysis/settings/message-for-property/add-message-for-property";
 import DisplayMessageForPropertyDialog from "@/components/analysis/settings/message-for-property/display-message-for-property";
 import {
   SETTINGS_DELETE_TRIGGER_CLASS,
   SettingsEmptyRow,
+  SettingsLoadingRows,
   SettingsListHeader,
   SettingsTable,
   SettingsTableRow,
@@ -21,7 +23,9 @@ const HEADERS = [
   { label: "الإجراءات", className: "text-left" },
 ];
 
-export default function PropertyTermsPage() {
+export default function PropertyTermsPage(props) {
+  useUnwrapPageProps(props?.params, props?.searchParams);
+
   const queryClient = useQueryClient();
 
   const { data: alertsResponse, isLoading } = useQuery({
@@ -60,7 +64,7 @@ export default function PropertyTermsPage() {
 
       <SettingsTable headers={HEADERS} minWidth="860px">
         {isLoading ? (
-          <SettingsEmptyRow colSpan={4} message="جاري التحميل..." />
+          <SettingsLoadingRows colSpan={4} />
         ) : alerts.length === 0 ? (
           <SettingsEmptyRow colSpan={4} />
         ) : (

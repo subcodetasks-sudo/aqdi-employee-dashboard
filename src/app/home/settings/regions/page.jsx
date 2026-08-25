@@ -1,10 +1,12 @@
 "use client";
 
+import { useUnwrapPageProps } from "@/src/hooks/use-unwrap-page-props";
 import AddNewRegionDialog from "@/components/analysis/settings/regions/add-new-region-dialog";
 import DeleteRegionDialog from "@/components/analysis/settings/regions/delete-region-dialog";
 import EditRegionDialog from "@/components/analysis/settings/regions/edit-region-dialog";
 import {
   SettingsEmptyRow,
+  SettingsLoadingRows,
   SettingsListHeader,
   SettingsTable,
   SettingsTableRow,
@@ -15,7 +17,9 @@ import { useQuery } from "@tanstack/react-query";
 
 const HEADERS = ["الاسم", { label: "الإجراءات", className: "text-left" }];
 
-export default function RegionsPage() {
+export default function RegionsPage(props) {
+  useUnwrapPageProps(props?.params, props?.searchParams);
+
   const { data: regions, isLoading } = useQuery({
     queryKey: ["regions"],
     queryFn: () => axiosInstance.get("/admin/regions"),
@@ -29,7 +33,7 @@ export default function RegionsPage() {
 
       <SettingsTable headers={HEADERS} minWidth="520px">
         {isLoading ? (
-          <SettingsEmptyRow colSpan={2} message="جاري التحميل..." />
+          <SettingsLoadingRows colSpan={2} />
         ) : data.length === 0 ? (
           <SettingsEmptyRow colSpan={2} />
         ) : (

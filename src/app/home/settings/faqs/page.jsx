@@ -1,11 +1,13 @@
 "use client";
 
+import { useUnwrapPageProps } from "@/src/hooks/use-unwrap-page-props";
 import { useState } from "react";
 import AddFaqDialog from "@/components/analysis/settings/faqs/add-faq-dialog";
 import EditFaqDialog from "@/components/analysis/settings/faqs/edit-faq-dialog";
 import DeleteFaqDialog from "@/components/analysis/settings/faqs/delete-faq-dialog";
 import {
   SettingsEmptyRow,
+  SettingsLoadingRows,
   SettingsListHeader,
   SettingsPagination,
   SettingsTable,
@@ -22,7 +24,9 @@ const HEADERS = [
   { label: "الإجراءات", className: "text-left" },
 ];
 
-export default function FaqsPage() {
+export default function FaqsPage(props) {
+  useUnwrapPageProps(props?.params, props?.searchParams);
+
   const [currentPage, setCurrentPage] = useState(1);
 
   const { data: responseData, isLoading } = useQuery({
@@ -42,7 +46,7 @@ export default function FaqsPage() {
 
       <SettingsTable headers={HEADERS} minWidth="860px">
         {isLoading ? (
-          <SettingsEmptyRow colSpan={3} message="جاري التحميل..." />
+          <SettingsLoadingRows colSpan={3} />
         ) : faqs.length === 0 ? (
           <SettingsEmptyRow colSpan={3} />
         ) : (

@@ -1,8 +1,10 @@
 "use client";
 
+import { useUnwrapPageProps } from "@/src/hooks/use-unwrap-page-props";
 import { useEffect, useState } from "react";
 import {
   SettingsEmptyRow,
+  SettingsLoadingRows,
   SettingsListHeader,
   SettingsPagination,
   SettingsTable,
@@ -67,7 +69,9 @@ function FilterGroup({ label, options, value, onChange }) {
   );
 }
 
-export default function PaymentsPage() {
+export default function PaymentsPage(props) {
+  useUnwrapPageProps(props?.params, props?.searchParams);
+
   const [currentPage, setCurrentPage] = useState(1);
   const [periodFilter, setPeriodFilter] = useState("month");
   const [statusFilter, setStatusFilter] = useState("");
@@ -122,7 +126,7 @@ export default function PaymentsPage() {
 
       <SettingsTable headers={HEADERS} minWidth="1080px">
         {isLoading ? (
-          <SettingsEmptyRow colSpan={9} message="جاري التحميل..." />
+          <SettingsLoadingRows colSpan={9} />
         ) : isError ? (
           <SettingsEmptyRow colSpan={9} message="حدث خطأ أثناء تحميل المدفوعات." />
         ) : payments.length === 0 ? (

@@ -1,10 +1,12 @@
 "use client";
 
+import { useUnwrapPageProps } from "@/src/hooks/use-unwrap-page-props";
 import { useState } from "react";
 import AddCouponDialog from "@/components/analysis/settings/coupons/add-coupon-dialog";
 import DeleteCouponDialog from "@/components/analysis/settings/coupons/delete-coupon-dialog";
 import {
   SettingsEmptyRow,
+  SettingsLoadingRows,
   SettingsListHeader,
   SettingsPagination,
   SettingsTable,
@@ -46,7 +48,9 @@ function couponTypeLabel(type) {
   return "مبلغ ثابت";
 }
 
-export default function CouponsPage() {
+export default function CouponsPage(props) {
+  useUnwrapPageProps(props?.params, props?.searchParams);
+
   const [currentPage, setCurrentPage] = useState(1);
   const queryClient = useQueryClient();
 
@@ -78,7 +82,7 @@ export default function CouponsPage() {
 
       <SettingsTable headers={HEADERS} minWidth="980px">
         {isLoading ? (
-          <SettingsEmptyRow colSpan={8} message="جاري التحميل..." />
+          <SettingsLoadingRows colSpan={8} />
         ) : displayCoupons.length === 0 ? (
           <SettingsEmptyRow colSpan={8} />
         ) : (
