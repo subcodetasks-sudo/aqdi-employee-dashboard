@@ -22,9 +22,7 @@ export default function CustomersReportTab({ period, dateFrom, dateTo, contractT
       <ReportKpiGrid items={kpis} columns="grid-cols-2 sm:grid-cols-3 lg:grid-cols-5" />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <ReportSectionCard title="العملاء الجدد مقابل العائدين">
-          <HorizontalBarChart items={data?.segments ?? []} />
-        </ReportSectionCard>
+       
 
         <ReportSectionCard title="أفضل العملاء من حيث القيمة">
           <div className="overflow-x-auto -mx-1">
@@ -55,6 +53,9 @@ export default function CustomersReportTab({ period, dateFrom, dateTo, contractT
               </tbody>
             </table>
           </div>
+        </ReportSectionCard>
+        <ReportSectionCard title="العملاء الجدد مقابل العائدين">
+          <HorizontalBarChart items={data?.segments ?? []} />
         </ReportSectionCard>
       </div>
     </div>

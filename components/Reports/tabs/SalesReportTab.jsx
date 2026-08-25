@@ -21,7 +21,7 @@ export default function SalesReportTab({ period, dateFrom, dateTo, contractType,
     <div className="flex flex-col gap-5">
       <ReportKpiGrid items={kpis} />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div dir="ltr" className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <ReportSectionCard title="المبيعات حسب الفترة">
           <ReportLineList
             items={(data?.by_period ?? []).map((row) => ({
@@ -32,7 +32,11 @@ export default function SalesReportTab({ period, dateFrom, dateTo, contractType,
         </ReportSectionCard>
 
         <ReportSectionCard title="اتجاه المبيعات اليومي">
-          <VerticalBarChart items={data?.daily ?? []} height={180} />
+          {(data?.daily ?? []).length > 0 ? (
+            <VerticalBarChart items={data.daily} height={180} pageSize={7} />
+          ) : (
+            <p className="text-13 text-gray-400 dark:text-white/50">لا توجد بيانات لعرضها في هذه الفترة.</p>
+          )}
         </ReportSectionCard>
       </div>
 

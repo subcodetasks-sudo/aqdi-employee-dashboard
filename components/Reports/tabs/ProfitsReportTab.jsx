@@ -4,6 +4,7 @@ import { useState } from "react";
 import Loader from "@/components/home/loader";
 import { useProfitSettings, useProfitsReport, useUpdateProfitSettings } from "@/src/hooks/use-reports";
 import { ReportKpiGrid } from "../shared/ReportKpiCard";
+import HorizontalBarChart from "../shared/HorizontalBarChart";
 import ReportSectionCard, { ReportLineList } from "../shared/ReportSectionCard";
 import ReportError from "../shared/ReportError";
 
@@ -18,6 +19,10 @@ export default function ProfitsReportTab({ period, dateFrom, dateTo }) {
   const k = data?.kpis ?? {};
   const kpis = [["customer_income", "دخل العملاء", "wallet"], ["gross_profit", "إجمالي الربح", "wallet"], ["net_profit", "صافي الربح", "wallet", "danger"], ["margin_percent", "هامش الربح", "percent"], ["profit_per_order", "ربح لكل طلب", "wallet"], ["ad_spend", "مصاريف الإعلانات", "wallet", "danger"]].map(([key, label, icon, tone]) => ({ key, label, value: key === "margin_percent" ? `${k[key] ?? 0}%` : k[key] ?? 0, icon, tone, isText: key === "margin_percent" }));
   const pnl = (data?.pnl ?? []).map((row) => ({ label: row.label, value: `${Number(row.value ?? 0).toLocaleString("en-US")} ريال`, tone: row.value < 0 ? "red" : "green", bold: row.is_total || row.is_subtotal, separator: row.is_subtotal }));
+  const serviceProfitability = (data?.service_profitability ?? []).map((item) => ({
+    label: `${item.label} — ${item.margin_percent ?? 0}%`,
+    value: Number(item.profit ?? 0),
+  }));
   const fields = [["moyasar_fee_percent", "رسوم Moyasar", "%"], ["monthly_salaries", "الرواتب الشهرية", "ريال"], ["operating_budget", "المصاريف التشغيلية", "ريال"], ["marketing_budget", "ميزانية التسويق", "ريال"]];
   const saveSetting = (key, rawValue) => {
     const numericValue = rawValue === "" ? null : Number(rawValue);
@@ -30,37 +35,9 @@ export default function ProfitsReportTab({ period, dateFrom, dateTo }) {
     <div className="flex flex-col gap-5">
       <ReportKpiGrid items={kpis} />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div dir="ltr" className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <ReportSectionCard title="أكثر و أقل الخدمات ربحاً">
-          <div className="flex flex-col gap-3">
-            {(data?.service_profitability ?? []).map((item) => {
-              const peak = Math.max(...(data?.service_profitability ?? []).map((s) => Math.abs(s.profit ?? 0)), 1);
-              const width = Math.max((Math.abs(item.profit ?? 0) / peak) * 100, 4);
-              const isNegative = (item.profit ?? 0) < 0;
-
-              return (
-                <div key={item.label} className="flex items-center gap-3">
-                  <span className="text-xs text-gray-400 w-10 shrink-0 tabular-nums dark:text-white/50">
-                    {item.margin_percent ?? 0}%
-                  </span>
-                  <div className="flex-1 flex items-center gap-2 min-w-0">
-                    <div className="flex-1 h-7 bg-status-neutral-bg rounded-md overflow-hidden dark:bg-white/10">
-                      <div
-                        className="h-full rounded-md"
-                        style={{ width: `${width}%`, backgroundColor: isNegative ? "#B91C1C" : "#0B5345" }}
-                      />
-                    </div>
-                    <span className="text-13 text-gray-700 truncate min-w-0 flex-1 text-right dark:text-white/70">
-                      {item.label}
-                    </span>
-                  </div>
-                  <span className="text-13 font-semibold w-14 shrink-0 tabular-nums dark:text-white">
-                    {Number(item.profit ?? 0).toLocaleString("en-US")}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
+          <HorizontalBarChart items={serviceProfitability} />
         </ReportSectionCard>
 
         <ReportSectionCard title="قائمة الأرباح والخسائر – كل الفترات">
@@ -69,7 +46,7 @@ export default function ProfitsReportTab({ period, dateFrom, dateTo }) {
       </div>
 
       <ReportSectionCard title="الإعدادات الحالية (حفظ تلقائي)">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div  className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {fields.map(([key, label, unit]) => (
             <label key={key} className="flex flex-col gap-1.5">
               <span className="text-xs font-semibold text-status-neutral dark:text-white/60">{label}</span>

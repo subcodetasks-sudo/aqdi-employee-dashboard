@@ -11,7 +11,7 @@ export default function ReportSectionCard({ title, children, className, action }
       )}
     >
       {(title || action) && (
-        <div className="flex items-center justify-between gap-3">
+        <div dir="rtl" className="flex items-center justify-between gap-3">
           {title ? (
             <h3 className="text-sm font-bold text-gray-900 dark:text-white">{title}</h3>
           ) : (
@@ -39,6 +39,7 @@ export function ReportLineList({ items }) {
                 item.tone === "green" && "text-green-700 dark:text-emerald-300",
                 item.tone === "red" && "text-red-600 dark:text-red-300",
                 item.tone === "gold" && "text-[#B45309] dark:text-amber-300",
+                item.tone === "muted" && "text-[#557086] dark:text-slate-300",
                 !item.tone && "text-gray-700 dark:text-white/70"
               )}
             >
@@ -51,6 +52,7 @@ export function ReportLineList({ items }) {
                 item.tone === "green" && "text-green-700 dark:text-emerald-300",
                 item.tone === "red" && "text-red-600 dark:text-red-300",
                 item.tone === "gold" && "text-[#B45309] dark:text-amber-300",
+                item.tone === "muted" && "text-[#557086] dark:text-slate-300",
                 !item.tone && "text-gray-900 dark:text-white"
               )}
             >

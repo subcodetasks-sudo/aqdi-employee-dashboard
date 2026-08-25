@@ -1,11 +1,10 @@
-/** Static filter/label config for the Reports tabs — actual analytics data comes
- *  from src/hooks/use-reports.js and related report hooks, not mock data. */
+/** Reports tabs + filter config. Analytics data comes from src/hooks/use-reports.js. */
 
 export const REPORT_TABS = [
   { id: "orders", label: "الطلبات" },
-  { id: "sales", label: "المبيعات والإيرادات", badge: "Financial" },
-  { id: "profits", label: "الأرباح والتكاليف", badge: "Financial" },
-  { id: "operating-expenses", label: "المصروفات التشغيلية", badge: "Financial" },
+  { id: "sales", label: "المبيعات والإيرادات", badge: "مالي" },
+  { id: "profits", label: "الأرباح والتكاليف", badge: "مالي" },
+  { id: "operating-expenses", label: "المصروفات التشغيلية", badge: "مالي" },
   { id: "employees", label: "الموظفون" },
   { id: "customers", label: "العملاء" },
   { id: "marketing", label: "المصادر والتسويق" },
@@ -14,8 +13,8 @@ export const REPORT_TABS = [
 
 export const PERIOD_FILTERS = [
   { id: "all", label: "الكل" },
-  { id: "last_30_days", label: "آخر 30 يوماً" },
-  { id: "last_7_days", label: "آخر 7 أيام" },
+  { id: "last_30_days", label: "هذا الشهر" },
+  { id: "last_7_days", label: "آخر ٧ أيام" },
   { id: "today", label: "اليوم" },
   { id: "custom", label: "مدة محددة" },
 ];
@@ -32,3 +31,4 @@ export const EMPLOYEE_FILTERS = [
   { id: "ahmed", label: "أحمد" },
   { id: "noura", label: "نورة" },
 ];
+
