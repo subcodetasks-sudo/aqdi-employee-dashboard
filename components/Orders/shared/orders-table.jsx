@@ -41,16 +41,16 @@ function PaymentCell({ row }) {
 
   if (!isPaid) {
     return (
-      <div className="flex items-center gap-1.5 text-[#10B981] font-bold text-[13px]">
-        <i className="fa-solid fa-circle-check text-[12px]" />
+      <div className="flex items-center gap-1.5 text-brand-accent font-bold text-13">
+        <i className="fa-solid fa-circle-check text-xs" />
         <span>{row?.payment_label_ar || "لم يتم الدفع"}</span>
       </div>
     );
   }
 
   return (
-    <div className="flex items-center gap-1.5 text-[#007C13] font-bold text-[13px]">
-      <i className="fa-solid fa-circle-check text-[12px]" />
+    <div className="flex items-center gap-1.5 text-[#007C13] font-bold text-13">
+      <i className="fa-solid fa-circle-check text-xs" />
       <span>{row?.amount_payment}</span>
       <Image src={greenRial} alt="rial" width={14} height={14} />
     </div>
@@ -85,12 +85,12 @@ export default function OrdersTable({
   ];
 
   return (
-    <div className="w-full overflow-x-auto bg-white rounded-[24px] border border-[#E4E4E4] shadow-sm">
+    <div className="w-full overflow-x-auto bg-white rounded-3xl border border-neutral-200 shadow-sm">
       <table className="w-full border-collapse">
-        <thead className="bg-[#FAFAFA]">
+        <thead className="bg-neutral-50">
           <tr>
             {selectable && (
-              <th className="p-[15px_20px] border-b border-[#E4E4E4] w-[52px]">
+              <th className="p-[15px_20px] border-b border-neutral-200 w-13">
                 <Checkbox
                   checked={
                     pageSelectionState.some
@@ -99,14 +99,14 @@ export default function OrdersTable({
                   }
                   onCheckedChange={(checked) => onTogglePage?.(orders, checked === true)}
                   aria-label="تحديد كل الطلبات في الصفحة"
-                  className="border-[#C4C4C4] data-[state=checked]:bg-[#10B981] data-[state=checked]:border-[#10B981]"
+                  className="border-[#C4C4C4] data-[state=checked]:bg-brand-accent data-[state=checked]:border-brand-accent"
                 />
               </th>
             )}
             {tableHeaders.slice(selectable ? 1 : 0).map((header, index) => (
               <th
                 key={index}
-                className="text-right p-[15px_20px] text-[#A3A3A3] text-[13px] font-medium border-b border-[#E4E4E4] whitespace-nowrap"
+                className="text-right p-[15px_20px] text-ink-placeholder text-13 font-medium border-b border-neutral-200 whitespace-nowrap"
               >
                 {header}
               </th>
@@ -116,7 +116,7 @@ export default function OrdersTable({
         <tbody>
           {orders.length === 0 ? (
             <tr>
-              <td colSpan={tableHeaders.length} className="text-center p-8 text-[#A3A3A3] text-sm">
+              <td colSpan={tableHeaders.length} className="text-center p-8 text-ink-placeholder text-sm">
                 لا توجد طلبات متوفرة حالياً
               </td>
             </tr>
@@ -151,12 +151,12 @@ export default function OrdersTable({
                   key={row.id}
                   onClick={() => onRowClick?.(row)}
                   style={draftHighlightStyle}
-                  className={`border-b border-[#F5F5F5] last:border-0 transition-all cursor-pointer ${
+                  className={`border-b border-neutral-100 last:border-0 transition-all cursor-pointer ${
                     rowSelected
                       ? "bg-[#F0FDF4]"
                       : tintDraftRow
                         ? "hover:brightness-[0.98]"
-                        : "hover:bg-[#fafafa]"
+                        : "hover:bg-neutral-50"
                   }`}
                 >
                   {selectable && (
@@ -168,7 +168,7 @@ export default function OrdersTable({
                         checked={rowSelected}
                         onCheckedChange={() => onToggleRow?.(row)}
                         aria-label={`تحديد الطلب ${row?.uuid}`}
-                        className="border-[#C4C4C4] data-[state=checked]:bg-[#10B981] data-[state=checked]:border-[#10B981]"
+                        className="border-[#C4C4C4] data-[state=checked]:bg-brand-accent data-[state=checked]:border-brand-accent"
                       />
                     </td>
                   )}
@@ -178,8 +178,8 @@ export default function OrdersTable({
                         مسودة
                       </span>
                     ) : null}
-                    <div className="flex items-center justify-center gap-2 px-3 py-1.5 bg-[#f9f9f9] rounded-lg w-fit mx-auto border border-[#eee]">
-                      <span className="text-black text-[12px] font-bold">{row?.uuid}</span>
+                    <div className="flex items-center justify-center gap-2 px-3 py-1.5 bg-surface-input rounded-lg w-fit mx-auto border border-[#eee]">
+                      <span className="text-black text-xs font-bold">{row?.uuid}</span>
                       <button
                         type="button"
                         onClick={(e) => {
@@ -187,9 +187,9 @@ export default function OrdersTable({
                           navigator.clipboard.writeText(row?.uuid);
                           toast.success("تم نسخ رقم الطلب");
                         }}
-                        className="text-[#A3A3A3] hover:text-brand-main"
+                        className="text-ink-placeholder hover:text-brand-main"
                       >
-                        <i className="fa-regular fa-copy text-[11px]" />
+                        <i className="fa-regular fa-copy text-11" />
                       </button>
                     </div>
                   </td>
@@ -203,7 +203,7 @@ export default function OrdersTable({
                       >
                         <Image src={waIcon} alt="wa" width={16} height={16} />
                       </Link>
-                      <span className="text-black text-[13px]" dir="ltr">
+                      <span className="text-black text-13" dir="ltr">
                         {row?.user_mobile}
                       </span>
                       <button
@@ -213,9 +213,9 @@ export default function OrdersTable({
                           navigator.clipboard.writeText(row?.user_mobile);
                           toast.success("تم نسخ رقم الجوال");
                         }}
-                        className="text-[#A3A3A3] hover:text-brand-main"
+                        className="text-ink-placeholder hover:text-brand-main"
                       >
-                        <i className="fa-regular fa-copy text-[11px]" />
+                        <i className="fa-regular fa-copy text-11" />
                       </button>
                     </div>
                   </td>
@@ -232,13 +232,13 @@ export default function OrdersTable({
                   <td className="p-[15px_20px]">
                     <PaymentCell row={row} />
                   </td>
-                  <td className="p-[15px_20px] text-[13px] text-black font-medium whitespace-nowrap">
+                  <td className="p-[15px_20px] text-13 text-black font-medium whitespace-nowrap">
                     {formatRelativeTime(row?.updated_at)}
                   </td>
                   {showStatusColumn && (
                     <td className="p-[15px_20px]">
                       <span
-                        className="px-3 py-1 rounded-full text-[11px] font-bold whitespace-nowrap"
+                        className="px-3 py-1 rounded-full text-11 font-bold whitespace-nowrap"
                         style={statusStyle}
                       >
                         {statusName}
@@ -246,7 +246,7 @@ export default function OrdersTable({
                     </td>
                   )}
                   <td className="p-[15px_20px]">
-                    <span className="text-[13px] text-[#4D4D4D] font-medium">
+                    <span className="text-13 text-ink-subtle font-medium">
                       {row?.employee_name || "---"}
                     </span>
                   </td>
@@ -266,7 +266,7 @@ export default function OrdersTable({
                       <button
                         type="button"
                         onClick={() => onRowClick?.(row)}
-                        className="w-8 h-8 rounded-full flex items-center justify-center bg-[#F5F5F5] text-[18px] leading-none hover:bg-brand-main hover:scale-105 transition-all"
+                        className="w-8 h-8 rounded-full flex items-center justify-center bg-neutral-100 text-lg leading-none hover:bg-brand-main hover:scale-105 transition-all"
                         aria-label="عرض التفاصيل"
                       >
                         👁️

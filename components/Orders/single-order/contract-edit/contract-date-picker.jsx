@@ -108,7 +108,7 @@ export default function ContractDatePicker({
         format={DATE_FORMAT}
         calendarPosition="bottom-right"
         containerClassName="w-full"
-        inputClass="w-full h-[48px] bg-white border border-[#EEEEEE] rounded-[14px] px-4 pe-11 text-[14px] text-right focus:outline-none focus:border-brand-hover transition-all disabled:opacity-60"
+        inputClass="w-full h-12 bg-white border border-surface-border rounded-14 px-4 pe-11 text-sm text-right focus:outline-none focus:border-brand-hover transition-all disabled:opacity-60"
         placeholder={isHijri ? "اختر تاريخ هجري" : "اختر تاريخ ميلادي"}
         disabled={disabled}
         editable={false}
@@ -117,7 +117,7 @@ export default function ContractDatePicker({
         onClose={() => setOpen(false)}
       />
       <CalendarIcon
-        className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#A3A3A3]"
+        className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-ink-placeholder"
         aria-hidden
       />
     </div>

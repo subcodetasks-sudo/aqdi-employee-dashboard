@@ -131,14 +131,14 @@ export default function LeaseRenewalDraftTransfer({
   const transferBlock = (
     <div>
       {showTransferLabel ? (
-        <p className="text-[13px] font-black text-black mb-2">تحويل الطلب :</p>
+        <p className="text-13 font-black text-black mb-2">تحويل الطلب :</p>
       ) : null}
       <DropdownMenu dir="rtl">
         <DropdownMenuTrigger asChild>
           <button
             type="button"
             disabled={statusesLoading || isUpdatingStatus}
-            className="w-full flex items-center justify-between gap-2 px-4 py-3 rounded-2xl border text-[12px] font-bold transition-opacity disabled:opacity-70"
+            className="w-full flex items-center justify-between gap-2 px-4 py-3 rounded-2xl border text-xs font-bold transition-opacity disabled:opacity-70"
             style={{
               backgroundColor: statusStyle.backgroundColor,
               borderColor: statusStyle.borderColor,
@@ -158,7 +158,7 @@ export default function LeaseRenewalDraftTransfer({
         </DropdownMenuTrigger>
         <DropdownMenuContent
           align="end"
-          className="w-[min(320px,calc(100vw-32px))] rounded-[16px] border-[#EEEEEE] p-2"
+          className="w-[min(320px,calc(100vw-32px))] rounded-2xl border-surface-border p-2"
         >
           {statusItems.length ? (
             statusItems.map((item) => (
@@ -168,7 +168,7 @@ export default function LeaseRenewalDraftTransfer({
                 className="cursor-pointer rounded-lg p-2.5 text-right"
               >
                 <span
-                  className="inline-flex items-center rounded-full px-3 py-1 text-[12px] font-bold"
+                  className="inline-flex items-center rounded-full px-3 py-1 text-xs font-bold"
                   style={{
                     backgroundColor: item.color || "#F5F5F5",
                     color: item.color_text || "#000000",
@@ -179,7 +179,7 @@ export default function LeaseRenewalDraftTransfer({
               </DropdownMenuItem>
             ))
           ) : (
-            <p className="text-center text-[12px] text-[#A3A3A3] py-4">
+            <p className="text-center text-xs text-ink-placeholder py-4">
               لا توجد حالات مسودة نشطة
             </p>
           )}
@@ -191,7 +191,7 @@ export default function LeaseRenewalDraftTransfer({
   const draftNumberBlock = (
     <div className="min-w-0">
       <p
-        className={`text-[13px] font-black text-black mb-2 ${
+        className={`text-13 font-black text-black mb-2 ${
           layout === "column" ? "text-right" : ""
         }`}
       >

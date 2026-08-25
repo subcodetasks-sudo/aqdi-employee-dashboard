@@ -93,7 +93,7 @@ function StatusIcon({ name }) {
   }
 
   const emoji = getStatusEmoji(name);
-  return <span className="text-[22px] leading-none">{emoji}</span>;
+  return <span className="text-22 leading-none">{emoji}</span>;
 }
 
 function getSoftStatusBackground(color) {
@@ -122,7 +122,7 @@ function StatusCard({ item, count, isActive, onClick }) {
         className={`${baseClass} ${
           isActive
             ? "bg-brand-main text-white border-brand-main shadow-md ring-2 ring-brand-main/35 ring-offset-2 scale-[1.03]"
-            : "bg-[#F5F5F5] text-black border-transparent hover:border-[#D4D4D4] hover:shadow-sm"
+            : "bg-neutral-100 text-black border-transparent hover:border-[#D4D4D4] hover:shadow-sm"
         }`}
       >
         <p className="font-bold leading-snug">

@@ -14,9 +14,9 @@ function DetailRow({ label, value, dir }) {
 
   return (
     <div className="space-y-1.5 text-right">
-      <p className="text-[12px] font-bold text-[#007C13]/70">{label}</p>
+      <p className="text-xs font-bold text-[#007C13]/70">{label}</p>
       <p
-        className="break-all rounded-xl bg-white/80 px-3 py-2.5 text-[13px] font-medium leading-relaxed text-[#007C13]"
+        className="break-all rounded-xl bg-white/80 px-3 py-2.5 text-13 font-medium leading-relaxed text-[#007C13]"
         dir={dir}
       >
         {value}
@@ -96,15 +96,15 @@ export default function PaymentLinkDialog({
         <DialogDescription className="sr-only">{description}</DialogDescription>
 
         <div className="flex w-full flex-col items-center text-center">
-          <div className="mb-4 flex size-[60px] items-center justify-center rounded-full bg-[#10B981] text-white shadow-[0_4px_14px_rgba(16,185,129,0.35)]">
+          <div className="mb-4 flex size-[60px] items-center justify-center rounded-full bg-brand-accent text-white shadow-[0_4px_14px_rgba(16,185,129,0.35)]">
             <Check className="size-7 stroke-[3]" />
           </div>
 
-          <h2 className="mb-2 text-[18px] font-bold leading-snug text-[#007C13]">
+          <h2 className="mb-2 text-lg font-bold leading-snug text-[#007C13]">
             {title}
           </h2>
 
-          <p className="mb-5 text-[13px] text-[#007C13]/80">{description}</p>
+          <p className="mb-5 text-13 text-[#007C13]/80">{description}</p>
 
           {alreadyPaid ? (
             <>
@@ -125,7 +125,7 @@ export default function PaymentLinkDialog({
               <button
                 type="button"
                 onClick={handleCopyAll}
-                className="flex h-[48px] w-full items-center justify-center gap-2 rounded-2xl bg-black text-[14px] font-bold text-white transition-colors hover:bg-neutral-800"
+                className="flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-black text-sm font-bold text-white transition-colors hover:bg-neutral-800"
               >
                 <Copy className="size-4" />
                 نسخ التفاصيل
@@ -146,7 +146,7 @@ export default function PaymentLinkDialog({
                 <button
                   type="button"
                   onClick={handleCopyAll}
-                  className="flex h-[48px] flex-1 items-center justify-center gap-2 rounded-2xl bg-black text-[14px] font-bold text-white transition-colors hover:bg-neutral-800"
+                  className="flex h-12 flex-1 items-center justify-center gap-2 rounded-2xl bg-black text-sm font-bold text-white transition-colors hover:bg-neutral-800"
                 >
                   <Copy className="size-4" />
                   نسخ الكل
@@ -155,7 +155,7 @@ export default function PaymentLinkDialog({
                   type="button"
                   onClick={handleOpen}
                   disabled={!paymentUrl}
-                  className="flex h-[48px] flex-1 items-center justify-center gap-2 rounded-2xl border border-[#10B981] bg-white text-[14px] font-bold text-[#007C13] transition-colors hover:bg-[#10B981]/10 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="flex h-12 flex-1 items-center justify-center gap-2 rounded-2xl border border-brand-accent bg-white text-sm font-bold text-[#007C13] transition-colors hover:bg-brand-accent/10 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <ExternalLink className="size-4" />
                   فتح

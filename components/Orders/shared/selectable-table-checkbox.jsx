@@ -3,7 +3,7 @@
 import { Checkbox } from "@/components/ui/checkbox";
 
 const checkboxClass =
-  "border-[#C4C4C4] data-[state=checked]:bg-[#10B981] data-[state=checked]:border-[#10B981]";
+  "border-[#C4C4C4] data-[state=checked]:bg-brand-accent data-[state=checked]:border-brand-accent";
 
 export function SelectableTableHeaderCheckbox({
   pageSelectionState,
@@ -11,7 +11,7 @@ export function SelectableTableHeaderCheckbox({
   items = [],
 }) {
   return (
-    <th className="p-[15px_20px] border-b border-[#E4E4E4] w-[52px]">
+    <th className="p-[15px_20px] border-b border-neutral-200 w-13">
       <Checkbox
         checked={
           pageSelectionState?.some ? "indeterminate" : pageSelectionState?.all

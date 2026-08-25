@@ -116,7 +116,7 @@ export default function LeaseRenewalRenewTab({ orderData }) {
     <div className="grid grid-cols-1 xl:grid-cols-[minmax(260px,350px)_minmax(0,1fr)] gap-5 w-full min-w-0">
       <div className="min-w-0">
         <ContractStepEditor title="العقد المرغوب تجديده :" step="summary" fields={[]} showEdit={false}>
-          <div className="bg-[#F4F4F4] rounded-[20px] p-5 flex flex-col gap-4">
+          <div className="bg-[#F4F4F4] rounded-20 p-5 flex flex-col gap-4">
             <button
               type="button"
               onClick={instrumentImage ? handleViewInstrument : undefined}
@@ -127,7 +127,7 @@ export default function LeaseRenewalRenewTab({ orderData }) {
                 isPdf ? (
                   <div className="w-full max-w-[200px] h-[120px] mb-4 rounded-xl border border-[#EEE] bg-[#F8F8F8] flex flex-col items-center justify-center gap-2">
                     <FileText className="size-10 text-[#E24444]" />
-                    <span className="text-[12px] font-bold text-[#616161] uppercase">
+                    <span className="text-xs font-bold text-[#616161] uppercase">
                       PDF
                     </span>
                   </div>
@@ -147,14 +147,14 @@ export default function LeaseRenewalRenewTab({ orderData }) {
                   <ImageIcon className="size-8 text-white" />
                 </div>
               )}
-              <p className="font-black text-[15px] text-black">
+              <p className="font-black text-15 text-black">
                 {isPdf ? "معاينة العقد PDF" : "تحميل العقد"}
               </p>
-              <p className="text-[12px] text-[#9E9E9E] mt-1">{fileExtension}</p>
+              <p className="text-xs text-[#9E9E9E] mt-1">{fileExtension}</p>
             </button>
 
             {instrumentImage ? (
-              <div className="flex items-center justify-between gap-2 bg-white rounded-xl p-3 border border-[#EEEEEE] min-w-0">
+              <div className="flex items-center justify-between gap-2 bg-white rounded-xl p-3 border border-surface-border min-w-0">
                 <div className="flex items-center gap-1.5 shrink-0">
                   <button
                     type="button"
@@ -175,8 +175,8 @@ export default function LeaseRenewalRenewTab({ orderData }) {
                 </div>
                 <div className="flex items-center gap-2 min-w-0">
                   <div className="text-right min-w-0">
-                    <p className="text-[12px] font-bold text-black truncate">{documentName}</p>
-                    <p className="text-[10px] text-[#9E9E9E]">{fileExtension}</p>
+                    <p className="text-xs font-bold text-black truncate">{documentName}</p>
+                    <p className="text-10 text-[#9E9E9E]">{fileExtension}</p>
                   </div>
                   <div className="w-10 h-10 rounded-xl bg-black flex items-center justify-center shrink-0 overflow-hidden relative">
                     {isPdf ? (
@@ -194,7 +194,7 @@ export default function LeaseRenewalRenewTab({ orderData }) {
                 </div>
               </div>
             ) : (
-              <p className="text-center text-[12px] text-[#9E9E9E] py-2">
+              <p className="text-center text-xs text-[#9E9E9E] py-2">
                 لا يوجد ملف عقد مرفق
               </p>
             )}
@@ -204,7 +204,7 @@ export default function LeaseRenewalRenewTab({ orderData }) {
 
       <div className="flex flex-col gap-5 min-w-0">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 min-w-0">
-          <div className="bg-[#F4F4F4] rounded-[20px] p-5 min-w-0 overflow-hidden">
+          <div className="bg-[#F4F4F4] rounded-20 p-5 min-w-0 overflow-hidden">
             <ContractStepEditor
               title="تفاصيل المستأجر :"
               step="step3"
@@ -215,10 +215,10 @@ export default function LeaseRenewalRenewTab({ orderData }) {
                   isEmptyDisplayValue(step3.tenant_dob) ? "opacity-45" : ""
                 }`}
               >
-                <p className="text-[11px] text-[#9E9E9E] mb-1">تاريخ ميلاد المستأجر</p>
+                <p className="text-11 text-[#9E9E9E] mb-1">تاريخ ميلاد المستأجر</p>
                 <p
-                  className={`text-[15px] font-bold break-words ${
-                    isEmptyDisplayValue(step3.tenant_dob) ? "text-[#A3A3A3]" : "text-black"
+                  className={`text-15 font-bold break-words ${
+                    isEmptyDisplayValue(step3.tenant_dob) ? "text-ink-placeholder" : "text-black"
                   }`}
                 >
                   {formatDisplayValue(step3.tenant_dob)}
@@ -227,7 +227,7 @@ export default function LeaseRenewalRenewTab({ orderData }) {
             </ContractStepEditor>
           </div>
 
-          <div className="bg-[#F4F4F4] rounded-[20px] p-5 min-w-0 overflow-hidden">
+          <div className="bg-[#F4F4F4] rounded-20 p-5 min-w-0 overflow-hidden">
             <LeaseRenewalDraftTransfer
               orderId={orderData?.id}
               orderData={orderData}
@@ -241,10 +241,10 @@ export default function LeaseRenewalRenewTab({ orderData }) {
           step="step4"
           fields={LEASE_RENEWAL_TERMS_FIELDS}
         >
-          <div className="bg-white rounded-[20px] p-6 border border-[#EBEBEB] shadow-sm relative min-h-[200px] min-w-0 overflow-hidden">
+          <div className="bg-white rounded-20 p-6 border border-[#EBEBEB] shadow-sm relative min-h-[200px] min-w-0 overflow-hidden">
             <button
               type="button"
-              className="absolute left-4 bottom-4 w-9 h-9 rounded-full border border-[#E4E4E4] flex items-center justify-center text-[#A3A3A3] hover:bg-gray-50 disabled:opacity-40"
+              className="absolute left-4 bottom-4 w-9 h-9 rounded-full border border-neutral-200 flex items-center justify-center text-ink-placeholder hover:bg-gray-50 disabled:opacity-40"
               disabled={!additionalTerms}
               onClick={() => {
                 if (!additionalTerms) {
@@ -259,7 +259,7 @@ export default function LeaseRenewalRenewTab({ orderData }) {
             </button>
             {additionalTerms ? (
               termsLines.length > 1 ? (
-                <ol className="list-decimal list-inside space-y-4 text-[13px] text-[#333] leading-[1.8] pr-1 break-words">
+                <ol className="list-decimal list-inside space-y-4 text-13 text-[#333] leading-[1.8] pr-1 break-words">
                   {termsLines.map((term, i) => (
                     <li key={i} className="text-right">
                       <span className="mr-1">{term}</span>
@@ -267,12 +267,12 @@ export default function LeaseRenewalRenewTab({ orderData }) {
                   ))}
                 </ol>
               ) : (
-                <p className="text-[13px] text-[#333] leading-[1.8] text-right whitespace-pre-wrap break-words">
+                <p className="text-13 text-[#333] leading-[1.8] text-right whitespace-pre-wrap break-words">
                   {additionalTerms}
                 </p>
               )
             ) : (
-              <p className="text-[13px] text-[#A3A3A3] text-right opacity-70">{EMPTY_ADDITIONAL_TERMS}</p>
+              <p className="text-13 text-ink-placeholder text-right opacity-70">{EMPTY_ADDITIONAL_TERMS}</p>
             )}
           </div>
         </ContractStepEditor>
@@ -282,13 +282,13 @@ export default function LeaseRenewalRenewTab({ orderData }) {
           step="step4"
           fields={LEASE_RENEWAL_NOTES_FIELDS}
         >
-          <div className="bg-[#F0F0F0] rounded-[16px] p-5 flex gap-3 items-start border border-[#E8E8E8] min-w-0">
-            <Hand className="size-7 text-[#FF4D4F] shrink-0 rotate-180" />
+          <div className="bg-[#F0F0F0] rounded-2xl p-5 flex gap-3 items-start border border-[#E8E8E8] min-w-0">
+            <Hand className="size-7 text-status-danger shrink-0 rotate-180" />
             <div className="text-right flex-1 min-w-0">
-              <p className="font-black text-black text-[14px] mb-2">يرجى الانتباه :</p>
-              <p className="text-[12px] text-[#555] leading-relaxed whitespace-pre-wrap break-words">
+              <p className="font-black text-black text-sm mb-2">يرجى الانتباه :</p>
+              <p className="text-xs text-[#555] leading-relaxed whitespace-pre-wrap break-words">
                 {notesEdits ?? (
-                  <span className="text-[#A3A3A3] opacity-70">{EMPTY_NOTES}</span>
+                  <span className="text-ink-placeholder opacity-70">{EMPTY_NOTES}</span>
                 )}
               </p>
             </div>

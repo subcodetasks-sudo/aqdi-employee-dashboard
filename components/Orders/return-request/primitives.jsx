@@ -3,7 +3,7 @@
 export const RETURN_ACCENT = "#557086";
 
 export const RETURN_INPUT_CLASS =
-    "w-full h-[52px] bg-white border border-[#E3E8E6] rounded-[16px] px-4 text-[14px] focus:outline-none focus:border-[#557086] focus:ring-1 focus:ring-[#557086]/20 transition-all";
+    "w-full h-13 bg-white border border-[#E3E8E6] rounded-2xl px-4 text-sm focus:outline-none focus:border-[#557086] focus:ring-1 focus:ring-[#557086]/20 transition-all";
 
 export const RETURN_WHATSAPP_MESSAGE = `عميلنا العزيز،
 
@@ -31,7 +31,7 @@ export function ReturnTile({ label, value, className = "" }) {
     return (
         <div className={`rounded-[10px] bg-[#F7FAF9] border border-[#EEF2F0] px-4 py-3 ${className}`}>
             <p className="text-[11.5px] text-[#8A968F] mb-1">{label}</p>
-            <p className="text-[14px] font-bold text-[#2B3A34] truncate">{value ?? "—"}</p>
+            <p className="text-sm font-bold text-[#2B3A34] truncate">{value ?? "—"}</p>
         </div>
     );
 }

@@ -141,12 +141,12 @@ function SingleUnitBlock({ unit, data, index, formRef }) {
         <div className="flex flex-wrap items-center gap-3">
           <h3 className="text-base font-bold text-gray-900">{unitLabel}</h3>
           {selected ? (
-            <span className="rounded-full bg-brand-hover px-3 py-1 text-[11px] font-bold text-white">
+            <span className="rounded-full bg-brand-hover px-3 py-1 text-11 font-bold text-white">
               الوحدة المختارة في العقد
             </span>
           ) : null}
           {unit?.id != null ? (
-            <span className="text-xs font-medium text-[#A3A3A3]" dir="ltr">
+            <span className="text-xs font-medium text-ink-placeholder" dir="ltr">
               ID: {unit.id}
             </span>
           ) : null}
@@ -182,7 +182,7 @@ function SingleUnitBlock({ unit, data, index, formRef }) {
 
 function UnitsEmptyState() {
   return (
-    <div className="flex flex-col items-center justify-center gap-3 rounded-[28px] border border-dashed border-gray-200 bg-white px-6 py-16 text-[#A3A3A3]">
+    <div className="flex flex-col items-center justify-center gap-3 rounded-[28px] border border-dashed border-gray-200 bg-white px-6 py-16 text-ink-placeholder">
       <Inbox size={36} className="text-gray-300" />
       <p className="text-sm font-bold text-gray-500">لا توجد وحدات مرتبطة بهذا العقد</p>
       <p className="text-xs">عدد الوحدات = 0</p>
@@ -245,7 +245,7 @@ const UnitDetailes = ({ data }) => {
             type="button"
             onClick={handleSaveAll}
             disabled={isSavingAll}
-            className="flex w-full items-center justify-center gap-2 h-[52px] rounded-full text-white text-[15px] font-bold disabled:opacity-60 transition-opacity hover:opacity-90"
+            className="flex w-full items-center justify-center gap-2 h-13 rounded-full text-white text-15 font-bold disabled:opacity-60 transition-opacity hover:opacity-90"
             style={{ backgroundColor: GOLD }}
           >
             {isSavingAll ? (

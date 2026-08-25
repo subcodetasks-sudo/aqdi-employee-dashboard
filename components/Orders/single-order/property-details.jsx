@@ -117,7 +117,7 @@ const AddressImageViewer = ({ src }) => {
   });
 
   return (
-    <div className="overflow-hidden rounded-[16px] border border-gray-200 bg-[#E8E8E8]">
+    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-[#E8E8E8]">
       <div
         ref={containerRef}
         className={`flex min-h-[320px] items-center justify-center p-4 ${cursorClass}`}
@@ -154,14 +154,14 @@ const PropertyLocationMap = ({ location }) => {
   const { mapsUrl, addressUrl, lat, lng } = location;
 
   return (
-    <div className="overflow-hidden rounded-[20px] border border-[#EEEEEE] bg-white shadow-sm">
+    <div className="overflow-hidden rounded-20 border border-surface-border bg-white shadow-sm">
       <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
         <div className="flex items-center gap-2 text-right">
           <MapPin size={16} className="text-brand-hover" />
           <div>
             <p className="text-sm font-bold text-gray-800">رابط الموقع</p>
             {lat != null && lng != null ? (
-              <p className="text-[11px] text-[#A3A3A3]" dir="ltr">
+              <p className="text-11 text-ink-placeholder" dir="ltr">
                 {lat}, {lng}
               </p>
             ) : null}
@@ -173,7 +173,7 @@ const PropertyLocationMap = ({ location }) => {
               type="button"
               onClick={() => copy(addressUrl || mapsUrl)}
               title="نسخ الرابط"
-              className="inline-flex items-center gap-1.5 rounded-full border border-[#EEEEEE] bg-[#FAFAFA] px-3 py-1.5 text-xs font-bold text-[#4D4D4D] hover:border-brand-hover hover:text-brand-hover"
+              className="inline-flex items-center gap-1.5 rounded-full border border-surface-border bg-neutral-50 px-3 py-1.5 text-xs font-bold text-ink-subtle hover:border-brand-hover hover:text-brand-hover"
             >
               <Copy size={13} />
               نسخ

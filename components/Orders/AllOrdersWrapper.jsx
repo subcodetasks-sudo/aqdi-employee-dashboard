@@ -16,6 +16,7 @@ import AllOrdersPagination from "./all-orders-pagination";
 import { buildAllOrderColumns } from "./all-orders-columns";
 import { ALL_ORDERS_QUERY_KEY } from "@/src/hooks/use-realtime-new-orders";
 import { useAllOrdersWrapper } from "@/src/hooks/use-all-orders-wrapper";
+import { isDraftOrderRow } from "@/src/lib/draft-contract-statuses";
 
 const TABLE_STORAGE_KEY = "all-orders-table-prefs";
 
@@ -135,6 +136,7 @@ export default function AllOrdersWrapper() {
         isLoading={tableLoading}
         emptyMessage="لا توجد طلبات مطابقة للبحث"
         onRowClick={goToDetails}
+        getRowHighlight={isDraftOrderRow}
       />
 
       <AllOrdersPagination

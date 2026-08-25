@@ -28,10 +28,10 @@ export default function ReturnRequestFormStep({
                 <button
                     type="button"
                     onClick={onClose}
-                    className="absolute left-6 top-6 w-9 h-9 flex items-center justify-center rounded-full bg-[#F5F5F5] text-[#A3A3A3] hover:bg-[#FFEBEB] hover:text-[#E24444] transition-all z-10"
+                    className="absolute left-6 top-6 w-9 h-9 flex items-center justify-center rounded-full bg-neutral-100 text-ink-placeholder hover:bg-[#FFEBEB] hover:text-[#E24444] transition-all z-10"
                     aria-label="إغلاق"
                 >
-                    <i className="fa-solid fa-xmark text-[14px]" />
+                    <i className="fa-solid fa-xmark text-sm" />
                 </button>
 
                 <DialogHeader className="mb-6 space-y-0">
@@ -42,7 +42,7 @@ export default function ReturnRequestFormStep({
                         >
                             <Undo2 className="size-[17px]" />
                         </span>
-                        <DialogTitle className="text-[18px] font-bold text-black text-right">
+                        <DialogTitle className="text-lg font-bold text-black text-right">
                             رفع طلب استرجاع
                         </DialogTitle>
                     </div>
@@ -59,9 +59,9 @@ export default function ReturnRequestFormStep({
                         </div>
 
                         <div className="flex flex-col gap-2">
-                            <label className="text-[13px] font-bold text-black text-right">
+                            <label className="text-13 font-bold text-black text-right">
                                 قيمة المبلغ المسترجع
-                                <span className="text-[#FF4D4F] mr-1">*</span>
+                                <span className="text-status-danger mr-1">*</span>
                             </label>
                             <input
                                 type="number"
@@ -76,19 +76,19 @@ export default function ReturnRequestFormStep({
                         </div>
 
                         <div className="flex flex-col gap-2">
-                            <label className="text-[13px] font-bold text-black text-right">
+                            <label className="text-13 font-bold text-black text-right">
                                 إرفاق عقد العميل (PDF) (اختياري)
                             </label>
                             <label
-                                className={`w-full h-[52px] rounded-[11px] border border-dashed border-[#C9D6E0] bg-white px-4 flex items-center justify-between gap-2 cursor-pointer ${
+                                className={`w-full h-13 rounded-[11px] border border-dashed border-[#C9D6E0] bg-white px-4 flex items-center justify-between gap-2 cursor-pointer ${
                                     isPending ? "pointer-events-none opacity-60" : ""
                                 }`}
                             >
-                                <span className="text-[13px] text-[#5A645F] truncate">
+                                <span className="text-13 text-[#5A645F] truncate">
                                     {contractFile ? contractFile.name : "اختر ملف PDF لإرفاقه..."}
                                 </span>
                                 <span
-                                    className="inline-flex items-center gap-1.5 shrink-0 text-[12px] font-bold"
+                                    className="inline-flex items-center gap-1.5 shrink-0 text-xs font-bold"
                                     style={{ color: RETURN_ACCENT }}
                                 >
                                     <Paperclip className="size-3.5" />
@@ -105,11 +105,11 @@ export default function ReturnRequestFormStep({
                         </div>
 
                         <div className="flex flex-col gap-2">
-                            <label className="text-[13px] font-bold text-black text-right">
+                            <label className="text-13 font-bold text-black text-right">
                                 ملاحظات تود ذكرها
                             </label>
                             <textarea
-                                className="w-full min-h-[100px] bg-white border border-[#E3E8E6] rounded-[16px] p-4 text-[14px] focus:outline-none focus:border-[#557086] focus:ring-1 focus:ring-[#557086]/20 transition-all resize-none"
+                                className="w-full min-h-[100px] bg-white border border-[#E3E8E6] rounded-2xl p-4 text-sm focus:outline-none focus:border-[#557086] focus:ring-1 focus:ring-[#557086]/20 transition-all resize-none"
                                 placeholder="أكتب هنا ..."
                                 value={notes}
                                 onChange={(e) => onNotesChange(e.target.value)}
@@ -124,7 +124,7 @@ export default function ReturnRequestFormStep({
                                 disabled={isPending}
                                 onClick={onSubmit}
                                 style={{ backgroundColor: RETURN_ACCENT }}
-                                className="flex-1 h-[52px] text-white rounded-[11px] font-bold text-[15px] hover:brightness-110 transition-all disabled:opacity-60 flex items-center justify-center gap-2"
+                                className="flex-1 h-13 text-white rounded-[11px] font-bold text-15 hover:brightness-110 transition-all disabled:opacity-60 flex items-center justify-center gap-2"
                             >
                                 {isPending ? (
                                     <>
@@ -139,7 +139,7 @@ export default function ReturnRequestFormStep({
                                 type="button"
                                 disabled={isPending}
                                 onClick={onClose}
-                                className="h-[52px] px-6 rounded-[11px] border border-[#E3E8E6] bg-[#F2F5F3] text-[#33403B] font-bold text-[15px] hover:bg-[#E7EDE9] transition-all"
+                                className="h-13 px-6 rounded-[11px] border border-[#E3E8E6] bg-[#F2F5F3] text-[#33403B] font-bold text-15 hover:bg-[#E7EDE9] transition-all"
                             >
                                 تراجع
                             </button>

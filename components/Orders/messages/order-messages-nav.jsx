@@ -21,10 +21,10 @@ const panelClass =
 const columnsWrapClass = "flex flex-row items-start gap-3";
 
 const columnClass =
-  "bg-[#F3F3F3] rounded-[20px] p-2 min-w-[min(280px,calc(50vw-32px))] max-w-[min(320px,calc(50vw-24px))] max-h-[min(70vh,480px)] overflow-y-auto";
+  "bg-[#F3F3F3] rounded-20 p-2 min-w-[min(280px,calc(50vw-32px))] max-w-[min(320px,calc(50vw-24px))] max-h-[min(70vh,480px)] overflow-y-auto";
 
 const rowClass =
-  "flex items-center gap-2.5 w-full rounded-[14px] px-2.5 py-3 text-right transition-colors hover:bg-white/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-main/30";
+  "flex items-center gap-2.5 w-full rounded-14 px-2.5 py-3 text-right transition-colors hover:bg-white/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-main/30";
 
 function getRowIconClass(name = "") {
   const text = String(name);
@@ -39,7 +39,7 @@ function getRowIconClass(name = "") {
 function MessageRowIcon({ name }) {
   return (
     <span className="w-8 h-8 rounded-[10px] bg-white border border-[#E8E8E8] flex items-center justify-center shrink-0 text-[#333]">
-      <i className={`fa-solid ${getRowIconClass(name)} text-[13px]`} aria-hidden />
+      <i className={`fa-solid ${getRowIconClass(name)} text-13`} aria-hidden />
     </span>
   );
 }
@@ -48,7 +48,7 @@ function OnlineDot({ show }) {
   if (!show) return <span className="w-2.5 shrink-0" aria-hidden />;
   return (
     <span
-      className="w-2.5 h-2.5 rounded-full bg-[#10B981] shrink-0 ring-2 ring-[#F3F3F3]"
+      className="w-2.5 h-2.5 rounded-full bg-brand-accent shrink-0 ring-2 ring-[#F3F3F3]"
       title="متصل"
       aria-label="متصل"
     />
@@ -59,7 +59,7 @@ function SectionRow({ name, showOnline, onClick }) {
   return (
     <button type="button" className={rowClass} onClick={onClick}>
       <MessageRowIcon name={name} />
-      <span className="flex-1 text-[13px] font-semibold text-[#1A1A1A] leading-snug">
+      <span className="flex-1 text-13 font-semibold text-[#1A1A1A] leading-snug">
         {name}
       </span>
       <OnlineDot show={showOnline} />
@@ -71,9 +71,9 @@ function SectionRow({ name, showOnline, onClick }) {
 function ContractTypeColumn({ column, onSelect }) {
   return (
     <div className={columnClass}>
-      <p className="text-[13px] font-bold text-[#1A1A1A] px-2.5 py-2 mb-1">{column.name}</p>
+      <p className="text-13 font-bold text-[#1A1A1A] px-2.5 py-2 mb-1">{column.name}</p>
       {!column.items.length ? (
-        <p className="text-[12px] text-[#A3A3A3] text-center py-6">لا توجد رسائل</p>
+        <p className="text-xs text-ink-placeholder text-center py-6">لا توجد رسائل</p>
       ) : (
         column.items.map((alert) => (
           <SectionRow
@@ -97,7 +97,7 @@ function MessagesSectionsPanel({ alerts, isLoading, onSelect }) {
   if (isLoading) {
     return (
       <div className={`${columnClass} flex items-center justify-center py-12`}>
-        <Loader2 className="size-6 animate-spin text-[#A3A3A3]" />
+        <Loader2 className="size-6 animate-spin text-ink-placeholder" />
       </div>
     );
   }
@@ -105,7 +105,7 @@ function MessagesSectionsPanel({ alerts, isLoading, onSelect }) {
   if (!alerts.length) {
     return (
       <div className={columnClass}>
-        <p className="text-[13px] text-[#A3A3A3] text-center py-8">لا توجد رسائل</p>
+        <p className="text-13 text-ink-placeholder text-center py-8">لا توجد رسائل</p>
       </div>
     );
   }
@@ -124,13 +124,13 @@ function PillTriggerButton({ isOpen, onClick, children }) {
     <button
       type="button"
       onClick={onClick}
-      className={`flex items-center gap-1.5 text-[13px] font-semibold transition-colors outline-none ${
+      className={`flex items-center gap-1.5 text-13 font-semibold transition-colors outline-none ${
         isOpen ? "text-brand-main" : "text-white"
       }`}
     >
       {children}
       <i
-        className={`fa-solid text-[10px] ${
+        className={`fa-solid text-10 ${
           isOpen ? "fa-chevron-up" : "fa-chevron-down"
         } ${isOpen ? "text-brand-main" : "text-white"}`}
         aria-hidden

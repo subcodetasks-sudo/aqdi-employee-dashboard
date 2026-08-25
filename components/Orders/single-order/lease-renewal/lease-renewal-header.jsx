@@ -29,8 +29,8 @@ function InfoChip({ bg, labelColor, valueColor, icon, label, value, children }) 
     >
       {icon && <span className="shrink-0">{icon}</span>}
       <div className="flex flex-col text-right min-w-0 leading-tight">
-        <span className={`text-[11px] font-medium ${labelColor}`}>{label}</span>
-        <span className={`text-[13px] font-bold ${valueColor}`}>{value}</span>
+        <span className={`text-11 font-medium ${labelColor}`}>{label}</span>
+        <span className={`text-13 font-bold ${valueColor}`}>{value}</span>
       </div>
       {children}
     </div>
@@ -116,11 +116,11 @@ export default function LeaseRenewalHeader({
 
       <div className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-[#E8EEFF] shrink-0">
         <div className="flex flex-col text-right leading-tight">
-          <span className="text-[11px] font-medium text-[#1565C0] flex items-center gap-1 justify-end">
+          <span className="text-11 font-medium text-[#1565C0] flex items-center gap-1 justify-end">
             حالة الطلب
             <span className="text-base leading-none">🤔</span>
           </span>
-          <span className="text-[13px] font-bold text-[#0D47A1]">{statusName}</span>
+          <span className="text-13 font-bold text-[#0D47A1]">{statusName}</span>
         </div>
         <ChangeStatusDialog
           orderId={summary.id}
@@ -139,8 +139,8 @@ export default function LeaseRenewalHeader({
         className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-[#F0F0F0] shrink-0 hover:bg-[#E8E8E8] transition-colors"
       >
         <div className="flex flex-col text-right leading-tight">
-          <span className="text-[11px] font-medium text-[#757575]">رقم الطلب</span>
-          <span className="text-[13px] font-bold text-[#212121] flex items-center gap-1.5 justify-end">
+          <span className="text-11 font-medium text-[#757575]">رقم الطلب</span>
+          <span className="text-13 font-bold text-[#212121] flex items-center gap-1.5 justify-end">
             <BiSolidCopy className="size-3.5 text-[#0019FF] shrink-0" />
             {orderUuid}
           </span>
@@ -163,9 +163,9 @@ export default function LeaseRenewalHeader({
           onClick={() => onCopy(user.mobile, "تم نسخ رقم الجوال")}
           className="flex flex-col text-right leading-tight hover:opacity-80"
         >
-          <span className="text-[11px] font-medium text-[#757575]">رقم الجوال</span>
+          <span className="text-11 font-medium text-[#757575]">رقم الجوال</span>
           <span
-            className="text-[13px] font-bold text-[#212121] flex items-center gap-1.5 justify-end"
+            className="text-13 font-bold text-[#212121] flex items-center gap-1.5 justify-end"
             dir="ltr"
           >
             <BiSolidCopy className="size-3.5 text-[#0019FF] shrink-0" />

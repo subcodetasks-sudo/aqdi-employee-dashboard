@@ -48,14 +48,14 @@ function QuickStatCard({ emoji, label, href, count }) {
   return (
     <Link
       href={href}
-      className="group flex items-center gap-2.5 pr-2.5 pl-3.5 py-2 bg-[#F5F5F5] rounded-[14px] border border-transparent hover:border-brand-main/25 hover:bg-white hover:shadow-sm transition-all shrink-0"
+      className="group flex items-center gap-2.5 pr-2.5 pl-3.5 py-2 bg-neutral-100 rounded-14 border border-transparent hover:border-brand-main/25 hover:bg-white hover:shadow-sm transition-all shrink-0"
     >
-      <span className="flex items-center justify-center size-8 rounded-full bg-white shadow-sm text-[15px] shrink-0 group-hover:scale-105 transition-transform">
+      <span className="flex items-center justify-center size-8 rounded-full bg-white shadow-sm text-15 shrink-0 group-hover:scale-105 transition-transform">
         {emoji}
       </span>
       <span className="flex flex-col leading-tight">
         <span className="text-[11.5px] font-bold text-[#616161] whitespace-nowrap">{label}</span>
-        <span className="text-[15px] font-black text-black tabular-nums">
+        <span className="text-15 font-black text-black tabular-nums">
           {formatQuickCount(count)}
         </span>
       </span>
@@ -136,7 +136,7 @@ export default function OrdersToolbar({
 
   return (
     <div className="space-y-4 w-full" dir="rtl">
-      <div className="bg-white rounded-[20px] border border-[#E4E4E4] shadow-sm p-4 flex flex-col gap-4">
+      <div className="bg-white rounded-20 border border-neutral-200 shadow-sm p-4 flex flex-col gap-4">
         {/* {hasTopRow && (
           <div className="flex items-center gap-3 flex-wrap">
             {showAddButtons && (
@@ -147,7 +147,7 @@ export default function OrdersToolbar({
             )}
 
             {showAddButtons && quickLinks.length > 0 && (
-              <div className="hidden sm:block w-px self-stretch bg-[#EEEEEE] shrink-0" />
+              <div className="hidden sm:block w-px self-stretch bg-surface-border shrink-0" />
             )}
 
             {quickLinks.length > 0 && (
@@ -168,20 +168,20 @@ export default function OrdersToolbar({
 
         <div className="flex items-center gap-2.5 flex-wrap">
           <div className="relative w-full sm:w-[260px] md:w-[300px] shrink sm:shrink-0">
-            <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-[#A3A3A3] size-5" />
+            <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-ink-placeholder size-5" />
             <input
               type="text"
               placeholder="البحث الذكي...!"
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
-              className="w-full h-[46px] bg-[#F9F9F9] border border-[#EEEEEE] rounded-full pr-12 pl-10 text-[14px] focus:outline-none focus:border-brand-main focus:bg-white transition-all"
+              className="w-full h-[46px] bg-surface-input border border-surface-border rounded-full pr-12 pl-10 text-sm focus:outline-none focus:border-brand-main focus:bg-white transition-all"
             />
             {searchQuery ? (
               <button
                 type="button"
                 onClick={() => onSearchChange("")}
                 aria-label="مسح البحث"
-                className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center justify-center size-6 rounded-full text-[#A3A3A3] hover:bg-[#EEEEEE] hover:text-[#616161] transition-colors"
+                className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center justify-center size-6 rounded-full text-ink-placeholder hover:bg-surface-border hover:text-[#616161] transition-colors"
               >
                 <X className="size-4" />
               </button>
@@ -194,7 +194,7 @@ export default function OrdersToolbar({
                 type="button"
                 onClick={handleExport}
                 disabled={isExporting || selectedCount === 0}
-                className="h-[46px] px-5 rounded-full border border-[#10B981] bg-white text-[#10B981] hover:bg-[#10B981] hover:text-white font-bold text-[14px] transition-all flex items-center gap-2 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-[#10B981]"
+                className="h-[46px] px-5 rounded-full border border-brand-accent bg-white text-brand-accent hover:bg-brand-accent hover:text-white font-bold text-sm transition-all flex items-center gap-2 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-brand-accent"
                 title={
                   selectedCount > 0
                     ? `تصدير ${selectedCount} طلب محدد إلى Excel`
@@ -218,14 +218,14 @@ export default function OrdersToolbar({
               <button
                 type="button"
                 onClick={onClearSelection}
-                className="h-[46px] px-4 rounded-full border border-[#EEEEEE] bg-[#F9F9F9] text-[#4D4D4D] hover:border-brand-main hover:text-brand-main font-bold text-[13px] transition-all shrink-0 flex items-center gap-1.5"
+                className="h-[46px] px-4 rounded-full border border-surface-border bg-surface-input text-ink-subtle hover:border-brand-main hover:text-brand-main font-bold text-13 transition-all shrink-0 flex items-center gap-1.5"
               >
                 <X className="size-3.5" />
                 إلغاء التحديد ({selectedCount})
               </button>
             ) : null}
 
-            <div className="flex items-center gap-1 p-1 rounded-full bg-[#F9F9F9] border border-[#EEEEEE] shrink-0">
+            <div className="flex items-center gap-1 p-1 rounded-full bg-surface-input border border-surface-border shrink-0">
               <button
                 type="button"
                 onClick={handleRefresh}

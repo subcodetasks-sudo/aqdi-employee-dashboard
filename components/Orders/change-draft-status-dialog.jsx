@@ -90,47 +90,47 @@ export default function ChangeDraftStatusDialog({ orderId, queryKey }) {
           <button
             type="button"
             onClick={(e) => e.stopPropagation()}
-            className="w-8 h-8 rounded-full flex items-center justify-center bg-[#F5F5F5] text-[#4D4D4D] hover:bg-brand-main hover:text-white transition-all"
+            className="w-8 h-8 rounded-full flex items-center justify-center bg-neutral-100 text-ink-subtle hover:bg-brand-main hover:text-white transition-all"
             aria-label="إجراءات الطلب"
           >
-            <i className="fa-solid fa-ellipsis-vertical text-[14px]" />
+            <i className="fa-solid fa-ellipsis-vertical text-sm" />
           </button>
         </DropdownMenuTrigger>
 
         <DropdownMenuContent
-          className="w-64 rounded-[16px] shadow-lg border-[#EEEEEE] p-2"
+          className="w-64 rounded-2xl shadow-lg border-surface-border p-2"
           onClick={(e) => e.stopPropagation()}
         >
           <DropdownMenuLabel>تغيير حالة المسودة</DropdownMenuLabel>
-          <DropdownMenuSeparator className="bg-[#F5F5F5] my-1" />
+          <DropdownMenuSeparator className="bg-neutral-100 my-1" />
 
           {statusItems.map((item) => (
             <div key={item?.id}>
               <DropdownMenuItem
                 onClick={() => changeStatusMutate(item?.id)}
                 disabled={changeStatusPending}
-                className="cursor-pointer hover:bg-[#F9F9F9] rounded-lg p-2"
+                className="cursor-pointer hover:bg-surface-input rounded-lg p-2"
               >
-                <span className="font-medium text-[13px]">{item?.name}</span>
+                <span className="font-medium text-13">{item?.name}</span>
                 {changeStatusPending ? (
                   <Loader2 className="animate-spin" />
                 ) : (
-                  <i className="fa-solid fa-chevron-left mr-auto text-[#A3A3A3] text-[10px]" />
+                  <i className="fa-solid fa-chevron-left mr-auto text-ink-placeholder text-10" />
                 )}
               </DropdownMenuItem>
-              <DropdownMenuSeparator className="bg-[#F5F5F5] my-1" />
+              <DropdownMenuSeparator className="bg-neutral-100 my-1" />
             </div>
           ))}
 
           <DropdownMenuItem
             onClick={() => setIsAddModalOpen(true)}
-            className="cursor-pointer hover:bg-[#F9F9F9] rounded-lg p-2"
+            className="cursor-pointer hover:bg-surface-input rounded-lg p-2"
           >
             <Plus />
-            <span className="font-medium text-[13px]">أخـرى</span>
-            <i className="fa-solid fa-chevron-left mr-auto text-[#A3A3A3] text-[10px]" />
+            <span className="font-medium text-13">أخـرى</span>
+            <i className="fa-solid fa-chevron-left mr-auto text-ink-placeholder text-10" />
           </DropdownMenuItem>
-          <DropdownMenuSeparator className="bg-[#F5F5F5] my-1" />
+          <DropdownMenuSeparator className="bg-neutral-100 my-1" />
 
           <DropdownMenuItem
             className="cursor-pointer hover:bg-[#FFF5F5] text-red-600 rounded-lg p-2"
@@ -141,40 +141,40 @@ export default function ChangeDraftStatusDialog({ orderId, queryKey }) {
             }}
           >
             <TrashIcon className="text-red-600" />
-            <span className="font-medium text-[13px] text-red-600">حذف الطلـب</span>
+            <span className="font-medium text-13 text-red-600">حذف الطلـب</span>
             {isDeleting ? (
               <Loader2 className="animate-spin mr-auto size-4" />
             ) : (
-              <i className="fa-solid fa-chevron-left mr-auto text-red-300 text-[10px]" />
+              <i className="fa-solid fa-chevron-left mr-auto text-red-300 text-10" />
             )}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
 
       <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
-        <DialogContent className="sm:max-w-[600px] p-8 rounded-[32px] border-0" dir="rtl">
+        <DialogContent className="sm:max-w-[600px] p-8 rounded-32 border-0" dir="rtl">
           <DialogHeader className="mb-6">
-            <DialogTitle className="text-[22px] font-black text-black border-b border-[#F5F5F5] pb-4">
+            <DialogTitle className="text-22 font-black text-black border-b border-neutral-100 pb-4">
               إضافة حالة مسودة
             </DialogTitle>
           </DialogHeader>
 
           <div className="flex flex-col gap-6">
             <div className="flex flex-col gap-3">
-              <label className="text-[13px] font-bold text-black px-1">
-                اسم الحالة <span className="text-[#FF4D4F] mr-1">*</span>
+              <label className="text-13 font-bold text-black px-1">
+                اسم الحالة <span className="text-status-danger mr-1">*</span>
               </label>
               <input
                 type="text"
                 placeholder="ادخل اسم الحالة هنــا ..."
                 value={newCategory.name}
                 onChange={(e) => setNewCategory((prev) => ({ ...prev, name: e.target.value }))}
-                className="w-full h-[54px] bg-[#F9F9F9] border border-[#EEEEEE] rounded-[16px] px-5 text-[15px] focus:outline-none focus:border-brand-main focus:bg-white transition-all font-medium text-right"
+                className="w-full h-13.5 bg-surface-input border border-surface-border rounded-2xl px-5 text-15 focus:outline-none focus:border-brand-main focus:bg-white transition-all font-medium text-right"
               />
             </div>
 
             <div className="flex flex-col gap-3">
-              <label className="text-[13px] font-bold text-black px-1">
+              <label className="text-13 font-bold text-black px-1">
                 وصف الحالة
               </label>
               <textarea
@@ -184,7 +184,7 @@ export default function ChangeDraftStatusDialog({ orderId, queryKey }) {
                   setNewCategory((prev) => ({ ...prev, description: e.target.value }))
                 }
                 rows={3}
-                className="w-full min-h-[96px] bg-[#F9F9F9] border border-[#EEEEEE] rounded-[16px] px-5 py-3 text-[15px] focus:outline-none focus:border-brand-main focus:bg-white transition-all font-medium text-right resize-none"
+                className="w-full min-h-[96px] bg-surface-input border border-surface-border rounded-2xl px-5 py-3 text-15 focus:outline-none focus:border-brand-main focus:bg-white transition-all font-medium text-right resize-none"
               />
             </div>
 
@@ -192,7 +192,7 @@ export default function ChangeDraftStatusDialog({ orderId, queryKey }) {
               type="button"
               onClick={() => addStatusMutate()}
               disabled={addStatusPending || !newCategory.name.trim()}
-              className="w-full h-[54px] bg-brand-main text-white rounded-[16px] font-bold text-[16px] hover:bg-brand-main/90 transition-all shadow-lg shadow-brand-main/25 mt-4 disabled:opacity-60"
+              className="w-full h-13.5 bg-brand-main text-white rounded-2xl font-bold text-base hover:bg-brand-main/90 transition-all shadow-lg shadow-brand-main/25 mt-4 disabled:opacity-60"
             >
               {addStatusPending ? <Loader2 className="animate-spin mx-auto" /> : "إضـــافة الحالة"}
             </button>

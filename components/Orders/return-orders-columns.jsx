@@ -4,9 +4,17 @@ import Image from "next/image";
 import { toast } from "sonner";
 import { ArrowUpDown, Check, Copy, FileText, X } from "lucide-react";
 import greenRial from "@/public/images/greenRial.svg";
+import orangerial from "@/public/images/orangerial.svg";
 import { cn } from "@/lib/utils";
 import { RT } from "@/components/RealtimeOrders/theme";
 import OrderActionsMenu from "@/components/RealtimeOrders/OrderActionsMenu";
+import RefundContractActionsMenu from "@/components/analysis/returned/refund-contract-actions-menu";
+import SendOrderSmsButton from "@/components/Orders/shared/send-order-sms-button";
+import { ensureReturnOrderRefund } from "@/components/analysis/returned/refund-contract-utils";
+import {
+  AdminApprovalCell,
+  CustomerRefundBadge,
+} from "@/components/Orders/shared/refund-status-badges";
 
 function formatRelativeShort(dateString) {
   if (!dateString) return null;
@@ -21,7 +29,7 @@ function formatRelativeShort(dateString) {
   return `${days} يوم`;
 }
 
-export function buildAllOrderColumns({
+export function buildReturnOrderColumns({
   onView,
   onStatusChange,
   onPrint,
@@ -29,6 +37,11 @@ export function buildAllOrderColumns({
   changingOrderId,
   canChangeStatus = true,
   canAddStatus = false,
+  refundsLookup,
+  refundItems = [],
+  exportQueryKey,
+  onApprovedSuccess,
+  onRetractSuccess,
   dark = false,
 } = {}) {
   return [
@@ -122,6 +135,39 @@ export function buildAllOrderColumns({
       },
     },
     {
+      id: "refundAmount",
+      label: "المبلغ المطالب استرجاعه",
+      hideable: true,
+      cell: (row) => {
+        const amount = row?.refund_amount;
+        if (amount == null || amount === "") {
+          return <span className={dark ? "text-white/35" : "text-gray-400"}>—</span>;
+        }
+        return (
+          <div className="flex items-center gap-1.5 font-bold text-xs tabular-nums text-brand-main">
+            <span>{amount}</span>
+            <Image src={orangerial} alt="rial" width={11} height={11} />
+          </div>
+        );
+      },
+    },
+    {
+      id: "customerRefunded",
+      label: "تم الاسترجاع",
+      hideable: true,
+      cell: (row) => {
+        const customerRefunded =
+          row?.customer_refunded ?? row?.is_refunded ?? row?.refunded;
+        return <CustomerRefundBadge refunded={customerRefunded} />;
+      },
+    },
+    {
+      id: "adminApproval",
+      label: "موافقة الإدارة",
+      hideable: true,
+      cell: (row) => <AdminApprovalCell row={row} />,
+    },
+    {
       id: "receivedSince",
       label: "مستلم منذ",
       hideable: true,
@@ -172,6 +218,7 @@ export function buildAllOrderColumns({
       stopRowClick: true,
       cell: (row) => {
         const canPrint = Boolean(row?.is_paid === true || row?.is_paid === 1);
+        const refund = ensureReturnOrderRefund(row, refundsLookup);
         return (
           <div className="flex items-center gap-1.5">
             <button
@@ -193,6 +240,17 @@ export function buildAllOrderColumns({
               canChangeStatus={canChangeStatus}
               canAddStatus={canAddStatus}
             />
+            <RefundContractActionsMenu
+              refund={refund}
+              order={row}
+              refundsLookup={refundsLookup}
+              refundItems={refundItems}
+              queryKey={exportQueryKey}
+              forceShow
+              onApprovedSuccess={onApprovedSuccess}
+              onRetractSuccess={onRetractSuccess}
+            />
+            <SendOrderSmsButton order={row} />
             {canPrint ? (
               <button
                 type="button"

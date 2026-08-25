@@ -1,13 +1,26 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Loader2, MessageSquareText } from "lucide-react";
+import {
+  Loader2,
+  MessageSquareText,
+  Phone,
+  Send,
+  Sparkles,
+  UserRound,
+  X,
+} from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { axiosInstance } from "@/src/utils/axios";
+import {
+  getOrderSmsTemplates,
+} from "@/components/Orders/shared/order-sms-templates";
+import { getOrderContractUuid } from "@/components/Orders/messages/order-section-message-utils";
 
 export const SMS_SEND_API = "/admin/sms/send";
 export const SMS_MESSAGE_API = "/admin/sms/message";
@@ -86,6 +99,8 @@ export function resolveOrderSmsPhone(order) {
   return "";
 }
 
+const SMS_SEGMENT_LENGTH = 70;
+
 export default function SendOrderSmsButton({
   order,
   employee = null,
@@ -98,6 +113,7 @@ export default function SendOrderSmsButton({
 }) {
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState("");
+  const [activeTemplateId, setActiveTemplateId] = useState(null);
 
   const employeeId = employeeIdProp ?? employee?.id ?? null;
   const isEmployeeMode = employeeId != null && employeeId !== "";
@@ -118,8 +134,16 @@ export default function SendOrderSmsButton({
         ? Boolean(phone)
         : userId != null || Boolean(phone);
 
+  const orderUuid = getOrderContractUuid(order) || order?.uuid || "";
+  const templates = !isEmployeeMode ? getOrderSmsTemplates(orderUuid) : [];
+  const charCount = message.length;
+  const segmentCount = Math.max(1, Math.ceil(charCount / SMS_SEGMENT_LENGTH));
+
   useEffect(() => {
-    if (!open) setMessage("");
+    if (!open) {
+      setMessage("");
+      setActiveTemplateId(null);
+    }
   }, [open]);
 
   const { mutate, isPending } = useMutation({
@@ -145,6 +169,7 @@ export default function SendOrderSmsButton({
       toast.success(res?.data?.message || "تم إرسال الرسالة بنجاح");
       setOpen(false);
       setMessage("");
+      setActiveTemplateId(null);
     },
     onError: (error) => {
       toast.error(
@@ -182,9 +207,14 @@ export default function SendOrderSmsButton({
     mutate();
   };
 
+  const applyTemplate = (template) => {
+    setMessage(template.body);
+    setActiveTemplateId(template.id);
+  };
+
   const triggerClassName = label
     ? `h-auto py-3 px-4 rounded-2xl bg-[#0019FF] hover:bg-[#0015CC] text-white text-xs font-bold flex items-center gap-2 whitespace-nowrap shrink-0 transition-colors ${className}`
-    : `w-8 h-8 rounded-full flex items-center justify-center bg-[#F5F5F5] text-[#4D4D4D] hover:bg-brand-main hover:text-white transition-all shrink-0 ${className}`;
+    : `w-8 h-8 rounded-full flex items-center justify-center bg-neutral-100 text-ink-subtle hover:bg-brand-main hover:text-white transition-all shrink-0 ${className}`;
 
   const recipientLabel = isEmployeeMode
     ? "معرّف الموظف"
@@ -214,68 +244,120 @@ export default function SendOrderSmsButton({
         <DialogContent
           dir="rtl"
           closeButton={false}
-          className="sm:max-w-[480px] rounded-[28px] border-0 p-6 sm:p-8"
+          className="sm:max-w-[520px] rounded-[28px] border border-[#E8EEEC] dark:border-white/10 bg-white dark:bg-[#0F1C16] p-0 overflow-hidden shadow-[0_24px_64px_rgba(0,0,0,0.18)]"
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="flex items-center justify-between mb-5">
+          <div className="relative px-6 pt-6 pb-5 bg-gradient-to-l from-[#E8F5F1] via-white to-white dark:from-[#0B5345]/30 dark:via-[#0F1C16] dark:to-[#0F1C16] border-b border-[#EEF2F0] dark:border-white/5">
             <button
               type="button"
               onClick={() => setOpen(false)}
-              className="w-9 h-9 rounded-full flex items-center justify-center bg-[#F5F5F5] text-[#A3A3A3] hover:bg-[#FFEBEB] hover:text-[#E24444] transition-all"
+              className="absolute top-5 left-5 size-9 rounded-full flex items-center justify-center bg-white dark:bg-white/10 text-gray-400 hover:text-[#E24444] hover:bg-[#FFEBEB] dark:hover:bg-red-500/10 transition-all shadow-sm"
               aria-label="إغلاق"
             >
-              <i className="fa-solid fa-xmark text-[14px]" />
+              <X className="size-4" />
             </button>
-            <DialogTitle className="text-[18px] font-bold text-black m-0">
-              إرسال رسالة SMS
-            </DialogTitle>
-          </div>
 
-          {(phone || recipientValue) && (
-            <div className="mb-4 rounded-2xl bg-[#F8F8F8] px-4 py-3 text-right text-[13px] text-[#616161]">
-              {phone ? (
-                <p>
-                  الجوال:{" "}
-                  <span className="font-bold text-black" dir="ltr">
-                    {phone}
-                  </span>
+            <div className="flex items-center gap-3 pr-1">
+              <div className="size-11 rounded-2xl bg-brand-dark text-white flex items-center justify-center shadow-[0_8px_20px_rgba(12,96,85,0.35)]">
+                <MessageSquareText className="size-5" />
+              </div>
+              <div className="text-right">
+                <DialogTitle className="text-[17px] font-black text-brand-dark dark:text-[#6EE7B7] m-0">
+                  إرسال رسالة SMS
+                </DialogTitle>
+                <p className="text-12 text-gray-500 dark:text-white/50 mt-0.5">
+                  أرسل رسالة مباشرة للعميل أو استخدم قالبًا جاهزًا
                 </p>
-              ) : null}
-              {userId != null || isEmployeeMode ? (
-                <p className={phone ? "mt-1" : undefined}>
-                  {recipientLabel}:{" "}
-                  <span className="font-bold text-black" dir="ltr">
-                    {recipientValue}
-                  </span>
-                </p>
-              ) : null}
+              </div>
             </div>
-          )}
-
-          <div className="space-y-2 text-right mb-5">
-            <label className="text-sm font-medium text-black">نص الرسالة</label>
-            <Textarea
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              placeholder="اكتب نص الرسالة هنا..."
-              className="min-h-[140px] rounded-[20px] border-[#E5E7EB] bg-white px-4 py-3 text-right resize-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-brand-main"
-              dir="rtl"
-            />
           </div>
 
-          <Button
-            type="button"
-            disabled={isPending || !message.trim()}
-            onClick={handleSubmit}
-            className="w-full h-12 rounded-full bg-brand-hover hover:bg-brand-hover/90 text-white font-bold gap-2"
-          >
-            {isPending ? (
-              <Loader2 className="size-4 animate-spin" />
-            ) : (
-              <MessageSquareText className="size-4" />
+          <div className="px-6 py-5 space-y-5">
+            {(phone || recipientValue) && (
+              <div className="flex flex-wrap gap-2">
+                {phone ? (
+                  <span className="inline-flex items-center gap-1.5 h-8 px-3 rounded-full bg-[#F3F9F6] dark:bg-white/[0.06] text-[12.5px] font-bold text-brand-dark dark:text-[#6EE7B7]">
+                    <Phone className="size-3.5 opacity-70" />
+                    <span dir="ltr">{phone}</span>
+                  </span>
+                ) : null}
+                {userId != null || isEmployeeMode ? (
+                  <span className="inline-flex items-center gap-1.5 h-8 px-3 rounded-full bg-[#F3F4F6] dark:bg-white/[0.06] text-[12.5px] font-bold text-gray-600 dark:text-white/70">
+                    <UserRound className="size-3.5 opacity-70" />
+                    {recipientLabel}:{" "}
+                    <span dir="ltr">{recipientValue}</span>
+                  </span>
+                ) : null}
+                {orderUuid ? (
+                  <span className="inline-flex items-center gap-1.5 h-8 px-3 rounded-full bg-[#EEF2FF] dark:bg-indigo-500/10 text-[12.5px] font-bold text-[#4338CA] dark:text-indigo-300">
+                    #{orderUuid}
+                  </span>
+                ) : null}
+              </div>
             )}
-            إرسال الرسالة
-          </Button>
+
+            {templates.length > 0 ? (
+              <div className="space-y-2.5">
+                <div className="flex items-center gap-1.5 text-[12.5px] font-bold text-gray-500 dark:text-white/50">
+                  <Sparkles className="size-3.5" />
+                  قوالب جاهزة
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {templates.map((template) => (
+                    <button
+                      key={template.id}
+                      type="button"
+                      onClick={() => applyTemplate(template)}
+                      className={cn(
+                        "h-8 px-3 rounded-full border text-[11.5px] font-bold transition-colors",
+                        activeTemplateId === template.id
+                          ? "border-brand-dark bg-brand-dark text-white"
+                          : "border-[#E3E8E6] dark:border-white/10 text-gray-700 dark:text-white/80 hover:border-brand-dark/40 hover:bg-[#F3F9F6] dark:hover:bg-white/[0.06]"
+                      )}
+                    >
+                      {template.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+
+            <div className="space-y-2 text-right">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[11px] font-bold text-gray-400 tabular-nums">
+                  {charCount} حرف
+                  {charCount > 0 ? ` · ≈ ${segmentCount} رسالة` : ""}
+                </span>
+                <label className="text-[13px] font-bold text-gray-800 dark:text-white/90">
+                  نص الرسالة
+                </label>
+              </div>
+              <Textarea
+                value={message}
+                onChange={(e) => {
+                  setMessage(e.target.value);
+                  setActiveTemplateId(null);
+                }}
+                placeholder="اكتب نص الرسالة هنا أو اختر قالبًا جاهزًا..."
+                className="min-h-[160px] rounded-2xl border-[#E3E8E6] dark:border-white/10 bg-[#F9FBFA] dark:bg-white/[0.03] px-4 py-3.5 text-[13.5px] leading-7 text-right resize-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-brand-dark"
+                dir="rtl"
+              />
+            </div>
+
+            <Button
+              type="button"
+              disabled={isPending || !message.trim()}
+              onClick={handleSubmit}
+              className="w-full h-12 rounded-full bg-brand-dark hover:bg-brand-dark/90 text-white font-bold gap-2 shadow-[0_10px_24px_rgba(12,96,85,0.28)]"
+            >
+              {isPending ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <Send className="size-4" />
+              )}
+              إرسال الرسالة
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </>

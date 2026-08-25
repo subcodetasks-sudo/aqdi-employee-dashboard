@@ -22,7 +22,7 @@ export default function ReturnRequestWhatsappStep({ open, order, onClose, onCont
                         <div className="relative flex items-center justify-center">
                             <i className="fa-regular fa-clock text-white text-[30px]" aria-hidden />
                             <i
-                                className="fa-solid fa-check text-white text-[13px] absolute -bottom-0.5 -start-1"
+                                className="fa-solid fa-check text-white text-13 absolute -bottom-0.5 -start-1"
                                 aria-hidden
                             />
                         </div>
@@ -31,11 +31,11 @@ export default function ReturnRequestWhatsappStep({ open, order, onClose, onCont
                     <h2 className="text-[20px] font-bold text-black leading-snug mb-2">
                         تم رفع طلب الاسترجاع بنجاح <span aria-hidden>✅</span>
                     </h2>
-                    <p className="text-[14px] text-[#A3A3A3] font-normal mb-4">الرجاء نسخ الكلام وإرسالها للعميل :</p>
+                    <p className="text-sm text-ink-placeholder font-normal mb-4">الرجاء نسخ الكلام وإرسالها للعميل :</p>
 
                     <div className="w-full h-px bg-[#EBEBEB] mb-5" />
 
-                    <div className="w-full flex flex-col gap-2.5 text-[14px] text-[#4D4D4D] leading-relaxed mb-5">
+                    <div className="w-full flex flex-col gap-2.5 text-sm text-ink-subtle leading-relaxed mb-5">
                         <p className="font-bold text-black text-center">عميلنا العزيز،</p>
                         <p className="text-center">الرجاء تعبئة البيانات لإتمام طلب الاسترجاع :</p>
                         <p className="text-center">اسم البنك :</p>
@@ -44,14 +44,14 @@ export default function ReturnRequestWhatsappStep({ open, order, onClose, onCont
 
                         <div className="flex items-start justify-center gap-2 text-center mt-1 px-2">
                             <span className="w-2 h-2 rounded-full bg-[#EF4444] shrink-0 mt-2" aria-hidden />
-                            <p className="text-[13px] text-[#4D4D4D] max-w-[340px]">
+                            <p className="text-13 text-ink-subtle max-w-[340px]">
                                 يشترط ان يكون رقم الحساب هو نفس وفي حالة تغييره سيتم رفض الطلب
                             </p>
                         </div>
 
                         <div className="flex items-center justify-center gap-2 mt-1">
-                            <Clock className="size-4 text-[#A3A3A3] shrink-0" strokeWidth={2} />
-                            <p className="text-[13px] text-[#737373]">سيتم استرجاع المبلغ خلال يوم إلى 3 أيام عمل</p>
+                            <Clock className="size-4 text-ink-placeholder shrink-0" strokeWidth={2} />
+                            <p className="text-13 text-neutral-500">سيتم استرجاع المبلغ خلال يوم إلى 3 أيام عمل</p>
                         </div>
                     </div>
 
@@ -60,13 +60,13 @@ export default function ReturnRequestWhatsappStep({ open, order, onClose, onCont
                     <div className="flex items-center justify-center gap-2 mb-4">
                         <button
                             type="button"
-                            className="text-[#A3A3A3] hover:text-[#557086] transition-colors p-1"
+                            className="text-ink-placeholder hover:text-[#557086] transition-colors p-1"
                             onClick={copyWhatsappMessage}
                             aria-label="نسخ رسالة الشكر"
                         >
-                            <i className="fa-regular fa-copy text-[16px]" />
+                            <i className="fa-regular fa-copy text-base" />
                         </button>
-                        <span className="text-[14px] text-[#4D4D4D]">شكراً لتفهمكم.</span>
+                        <span className="text-sm text-ink-subtle">شكراً لتفهمكم.</span>
                     </div>
 
                     <div className="flex items-center justify-center gap-3 mb-5">
@@ -80,13 +80,13 @@ export default function ReturnRequestWhatsappStep({ open, order, onClose, onCont
                         </Link>
                         <button
                             type="button"
-                            className="text-[#A3A3A3] hover:text-[#557086] transition-colors p-1"
+                            className="text-ink-placeholder hover:text-[#557086] transition-colors p-1"
                             onClick={copyWhatsappMessage}
                             aria-label="نسخ الرسالة كاملة"
                         >
-                            <i className="fa-regular fa-copy text-[16px]" />
+                            <i className="fa-regular fa-copy text-base" />
                         </button>
-                        <span className="text-[16px] font-bold text-black" dir="ltr">
+                        <span className="text-base font-bold text-black" dir="ltr">
                             {order?.user_mobile}
                         </span>
                     </div>
@@ -97,7 +97,7 @@ export default function ReturnRequestWhatsappStep({ open, order, onClose, onCont
                         type="button"
                         onClick={onContinue}
                         style={{ backgroundColor: RETURN_ACCENT }}
-                        className="w-full max-w-[280px] h-[52px] text-white rounded-[11px] font-bold text-[16px] hover:brightness-110 transition-all shadow-lg shadow-[#557086]/20"
+                        className="w-full max-w-[280px] h-13 text-white rounded-[11px] font-bold text-base hover:brightness-110 transition-all shadow-lg shadow-[#557086]/20"
                     >
                         تم
                     </button>

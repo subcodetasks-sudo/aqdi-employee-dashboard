@@ -74,10 +74,10 @@ const CALENDAR_TYPE_TO_DATE_KEYS = {
 };
 
 const inputClass =
-  "w-full h-[48px] bg-white border border-[#EEEEEE] rounded-[14px] px-4 text-[14px] focus:outline-none focus:border-brand-hover transition-all";
+  "w-full h-12 bg-white border border-surface-border rounded-14 px-4 text-sm focus:outline-none focus:border-brand-hover transition-all";
 
 const selectClass =
-  "w-full h-[48px] appearance-none bg-white border border-[#EEEEEE] rounded-[14px] ps-4 pe-10 text-[14px] focus:outline-none focus:border-brand-hover transition-all disabled:opacity-60";
+  "w-full h-12 appearance-none bg-white border border-surface-border rounded-14 ps-4 pe-10 text-sm focus:outline-none focus:border-brand-hover transition-all disabled:opacity-60";
 
 /** Native <select> styled to match `inputClass`, with a custom RTL-aware chevron
  *  (the browser's own arrow renders inconsistently across browsers/OSes, especially in RTL). */
@@ -85,7 +85,7 @@ function NativeSelect({ className = "", ...props }) {
   return (
     <div className="relative">
       <select className={`${selectClass} ${className}`.trim()} {...props} />
-      <ChevronDown className="pointer-events-none absolute end-4 top-1/2 size-4 -translate-y-1/2 text-[#9CA3AF]" />
+      <ChevronDown className="pointer-events-none absolute end-4 top-1/2 size-4 -translate-y-1/2 text-gray-400" />
     </div>
   );
 }
@@ -151,14 +151,14 @@ function FileFieldPreview({ value }) {
           <img
             src={objectUrl}
             alt=""
-            className="size-14 rounded-xl border border-[#EEEEEE] object-cover"
+            className="size-14 rounded-xl border border-surface-border object-cover"
           />
         ) : (
-          <span className="flex size-14 items-center justify-center rounded-xl border border-[#EEEEEE] bg-[#FAFAFA]">
+          <span className="flex size-14 items-center justify-center rounded-xl border border-surface-border bg-neutral-50">
             <FileText className="size-5 text-[#E24444]" />
           </span>
         )}
-        <p className="min-w-0 flex-1 truncate text-[12px] font-bold text-[#4D4D4D]">
+        <p className="min-w-0 flex-1 truncate text-xs font-bold text-ink-subtle">
           {value.name}
         </p>
       </div>
@@ -176,10 +176,10 @@ function FileFieldPreview({ value }) {
         <img
           src={currentUrl}
           alt=""
-          className="size-14 rounded-xl border border-[#EEEEEE] object-cover"
+          className="size-14 rounded-xl border border-surface-border object-cover"
         />
       ) : (
-        <span className="flex size-14 items-center justify-center rounded-xl border border-[#EEEEEE] bg-[#FAFAFA]">
+        <span className="flex size-14 items-center justify-center rounded-xl border border-surface-border bg-neutral-50">
           <FileText className="size-5 text-[#E24444]" />
         </span>
       )}
@@ -188,7 +188,7 @@ function FileFieldPreview({ value }) {
         target="_blank"
         rel="noopener noreferrer"
         dir="ltr"
-        className="min-w-0 flex-1 truncate text-[12px] text-[#737373] hover:text-brand-hover"
+        className="min-w-0 flex-1 truncate text-xs text-neutral-500 hover:text-brand-hover"
       >
         {currentUrl}
       </a>
@@ -321,7 +321,7 @@ function TenantRolesMultiField({ formValues, onPatch, fieldErrors = {} }) {
 
   if (isLoading) {
     return (
-      <div className="md:col-span-2 lg:col-span-3 flex items-center gap-2 text-sm text-[#A3A3A3]">
+      <div className="md:col-span-2 lg:col-span-3 flex items-center gap-2 text-sm text-ink-placeholder">
         <Loader2 className="size-4 animate-spin" />
         جاري تحميل صلاحيات المستأجر...
       </div>
@@ -330,7 +330,7 @@ function TenantRolesMultiField({ formValues, onPatch, fieldErrors = {} }) {
 
   if (!roles.length) {
     return (
-      <div className="md:col-span-2 lg:col-span-3 text-sm text-[#A3A3A3]">
+      <div className="md:col-span-2 lg:col-span-3 text-sm text-ink-placeholder">
         لا توجد صلاحيات متاحة حالياً
       </div>
     );
@@ -338,7 +338,7 @@ function TenantRolesMultiField({ formValues, onPatch, fieldErrors = {} }) {
 
   return (
     <div className="md:col-span-2 lg:col-span-3 space-y-3">
-      <p className="text-[13px] font-bold text-black text-right">
+      <p className="text-13 font-bold text-black text-right">
         صلاحيات المستأجر
       </p>
       <div className="space-y-3">
@@ -352,8 +352,8 @@ function TenantRolesMultiField({ formValues, onPatch, fieldErrors = {} }) {
           return (
             <div
               key={role.id}
-              className={`rounded-[16px] border bg-white p-4 ${
-                checked ? "border-brand-hover/40" : "border-[#EEEEEE]"
+              className={`rounded-2xl border bg-white p-4 ${
+                checked ? "border-brand-hover/40" : "border-surface-border"
               }`}
             >
               <label className="flex cursor-pointer items-start gap-3">
@@ -368,7 +368,7 @@ function TenantRolesMultiField({ formValues, onPatch, fieldErrors = {} }) {
                     {getTenantRoleLabel(role)}
                   </span>
                   {role.service_definition ? (
-                    <span className="mt-1 block text-[12px] text-[#737373] whitespace-pre-wrap">
+                    <span className="mt-1 block text-xs text-neutral-500 whitespace-pre-wrap">
                       {role.service_definition}
                     </span>
                   ) : null}
@@ -377,7 +377,7 @@ function TenantRolesMultiField({ formValues, onPatch, fieldErrors = {} }) {
 
               {checked && role.has_user_input ? (
                 <div className="mt-3 space-y-1.5 pr-7">
-                  <label className="block text-[12px] font-medium text-gray-500 text-right">
+                  <label className="block text-xs font-medium text-gray-500 text-right">
                     {role.input_field_label || "القيمة"}
                     <span className="text-red-500"> *</span>
                   </label>
@@ -390,7 +390,7 @@ function TenantRolesMultiField({ formValues, onPatch, fieldErrors = {} }) {
                     dir="ltr"
                   />
                   {valueError ? (
-                    <p className="text-[12px] text-[#E24444] text-right">
+                    <p className="text-xs text-[#E24444] text-right">
                       {valueError}
                     </p>
                   ) : null}
@@ -401,7 +401,7 @@ function TenantRolesMultiField({ formValues, onPatch, fieldErrors = {} }) {
         })}
       </div>
       {fieldErrors.tenant_role_ids ? (
-        <p className="text-[12px] text-[#E24444] text-right">
+        <p className="text-xs text-[#E24444] text-right">
           {fieldErrors.tenant_role_ids}
         </p>
       ) : null}
@@ -460,7 +460,7 @@ function OtherConditionsListField({ formValues, onPatch, fieldErrors = {} }) {
   return (
     <div className="md:col-span-2 lg:col-span-3 space-y-4">
       <div className="flex flex-col gap-2">
-        <label className="text-[13px] font-bold text-black text-right">
+        <label className="text-13 font-bold text-black text-right">
           هل توجد شروط أخرى؟
         </label>
         <NativeSelect
@@ -475,7 +475,7 @@ function OtherConditionsListField({ formValues, onPatch, fieldErrors = {} }) {
       {enabled ? (
         <div className="space-y-3">
           <div className="flex items-center justify-between gap-3">
-            <p className="text-[13px] font-bold text-black text-right">
+            <p className="text-13 font-bold text-black text-right">
               قائمة الشروط
             </p>
             <button
@@ -506,14 +506,14 @@ function OtherConditionsListField({ formValues, onPatch, fieldErrors = {} }) {
                   <button
                     type="button"
                     onClick={() => removeItem(index)}
-                    className="mt-1 flex h-12 w-12 shrink-0 items-center justify-center rounded-[14px] border border-[#EEEEEE] text-[#A3A3A3] hover:border-red-200 hover:bg-red-50 hover:text-red-500"
+                    className="mt-1 flex h-12 w-12 shrink-0 items-center justify-center rounded-14 border border-surface-border text-ink-placeholder hover:border-red-200 hover:bg-red-50 hover:text-red-500"
                     title="حذف"
                   >
                     <Trash2 size={16} />
                   </button>
                 </div>
                 {rowError ? (
-                  <p className="text-[12px] text-[#E24444] text-right">
+                  <p className="text-xs text-[#E24444] text-right">
                     {rowError}
                   </p>
                 ) : null}
@@ -522,11 +522,11 @@ function OtherConditionsListField({ formValues, onPatch, fieldErrors = {} }) {
           })}
 
           {fieldErrors.other_conditions_list ? (
-            <p className="text-[12px] text-[#E24444] text-right">
+            <p className="text-xs text-[#E24444] text-right">
               {fieldErrors.other_conditions_list}
             </p>
           ) : null}
-          <p className="text-[11px] text-[#A3A3A3] text-right">
+          <p className="text-11 text-ink-placeholder text-right">
             الحد الأدنى شرط واحد · الحد الأقصى {MAX_OTHER_CONDITIONS}
           </p>
         </div>
@@ -557,14 +557,14 @@ function ContractFormField({
     return (
       <div className={`flex flex-col gap-2 ${field.colSpan === 2 ? "md:col-span-2" : ""}`}>
         <div className="flex items-center justify-between gap-2">
-          <label className="text-[13px] font-bold text-black text-right">
+          <label className="text-13 font-bold text-black text-right">
             {field.label}
           </label>
-          <span className="rounded-full bg-[#F0F0F0] px-2.5 py-1 text-[11px] font-bold text-[#8A8A8A]">
+          <span className="rounded-full bg-[#F0F0F0] px-2.5 py-1 text-11 font-bold text-[#8A8A8A]">
             مقفل
           </span>
         </div>
-        <div className="flex h-[48px] w-full items-center rounded-[14px] border border-[#EEEEEE] bg-[#F9F9F9] px-4 text-[14px] text-[#4D4D4D]">
+        <div className="flex h-12 w-full items-center rounded-14 border border-surface-border bg-surface-input px-4 text-sm text-ink-subtle">
           {field.displayValue ?? value ?? "—"}
         </div>
       </div>
@@ -594,7 +594,7 @@ function ContractFormField({
   if (field.type === "textarea") {
     return (
       <div className={`flex flex-col gap-2 ${field.colSpan === 2 ? "md:col-span-2" : ""} ${field.colSpan === 3 ? "md:col-span-3" : ""}`}>
-        <label htmlFor={id} className="text-[13px] font-bold text-black text-right">
+        <label htmlFor={id} className="text-13 font-bold text-black text-right">
           {field.label}
           {field.required ? <span className="text-[#E24444]"> *</span> : null}
         </label>
@@ -603,10 +603,10 @@ function ContractFormField({
           rows={3}
           value={value ?? ""}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full bg-white border border-[#EEEEEE] rounded-[14px] p-4 text-[14px] focus:outline-none focus:border-brand-hover resize-none"
+          className="w-full bg-white border border-surface-border rounded-14 p-4 text-sm focus:outline-none focus:border-brand-hover resize-none"
           placeholder={field.hint || ""}
         />
-        {error ? <p className="text-[12px] text-[#E24444]">{error}</p> : null}
+        {error ? <p className="text-xs text-[#E24444]">{error}</p> : null}
       </div>
     );
   }
@@ -614,7 +614,7 @@ function ContractFormField({
   if (field.type === "boolean") {
     return (
       <div className="flex flex-col gap-2">
-        <label htmlFor={id} className="text-[13px] font-bold text-black text-right">
+        <label htmlFor={id} className="text-13 font-bold text-black text-right">
           {field.label}
           {field.required ? <span className="text-[#E24444]"> *</span> : null}
         </label>
@@ -626,7 +626,7 @@ function ContractFormField({
           <option value="1">نعم</option>
           <option value="0">لا</option>
         </NativeSelect>
-        {error ? <p className="text-[12px] text-[#E24444]">{error}</p> : null}
+        {error ? <p className="text-xs text-[#E24444]">{error}</p> : null}
       </div>
     );
   }
@@ -698,12 +698,12 @@ function ContractFormField({
     return (
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between gap-2">
-          <label htmlFor={id} className="text-[13px] font-bold text-black text-right">
+          <label htmlFor={id} className="text-13 font-bold text-black text-right">
             {field.label}
           {field.required ? <span className="text-[#E24444]"> *</span> : null}
           </label>
           {isApprovedListField ? (
-            <span className="rounded-full bg-[#FEF3C7] px-2.5 py-1 text-[11px] font-bold text-[#92400E]">
+            <span className="rounded-full bg-[#FEF3C7] px-2.5 py-1 text-11 font-bold text-[#92400E]">
               قائمة معتمدة
             </span>
           ) : null}
@@ -736,7 +736,7 @@ function ContractFormField({
             </option>
           ))}
         </NativeSelect>
-        {error ? <p className="text-[12px] text-[#E24444]">{error}</p> : null}
+        {error ? <p className="text-xs text-[#E24444]">{error}</p> : null}
       </div>
     );
   }
@@ -750,10 +750,10 @@ function ContractFormField({
 
     return (
       <div className="flex flex-col gap-2">
-        <label htmlFor={id} className="text-[13px] font-bold text-black text-right">
+        <label htmlFor={id} className="text-13 font-bold text-black text-right">
           {field.label}
           {field.required ? <span className="text-[#E24444]"> *</span> : null}
-          <span className="mr-2 text-[11px] font-medium text-[#A3A3A3]">
+          <span className="mr-2 text-11 font-medium text-ink-placeholder">
             ({typeLabel})
           </span>
         </label>
@@ -763,7 +763,7 @@ function ContractFormField({
           calendarType={calendarType}
           onChange={onChange}
         />
-        {error ? <p className="text-[12px] text-[#E24444]">{error}</p> : null}
+        {error ? <p className="text-xs text-[#E24444]">{error}</p> : null}
       </div>
     );
   }
@@ -771,7 +771,7 @@ function ContractFormField({
   if (field.type === "file") {
     return (
       <div className={`flex flex-col gap-2 ${field.colSpan === 2 ? "md:col-span-2" : ""} ${field.colSpan === 3 ? "md:col-span-3" : ""}`}>
-        <label htmlFor={id} className="text-[13px] font-bold text-black text-right">
+        <label htmlFor={id} className="text-13 font-bold text-black text-right">
           {field.label}
           {field.required ? <span className="text-[#E24444]"> *</span> : null}
         </label>
@@ -783,20 +783,20 @@ function ContractFormField({
             const file = e.target.files?.[0] || null;
             onChange(file);
           }}
-          className="w-full rounded-[14px] border border-[#EEEEEE] bg-white px-4 py-3 text-[13px] file:me-3 file:rounded-lg file:border-0 file:bg-brand-hover/10 file:px-3 file:py-1.5 file:text-[12px] file:font-bold file:text-brand-hover"
+          className="w-full rounded-14 border border-surface-border bg-white px-4 py-3 text-13 file:me-3 file:rounded-lg file:border-0 file:bg-brand-hover/10 file:px-3 file:py-1.5 file:text-xs file:font-bold file:text-brand-hover"
         />
         <FileFieldPreview value={value} />
         {field.hint ? (
-          <p className="text-[11px] text-[#9E9E9E]">{field.hint}</p>
+          <p className="text-11 text-[#9E9E9E]">{field.hint}</p>
         ) : null}
-        {error ? <p className="text-[12px] text-[#E24444]">{error}</p> : null}
+        {error ? <p className="text-xs text-[#E24444]">{error}</p> : null}
       </div>
     );
   }
 
   return (
     <div className={`flex flex-col gap-2 ${field.colSpan === 2 ? "md:col-span-2" : ""}`}>
-      <label htmlFor={id} className="text-[13px] font-bold text-black text-right">
+      <label htmlFor={id} className="text-13 font-bold text-black text-right">
         {field.label}
       </label>
       <input
@@ -808,7 +808,7 @@ function ContractFormField({
         placeholder={field.hint || ""}
         dir={field.key.includes("mobile") || field.key.includes("id_num") ? "ltr" : "rtl"}
       />
-      {error ? <p className="text-[12px] text-[#E24444]">{error}</p> : null}
+      {error ? <p className="text-xs text-[#E24444]">{error}</p> : null}
     </div>
   );
 }
@@ -1097,7 +1097,7 @@ export const ContractStepEditor = forwardRef(function ContractStepEditor(
   return (
     <div className={className} dir="rtl">
       {title && !fieldGroups?.length && formOnly ? (
-        <h4 className="mb-4 text-[13px] font-bold text-gray-500 text-right border-b border-[#EEEEEE] pb-2">
+        <h4 className="mb-4 text-13 font-bold text-gray-500 text-right border-b border-surface-border pb-2">
           {title}
         </h4>
       ) : null}
@@ -1115,7 +1115,7 @@ export const ContractStepEditor = forwardRef(function ContractStepEditor(
                   type="button"
                   onClick={handleCancel}
                   disabled={isSaving}
-                  className="flex items-center gap-1.5 rounded-full border border-[#E4E4E4] px-3 py-2 text-sm font-bold text-[#737373] hover:bg-[#F5F5F5]"
+                  className="flex items-center gap-1.5 rounded-full border border-neutral-200 px-3 py-2 text-sm font-bold text-neutral-500 hover:bg-neutral-100"
                 >
                   <X size={16} />
                   إلغاء
@@ -1155,7 +1155,7 @@ export const ContractStepEditor = forwardRef(function ContractStepEditor(
           className={
             formOnly
               ? "space-y-6"
-              : "rounded-[28px] border border-[#EEEEEE] bg-[#F9F9F9] p-6"
+              : "rounded-[28px] border border-surface-border bg-surface-input p-6"
           }
         >
           {fieldGroups?.length ? (
@@ -1167,7 +1167,7 @@ export const ContractStepEditor = forwardRef(function ContractStepEditor(
               return (
                 <div key={group.title ?? groupIndex} className="space-y-4">
                   {group.title ? (
-                    <h4 className="text-[13px] font-bold text-gray-500 text-right border-b border-[#EEEEEE] pb-2">
+                    <h4 className="text-13 font-bold text-gray-500 text-right border-b border-surface-border pb-2">
                       {group.title}
                     </h4>
                   ) : null}
@@ -1189,7 +1189,7 @@ export const ContractStepEditor = forwardRef(function ContractStepEditor(
                 type="button"
                 onClick={handleSave}
                 disabled={isSaving}
-                className="flex-1 flex items-center justify-center gap-2 h-[52px] rounded-full text-white text-[15px] font-bold disabled:opacity-60 transition-opacity hover:opacity-90"
+                className="flex-1 flex items-center justify-center gap-2 h-13 rounded-full text-white text-15 font-bold disabled:opacity-60 transition-opacity hover:opacity-90"
                 style={{ backgroundColor: GOLD }}
               >
                 {isSaving ? (
@@ -1203,7 +1203,7 @@ export const ContractStepEditor = forwardRef(function ContractStepEditor(
                 type="button"
                 onClick={handleCancel}
                 disabled={isSaving}
-                className="h-[52px] px-8 rounded-full border border-[#E4E4E4] text-[15px] font-bold text-[#737373] hover:bg-[#F5F5F5] disabled:opacity-60"
+                className="h-13 px-8 rounded-full border border-neutral-200 text-15 font-bold text-neutral-500 hover:bg-neutral-100 disabled:opacity-60"
               >
                 إلغاء
               </button>

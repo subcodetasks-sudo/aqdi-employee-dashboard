@@ -31,14 +31,14 @@ export default function OrdersPagination({ pagination, currentPage, onPageChange
         type="button"
         onClick={() => onPageChange(Math.max(1, currentPage - 1))}
         disabled={currentPage === 1}
-        className="w-9 h-9 rounded-full border border-[#E4E4E4] flex items-center justify-center text-[#A3A3A3] hover:bg-brand-main hover:text-white transition-all disabled:opacity-50 disabled:hover:bg-transparent disabled:hover:text-[#A3A3A3]"
+        className="w-9 h-9 rounded-full border border-neutral-200 flex items-center justify-center text-ink-placeholder hover:bg-brand-main hover:text-white transition-all disabled:opacity-50 disabled:hover:bg-transparent disabled:hover:text-ink-placeholder"
       >
         <ChevronRight className="size-4" />
       </button>
 
       {pages.map((page, idx) =>
         page === "..." ? (
-          <span key={`dots-${idx}`} className="text-[#A3A3A3] px-1">
+          <span key={`dots-${idx}`} className="text-ink-placeholder px-1">
             ...
           </span>
         ) : (
@@ -46,10 +46,10 @@ export default function OrdersPagination({ pagination, currentPage, onPageChange
             key={page}
             type="button"
             onClick={() => onPageChange(page)}
-            className={`w-9 h-9 rounded-full flex items-center justify-center text-[13px] font-medium transition-all ${
+            className={`w-9 h-9 rounded-full flex items-center justify-center text-13 font-medium transition-all ${
               currentPage === page
                 ? "bg-brand-main text-white shadow-lg shadow-brand-main/20"
-                : "border border-[#E4E4E4] text-[#A3A3A3] hover:bg-[#f5f5f5]"
+                : "border border-neutral-200 text-ink-placeholder hover:bg-neutral-100"
             }`}
           >
             {page}
@@ -61,7 +61,7 @@ export default function OrdersPagination({ pagination, currentPage, onPageChange
         type="button"
         onClick={() => onPageChange(Math.min(pagination.last_page, currentPage + 1))}
         disabled={currentPage === pagination.last_page}
-        className="w-9 h-9 rounded-full border border-[#E4E4E4] flex items-center justify-center text-[#A3A3A3] hover:bg-brand-main hover:text-white transition-all disabled:opacity-50 disabled:hover:bg-transparent disabled:hover:text-[#A3A3A3]"
+        className="w-9 h-9 rounded-full border border-neutral-200 flex items-center justify-center text-ink-placeholder hover:bg-brand-main hover:text-white transition-all disabled:opacity-50 disabled:hover:bg-transparent disabled:hover:text-ink-placeholder"
       >
         <ChevronLeft className="size-4" />
       </button>

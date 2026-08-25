@@ -20,12 +20,12 @@ export default function AllOrdersPagination({
 
   const btnClass = (active) =>
     cn(
-      "size-9 rounded-full flex items-center justify-center text-[13px] font-medium transition-all",
+      "size-9 rounded-full flex items-center justify-center text-13 font-medium transition-all",
       active
-        ? "bg-[#0B5345] text-white"
+        ? "bg-brand-dark text-white"
         : dark
           ? "border border-white/10 text-white/55 hover:bg-white/10"
-          : "border border-[#E4E4E4] text-[#A3A3A3] hover:bg-[#f5f5f5]"
+          : "border border-neutral-200 text-ink-placeholder hover:bg-neutral-100"
     );
 
   return (
@@ -35,12 +35,12 @@ export default function AllOrdersPagination({
     >
       <p
         className={cn(
-          "text-[13px] font-medium",
-          dark ? "text-white/45" : "text-[#6B7280]"
+          "text-13 font-medium",
+          dark ? "text-white/45" : "text-status-neutral"
         )}
       >
         عرض{" "}
-        <span className="tabular-nums font-bold text-[#0B5345] dark:text-[#6EE7B7]">
+        <span className="tabular-nums font-bold text-brand-dark dark:text-[#6EE7B7]">
           {from}-{to}
         </span>{" "}
         من{" "}
@@ -51,7 +51,7 @@ export default function AllOrdersPagination({
         <label
           className={cn(
             "flex items-center gap-2 text-[12.5px] font-bold",
-            dark ? "text-white/55" : "text-[#6B7280]"
+            dark ? "text-white/55" : "text-status-neutral"
           )}
         >
           صفوف/صفحة
@@ -59,10 +59,10 @@ export default function AllOrdersPagination({
             value={perPage}
             onChange={(e) => onPerPageChange(Number(e.target.value))}
             className={cn(
-              "h-9 rounded-full border px-3 text-[13px] font-bold bg-transparent",
+              "h-9 rounded-full border px-3 text-13 font-bold bg-transparent",
               dark
                 ? "border-white/10 text-white"
-                : "border-[#E4E4E4] text-[#111827]"
+                : "border-neutral-200 text-gray-900"
             )}
           >
             {PAGE_SIZE_OPTIONS.map((size) => (
@@ -85,8 +85,8 @@ export default function AllOrdersPagination({
           </button>
           <span
             className={cn(
-              "min-w-[52px] text-center text-[13px] font-bold tabular-nums",
-              dark ? "text-white/80" : "text-[#111827]"
+              "min-w-13 text-center text-13 font-bold tabular-nums",
+              dark ? "text-white/80" : "text-gray-900"
             )}
           >
             {currentPage} / {lastPage}
