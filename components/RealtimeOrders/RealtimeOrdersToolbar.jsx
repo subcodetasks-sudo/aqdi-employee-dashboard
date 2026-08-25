@@ -162,7 +162,7 @@ export default function RealtimeOrdersToolbar({
             </button>
             <h1
               className={cn(
-                "text-[22px] sm:text-[24px] font-black leading-none tracking-tight",
+                "text-22 sm:text-[24px] font-black leading-none tracking-tight",
                 dark ? "text-white" : "text-[#22302C]"
               )}
             >
@@ -170,7 +170,7 @@ export default function RealtimeOrdersToolbar({
             </h1>
             <p
               className={cn(
-                "mt-2 flex items-center gap-1.5 text-[12px] font-medium",
+                "mt-2 flex items-center gap-1.5 text-xs font-medium",
                 dark ? "text-white/45" : "text-[#8A8A84]"
               )}
             >
@@ -180,13 +180,13 @@ export default function RealtimeOrdersToolbar({
                   className={cn(
                     "inline-flex items-center gap-1.5 h-4 px-1 py-1 rounded-full text-[9px] font-bold border",
                     dark
-                      ? "bg-[#10B981]/15 text-[#6EE7B7] border-transparent"
+                      ? "bg-brand-accent/15 text-[#6EE7B7] border-transparent"
                       : "text-[#0E7A5C] bg-[#E7F5EF] border-[#CFE9DE]"
                   )}
                 >
                   <span className="relative flex size-1 text-xs">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#34D399] opacity-60" />
-                    <span className="relative inline-flex rounded-full size-1 bg-[#10B981]" />
+                    <span className="relative inline-flex rounded-full size-1 bg-brand-accent" />
                   </span>
                   قيد المزامنة
                   <span className="opacity-70 font-medium tabular-nums">{timeOnly}</span>
@@ -260,7 +260,7 @@ export default function RealtimeOrdersToolbar({
                   "absolute left-3 top-1/2 -translate-y-1/2 size-5 rounded-full flex items-center justify-center",
                   dark
                     ? "text-white/40 hover:bg-white/10"
-                    : "text-[#9CA3AF] hover:bg-[#E5E7EB]"
+                    : "text-gray-400 hover:bg-[#E5E7EB]"
                 )}
               >
                 <X className="size-3.5" />
@@ -311,7 +311,7 @@ export default function RealtimeOrdersToolbar({
                 className={cn(
                   "h-[40px] px-3.5 rounded-xl border font-bold text-[12.5px] flex items-center gap-1.5 transition-all disabled:opacity-60",
                   dark
-                    ? "border-[#34D399]/35 text-[#6EE7B7] hover:bg-[#10B981]/10"
+                    ? "border-[#34D399]/35 text-[#6EE7B7] hover:bg-brand-accent/10"
                     : "border-[#E3E8E6] text-[#33403B] bg-white hover:border-[#CDEBDF] hover:text-[#0B5F4C]"
                 )}
               >

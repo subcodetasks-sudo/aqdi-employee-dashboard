@@ -86,11 +86,11 @@ export default function ChangeOrderStatusFieldsDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="sm:max-w-[560px] p-8 rounded-[32px] border-0 dark:bg-[#13241C] dark:text-white"
+        className="sm:max-w-[560px] p-8 rounded-32 border-0 dark:bg-card dark:text-white"
         dir="rtl"
       >
         <DialogHeader className="mb-6">
-          <DialogTitle className="text-[22px] font-black text-black dark:text-white border-b border-[#F5F5F5] dark:border-white/10 pb-4">
+          <DialogTitle className="text-22 font-black text-black dark:text-white border-b border-neutral-100 dark:border-white/10 pb-4">
             {status?.name || status?.label || "تغيير الحالة"}
           </DialogTitle>
         </DialogHeader>
@@ -104,9 +104,9 @@ export default function ChangeOrderStatusFieldsDialog({
             if (field.type === "select") {
               return (
                 <label key={field.name} className="flex flex-col gap-2">
-                  <span className="text-[13px] font-bold px-1">
+                  <span className="text-13 font-bold px-1">
                     {label}
-                    {required ? <span className="text-[#FF4D4F] mr-1">*</span> : null}
+                    {required ? <span className="text-status-danger mr-1">*</span> : null}
                   </span>
                   <Select
                     dir="rtl"
@@ -115,7 +115,7 @@ export default function ChangeOrderStatusFieldsDialog({
                       setValues((prev) => ({ ...prev, [field.name]: value }))
                     }
                   >
-                    <SelectTrigger className="h-[54px] rounded-[16px] bg-[#F9F9F9] dark:bg-white/[0.04] border-[#EEEEEE] dark:border-white/10">
+                    <SelectTrigger className="h-13.5 rounded-2xl bg-surface-input dark:bg-white/[0.04] border-surface-border dark:border-white/10">
                       <SelectValue placeholder="اختر" />
                     </SelectTrigger>
                     <SelectContent className="z-[100]">
@@ -133,9 +133,9 @@ export default function ChangeOrderStatusFieldsDialog({
             if (field.type === "file") {
               return (
                 <label key={field.name} className="flex flex-col gap-2">
-                  <span className="text-[13px] font-bold px-1">
+                  <span className="text-13 font-bold px-1">
                     {label}
-                    {required ? <span className="text-[#FF4D4F] mr-1">*</span> : null}
+                    {required ? <span className="text-status-danger mr-1">*</span> : null}
                   </span>
                   <input
                     type="file"
@@ -145,7 +145,7 @@ export default function ChangeOrderStatusFieldsDialog({
                         [field.name]: e.target.files?.[0] ?? null,
                       }))
                     }
-                    className="w-full h-[54px] bg-[#F9F9F9] dark:bg-white/[0.04] border border-[#EEEEEE] dark:border-white/10 rounded-[16px] px-5 py-3 text-[13px]"
+                    className="w-full h-13.5 bg-surface-input dark:bg-white/[0.04] border border-surface-border dark:border-white/10 rounded-2xl px-5 py-3 text-13"
                   />
                 </label>
               );
@@ -156,9 +156,9 @@ export default function ChangeOrderStatusFieldsDialog({
 
             return (
               <label key={field.name} className="flex flex-col gap-2">
-                <span className="text-[13px] font-bold px-1">
+                <span className="text-13 font-bold px-1">
                   {label}
-                  {required ? <span className="text-[#FF4D4F] mr-1">*</span> : null}
+                  {required ? <span className="text-status-danger mr-1">*</span> : null}
                 </span>
                 <InputTag
                   value={values[field.name] ?? ""}
@@ -168,8 +168,8 @@ export default function ChangeOrderStatusFieldsDialog({
                   rows={isTextarea ? 3 : undefined}
                   className={
                     isTextarea
-                      ? "w-full min-h-[96px] bg-[#F9F9F9] dark:bg-white/[0.04] border border-[#EEEEEE] dark:border-white/10 rounded-[16px] px-5 py-3 text-[15px] focus:outline-none focus:border-[#0B5345] font-medium text-right resize-none"
-                      : "w-full h-[54px] bg-[#F9F9F9] dark:bg-white/[0.04] border border-[#EEEEEE] dark:border-white/10 rounded-[16px] px-5 text-[15px] focus:outline-none focus:border-[#0B5345] font-medium text-right"
+                      ? "w-full min-h-[96px] bg-surface-input dark:bg-white/[0.04] border border-surface-border dark:border-white/10 rounded-2xl px-5 py-3 text-15 focus:outline-none focus:border-brand-dark font-medium text-right resize-none"
+                      : "w-full h-13.5 bg-surface-input dark:bg-white/[0.04] border border-surface-border dark:border-white/10 rounded-2xl px-5 text-15 focus:outline-none focus:border-brand-dark font-medium text-right"
                   }
                 />
               </label>
@@ -180,7 +180,7 @@ export default function ChangeOrderStatusFieldsDialog({
             type="button"
             onClick={handleSubmit}
             disabled={isPending || missingRequired}
-            className="w-full h-[54px] bg-[#0B5345] text-white rounded-[16px] font-bold text-[16px] hover:brightness-110 transition-all disabled:opacity-60 mt-2"
+            className="w-full h-13.5 bg-brand-dark text-white rounded-2xl font-bold text-base hover:brightness-110 transition-all disabled:opacity-60 mt-2"
           >
             {isPending ? <Loader2 className="animate-spin mx-auto" /> : "تأكيد تغيير الحالة"}
           </button>

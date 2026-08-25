@@ -53,17 +53,17 @@ export default function PropertyUpdateDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="sm:max-w-[520px] p-8 rounded-[32px] border-0 gap-0"
+        className="sm:max-w-[520px] p-8 rounded-32 border-0 gap-0"
         dir="rtl"
         closeButton={false}
       >
         <button
           type="button"
           onClick={() => onOpenChange(false)}
-          className="absolute left-6 top-6 w-9 h-9 flex items-center justify-center rounded-full bg-[#F5F5F5] text-[#A3A3A3] hover:bg-[#FFEBEB] hover:text-[#E24444] transition-all z-10"
+          className="absolute left-6 top-6 w-9 h-9 flex items-center justify-center rounded-full bg-neutral-100 text-ink-placeholder hover:bg-[#FFEBEB] hover:text-[#E24444] transition-all z-10"
           aria-label="إغلاق"
         >
-          <i className="fa-solid fa-xmark text-[14px]" />
+          <i className="fa-solid fa-xmark text-sm" />
         </button>
 
         <DialogHeader className="mb-6 space-y-0">
@@ -71,7 +71,7 @@ export default function PropertyUpdateDialog({
             <span className="w-10 h-10 rounded-full bg-[#2563EB] text-white flex items-center justify-center shrink-0">
               <Upload className="size-[18px]" />
             </span>
-            <DialogTitle className="text-[18px] font-bold text-black text-right">
+            <DialogTitle className="text-lg font-bold text-black text-right">
               رفع تحديث بيانات العقار
             </DialogTitle>
           </div>
@@ -79,9 +79,9 @@ export default function PropertyUpdateDialog({
 
         <div className="flex flex-col gap-5">
           <div className="flex flex-col gap-2">
-            <label className="text-[13px] font-bold text-black text-right">
+            <label className="text-13 font-bold text-black text-right">
               الرجاء تحديد طريقة الإضافة
-              <span className="text-[#FF4D4F] mr-1">*</span>
+              <span className="text-status-danger mr-1">*</span>
             </label>
             <div className="grid grid-cols-3 gap-2">
               {METHODS.map((option) => {
@@ -92,10 +92,10 @@ export default function PropertyUpdateDialog({
                     type="button"
                     onClick={() => setMethod(option.value)}
                     disabled={isPending}
-                    className={`h-[64px] rounded-[16px] border flex flex-col items-center justify-center gap-1.5 text-[13px] font-bold transition-all ${
+                    className={`h-[64px] rounded-2xl border flex flex-col items-center justify-center gap-1.5 text-13 font-bold transition-all ${
                       active
                         ? "border-[#2563EB] bg-[#EFF4FF] text-[#2563EB]"
-                        : "border-[#EEEEEE] bg-[#F9F9F9] text-[#4D4D4D] hover:border-[#D0D5DD]"
+                        : "border-surface-border bg-surface-input text-ink-subtle hover:border-[#D0D5DD]"
                     }`}
                   >
                     <span
@@ -113,9 +113,9 @@ export default function PropertyUpdateDialog({
           </div>
 
           <div className="flex flex-col gap-2">
-            <label className="text-[13px] font-bold text-black text-right">
+            <label className="text-13 font-bold text-black text-right">
               الرجاء إدخال رقم الصك
-              <span className="text-[#FF4D4F] mr-1">*</span>
+              <span className="text-status-danger mr-1">*</span>
             </label>
             <input
               type="text"
@@ -123,7 +123,7 @@ export default function PropertyUpdateDialog({
               onChange={(e) => setDeedNumber(e.target.value)}
               placeholder="رقم الصك"
               disabled={isPending}
-              className="w-full h-[52px] bg-white border border-[#EEEEEE] rounded-[16px] px-4 text-[14px] focus:outline-none focus:border-brand-hover focus:ring-1 focus:ring-brand-hover/20 transition-all"
+              className="w-full h-13 bg-white border border-surface-border rounded-2xl px-4 text-sm focus:outline-none focus:border-brand-hover focus:ring-1 focus:ring-brand-hover/20 transition-all"
             />
           </div>
 
@@ -132,7 +132,7 @@ export default function PropertyUpdateDialog({
               type="button"
               disabled={!canSubmit || isPending}
               onClick={handleSubmit}
-              className="flex-1 h-[52px] bg-[#2563EB] text-white rounded-[16px] font-bold text-[15px] hover:brightness-110 transition-all disabled:opacity-60 flex items-center justify-center gap-2"
+              className="flex-1 h-13 bg-[#2563EB] text-white rounded-2xl font-bold text-15 hover:brightness-110 transition-all disabled:opacity-60 flex items-center justify-center gap-2"
             >
               {isPending ? <Loader2 className="size-4 animate-spin" /> : "تأكيد رفع العقار ✓"}
             </button>
@@ -140,7 +140,7 @@ export default function PropertyUpdateDialog({
               type="button"
               disabled={isPending}
               onClick={() => onOpenChange(false)}
-              className="h-[52px] px-6 rounded-[16px] border border-[#EEEEEE] text-[#4D4D4D] font-bold text-[15px] hover:bg-[#F5F5F5] transition-all"
+              className="h-13 px-6 rounded-2xl border border-surface-border text-ink-subtle font-bold text-15 hover:bg-neutral-100 transition-all"
             >
               تراجع
             </button>

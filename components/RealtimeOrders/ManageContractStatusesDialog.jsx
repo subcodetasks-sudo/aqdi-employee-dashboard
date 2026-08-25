@@ -99,13 +99,13 @@ export default function ManageContractStatusesDialog({
       }}
     >
       <DialogContent
-        className="sm:max-w-[720px] p-0 rounded-[32px] border-0 overflow-hidden dark:bg-[#13241C] dark:text-white"
+        className="sm:max-w-[720px] p-0 rounded-32 border-0 overflow-hidden dark:bg-card dark:text-white"
         dir="rtl"
       >
         <div className="p-8">
           <DialogHeader className="mb-6">
-            <div className="flex items-center justify-between gap-3 flex-wrap border-b border-[#F5F5F5] dark:border-white/10 pb-4">
-              <DialogTitle className="text-[22px] font-black text-black dark:text-white">
+            <div className="flex items-center justify-between gap-3 flex-wrap border-b border-neutral-100 dark:border-white/10 pb-4">
+              <DialogTitle className="text-22 font-black text-black dark:text-white">
                 {formOpen ? (editing ? "تعديل حالة العقد" : "إضافة حالة العقد") : "حالات العقود"}
               </DialogTitle>
               {!formOpen && canCreate ? (
@@ -113,7 +113,7 @@ export default function ManageContractStatusesDialog({
                   <button
                     type="button"
                     onClick={openCreate}
-                    className="h-10 px-4 rounded-full bg-[#0B5345] text-white text-[13px] font-bold inline-flex items-center gap-1.5"
+                    className="h-10 px-4 rounded-full bg-brand-dark text-white text-13 font-bold inline-flex items-center gap-1.5"
                   >
                     <Plus className="size-4" />
                     إضافة حالة
@@ -131,7 +131,7 @@ export default function ManageContractStatusesDialog({
                   type="button"
                   onClick={() => mutate()}
                   disabled={isPending || !form.name.trim() || (editing ? !canEdit : !canCreate)}
-                  className="flex-1 h-[54px] bg-[#0B5345] text-white rounded-[16px] font-bold text-[16px] disabled:opacity-60"
+                  className="flex-1 h-13.5 bg-brand-dark text-white rounded-2xl font-bold text-base disabled:opacity-60"
                 >
                   {isPending ? (
                     <Loader2 className="animate-spin mx-auto" />
@@ -144,7 +144,7 @@ export default function ManageContractStatusesDialog({
                 <button
                   type="button"
                   onClick={closeForm}
-                  className="h-[54px] px-5 rounded-[16px] bg-[#F3F4F6] text-[#4B5563] font-bold"
+                  className="h-13.5 px-5 rounded-2xl bg-status-neutral-bg text-[#4B5563] font-bold"
                 >
                   رجوع
                 </button>
@@ -152,12 +152,12 @@ export default function ManageContractStatusesDialog({
             </div>
           ) : isLoading ? (
             <div className="py-10 flex justify-center">
-              <Loader2 className="size-6 animate-spin text-[#0B5345]" />
+              <Loader2 className="size-6 animate-spin text-brand-dark" />
             </div>
           ) : (
             <div className="max-h-[420px] overflow-y-auto space-y-2">
               {list.length === 0 ? (
-                <p className="py-8 text-center text-[13px] text-[#9CA3AF]">لا توجد حالات حالياً</p>
+                <p className="py-8 text-center text-13 text-gray-400">لا توجد حالات حالياً</p>
               ) : (
                 list.map((status) => (
                   <div
@@ -169,8 +169,8 @@ export default function ManageContractStatusesDialog({
                       style={{ backgroundColor: status.color }}
                     />
                     <div className="min-w-0 flex-1">
-                      <p className="text-[14px] font-bold truncate">{status.name}</p>
-                      <p className="text-[12px] text-[#9CA3AF] truncate">
+                      <p className="text-sm font-bold truncate">{status.name}</p>
+                      <p className="text-xs text-gray-400 truncate">
                         {status.is_active === false ? "غير نشطة" : "نشطة"}
                         {status.client_explanation ? ` — ${status.client_explanation}` : ""}
                       </p>
@@ -181,7 +181,7 @@ export default function ManageContractStatusesDialog({
                           type="button"
                           onClick={() => openEdit(status)}
                           aria-label="تعديل الحالة"
-                          className="size-9 rounded-full bg-[#E6FFE6] text-[#10B981] flex items-center justify-center hover:bg-[#10B981] hover:text-white"
+                          className="size-9 rounded-full bg-[#E6FFE6] text-brand-accent flex items-center justify-center hover:bg-brand-accent hover:text-white"
                         >
                           <Pencil className="size-4" />
                         </button>

@@ -52,17 +52,17 @@ export default function CorrectionRequestDialog({ open, onOpenChange, order }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="sm:max-w-[540px] p-8 rounded-[32px] border-0 gap-0 max-h-[90vh] overflow-y-auto no-scrollbar"
+        className="sm:max-w-[540px] p-8 rounded-32 border-0 gap-0 max-h-[90vh] overflow-y-auto no-scrollbar"
         dir="rtl"
         closeButton={false}
       >
         <button
           type="button"
           onClick={() => onOpenChange(false)}
-          className="absolute left-6 top-6 w-9 h-9 flex items-center justify-center rounded-full bg-[#F5F5F5] text-[#A3A3A3] hover:bg-[#FFEBEB] hover:text-[#E24444] transition-all z-10"
+          className="absolute left-6 top-6 w-9 h-9 flex items-center justify-center rounded-full bg-neutral-100 text-ink-placeholder hover:bg-[#FFEBEB] hover:text-[#E24444] transition-all z-10"
           aria-label="إغلاق"
         >
-          <i className="fa-solid fa-xmark text-[14px]" />
+          <i className="fa-solid fa-xmark text-sm" />
         </button>
 
         <DialogHeader className="mb-6 space-y-0">
@@ -70,14 +70,14 @@ export default function CorrectionRequestDialog({ open, onOpenChange, order }) {
             <span className="w-10 h-10 rounded-full bg-[#EA580C] text-white flex items-center justify-center shrink-0">
               <AlertTriangle className="size-[18px]" />
             </span>
-            <DialogTitle className="text-[18px] font-bold text-black text-right">
+            <DialogTitle className="text-lg font-bold text-black text-right">
               طلب تصحيح بيانات من العميل
             </DialogTitle>
           </div>
         </DialogHeader>
 
         <div className="flex flex-col gap-4">
-          <p className="text-[13px] font-bold text-black text-right">
+          <p className="text-13 font-bold text-black text-right">
             اختر نوع الخطأ (أو أكثر) في بيانات العميل:
           </p>
 
@@ -90,10 +90,10 @@ export default function CorrectionRequestDialog({ open, onOpenChange, order }) {
                   key={type.id}
                   type="button"
                   onClick={() => toggle(type.id)}
-                  className={`h-[80px] rounded-[16px] border flex flex-col items-center justify-center gap-1.5 text-[12.5px] font-bold text-center px-2 transition-all ${
+                  className={`h-[80px] rounded-2xl border flex flex-col items-center justify-center gap-1.5 text-[12.5px] font-bold text-center px-2 transition-all ${
                     active
                       ? "border-[#EA580C] bg-[#FFF7ED] text-[#C2410C]"
-                      : "border-[#EEEEEE] bg-[#F9F9F9] text-[#4D4D4D] hover:border-[#D0D5DD]"
+                      : "border-surface-border bg-surface-input text-ink-subtle hover:border-[#D0D5DD]"
                   }`}
                 >
                   <Icon className="size-[18px]" />
@@ -103,13 +103,13 @@ export default function CorrectionRequestDialog({ open, onOpenChange, order }) {
             })}
           </div>
 
-          <p className="text-[11.5px] text-[#A3A3A3] leading-relaxed px-1">
+          <p className="text-[11.5px] text-ink-placeholder leading-relaxed px-1">
             اختر خطأً واحداً أو أكثر لتظهر رسالة التصحيح متضمنة البيانات المدخلة.
           </p>
 
           {message ? (
-            <div className="rounded-[20px] bg-[#F9F9F9] border border-[#F0F0F0] p-4 flex flex-col gap-3">
-              <p className="whitespace-pre-line text-[13px] text-[#4D4D4D] leading-relaxed">
+            <div className="rounded-20 bg-surface-input border border-[#F0F0F0] p-4 flex flex-col gap-3">
+              <p className="whitespace-pre-line text-13 text-ink-subtle leading-relaxed">
                 {message}
               </p>
               <div className="flex items-center gap-3 pt-2 border-t border-[#EBEBEB]">
@@ -119,16 +119,16 @@ export default function CorrectionRequestDialog({ open, onOpenChange, order }) {
                     navigator.clipboard.writeText(message);
                     toast.success("تم نسخ الرسالة");
                   }}
-                  className="text-[12.5px] font-bold text-[#4D4D4D] hover:text-brand-hover transition-colors inline-flex items-center gap-1.5"
+                  className="text-[12.5px] font-bold text-ink-subtle hover:text-brand-hover transition-colors inline-flex items-center gap-1.5"
                 >
-                  <i className="fa-regular fa-copy text-[13px]" />
+                  <i className="fa-regular fa-copy text-13" />
                   نسخ الرسالة
                 </button>
                 {order?.user_mobile ? (
                   <Link
                     href={`https://wa.me/${String(order.user_mobile).replace(/\D/g, "")}`}
                     target="_blank"
-                    className="text-[12.5px] font-bold text-[#15803D] hover:opacity-80 transition-opacity inline-flex items-center gap-1.5"
+                    className="text-[12.5px] font-bold text-green-700 hover:opacity-80 transition-opacity inline-flex items-center gap-1.5"
                   >
                     <Image src={waIcon} alt="" width={16} height={16} />
                     إرسال عبر واتساب
@@ -141,7 +141,7 @@ export default function CorrectionRequestDialog({ open, onOpenChange, order }) {
           <button
             type="button"
             onClick={() => onOpenChange(false)}
-            className="w-full h-[52px] rounded-[16px] border border-[#EEEEEE] text-[#4D4D4D] font-bold text-[15px] hover:bg-[#F5F5F5] transition-all mt-1"
+            className="w-full h-13 rounded-2xl border border-surface-border text-ink-subtle font-bold text-15 hover:bg-neutral-100 transition-all mt-1"
           >
             إغلاق
           </button>

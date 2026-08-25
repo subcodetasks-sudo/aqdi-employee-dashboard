@@ -12,9 +12,9 @@ import { useUpdateOrder } from "@/src/hooks/use-update-order";
 
 function Tile({ label, value, className = "" }) {
   return (
-    <div className={`rounded-[16px] bg-[#F9F9F9] px-4 py-3 ${className}`}>
-      <p className="text-[11.5px] text-[#A3A3A3] mb-1">{label}</p>
-      <p className="text-[14px] font-bold text-black truncate">{value ?? "—"}</p>
+    <div className={`rounded-2xl bg-surface-input px-4 py-3 ${className}`}>
+      <p className="text-[11.5px] text-ink-placeholder mb-1">{label}</p>
+      <p className="text-sm font-bold text-black truncate">{value ?? "—"}</p>
     </div>
   );
 }
@@ -58,17 +58,17 @@ export default function EjarDocumentationDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="sm:max-w-[520px] p-8 rounded-[32px] border-0 gap-0"
+        className="sm:max-w-[520px] p-8 rounded-32 border-0 gap-0"
         dir="rtl"
         closeButton={false}
       >
         <button
           type="button"
           onClick={() => onOpenChange(false)}
-          className="absolute left-6 top-6 w-9 h-9 flex items-center justify-center rounded-full bg-[#F5F5F5] text-[#A3A3A3] hover:bg-[#FFEBEB] hover:text-[#E24444] transition-all z-10"
+          className="absolute left-6 top-6 w-9 h-9 flex items-center justify-center rounded-full bg-neutral-100 text-ink-placeholder hover:bg-[#FFEBEB] hover:text-[#E24444] transition-all z-10"
           aria-label="إغلاق"
         >
-          <i className="fa-solid fa-xmark text-[14px]" />
+          <i className="fa-solid fa-xmark text-sm" />
         </button>
 
         <DialogHeader className="mb-6 space-y-0">
@@ -76,7 +76,7 @@ export default function EjarDocumentationDialog({
             <span className="w-10 h-10 rounded-full bg-[#16A34A] text-white flex items-center justify-center shrink-0">
               <BadgeCheck className="size-[18px]" />
             </span>
-            <DialogTitle className="text-[18px] font-bold text-black text-right">
+            <DialogTitle className="text-lg font-bold text-black text-right">
               توثيق الطلب في إيجار
             </DialogTitle>
           </div>
@@ -92,9 +92,9 @@ export default function EjarDocumentationDialog({
           </div>
 
           <div className="flex flex-col gap-2">
-            <label className="text-[13px] font-bold text-black text-right">
+            <label className="text-13 font-bold text-black text-right">
               رقم العقد في إيجار
-              <span className="text-[#FF4D4F] mr-1">*</span>
+              <span className="text-status-danger mr-1">*</span>
             </label>
             <input
               type="text"
@@ -102,12 +102,12 @@ export default function EjarDocumentationDialog({
               onChange={(e) => setEjarNumber(e.target.value)}
               placeholder="أدخل العقد الموثّق في منصة إيجار (10 أرقام)"
               disabled={isPending}
-              className="w-full h-[52px] bg-white border border-[#EEEEEE] rounded-[16px] px-4 text-[14px] focus:outline-none focus:border-brand-hover focus:ring-1 focus:ring-brand-hover/20 transition-all"
+              className="w-full h-13 bg-white border border-surface-border rounded-2xl px-4 text-sm focus:outline-none focus:border-brand-hover focus:ring-1 focus:ring-brand-hover/20 transition-all"
             />
           </div>
 
           <div className="flex flex-col gap-2">
-            <label className="text-[13px] font-bold text-black text-right">
+            <label className="text-13 font-bold text-black text-right">
               ملاحظات تود ذكرها
             </label>
             <textarea
@@ -116,7 +116,7 @@ export default function EjarDocumentationDialog({
               placeholder="اكتب ملاحظاتك هنا (اختياري)..."
               disabled={isPending}
               rows={3}
-              className="w-full min-h-[100px] bg-white border border-[#EEEEEE] rounded-[16px] p-4 text-[14px] focus:outline-none focus:border-brand-hover focus:ring-1 focus:ring-brand-hover/20 transition-all resize-none"
+              className="w-full min-h-[100px] bg-white border border-surface-border rounded-2xl p-4 text-sm focus:outline-none focus:border-brand-hover focus:ring-1 focus:ring-brand-hover/20 transition-all resize-none"
             />
           </div>
 
@@ -125,7 +125,7 @@ export default function EjarDocumentationDialog({
               type="button"
               disabled={!canSubmit || isPending}
               onClick={handleSubmit}
-              className="flex-1 h-[52px] bg-[#16A34A] text-white rounded-[16px] font-bold text-[15px] hover:brightness-110 transition-all disabled:opacity-60 flex items-center justify-center gap-2"
+              className="flex-1 h-13 bg-[#16A34A] text-white rounded-2xl font-bold text-15 hover:brightness-110 transition-all disabled:opacity-60 flex items-center justify-center gap-2"
             >
               {isPending ? (
                 <Loader2 className="size-4 animate-spin" />
@@ -137,7 +137,7 @@ export default function EjarDocumentationDialog({
               type="button"
               disabled={isPending}
               onClick={() => onOpenChange(false)}
-              className="h-[52px] px-6 rounded-[16px] border border-[#EEEEEE] text-[#4D4D4D] font-bold text-[15px] hover:bg-[#F5F5F5] transition-all"
+              className="h-13 px-6 rounded-2xl border border-surface-border text-ink-subtle font-bold text-15 hover:bg-neutral-100 transition-all"
             >
               تراجع
             </button>

@@ -23,7 +23,7 @@ export default function TenantFinancialGroup({ order, onEdit }) {
             {order.tenant?.type_label}
           </>
         }
-        badgeClassName="bg-[#DCFCE7] text-[#15803D]"
+        badgeClassName="bg-[#DCFCE7] text-green-700"
       >
         <Field label="جوال المستأجر" value={order.tenant?.phone} />
       </AccentCard>
@@ -37,7 +37,7 @@ export default function TenantFinancialGroup({ order, onEdit }) {
       >
         <div className="flex flex-wrap items-center gap-1.5">
           {financial.payment_method ? (
-            <span className="px-2 py-0.5 rounded-full bg-[#F3F4F6] dark:bg-white/10 text-[10.5px] font-bold text-[#4B5563] dark:text-white/70">
+            <span className="px-2 py-0.5 rounded-full bg-status-neutral-bg dark:bg-white/10 text-[10.5px] font-bold text-[#4B5563] dark:text-white/70">
               {financial.payment_method}
             </span>
           ) : null}
@@ -45,8 +45,8 @@ export default function TenantFinancialGroup({ order, onEdit }) {
             className={cn(
               "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10.5px] font-bold",
               financial.paid
-                ? "bg-[#DCFCE7] text-[#15803D]"
-                : "bg-[#FEE2E2] text-[#DC2626]"
+                ? "bg-[#DCFCE7] text-green-700"
+                : "bg-[#FEE2E2] text-red-600"
             )}
           >
             {financial.paid ? (
@@ -64,19 +64,19 @@ export default function TenantFinancialGroup({ order, onEdit }) {
           />
           <Field label="المدة" value={financial.duration} />
           <Field label="الدفعات" value={financial.frequency} />
-          <div className="flex items-center justify-between gap-3 text-[12px]">
-            <span className="text-[#9CA3AF] font-medium">إجمالي الإيجار</span>
-            <Money value={financial.rent} className="text-[14px]" />
+          <div className="flex items-center justify-between gap-3 text-xs">
+            <span className="text-gray-400 font-medium">إجمالي الإيجار</span>
+            <Money value={financial.rent} className="text-sm" />
           </div>
         </div>
 
         <div className="pt-2 border-t border-[#EEF1F0] dark:border-white/10 flex items-center justify-between gap-2">
-          <span className="text-[12px] text-[#6B7280] dark:text-white/50 font-medium">
+          <span className="text-xs text-status-neutral dark:text-white/50 font-medium">
             رسوم الإيجار
           </span>
           <span className="inline-flex items-center gap-1.5">
             {financial.fees_paid ? (
-              <Check className="size-3.5 text-[#15803D]" strokeWidth={2.75} />
+              <Check className="size-3.5 text-green-700" strokeWidth={2.75} />
             ) : null}
             <Money value={financial.fees} />
           </span>

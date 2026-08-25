@@ -103,7 +103,7 @@ export default function OrderActionsMenu({
           aria-label="المزيد"
           className={cn(
             "size-8 rounded-lg border flex items-center justify-center transition-colors",
-            "border-[#E6EBE9] text-[#6B7280] hover:text-[#0B5345] hover:border-[#0B5345]/30",
+            "border-surface-border-soft text-status-neutral hover:text-brand-dark hover:border-brand-dark/30",
             "dark:border-white/10 dark:text-white/55 dark:hover:bg-white/10 dark:hover:text-white",
             triggerClassName
           )}
@@ -121,22 +121,22 @@ export default function OrderActionsMenu({
         sideOffset={6}
         className={cn(
           "w-[260px] rounded-2xl border p-0 overflow-hidden shadow-[0_10px_40px_rgba(0,0,0,0.12)]",
-          "border-[#E8EEEC] bg-white dark:border-white/10 dark:bg-[#13241C]"
+          "border-[#E8EEEC] bg-white dark:border-white/10 dark:bg-card"
         )}
       >
         <div className="px-3.5 pt-3 pb-1.5">
-          <DropdownMenuLabel className="p-0 text-[12px] font-bold text-[#9CA3AF] dark:text-white/45">
+          <DropdownMenuLabel className="p-0 text-xs font-bold text-gray-400 dark:text-white/45">
             تغيير حالة الطلب
           </DropdownMenuLabel>
         </div>
 
         <div className="px-1.5 pb-1.5 max-h-[280px] overflow-y-auto">
           {!canChangeStatus ? (
-            <p className="px-3 py-2 text-[12px] text-[#9CA3AF]">
+            <p className="px-3 py-2 text-xs text-gray-400">
               ليست لديك صلاحية تغيير الحالة
             </p>
           ) : statusItems.length === 0 ? (
-            <p className="px-3 py-2 text-[12px] text-[#9CA3AF]">لا توجد حالات</p>
+            <p className="px-3 py-2 text-xs text-gray-400">لا توجد حالات</p>
           ) : (
             statusItems.map((status) => {
               const active =
@@ -160,11 +160,11 @@ export default function OrderActionsMenu({
                     className="size-2.5 rounded-full shrink-0"
                     style={{ backgroundColor: status.color }}
                   />
-                  <span className="flex-1 text-[13px] font-bold text-[#111827] dark:text-white/90 text-right">
+                  <span className="flex-1 text-13 font-bold text-gray-900 dark:text-white/90 text-right">
                     {status.label}
                   </span>
                   {active ? (
-                    <Check className="size-3.5 text-[#0B5345] dark:text-[#6EE7B7] shrink-0" />
+                    <Check className="size-3.5 text-brand-dark dark:text-[#6EE7B7] shrink-0" />
                   ) : null}
                 </DropdownMenuItem>
               );
@@ -174,7 +174,7 @@ export default function OrderActionsMenu({
 
         {canAddStatus ? (
           <>
-            <DropdownMenuSeparator className="bg-[#EEEEEE] dark:bg-white/10 my-0" />
+            <DropdownMenuSeparator className="bg-surface-border dark:bg-white/10 my-0" />
             <div className="px-1.5 py-1.5">
               <DropdownMenuItem
                 onSelect={() => {
@@ -182,8 +182,8 @@ export default function OrderActionsMenu({
                 }}
                 className="rounded-xl px-3 py-2.5 cursor-pointer gap-2.5 focus:bg-[#F3F9F6] dark:focus:bg-white/[0.06]"
               >
-                <Plus className="size-4 text-[#0B5345] dark:text-[#6EE7B7] shrink-0" />
-                <span className="flex-1 text-[13px] font-bold text-[#111827] dark:text-white/90 text-right">
+                <Plus className="size-4 text-brand-dark dark:text-[#6EE7B7] shrink-0" />
+                <span className="flex-1 text-13 font-bold text-gray-900 dark:text-white/90 text-right">
                   إضافة حالة جديدة
                 </span>
               </DropdownMenuItem>
@@ -191,15 +191,15 @@ export default function OrderActionsMenu({
           </>
         ) : null}
 
-        <DropdownMenuSeparator className="bg-[#EEEEEE] dark:bg-white/10 my-0" />
+        <DropdownMenuSeparator className="bg-surface-border dark:bg-white/10 my-0" />
 
         <div className="p-1.5">
           <DropdownMenuItem
             onSelect={copyUuid}
             className="rounded-xl px-3 py-2.5 cursor-pointer gap-2.5 focus:bg-[#F3F9F6] dark:focus:bg-white/[0.06]"
           >
-            <Copy className="size-4 text-[#6B7280] dark:text-white/50 shrink-0" />
-            <span className="flex-1 text-[13px] font-bold text-[#111827] dark:text-white/90 text-right">
+            <Copy className="size-4 text-status-neutral dark:text-white/50 shrink-0" />
+            <span className="flex-1 text-13 font-bold text-gray-900 dark:text-white/90 text-right">
               نسخ رقم الطلب
             </span>
           </DropdownMenuItem>
@@ -209,7 +209,7 @@ export default function OrderActionsMenu({
             className="rounded-xl px-3 py-2.5 cursor-pointer gap-2.5 focus:bg-[#F3F9F6] dark:focus:bg-white/[0.06]"
           >
             <Image src={waIcon} alt="" width={16} height={16} className="shrink-0" />
-            <span className="flex-1 text-[13px] font-bold text-[#111827] dark:text-white/90 text-right">
+            <span className="flex-1 text-13 font-bold text-gray-900 dark:text-white/90 text-right">
               تواصل واتساب مع العميل
             </span>
           </DropdownMenuItem>
@@ -223,11 +223,11 @@ export default function OrderActionsMenu({
             className="rounded-xl px-3 py-2.5 cursor-pointer gap-2.5 focus:bg-[#F3F9F6] dark:focus:bg-white/[0.06]"
           >
             {isPrinting ? (
-              <Loader2 className="size-4 animate-spin text-[#6B7280] dark:text-white/50 shrink-0" />
+              <Loader2 className="size-4 animate-spin text-status-neutral dark:text-white/50 shrink-0" />
             ) : (
-              <Printer className="size-4 text-[#6B7280] dark:text-white/50 shrink-0" />
+              <Printer className="size-4 text-status-neutral dark:text-white/50 shrink-0" />
             )}
-            <span className="flex-1 text-[13px] font-bold text-[#111827] dark:text-white/90 text-right">
+            <span className="flex-1 text-13 font-bold text-gray-900 dark:text-white/90 text-right">
               طباعة الطلب
             </span>
           </DropdownMenuItem>

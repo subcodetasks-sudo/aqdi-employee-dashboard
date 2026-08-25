@@ -63,7 +63,7 @@ export default function NewRequestsDialog({
               <Plus className="size-4" strokeWidth={2.5} />
             </span>
             <div className="min-w-0">
-              <h2 className="text-[16px] sm:text-[17px] font-black text-white leading-tight">
+              <h2 className="text-base sm:text-[17px] font-black text-white leading-tight">
                 الطلبات الجديدة
               </h2>
               <p className="flex items-center gap-1.5 text-[11.5px] text-white/75 mt-0.5 font-medium">
@@ -78,7 +78,7 @@ export default function NewRequestsDialog({
               type="button"
               onClick={() => onAutoRefreshChange?.(!autoRefresh)}
               className={cn(
-                "h-9 px-3 rounded-lg text-[12px] font-bold flex items-center gap-1.5 transition-colors",
+                "h-9 px-3 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors",
                 autoRefresh
                   ? "bg-white text-[#064E3B]"
                   : "bg-white/10 text-white hover:bg-white/15"
@@ -163,7 +163,7 @@ export default function NewRequestsDialog({
                   className={cn(
                     "h-[120px] rounded-xl border animate-pulse",
                     dark
-                      ? "bg-[#13241C] border-white/[0.08]"
+                      ? "bg-card border-white/[0.08]"
                       : "bg-white border-[#E8EEEC]"
                   )}
                 />
@@ -171,8 +171,8 @@ export default function NewRequestsDialog({
             ) : orders.length === 0 ? (
               <p
                 className={cn(
-                  "col-span-full py-10 text-center text-[13px] font-medium",
-                  dark ? "text-white/40" : "text-[#9CA3AF]"
+                  "col-span-full py-10 text-center text-13 font-medium",
+                  dark ? "text-white/40" : "text-gray-400"
                 )}
               >
                 لا توجد طلبات جديدة بانتظار الاستلام

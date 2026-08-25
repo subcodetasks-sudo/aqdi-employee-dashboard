@@ -80,7 +80,7 @@ function OrderDetailsBody() {
   if (isLoading) return <Loader />;
   if (isError || !orderData || !view) {
     return (
-      <div className="p-6 text-center text-[#A3A3A3]" dir="rtl">
+      <div className="p-6 text-center text-ink-placeholder" dir="rtl">
         تعذر تحميل بيانات الطلب
       </div>
     );

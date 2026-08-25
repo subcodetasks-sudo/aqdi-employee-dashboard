@@ -18,7 +18,7 @@ export default function NewRequestStatCard({
       className={cn(
         "rounded-xl border p-4 flex flex-col gap-2.5 min-w-0",
         dark
-          ? "bg-[#13241C] border-white/[0.08]"
+          ? "bg-card border-white/[0.08]"
           : "bg-white border-[#E8EEEC] shadow-[0_1px_3px_rgba(11,83,69,0.05)]"
       )}
     >
@@ -26,8 +26,8 @@ export default function NewRequestStatCard({
         <div className="text-right min-w-0">
           <p
             className={cn(
-              "text-[13px] font-bold",
-              dark ? "text-white/70" : "text-[#374151]"
+              "text-13 font-bold",
+              dark ? "text-white/70" : "text-gray-700"
             )}
           >
             {label}
@@ -58,8 +58,8 @@ export default function NewRequestStatCard({
 
       <p
         className={cn(
-          "text-[11px] font-medium",
-          dark ? "text-white/40" : "text-[#9CA3AF]"
+          "text-11 font-medium",
+          dark ? "text-white/40" : "text-gray-400"
         )}
       >
         {hint}

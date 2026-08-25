@@ -34,7 +34,7 @@ import { cn } from "@/lib/utils";
 import { RT } from "./theme";
 
 const fieldClass =
-  "h-12 rounded-xl border-[#E6EBE9] bg-[#F5F8F7] px-4 text-[13px] font-medium shadow-none focus-visible:ring-0 focus-visible:border-[#0B5345]";
+  "h-12 rounded-xl border-surface-border-soft bg-[#F5F8F7] px-4 text-13 font-medium shadow-none focus-visible:ring-0 focus-visible:border-brand-dark";
 
 export default function WhatsAppPaymentLinkDialog({ open, onOpenChange }) {
   const queryClient = useQueryClient();
@@ -185,7 +185,7 @@ export default function WhatsAppPaymentLinkDialog({ open, onOpenChange }) {
               >
                 <Link2 className="size-4" />
               </span>
-              <h2 className="text-[18px] font-black text-[#0B5345] truncate">
+              <h2 className="text-lg font-black text-brand-dark truncate">
                 توليد رابط دفع – طلب واتساب
               </h2>
             </div>
@@ -193,7 +193,7 @@ export default function WhatsAppPaymentLinkDialog({ open, onOpenChange }) {
               type="button"
               onClick={() => onOpenChange?.(false)}
               aria-label="إغلاق"
-              className="size-9 rounded-full bg-[#F3F4F6] text-[#6B7280] flex items-center justify-center hover:bg-[#E5E7EB]"
+              className="size-9 rounded-full bg-status-neutral-bg text-status-neutral flex items-center justify-center hover:bg-[#E5E7EB]"
             >
               <X className="size-4" />
             </button>
@@ -202,7 +202,7 @@ export default function WhatsAppPaymentLinkDialog({ open, onOpenChange }) {
           <div className="px-6 py-5 space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <label className="space-y-1.5">
-                <span className="text-[13px] font-bold">
+                <span className="text-13 font-bold">
                   رقم جوال العميل <span className="text-red-500">*</span>
                 </span>
                 <input
@@ -214,7 +214,7 @@ export default function WhatsAppPaymentLinkDialog({ open, onOpenChange }) {
                 />
               </label>
               <label className="space-y-1.5">
-                <span className="text-[13px] font-bold">
+                <span className="text-13 font-bold">
                   المبلغ المطلوب (ريال) <span className="text-red-500">*</span>
                 </span>
                 <input
@@ -230,7 +230,7 @@ export default function WhatsAppPaymentLinkDialog({ open, onOpenChange }) {
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <label className="space-y-1.5">
-                <span className="text-[13px] font-bold">نوع العقد</span>
+                <span className="text-13 font-bold">نوع العقد</span>
                 <Select dir="rtl" value={contractType} onValueChange={setContractType}>
                   <SelectTrigger className={fieldClass}>
                     <SelectValue />
@@ -243,7 +243,7 @@ export default function WhatsAppPaymentLinkDialog({ open, onOpenChange }) {
               </label>
 
               <label className="space-y-1.5">
-                <span className="text-[13px] font-bold">عدد سنوات العقد</span>
+                <span className="text-13 font-bold">عدد سنوات العقد</span>
                 <Select
                   dir="rtl"
                   value={periodId}
@@ -264,7 +264,7 @@ export default function WhatsAppPaymentLinkDialog({ open, onOpenChange }) {
               </label>
 
               <label className="space-y-1.5">
-                <span className="text-[13px] font-bold">رسوم إضافية (اختياري)</span>
+                <span className="text-13 font-bold">رسوم إضافية (اختياري)</span>
                 <Select dir="rtl" value={extraFeeId} onValueChange={setExtraFeeId}>
                   <SelectTrigger className={fieldClass}>
                     <SelectValue />
@@ -282,8 +282,8 @@ export default function WhatsAppPaymentLinkDialog({ open, onOpenChange }) {
             </div>
 
             {referencePrice != null && referencePrice !== "" ? (
-              <div className="inline-flex items-center gap-2 rounded-full bg-[#E8F5F1] px-3.5 py-1.5 text-[12.5px] font-bold text-[#0B5345]">
-                <span className="size-4 rounded-full border-2 border-[#0B5345] flex items-center justify-center">
+              <div className="inline-flex items-center gap-2 rounded-full bg-[#E8F5F1] px-3.5 py-1.5 text-[12.5px] font-bold text-brand-dark">
+                <span className="size-4 rounded-full border-2 border-brand-dark flex items-center justify-center">
                   <Check className="size-2.5" strokeWidth={3} />
                 </span>
                 سعر العقد المرجعي: {referencePrice} ريال
@@ -291,13 +291,13 @@ export default function WhatsAppPaymentLinkDialog({ open, onOpenChange }) {
             ) : null}
 
             <label className="space-y-1.5 block">
-              <span className="text-[13px] font-bold">ملاحظات تود ذكرها</span>
+              <span className="text-13 font-bold">ملاحظات تود ذكرها</span>
               <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 rows={4}
                 placeholder="إذا كانت رسوم العقد أكثر أو أقل من المعتاد، يرجى توضيح السبب..."
-                className="w-full min-h-[110px] rounded-xl border border-[#E6EBE9] bg-[#F5F8F7] px-4 py-3 text-[13px] font-medium resize-none focus:outline-none focus:border-[#0B5345]"
+                className="w-full min-h-[110px] rounded-xl border border-surface-border-soft bg-[#F5F8F7] px-4 py-3 text-13 font-medium resize-none focus:outline-none focus:border-brand-dark"
               />
             </label>
           </div>
@@ -307,7 +307,7 @@ export default function WhatsAppPaymentLinkDialog({ open, onOpenChange }) {
               type="button"
               onClick={handleSubmit}
               disabled={isPending}
-              className="flex-1 h-12 rounded-xl text-white font-bold text-[14px] flex items-center justify-center gap-2 disabled:opacity-60"
+              className="flex-1 h-12 rounded-xl text-white font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-60"
               style={{ backgroundColor: RT.brand }}
             >
               {isPending ? (
@@ -320,7 +320,7 @@ export default function WhatsAppPaymentLinkDialog({ open, onOpenChange }) {
             <button
               type="button"
               onClick={() => onOpenChange?.(false)}
-              className="h-12 px-6 rounded-xl bg-[#F3F4F6] text-[#4B5563] font-bold text-[14px] hover:bg-[#E5E7EB]"
+              className="h-12 px-6 rounded-xl bg-status-neutral-bg text-[#4B5563] font-bold text-sm hover:bg-[#E5E7EB]"
             >
               إغلاق
             </button>

@@ -9,7 +9,7 @@ import { RT } from "../../theme";
 export function GroupTitle({ children, end }) {
   return (
     <div className="flex items-center justify-between gap-2 mb-3 px-0.5">
-      <h3 className="text-[13px] font-black text-[#0B5345] dark:text-[#6EE7B7] truncate">
+      <h3 className="text-13 font-black text-brand-dark dark:text-[#6EE7B7] truncate">
         {children}
       </h3>
       {end}
@@ -23,8 +23,8 @@ export function EditBtn({ className, onClick }) {
       type="button"
       onClick={onClick}
       className={cn(
-        "size-8 rounded-full border border-[#E6EBE9] dark:border-white/10 bg-white dark:bg-white/[0.04]",
-        "text-[#9CA3AF] hover:text-[#0B5345] hover:border-[#0B5345]/30 flex items-center justify-center transition-colors",
+        "size-8 rounded-full border border-surface-border-soft dark:border-white/10 bg-white dark:bg-white/[0.04]",
+        "text-gray-400 hover:text-brand-dark hover:border-brand-dark/30 flex items-center justify-center transition-colors",
         className
       )}
       aria-label="تعديل"
@@ -49,7 +49,7 @@ export function AccentCard({
   return (
     <div
       className={cn(
-        "relative rounded-2xl border border-[#E6EBE9] dark:border-white/10 bg-white dark:bg-[#0F1C16]",
+        "relative rounded-2xl border border-surface-border-soft dark:border-white/10 bg-white dark:bg-[#0F1C16]",
         "overflow-hidden shadow-[0_1px_2px_rgba(11,83,69,0.04)]",
         className
       )}
@@ -71,7 +71,7 @@ export function AccentCard({
               </span>
             ) : null}
             <div className="min-w-0">
-              <h4 className="text-[14px] font-black text-[#0B5345] dark:text-white">
+              <h4 className="text-sm font-black text-brand-dark dark:text-white">
                 {title}
               </h4>
               {badge ? (
@@ -89,7 +89,7 @@ export function AccentCard({
 
           <div className="flex items-center gap-1.5 shrink-0">
             {missingCount > 0 ? (
-              <span className="h-6 px-2 rounded-full bg-[#FEE2E2] text-[#DC2626] text-[10.5px] font-black">
+              <span className="h-6 px-2 rounded-full bg-[#FEE2E2] text-red-600 text-[10.5px] font-black">
                 {missingCount} ناقص
               </span>
             ) : null}
@@ -106,14 +106,14 @@ export function AccentCard({
 export function Field({ label, value, empty }) {
   const isEmpty = empty || value === "" || value == null;
   return (
-    <div className="flex items-center justify-between gap-3 text-[12px]">
-      <span className="text-[#9CA3AF] font-medium shrink-0">{label}</span>
+    <div className="flex items-center justify-between gap-3 text-xs">
+      <span className="text-gray-400 font-medium shrink-0">{label}</span>
       <span
         className={cn(
           "font-bold text-left truncate min-w-0",
           isEmpty
             ? "text-[#D1D5DB] dark:text-white/25"
-            : "text-[#111827] dark:text-white/90"
+            : "text-gray-900 dark:text-white/90"
         )}
       >
         {isEmpty ? "—" : value}
@@ -125,8 +125,8 @@ export function Field({ label, value, empty }) {
 export function GridField({ label, value }) {
   return (
     <div className="min-w-0">
-      <p className="text-[10.5px] text-[#9CA3AF] font-medium mb-0.5">{label}</p>
-      <p className="text-[12px] font-bold text-[#111827] dark:text-white/90 truncate">
+      <p className="text-[10.5px] text-gray-400 font-medium mb-0.5">{label}</p>
+      <p className="text-xs font-bold text-gray-900 dark:text-white/90 truncate">
         {value || "—"}
       </p>
     </div>
@@ -137,7 +137,7 @@ export function Money({ value, className }) {
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 font-black text-[#15803D]",
+        "inline-flex items-center gap-1 font-black text-green-700",
         className
       )}
     >

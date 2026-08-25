@@ -30,7 +30,7 @@ export default function SectionEditorDialog({
           type="button"
           onClick={() => onOpenChange(false)}
           aria-label="إغلاق"
-          className="absolute end-5 top-5 flex size-9 items-center justify-center rounded-full bg-[#F5F5F5] text-[#A3A3A3] transition-all hover:bg-[#FFEBEB] hover:text-[#E24444] dark:bg-white/10 dark:text-white/60"
+          className="absolute end-5 top-5 flex size-9 items-center justify-center rounded-full bg-neutral-100 text-ink-placeholder transition-all hover:bg-[#FFEBEB] hover:text-[#E24444] dark:bg-white/10 dark:text-white/60"
         >
           <X className="size-4" />
         </button>
@@ -42,7 +42,7 @@ export default function SectionEditorDialog({
           >
             <Pencil className="size-4" />
           </span>
-          <DialogTitle className="text-[18px] font-black text-black dark:text-white">
+          <DialogTitle className="text-lg font-black text-black dark:text-white">
             {TITLES[section] || "تعديل البيانات"}
           </DialogTitle>
         </div>

@@ -78,7 +78,7 @@ export function buildRealtimeOrderColumns({
         <span
           className={cn(
             "font-bold",
-            dark ? "text-white/85" : "text-[#374151]"
+            dark ? "text-white/85" : "text-gray-700"
           )}
         >
           {row?.contract_type || "---"}
@@ -109,7 +109,7 @@ export function buildRealtimeOrderColumns({
                 "transition-colors",
                 dark
                   ? "text-white/30 hover:text-white/70"
-                  : "text-[#9CA3AF] hover:text-[#0B5345]"
+                  : "text-gray-400 hover:text-brand-dark"
               )}
               aria-label="نسخ"
             >
@@ -137,13 +137,13 @@ export function buildRealtimeOrderColumns({
           return (
             <div className="flex items-center gap-1.5 flex-wrap">
               <span
-                className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold"
+                className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-11 font-bold"
                 style={{ backgroundColor: RT.successBg, color: RT.success }}
               >
                 <Check className="size-3" strokeWidth={2.75} />
                 مدفوع
               </span>
-              <span className="inline-flex items-center gap-1 font-bold text-[12px] text-[#007C13]">
+              <span className="inline-flex items-center gap-1 font-bold text-xs text-[#007C13]">
                 {row?.amount_payment}
                 <Image src={greenRial} alt="rial" width={11} height={11} />
               </span>
@@ -152,7 +152,7 @@ export function buildRealtimeOrderColumns({
         }
         return (
           <span
-            className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold"
+            className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-11 font-bold"
             style={{ backgroundColor: RT.dangerBg, color: RT.danger }}
           >
             <X className="size-3" strokeWidth={2.75} />
@@ -179,7 +179,7 @@ export function buildRealtimeOrderColumns({
                 };
         return (
           <span
-            className="inline-flex items-center gap-1 whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-bold"
+            className="inline-flex items-center gap-1 whitespace-nowrap rounded-full px-2 py-0.5 text-11 font-bold"
             style={{ backgroundColor: styles.bg, color: styles.color }}
           >
             <Clock className="size-3" strokeWidth={2.5} />
@@ -201,7 +201,7 @@ export function buildRealtimeOrderColumns({
         );
         return (
           <span
-            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold whitespace-nowrap"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-11 font-bold whitespace-nowrap"
             style={style}
           >
             <span
@@ -238,7 +238,7 @@ export function buildRealtimeOrderColumns({
           <button
             type="button"
             onClick={() => onView?.(row)}
-            className="h-8 px-3 rounded-lg text-[12px] font-bold transition-colors"
+            className="h-8 px-3 rounded-lg text-xs font-bold transition-colors"
             style={{
               backgroundColor: dark ? "rgba(16,185,129,0.12)" : RT.viewBtnBg,
               color: dark ? "#6EE7B7" : RT.viewBtnText,

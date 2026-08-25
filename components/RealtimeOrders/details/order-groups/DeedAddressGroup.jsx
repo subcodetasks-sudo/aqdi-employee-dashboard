@@ -16,8 +16,8 @@ export default function DeedAddressGroup({ order, onEdit }) {
         onEdit={() => onEdit?.("deed")}
       >
         <div className="rounded-xl bg-[#F0F7F4] dark:bg-white/[0.03] px-3 py-2 flex items-center gap-2">
-          <FileText className="size-3.5 text-[#0B5345] dark:text-[#6EE7B7] shrink-0" />
-          <span className="text-[11.5px] font-bold text-[#0B5345] dark:text-[#6EE7B7]">
+          <FileText className="size-3.5 text-brand-dark dark:text-[#6EE7B7] shrink-0" />
+          <span className="text-[11.5px] font-bold text-brand-dark dark:text-[#6EE7B7]">
             {order.deed?.type_label}
           </span>
         </div>
@@ -29,8 +29,8 @@ export default function DeedAddressGroup({ order, onEdit }) {
           <Field label="جوال المالك" value={order.deed?.owner_phone} />
         </div>
 
-        <div className="rounded-xl bg-[#F3F4F6] dark:bg-white/[0.04] px-3 py-2.5 flex items-center justify-between gap-2">
-          <span className="text-[12px] font-bold text-[#4B5563] dark:text-white/70 truncate">
+        <div className="rounded-xl bg-status-neutral-bg dark:bg-white/[0.04] px-3 py-2.5 flex items-center justify-between gap-2">
+          <span className="text-xs font-bold text-[#4B5563] dark:text-white/70 truncate">
             {order.deed?.file_name || "لا يوجد مرفق"}
           </span>
           {order.deed?.file_url ? (
@@ -39,7 +39,7 @@ export default function DeedAddressGroup({ order, onEdit }) {
                 href={order.deed.file_url}
                 target="_blank"
                 rel="noreferrer"
-                className="text-[12px] font-bold text-[#0B5345] dark:text-[#6EE7B7] hover:underline inline-flex items-center gap-1"
+                className="text-xs font-bold text-brand-dark dark:text-[#6EE7B7] hover:underline inline-flex items-center gap-1"
               >
                 <Eye className="size-3.5" />
                 عرض
@@ -47,7 +47,7 @@ export default function DeedAddressGroup({ order, onEdit }) {
               <a
                 href={order.deed.file_url}
                 download
-                className="text-[12px] font-bold text-[#6B7280] dark:text-white/55 hover:underline inline-flex items-center gap-1"
+                className="text-xs font-bold text-status-neutral dark:text-white/55 hover:underline inline-flex items-center gap-1"
               >
                 <Download className="size-3.5" />
                 تحميل

@@ -84,12 +84,12 @@ function TablePagination({ pagination, currentPage, onPageChange, dark }) {
 
   const btnClass = (active) =>
     cn(
-      "size-9 rounded-full flex items-center justify-center text-[13px] font-medium transition-all",
+      "size-9 rounded-full flex items-center justify-center text-13 font-medium transition-all",
       active
-        ? "bg-[#0B5345] text-white"
+        ? "bg-brand-dark text-white"
         : dark
           ? "border border-white/10 text-white/55 hover:bg-white/10"
-          : "border border-[#E4E4E4] text-[#A3A3A3] hover:bg-[#f5f5f5]"
+          : "border border-neutral-200 text-ink-placeholder hover:bg-neutral-100"
     );
 
   return (
@@ -106,7 +106,7 @@ function TablePagination({ pagination, currentPage, onPageChange, dark }) {
         page === "..." ? (
           <span
             key={`dots-${idx}`}
-            className={dark ? "text-white/35 px-1" : "text-[#A3A3A3] px-1"}
+            className={dark ? "text-white/35 px-1" : "text-ink-placeholder px-1"}
           >
             ...
           </span>

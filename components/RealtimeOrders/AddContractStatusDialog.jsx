@@ -54,11 +54,11 @@ export default function AddContractStatusDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="sm:max-w-[600px] p-8 rounded-[32px] border-0 dark:bg-[#13241C] dark:text-white"
+        className="sm:max-w-[600px] p-8 rounded-32 border-0 dark:bg-card dark:text-white"
         dir="rtl"
       >
         <DialogHeader className="mb-6">
-          <DialogTitle className="text-[22px] font-black text-black dark:text-white border-b border-[#F5F5F5] dark:border-white/10 pb-4">
+          <DialogTitle className="text-22 font-black text-black dark:text-white border-b border-neutral-100 dark:border-white/10 pb-4">
             إضافة حالة العقد
           </DialogTitle>
         </DialogHeader>
@@ -70,7 +70,7 @@ export default function AddContractStatusDialog({
             type="button"
             onClick={() => mutate()}
             disabled={isPending || !canSubmit}
-            className="w-full h-[54px] bg-[#0B5345] text-white rounded-[16px] font-bold text-[16px] hover:brightness-110 transition-all disabled:opacity-60 mt-2"
+            className="w-full h-13.5 bg-brand-dark text-white rounded-2xl font-bold text-base hover:brightness-110 transition-all disabled:opacity-60 mt-2"
           >
             {isPending ? <Loader2 className="animate-spin mx-auto" /> : "إضـــافة الحالة"}
           </button>

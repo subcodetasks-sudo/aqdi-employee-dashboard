@@ -65,13 +65,13 @@ export default function PaymentNotificationList() {
 
       <div className="bg-white rounded-[18px] p-4 border border-[#F0F0F0] shadow flex flex-col gap-2">
         <div className="flex items-center justify-between">
-          <p className="font-bold text-[15px] text-black">مدفوعات اليوم</p>
-          <CreditCard className="size-5 text-[#0B5345]" />
+          <p className="font-bold text-15 text-black">مدفوعات اليوم</p>
+          <CreditCard className="size-5 text-brand-dark" />
         </div>
         <p className="font-black text-black text-3xl tabular-nums">{total}</p>
         <Link
           href="/home/invoices"
-          className="text-[12px] font-bold text-[#0B5345] hover:underline w-fit"
+          className="text-xs font-bold text-brand-dark hover:underline w-fit"
         >
           عرض كل الفواتير
         </Link>
@@ -84,7 +84,7 @@ export default function PaymentNotificationList() {
         )}
       >
         {payments.length === 0 ? (
-          <p className="text-center text-[13px] text-[#9CA3AF] py-8">
+          <p className="text-center text-13 text-gray-400 py-8">
             لا توجد مدفوعات اليوم
           </p>
         ) : (
@@ -97,31 +97,31 @@ export default function PaymentNotificationList() {
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
-                    <p className="font-black text-[14px] text-black truncate">
+                    <p className="font-black text-sm text-black truncate">
                       {payment.name || payment.name_payment || "عملية دفع"}
                     </p>
-                    <p className="text-[12px] text-[#9CA3AF] tabular-nums" dir="ltr">
+                    <p className="text-xs text-gray-400 tabular-nums" dir="ltr">
                       {payment.user_mobile || payment.contract_uuid || "—"}
                     </p>
                   </div>
                   <span
                     className={cn(
-                      "shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-bold",
+                      "shrink-0 rounded-full px-2.5 py-0.5 text-11 font-bold",
                       success
-                        ? "bg-[#E6F7EF] text-[#15803D]"
+                        ? "bg-[#E6F7EF] text-green-700"
                         : payment.status === "failed"
-                          ? "bg-[#FEF2F2] text-[#DC2626]"
-                          : "bg-[#F3F4F6] text-[#6B7280]"
+                          ? "bg-[#FEF2F2] text-red-600"
+                          : "bg-status-neutral-bg text-status-neutral"
                     )}
                   >
                     {statusLabels[payment.status] || payment.status || "—"}
                   </span>
                 </div>
                 <div className="flex items-center justify-between text-[12.5px] font-bold">
-                  <span className="tabular-nums text-[#0B5345]">
+                  <span className="tabular-nums text-brand-dark">
                     {payment.amount} {payment.tran_currency || "ريال"}
                   </span>
-                  <span className="text-[#9CA3AF] font-medium">
+                  <span className="text-gray-400 font-medium">
                     {payment.payment_hour || payment.payment_date || ""}
                   </span>
                 </div>

@@ -71,7 +71,7 @@ export default function NewRequestCard({
           dense ? "p-3 gap-2.5" : "p-3.5 gap-3",
           "min-w-[188px] shrink-0",
           dark
-            ? "bg-[#13241C] border-white/[0.08]"
+            ? "bg-card border-white/[0.08]"
             : "bg-white border-[#E8EEEC] shadow-[0_1px_3px_rgba(11,83,69,0.06)]",
           "card-gradient-top",
           className
@@ -97,7 +97,7 @@ export default function NewRequestCard({
 
         <span
           className={cn(
-            "text-[13px] font-black tabular-nums",
+            "text-13 font-black tabular-nums",
             dark ? "text-white" : "text-[#0E5F4E]"
           )}
         >
@@ -105,7 +105,7 @@ export default function NewRequestCard({
         </span>
 
         <span
-          className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[10px] font-bold whitespace-nowrap"
+          className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-10 font-bold whitespace-nowrap"
           style={{
             backgroundColor: isDraft ? RT.draftBg : RT.newBg,
             color: isDraft ? RT.draftText : RT.newText,
