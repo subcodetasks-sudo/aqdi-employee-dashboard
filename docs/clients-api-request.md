@@ -92,13 +92,14 @@ GET /admin/orders?user_id={id} is already used and returns contract rows for tha
 - Needed endpoint (proposal): POST /admin/users/{id}/discount
 - Need confirmed request schema and business rules.
 
-3. Client properties/units backend for /home/users/{id}/properties
-- Current page uses mock data only (not connected to API).
-- Needed:
-  - GET /admin/users/{id}/properties
-  - DELETE /admin/users/{id}/properties/{propertyId}
-  - DELETE /admin/users/{id}/units/{unitId}
-  - GET /admin/users/{id}/properties/{propertyId}/deed (or equivalent file endpoint)
+3. Client properties/units for /home/users/{id}/properties
+- The property/unit list is wired: it reuses GET /admin/users/{id} and reads
+  `data.user.real_estates_list` (properties) and `data.user.units_list` (units, matched to a
+  property via `units_list[].real_estates_units_id === real_estates_list[].id`). No separate
+  `/properties` endpoint is used or needed.
+- Delete property, delete unit, and view deed are out of scope — not being implemented. The
+  corresponding buttons have been removed from the UI (see
+  components/clients/ClientPropertiesWrapper.jsx).
 
 ## 5) Not needed for this clients UI right now
 
