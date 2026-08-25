@@ -27,9 +27,9 @@ const getStatusLabel = (status) => {
 };
 
 const getStatusClass = (status) => {
-  if (status === "published") return "bg-[#E6FFE6] text-[#10B981]";
+  if (status === "published") return "bg-[#E6FFE6] text-brand-accent";
   if (status === "draft") return "bg-[#FFF4E6] text-[#F59E0B]";
-  return "bg-[#F5F5F5] text-[#A3A3A3]";
+  return "bg-neutral-100 text-ink-placeholder";
 };
 
 export default function BlogDetails({ blog }) {
@@ -43,12 +43,12 @@ export default function BlogDetails({ blog }) {
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex flex-col gap-2">
           <div className="flex flex-wrap items-center gap-2">
-            <span className={`px-3 py-1 rounded-full text-[11px] font-bold ${getStatusClass(blog?.status)}`}>
+            <span className={`px-3 py-1 rounded-full text-11 font-bold ${getStatusClass(blog?.status)}`}>
               {getStatusLabel(blog?.status)}
             </span>
             <span
-              className={`px-3 py-1 rounded-full text-[11px] font-bold ${
-                isActive ? "bg-[#E6F0FF] text-[#3B82F6]" : "bg-[#F5F5F5] text-[#A3A3A3]"
+              className={`px-3 py-1 rounded-full text-11 font-bold ${
+                isActive ? "bg-[#E6F0FF] text-[#3B82F6]" : "bg-neutral-100 text-ink-placeholder"
               }`}
             >
               {isActive ? "نشط" : "غير نشط"}
@@ -56,7 +56,7 @@ export default function BlogDetails({ blog }) {
           </div>
           <h3 className="text-[24px] font-black text-black">{blog?.title}</h3>
           {blog?.slug && (
-            <p className="text-[13px] text-[#A3A3A3]" dir="ltr">
+            <p className="text-13 text-ink-placeholder" dir="ltr">
               {blog.slug}
             </p>
           )}
@@ -71,35 +71,35 @@ export default function BlogDetails({ blog }) {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="rounded-[16px] border border-[#EEEEEE] bg-[#FAFAFA] p-4">
-          <p className="text-[12px] text-[#A3A3A3] mb-1">تاريخ النشر</p>
-          <p className="text-[14px] font-bold text-black">{formatDate(publishAt)}</p>
+        <div className="rounded-2xl border border-surface-border bg-neutral-50 p-4">
+          <p className="text-xs text-ink-placeholder mb-1">تاريخ النشر</p>
+          <p className="text-sm font-bold text-black">{formatDate(publishAt)}</p>
         </div>
         {metaTitle && (
-          <div className="rounded-[16px] border border-[#EEEEEE] bg-[#FAFAFA] p-4 md:col-span-2">
-            <p className="text-[12px] text-[#A3A3A3] mb-1">عنوان SEO</p>
-            <p className="text-[14px] font-medium text-black">{metaTitle}</p>
+          <div className="rounded-2xl border border-surface-border bg-neutral-50 p-4 md:col-span-2">
+            <p className="text-xs text-ink-placeholder mb-1">عنوان SEO</p>
+            <p className="text-sm font-medium text-black">{metaTitle}</p>
           </div>
         )}
       </div>
 
       {metaDescription && (
-        <div className="rounded-[16px] border border-[#EEEEEE] bg-[#FAFAFA] p-4">
-          <p className="text-[12px] text-[#A3A3A3] mb-1">وصف SEO</p>
-          <p className="text-[14px] text-[#4D4D4D]">{metaDescription}</p>
+        <div className="rounded-2xl border border-surface-border bg-neutral-50 p-4">
+          <p className="text-xs text-ink-placeholder mb-1">وصف SEO</p>
+          <p className="text-sm text-ink-subtle">{metaDescription}</p>
         </div>
       )}
 
       {blog?.image && (
-        <div className="relative w-full max-h-[420px] aspect-[16/9] rounded-[20px] overflow-hidden border border-[#EEEEEE]">
+        <div className="relative w-full max-h-[420px] aspect-[16/9] rounded-20 overflow-hidden border border-surface-border">
           <Image src={blog.image} alt={blog.title || "blog image"} fill className="object-cover" />
         </div>
       )}
 
-      <div className="rounded-[20px] border border-[#EEEEEE] bg-white p-6">
-        <p className="text-[14px] font-bold text-black mb-4">محتوى المقال</p>
+      <div className="rounded-20 border border-surface-border bg-white p-6">
+        <p className="text-sm font-bold text-black mb-4">محتوى المقال</p>
         <div
-          className="prose prose-sm max-w-none text-[#4D4D4D] leading-relaxed [&_img]:max-w-full [&_img]:rounded-xl"
+          className="prose prose-sm max-w-none text-ink-subtle leading-relaxed [&_img]:max-w-full [&_img]:rounded-xl"
           dangerouslySetInnerHTML={{ __html: blog?.description || "" }}
         />
       </div>

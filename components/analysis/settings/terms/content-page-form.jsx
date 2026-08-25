@@ -54,13 +54,13 @@ export default function ContentPageForm({ content, saveEndpoint, queryKey }) {
   return (
     <div className="space-y-6">
       {updatedAt && (
-        <p className="text-[13px] text-[#A3A3A3]">
+        <p className="text-13 text-ink-placeholder">
           آخر تحديث: <span className="font-medium text-[#616161]">{updatedAt}</span>
         </p>
       )}
 
       <div className="space-y-2">
-        <label className="text-[14px] font-bold text-black block">المحتوى</label>
+        <label className="text-sm font-bold text-black block">المحتوى</label>
         <div className="min-h-[420px]">
           <TextEditor
             key={editorKey}

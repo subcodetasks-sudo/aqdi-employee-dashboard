@@ -174,11 +174,11 @@ export default function TenantRoleFormDialog({ role = null }) {
               </div>
             </div>
 
-            <div className="rounded-[16px] border border-[#EEEEEE] bg-[#FAFAFA] p-4">
+            <div className="rounded-2xl border border-surface-border bg-neutral-50 p-4">
               <div className="flex items-center justify-between gap-3">
                 <div className="text-right">
                   <p className="text-sm font-bold">حقل من المستخدم؟</p>
-                  <p className="text-[11px] text-[#A3A3A3]">
+                  <p className="text-11 text-ink-placeholder">
                     يطلب إدخال قيمة (نص أو رقم) داخل المودال في التطبيق
                   </p>
                 </div>
@@ -192,7 +192,7 @@ export default function TenantRoleFormDialog({ role = null }) {
             </div>
 
             {form.hasUserInput ? (
-              <div className="space-y-4 rounded-[16px] border border-brand-hover/20 bg-brand-hover/5 p-4">
+              <div className="space-y-4 rounded-2xl border border-brand-hover/20 bg-brand-hover/5 p-4">
                 <div className="space-y-2">
                   <label className="text-sm font-medium">
                     اسم حقل الإدخال <span className="text-red-500">*</span>

@@ -106,9 +106,9 @@ export default function AddCouponDialog({ isEdit = false, coupon }) {
         )}
       </DialogTrigger>
 
-      <DialogContent closeButton={false} className="max-w-2xl p-0 overflow-hidden rounded-[32px] border-0 shadow-2xl" dir="rtl">
+      <DialogContent closeButton={false} className="max-w-2xl p-0 overflow-hidden rounded-32 border-0 shadow-2xl" dir="rtl">
         <DialogHeader>
-          <div className="flex items-center justify-between border-b border-[#F0F0F0] px-8 py-6 bg-[#FAFAFA]">
+          <div className="flex items-center justify-between border-b border-[#F0F0F0] px-8 py-6 bg-neutral-50">
             <h2 className="text-xl font-black text-black">
               {isEdit ? "تعديل الخصم" : "إضافة خصم"}
             </h2>
@@ -133,7 +133,7 @@ export default function AddCouponDialog({ isEdit = false, coupon }) {
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-[13px] font-bold text-black">اسم الخصم</FormLabel>
+                      <FormLabel className="text-13 font-bold text-black">اسم الخصم</FormLabel>
                       <FormControl>
                         <Input className="h-12 rounded-xl focus:border-brand-main" placeholder="اكتب هنا ..." {...field} />
                       </FormControl>
@@ -146,7 +146,7 @@ export default function AddCouponDialog({ isEdit = false, coupon }) {
                   name="code"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-[13px] font-bold text-black">كود الخصم</FormLabel>
+                      <FormLabel className="text-13 font-bold text-black">كود الخصم</FormLabel>
                       <FormControl>
                         <Input className="h-12 rounded-xl focus:border-brand-main uppercase tracking-wider font-mono" placeholder="NATIONAL93" {...field} />
                       </FormControl>
@@ -163,7 +163,7 @@ export default function AddCouponDialog({ isEdit = false, coupon }) {
                   name="type"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-[13px] font-bold text-black">نوع الخصم</FormLabel>
+                      <FormLabel className="text-13 font-bold text-black">نوع الخصم</FormLabel>
                       <FormControl>
                         <Select value={field.value} onValueChange={field.onChange} dir="rtl">
                           <SelectTrigger className="h-12 rounded-xl">
@@ -184,7 +184,7 @@ export default function AddCouponDialog({ isEdit = false, coupon }) {
                   name="value"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-[13px] font-bold text-black">قيمة الخصم</FormLabel>
+                      <FormLabel className="text-13 font-bold text-black">قيمة الخصم</FormLabel>
                       <FormControl>
                         <Input type="number" step="0.01" className="h-12 rounded-xl focus:border-brand-main" placeholder="أدخل القيمة" {...field} />
                       </FormControl>
@@ -201,7 +201,7 @@ export default function AddCouponDialog({ isEdit = false, coupon }) {
                   name="start_date"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-[13px] font-bold text-black">تاريخ بداية الخصم</FormLabel>
+                      <FormLabel className="text-13 font-bold text-black">تاريخ بداية الخصم</FormLabel>
                       <FormControl>
                         <Input type="date" className="h-12 rounded-xl focus:border-brand-main" {...field} />
                       </FormControl>
@@ -214,7 +214,7 @@ export default function AddCouponDialog({ isEdit = false, coupon }) {
                   name="end_date"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-[13px] font-bold text-black">تاريخ نهاية الخصم</FormLabel>
+                      <FormLabel className="text-13 font-bold text-black">تاريخ نهاية الخصم</FormLabel>
                       <FormControl>
                         <Input type="date" className="h-12 rounded-xl focus:border-brand-main" {...field} />
                       </FormControl>
@@ -231,7 +231,7 @@ export default function AddCouponDialog({ isEdit = false, coupon }) {
                   name="use_limit"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-[13px] font-bold text-black">عدد مرات استخدام الخصم</FormLabel>
+                      <FormLabel className="text-13 font-bold text-black">عدد مرات استخدام الخصم</FormLabel>
                       <FormControl>
                         <Input type="number" className="h-12 rounded-xl focus:border-brand-main" placeholder="مثال: 100" {...field} />
                       </FormControl>
@@ -244,7 +244,7 @@ export default function AddCouponDialog({ isEdit = false, coupon }) {
                   name="user_use_limit"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-[13px] font-bold text-black">عدد مرات استخدام الخصم لكل مستخدم</FormLabel>
+                      <FormLabel className="text-13 font-bold text-black">عدد مرات استخدام الخصم لكل مستخدم</FormLabel>
                       <FormControl>
                         <Input type="number" className="h-12 rounded-xl focus:border-brand-main" placeholder="مثال: 1" {...field} />
                       </FormControl>
@@ -258,7 +258,7 @@ export default function AddCouponDialog({ isEdit = false, coupon }) {
               <Button 
                 disabled={isPending} 
                 type="submit" 
-                className="w-full h-14 bg-brand-hover text-white rounded-2xl font-black text-[16px] flex items-center justify-center gap-2 hover:bg-brand-hover/90 transition-all shadow-lg shadow-brand-main/20 mt-4"
+                className="w-full h-14 bg-brand-hover text-white rounded-2xl font-black text-base flex items-center justify-center gap-2 hover:bg-brand-hover/90 transition-all shadow-lg shadow-brand-main/20 mt-4"
               >
                 {isPending ? (
                   <Loader2 className="animate-spin" />

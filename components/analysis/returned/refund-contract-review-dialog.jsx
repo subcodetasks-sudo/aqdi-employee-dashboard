@@ -18,7 +18,7 @@ import {
 function SummaryRow({ label, children }) {
   return (
     <div className="flex items-center justify-between gap-4 py-3 border-b border-[#EBEBEB] last:border-0">
-      <span className="text-[13px] text-[#A3A3A3] shrink-0">{label}</span>
+      <span className="text-13 text-ink-placeholder shrink-0">{label}</span>
       <div className="flex items-center gap-2 min-w-0">{children}</div>
     </div>
   );
@@ -106,17 +106,17 @@ export default function RefundContractReviewDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="sm:max-w-[560px] p-8 rounded-[32px] border-0 gap-0 max-h-[90vh] overflow-y-auto no-scrollbar"
+        className="sm:max-w-[560px] p-8 rounded-32 border-0 gap-0 max-h-[90vh] overflow-y-auto no-scrollbar"
         dir="rtl"
         closeButton={false}
       >
         <button
           type="button"
           onClick={() => onOpenChange(false)}
-          className="absolute left-6 top-6 w-9 h-9 flex items-center justify-center rounded-full bg-[#F5F5F5] text-[#A3A3A3] hover:bg-[#FFEBEB] hover:text-[#E24444] transition-all z-10"
+          className="absolute left-6 top-6 w-9 h-9 flex items-center justify-center rounded-full bg-neutral-100 text-ink-placeholder hover:bg-[#FFEBEB] hover:text-[#E24444] transition-all z-10"
           aria-label="إغلاق"
         >
-          <i className="fa-solid fa-xmark text-[14px]" />
+          <i className="fa-solid fa-xmark text-sm" />
         </button>
 
         <DialogHeader className="mb-5 space-y-0">
@@ -127,13 +127,13 @@ export default function RefundContractReviewDialog({
 
         {refund ? (
           <div className="flex flex-col gap-5">
-            <div className="bg-[#F9F9F9] rounded-[20px] p-5 border border-[#F0F0F0]">
+            <div className="bg-surface-input rounded-20 p-5 border border-[#F0F0F0]">
               <div className="flex items-start justify-between gap-3 pb-4 mb-1 border-b border-[#EBEBEB]">
                 <div className="flex flex-col items-start gap-1">
-                  <span className="text-[13px] text-[#A3A3A3]">رقم الطلب</span>
-                  <span className="text-[15px] font-bold text-black">{refund.orderUuid}</span>
+                  <span className="text-13 text-ink-placeholder">رقم الطلب</span>
+                  <span className="text-15 font-bold text-black">{refund.orderUuid}</span>
                 </div>
-                <div className="flex items-center gap-1.5 text-[12px] text-[#737373] shrink-0">
+                <div className="flex items-center gap-1.5 text-xs text-neutral-500 shrink-0">
                   <Clock className="size-3.5" strokeWidth={2} />
                   <span>{receivedSince}</span>
                 </div>
@@ -141,7 +141,7 @@ export default function RefundContractReviewDialog({
 
               {refund.userMobile ? (
                 <SummaryRow label="رقم جوال العميل">
-                  <span className="text-[14px] font-bold text-black" dir="ltr">
+                  <span className="text-sm font-bold text-black" dir="ltr">
                     {refund.userMobile}
                   </span>
                   <button
@@ -150,9 +150,9 @@ export default function RefundContractReviewDialog({
                       navigator.clipboard.writeText(refund.userMobile);
                       toast.success("تم نسخ رقم الجوال");
                     }}
-                    className="text-[#A3A3A3] hover:text-brand-hover transition-colors"
+                    className="text-ink-placeholder hover:text-brand-hover transition-colors"
                   >
-                    <i className="fa-regular fa-copy text-[13px]" />
+                    <i className="fa-regular fa-copy text-13" />
                   </button>
                   <Link
                     href={`https://wa.me/${refund.userMobile}`}
@@ -166,7 +166,7 @@ export default function RefundContractReviewDialog({
 
               <SummaryRow label="نوع العقد">
                 <span
-                  className={`px-3 py-1 rounded text-[12px] font-bold whitespace-nowrap ${
+                  className={`px-3 py-1 rounded text-xs font-bold whitespace-nowrap ${
                     isHousing ? "bg-[#E6F0FF] text-[#3B82F6]" : "bg-[#F0E6FF] text-[#7C3AED]"
                   }`}
                 >
@@ -176,28 +176,28 @@ export default function RefundContractReviewDialog({
 
               <SummaryRow label="الدفع">
                 {refund.isPaid ? (
-                  <div className="flex items-center gap-1.5 text-[#007C13] font-bold text-[14px]">
+                  <div className="flex items-center gap-1.5 text-[#007C13] font-bold text-sm">
                     <span>{refund.amountPayment}</span>
                     <Image src={greenRial} alt="" width={14} height={14} />
-                    <span className="w-5 h-5 rounded bg-[#E6FFE6] flex items-center justify-center text-[10px]">
+                    <span className="w-5 h-5 rounded bg-[#E6FFE6] flex items-center justify-center text-10">
                       ✓
                     </span>
                   </div>
                 ) : (
-                  <span className="text-[14px] font-bold text-[#EF4444]">
+                  <span className="text-sm font-bold text-[#EF4444]">
                     {refund.paymentLabelAr || "لم يتم الدفع"}
                   </span>
                 )}
               </SummaryRow>
 
               <SummaryRow label="مستلم منذ">
-                <span className="text-[14px] font-bold text-[#D97706]">{receivedSince}</span>
+                <span className="text-sm font-bold text-[#D97706]">{receivedSince}</span>
               </SummaryRow>
 
               {refund.statusName ? (
                 <SummaryRow label="حالة الطلب">
                   <span
-                    className="px-3 py-1 rounded text-[12px] font-bold whitespace-nowrap text-[#212121]"
+                    className="px-3 py-1 rounded text-xs font-bold whitespace-nowrap text-[#212121]"
                     style={{ backgroundColor: refund.statusColor || "#E6F0FF" }}
                   >
                     {refund.statusName}
@@ -206,27 +206,27 @@ export default function RefundContractReviewDialog({
               ) : null}
 
               <SummaryRow label="الاستلام">
-                <span className="text-[14px] font-bold text-black">{refund.employeeName}</span>
+                <span className="text-sm font-bold text-black">{refund.employeeName}</span>
               </SummaryRow>
 
               {refund.draftContractNumber ? (
                 <SummaryRow label="رقم مسودة العقد">
-                  <span className="text-[14px] font-bold text-black">{refund.draftContractNumber}</span>
+                  <span className="text-sm font-bold text-black">{refund.draftContractNumber}</span>
                 </SummaryRow>
               ) : null}
             </div>
 
             {needsRefundAmount ? (
               <div className="flex flex-col gap-2">
-                <label className="text-[13px] font-bold text-black text-right">
+                <label className="text-13 font-bold text-black text-right">
                   قيمة المبلغ المسترجع
-                  <span className="text-[#FF4D4F] mr-1">*</span>
+                  <span className="text-status-danger mr-1">*</span>
                 </label>
                 <input
                   type="number"
                   min="0"
                   step="any"
-                  className="w-full h-[52px] bg-white border border-[#EEEEEE] rounded-[16px] px-4 text-[14px] focus:outline-none focus:border-brand-hover focus:ring-1 focus:ring-brand-hover/20 transition-all"
+                  className="w-full h-13 bg-white border border-surface-border rounded-2xl px-4 text-sm focus:outline-none focus:border-brand-hover focus:ring-1 focus:ring-brand-hover/20 transition-all"
                   placeholder="أدخل قيمة المبلغ المسترجع ..."
                   value={refundAmount}
                   onChange={(e) => setRefundAmount(e.target.value)}
@@ -236,11 +236,11 @@ export default function RefundContractReviewDialog({
             ) : null}
 
             <div className="flex flex-col gap-2">
-              <label className="text-[13px] font-bold text-black text-right">
+              <label className="text-13 font-bold text-black text-right">
                 ملاحظات تود ذكرها
               </label>
               <textarea
-                className="w-full min-h-[100px] bg-white border border-[#EEEEEE] rounded-[16px] p-4 text-[14px] focus:outline-none focus:border-brand-hover focus:ring-1 focus:ring-brand-hover/20 transition-all resize-none"
+                className="w-full min-h-[100px] bg-white border border-surface-border rounded-2xl p-4 text-sm focus:outline-none focus:border-brand-hover focus:ring-1 focus:ring-brand-hover/20 transition-all resize-none"
                 placeholder="أكتب هنا ..."
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
@@ -253,7 +253,7 @@ export default function RefundContractReviewDialog({
               type="button"
               disabled={isPending}
               onClick={handleSave}
-              className="w-full h-[52px] bg-brand-hover text-white rounded-full font-bold text-[16px] hover:bg-brand-hover/90 transition-all shadow-lg shadow-brand-hover/25 disabled:opacity-60 flex items-center justify-center gap-2"
+              className="w-full h-13 bg-brand-hover text-white rounded-full font-bold text-base hover:bg-brand-hover/90 transition-all shadow-lg shadow-brand-hover/25 disabled:opacity-60 flex items-center justify-center gap-2"
             >
               {isPending ? (
                 <>

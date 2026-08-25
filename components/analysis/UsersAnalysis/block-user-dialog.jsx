@@ -40,7 +40,7 @@ export default function BlockUserDialog({ user }) {
           size="icon"
           className={`size-8 rounded-full border transition-all ${
             isActive
-              ? "text-gray-500 hover:bg-red-50 hover:text-red-500 border-[#E4E4E4]"
+              ? "text-gray-500 hover:bg-red-50 hover:text-red-500 border-neutral-200"
               : "bg-red-50 text-red-500 hover:bg-red-100 border-red-200"
           }`}
         >
@@ -49,16 +49,16 @@ export default function BlockUserDialog({ user }) {
       </DialogTrigger>
       <DialogContent
         closeButton={false}
-        className="max-w-[520px] rounded-[24px] p-0 overflow-hidden border border-[#F0F0F0] shadow-2xl bg-white gap-0"
+        className="max-w-[520px] rounded-3xl p-0 overflow-hidden border border-[#F0F0F0] shadow-2xl bg-white gap-0"
         dir="rtl"
       >
         <div className="flex items-center justify-between px-6 py-5 border-b border-[#F0F0F0]">
-          <DialogTitle className="text-[18px] font-bold text-black m-0">
+          <DialogTitle className="text-lg font-bold text-black m-0">
             {isActive ? "إيقاف حساب" : "تفعيل حساب"}
           </DialogTitle>
           <button
             type="button"
-            className="text-[#4D4D4D] hover:opacity-70 transition-opacity"
+            className="text-ink-subtle hover:opacity-70 transition-opacity"
             onClick={() => setOpen(false)}
             disabled={isPending}
             aria-label="إغلاق"
@@ -90,7 +90,7 @@ export default function BlockUserDialog({ user }) {
               </>
             )}
           </h3>
-          <p className="text-[14px] font-medium text-[#A3A3A3]">
+          <p className="text-sm font-medium text-ink-placeholder">
             هذا الإجراء يمكن التراجع عنه بعد التأكيد !
           </p>
         </div>
@@ -98,7 +98,7 @@ export default function BlockUserDialog({ user }) {
         <div className="flex gap-3 px-6 pb-6">
           <button
             type="button"
-            className={`flex-1 h-[52px] rounded-full text-white font-bold text-[16px] hover:opacity-90 transition-all disabled:opacity-50 flex items-center justify-center ${
+            className={`flex-1 h-13 rounded-full text-white font-bold text-base hover:opacity-90 transition-all disabled:opacity-50 flex items-center justify-center ${
               isActive ? "bg-brand-hover" : "bg-green-600"
             }`}
             onClick={() => toggleBlock()}
@@ -114,7 +114,7 @@ export default function BlockUserDialog({ user }) {
           </button>
           <button
             type="button"
-            className="flex-1 h-[52px] rounded-full bg-[#F5F5F5] text-[#4D4D4D] font-bold text-[16px] hover:bg-[#EEEEEE] transition-all disabled:opacity-50"
+            className="flex-1 h-13 rounded-full bg-neutral-100 text-ink-subtle font-bold text-base hover:bg-surface-border transition-all disabled:opacity-50"
             onClick={() => setOpen(false)}
             disabled={isPending}
           >

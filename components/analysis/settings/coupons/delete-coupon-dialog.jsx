@@ -33,22 +33,22 @@ export default function DeleteCouponDialog({ coupon }) {
           حذف
         </button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden rounded-[32px] border-0 shadow-2xl" dir="rtl">
+      <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden rounded-32 border-0 shadow-2xl" dir="rtl">
         <div className="p-8 flex flex-col items-center text-center gap-6">
-          <div className="w-20 h-20 rounded-full bg-[#FFEBEB] text-[#FF4D4F] flex items-center justify-center shadow-inner mt-4">
+          <div className="w-20 h-20 rounded-full bg-[#FFEBEB] text-status-danger flex items-center justify-center shadow-inner mt-4">
             <Trash2 className="size-10" />
           </div>
 
           <div className="flex flex-col gap-2">
-            <h3 className="text-[22px] font-black text-black">
+            <h3 className="text-22 font-black text-black">
               هل أنت متأكد من حذف الخصم؟
             </h3>
-            <p className="text-[17px] font-bold text-[#FF4D4F] bg-[#FFEBEB] px-4 py-1.5 rounded-full inline-block mx-auto">
+            <p className="text-[17px] font-bold text-status-danger bg-[#FFEBEB] px-4 py-1.5 rounded-full inline-block mx-auto">
               {coupon?.name} ({coupon?.code_coupon || coupon?.code || "---"})
             </p>
           </div>
 
-          <p className="text-[14px] font-medium text-[#737373] max-w-[340px]">
+          <p className="text-sm font-medium text-neutral-500 max-w-[340px]">
             هذا الإجراء نهائي ولا يمكن التراجع عنه بعد إتمامه! سيتم إلغاء مفعول الكود ولن يتمكن العملاء من استخدامه.
           </p>
 
@@ -56,14 +56,14 @@ export default function DeleteCouponDialog({ coupon }) {
             <button
               onClick={() => deleteCoupon()}
               disabled={isPending}
-              className="flex-1 h-[52px] bg-[#FF4D4F] text-white rounded-[16px] font-bold text-[15px] hover:bg-[#E03E3E] transition-all shadow-lg flex items-center justify-center"
+              className="flex-1 h-13 bg-status-danger text-white rounded-2xl font-bold text-15 hover:bg-[#E03E3E] transition-all shadow-lg flex items-center justify-center"
             >
               {isPending ? <Loader2 className="animate-spin" /> : "تأكيـد الحـذف"}
             </button>
             <button
               onClick={() => setOpen(false)}
               disabled={isPending}
-              className="flex-1 h-[52px] bg-[#F5F5F5] text-[#737373] rounded-[16px] font-bold text-[15px] hover:bg-[#EEEEEE] transition-all"
+              className="flex-1 h-13 bg-neutral-100 text-neutral-500 rounded-2xl font-bold text-15 hover:bg-surface-border transition-all"
             >
               إلغاء
             </button>

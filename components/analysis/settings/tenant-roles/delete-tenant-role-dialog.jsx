@@ -55,7 +55,7 @@ export default function DeleteTenantRoleDialog({ role }) {
             </Button>
           </div>
           <div className="space-y-4 pt-2 text-right" dir="rtl">
-            <p className="text-sm text-[#4D4D4D] leading-relaxed">
+            <p className="text-sm text-ink-subtle leading-relaxed">
               هل أنت متأكد من حذف صلاحية{" "}
               <span className="font-bold text-black">
                 {role?.text_of_reason || role?.name || `#${role?.id}`}

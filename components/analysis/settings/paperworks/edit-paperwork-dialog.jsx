@@ -141,7 +141,7 @@ export default function EditPaperworkDialog({ paperwork }) {
 
           <div className="space-y-4 text-right">
             {isLoadingDetails ? (
-              <p className="text-sm text-[#A3A3A3] py-2">جاري تحميل البيانات...</p>
+              <p className="text-sm text-ink-placeholder py-2">جاري تحميل البيانات...</p>
             ) : null}
 
             <div className="space-y-2">

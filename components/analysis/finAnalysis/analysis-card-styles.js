@@ -2,10 +2,10 @@ export const ANALYSIS_CARD =
     "flex flex-col justify-between gap-3 p-5 bg-white rounded-2xl border border-[#ECECEC] shadow-[0_1px_3px_rgba(0,0,0,0.04)] min-w-0 w-full min-h-[132px] max-[1700px]:p-[15px_18px]";
 
 export const ANALYSIS_VIEW_BTN =
-    "inline-flex items-center justify-center rounded-full border border-[#0c6055]/20 bg-[#E8F5F0] text-[#0c6055] text-[12px] font-medium px-[18px] py-[7px] transition-all hover:bg-[#0c6055] hover:text-white hover:border-[#0c6055] whitespace-nowrap";
+    "inline-flex items-center justify-center rounded-full border border-[#0c6055]/20 bg-[#E8F5F0] text-[#0c6055] text-xs font-medium px-[18px] py-[7px] transition-all hover:bg-[#0c6055] hover:text-white hover:border-[#0c6055] whitespace-nowrap";
 
 export const ANALYSIS_ICON_WRAP =
-    "w-[30px] h-[30px] shrink-0 rounded-full bg-[#F5F5F5] flex items-center justify-center";
+    "w-[30px] h-[30px] shrink-0 rounded-full bg-neutral-100 flex items-center justify-center";
 
 export function getValueColorClass(item) {
     if (item?.type === "totalLoss") return "text-[#E24444]";
@@ -23,7 +23,7 @@ export function PercentageBadge({ percentage }) {
     const isNegative = String(percentage).includes("-");
     return (
         <span
-            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium ${
+            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-10 font-medium ${
                 isNegative ? "text-[#E24444] bg-[#FFF0F0]" : "text-[#0c6055] bg-[#E8F5F0]"
             }`}
         >

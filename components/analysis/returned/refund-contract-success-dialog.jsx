@@ -21,20 +21,20 @@ export function RefundApprovedSuccessDialog({ open, onOpenChange, refund }) {
         closeButton={false}
       >
         <div className="flex flex-col items-center text-center w-full">
-          <div className="w-[72px] h-[72px] rounded-full bg-[#10B981] flex items-center justify-center mb-5 shadow-[0_4px_14px_rgba(16,185,129,0.35)]">
+          <div className="w-[72px] h-[72px] rounded-full bg-brand-accent flex items-center justify-center mb-5 shadow-[0_4px_14px_rgba(16,185,129,0.35)]">
             <i className="fa-solid fa-check text-white text-[32px]" aria-hidden />
           </div>
 
           <h2 className="text-[20px] font-bold text-black leading-snug mb-2">
             تمت موافقة الإدارة بنجاح
           </h2>
-          <p className="text-[14px] text-[#A3A3A3] font-normal mb-4">
+          <p className="text-sm text-ink-placeholder font-normal mb-4">
             برجاء نسخ الطلب وإرسالها للعميل
           </p>
 
           <div className="w-full h-px bg-[#EBEBEB] mb-5" />
 
-          <div className="w-full rounded-[20px] border border-dashed border-brand-hover/40 bg-[#F8FBFF] p-5 text-[14px] text-[#4D4D4D] leading-relaxed mb-5 text-right">
+          <div className="w-full rounded-20 border border-dashed border-brand-hover/40 bg-[#F8FBFF] p-5 text-sm text-ink-subtle leading-relaxed mb-5 text-right">
             <p className="font-bold text-black text-center mb-3">عميلنا العزيز،</p>
             <p className="text-center mb-2">نود إبلاغكم بأنه تم استرجاع المبلغ بنجاح</p>
             <p className="text-center">المبلغ: {amount}</p>
@@ -55,16 +55,16 @@ export function RefundApprovedSuccessDialog({ open, onOpenChange, refund }) {
               </Link>
               <button
                 type="button"
-                className="text-[#A3A3A3] hover:text-brand-hover transition-colors p-1"
+                className="text-ink-placeholder hover:text-brand-hover transition-colors p-1"
                 onClick={() => {
                   navigator.clipboard.writeText(message);
                   toast.success("تم نسخ الرسالة");
                 }}
                 aria-label="نسخ الرسالة"
               >
-                <i className="fa-regular fa-copy text-[16px]" />
+                <i className="fa-regular fa-copy text-base" />
               </button>
-              <span className="text-[16px] font-bold text-black" dir="ltr">
+              <span className="text-base font-bold text-black" dir="ltr">
                 {refund.userMobile}
               </span>
             </div>
@@ -75,7 +75,7 @@ export function RefundApprovedSuccessDialog({ open, onOpenChange, refund }) {
           <button
             type="button"
             onClick={() => onOpenChange(false)}
-            className="w-full max-w-[280px] h-[52px] bg-brand-hover text-white rounded-full font-bold text-[16px] hover:bg-brand-hover/90 transition-all shadow-lg shadow-brand-hover/20"
+            className="w-full max-w-[280px] h-13 bg-brand-hover text-white rounded-full font-bold text-base hover:bg-brand-hover/90 transition-all shadow-lg shadow-brand-hover/20"
           >
             تم
           </button>
@@ -89,7 +89,7 @@ export function RefundRetractSuccessDialog({ open, onOpenChange, refund }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="sm:max-w-[420px] p-8 rounded-[32px] border-0"
+        className="sm:max-w-[420px] p-8 rounded-32 border-0"
         dir="rtl"
         closeButton={false}
       >
@@ -99,14 +99,14 @@ export function RefundRetractSuccessDialog({ open, onOpenChange, refund }) {
             تم الغاء استرجاع الطلب رقم{" "}
             <span className="text-brand-hover">{refund?.orderUuid}</span>
           </h2>
-          <p className="text-[18px] font-bold text-black leading-relaxed">
+          <p className="text-lg font-bold text-black leading-relaxed">
             وتصنيفه أخرى في قسم{" "}
             <span className="text-brand-hover">طلب مكتمل</span> بنجاح!
           </p>
           <button
             type="button"
             onClick={() => onOpenChange(false)}
-            className="w-full h-[50px] bg-brand-hover text-white rounded-full font-bold text-[15px] hover:bg-brand-hover/90 transition-all mt-4"
+            className="w-full h-[50px] bg-brand-hover text-white rounded-full font-bold text-15 hover:bg-brand-hover/90 transition-all mt-4"
           >
             تم
           </button>

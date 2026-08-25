@@ -39,7 +39,7 @@ const menuContentClass =
   "w-[min(320px,calc(100vw-32px))] rounded-[18px] border border-[#E8E8E8] bg-white p-2.5 shadow-[0_8px_24px_rgba(0,0,0,0.08)]";
 
 const itemBaseClass =
-  "flex items-center gap-3 w-full rounded-[14px] px-3 py-3.5 cursor-pointer outline-none";
+  "flex items-center gap-3 w-full rounded-14 px-3 py-3.5 cursor-pointer outline-none";
 
 export default function RefundContractActionsMenu({
   refund,
@@ -202,13 +202,13 @@ export default function RefundContractActionsMenu({
               type="button"
               onClick={(e) => e.stopPropagation()}
               disabled={isPending}
-              className="w-8 h-8 rounded-full flex items-center justify-center bg-[#F5F5F5] text-[#4D4D4D] hover:bg-[#EBEBEB] transition-all disabled:opacity-50 shrink-0"
+              className="w-8 h-8 rounded-full flex items-center justify-center bg-neutral-100 text-ink-subtle hover:bg-[#EBEBEB] transition-all disabled:opacity-50 shrink-0"
               aria-label="إجراءات موافقة الإدارة"
             >
               {isPending ? (
                 <Loader2 className="size-4 animate-spin" />
               ) : (
-                <i className="fa-solid fa-ellipsis-vertical text-[14px]" />
+                <i className="fa-solid fa-ellipsis-vertical text-sm" />
               )}
             </button>
           </DropdownMenuTrigger>
@@ -225,10 +225,10 @@ export default function RefundContractActionsMenu({
                 openDialogAfterMenuClose(() => setReviewOpen(true));
               }}
             >
-              <span className="text-[16px] shrink-0" aria-hidden>
+              <span className="text-base shrink-0" aria-hidden>
                 ✅
               </span>
-              <span className="flex-1 text-center text-[14px] font-medium text-black">
+              <span className="flex-1 text-center text-sm font-medium text-black">
                 الموافقة على الإرجاع
               </span>
               <ChevronLeft className="size-3.5 shrink-0 text-[#0c6055]" strokeWidth={2.5} />
@@ -240,28 +240,28 @@ export default function RefundContractActionsMenu({
                 openDialogAfterMenuClose(() => setRejectOpen(true));
               }}
             >
-              <span className="text-[16px] shrink-0" aria-hidden>
+              <span className="text-base shrink-0" aria-hidden>
                 ❌
               </span>
-              <span className="flex-1 text-center text-[14px] font-medium text-[#E24444]">
+              <span className="flex-1 text-center text-sm font-medium text-[#E24444]">
                 لم تتم الموافقة
               </span>
               <ChevronLeft className="size-3.5 shrink-0 text-[#E24444]" strokeWidth={2.5} />
             </DropdownMenuItem>
 
             <DropdownMenuItem
-              className={`${itemBaseClass} hover:bg-[#F9F9F9] focus:bg-[#F9F9F9]`}
+              className={`${itemBaseClass} hover:bg-surface-input focus:bg-surface-input`}
               onSelect={() => {
                 openDialogAfterMenuClose(() => setRetractOpen(true));
               }}
             >
-              <span className="text-[18px] shrink-0" aria-hidden>
+              <span className="text-lg shrink-0" aria-hidden>
                 🧐
               </span>
-              <span className="flex-1 text-center text-[13px] font-medium text-black leading-snug">
+              <span className="flex-1 text-center text-13 font-medium text-black leading-snug">
                 التراجع وتصنيف الطلب إلى أخرى
               </span>
-              <ChevronLeft className="size-3.5 shrink-0 text-[#737373]" strokeWidth={2.5} />
+              <ChevronLeft className="size-3.5 shrink-0 text-neutral-500" strokeWidth={2.5} />
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -295,12 +295,12 @@ export default function RefundContractActionsMenu({
       ) : null}
 
       <AlertDialog open={rejectOpen} onOpenChange={setRejectOpen}>
-        <AlertDialogContent dir="rtl" className="rounded-[20px] max-w-[400px]">
+        <AlertDialogContent dir="rtl" className="rounded-20 max-w-[400px]">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-[18px] font-bold text-black text-right">
+            <AlertDialogTitle className="text-lg font-bold text-black text-right">
               لم تتم الموافقة
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-[14px] text-[#737373] text-right">
+            <AlertDialogDescription className="text-sm text-neutral-500 text-right">
               هل أنت متأكد من تسجيل عدم الموافقة على استرجاع الطلب{" "}
               <span className="font-bold text-black">{enrichedRefund?.orderUuid}</span>؟
             </AlertDialogDescription>
@@ -324,12 +324,12 @@ export default function RefundContractActionsMenu({
       </AlertDialog>
 
       <AlertDialog open={retractOpen} onOpenChange={setRetractOpen}>
-        <AlertDialogContent dir="rtl" className="rounded-[20px] max-w-[400px]">
+        <AlertDialogContent dir="rtl" className="rounded-20 max-w-[400px]">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-[18px] font-bold text-black text-right">
+            <AlertDialogTitle className="text-lg font-bold text-black text-right">
               التراجع عن الاسترجاع
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-[14px] text-[#737373] text-right">
+            <AlertDialogDescription className="text-sm text-neutral-500 text-right">
               سيتم إلغاء استرجاع الطلب{" "}
               <span className="font-bold text-black">{enrichedRefund?.orderUuid}</span> وتصنيفه في قسم
               الطلبات المكتملة. هل تريد المتابعة؟

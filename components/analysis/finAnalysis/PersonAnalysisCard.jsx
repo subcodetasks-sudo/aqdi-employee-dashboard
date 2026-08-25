@@ -30,14 +30,14 @@ export default function PersonAnalysisCard({
             <div className="flex items-start justify-between gap-3 w-full">
                 <div className="flex flex-col gap-2.5 min-w-0 flex-1">
                     <div className="flex items-start justify-between gap-2 w-full">
-                        <h3 className="text-[13px] font-bold text-black  leading-snug flex-1 min-w-0">
+                        <h3 className="text-13 font-bold text-black  leading-snug flex-1 min-w-0">
                             {item.name}
                         </h3>
                         {showAvatars ? <StaticAvatarStack names={names} /> : null}
                     </div>
 
                     {displayNames ? (
-                        <p className="text-[14px] font-bold text-black  leading-relaxed">
+                        <p className="text-sm font-bold text-black  leading-relaxed">
                             {displayNames}
                         </p>
                     ) : (

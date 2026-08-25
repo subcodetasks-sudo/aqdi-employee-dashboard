@@ -37,17 +37,17 @@ export default function ViewDurationDialog({ duration }) {
 
           <div className="space-y-4 text-right">
             <div>
-              <p className="text-sm text-[#737373] mb-1">مدة العقد</p>
+              <p className="text-sm text-neutral-500 mb-1">مدة العقد</p>
               <p className="text-base font-bold">{getContractPeriodLabel(duration)}</p>
             </div>
             <div>
-              <p className="text-sm text-[#737373] mb-1">السعر</p>
+              <p className="text-sm text-neutral-500 mb-1">السعر</p>
               <p className="text-base font-bold text-brand-main">
                 {formatContractPeriodPrice(duration?.price) || "—"}
               </p>
             </div>
             <div>
-              <p className="text-sm text-[#737373] mb-1">تصنيف وثيقة الملكية</p>
+              <p className="text-sm text-neutral-500 mb-1">تصنيف وثيقة الملكية</p>
               <p className="text-base font-bold">
                 {getInstrumentTypeLabel(duration?.instrument_type)}
               </p>
