@@ -23,7 +23,6 @@ const TABLE_STORAGE_KEY = "all-orders-table-prefs";
 export default function AllOrdersWrapper() {
   const {
     isDark,
-    toggleTheme,
     canChangeStatus,
     canAddStatus,
     canEditStatus,
@@ -122,7 +121,6 @@ export default function AllOrdersWrapper() {
         isExporting={isExporting}
         canExport={canExport}
         dark={isDark}
-        onToggleTheme={toggleTheme}
         onOpenPaymentLink={() => setPaymentLinkOpen(true)}
         canManageStatuses={canManageStatuses}
         onManageStatuses={() => setManageStatusesOpen(true)}
@@ -137,6 +135,7 @@ export default function AllOrdersWrapper() {
         emptyMessage="لا توجد طلبات مطابقة للبحث"
         onRowClick={goToDetails}
         getRowHighlight={isDraftOrderRow}
+        defaultSort={{ id: "receivedSince", direction: "asc" }}
       />
 
       <AllOrdersPagination

@@ -108,7 +108,7 @@ export default function ContractDatePicker({
         format={DATE_FORMAT}
         calendarPosition="bottom-right"
         containerClassName="w-full"
-        inputClass="w-full h-12 bg-white border border-surface-border rounded-14 px-4 pe-11 text-sm text-right focus:outline-none focus:border-brand-hover transition-all disabled:opacity-60"
+        inputClass="w-full h-12 bg-white dark:bg-white/[0.04] border border-surface-border dark:border-white/10 rounded-14 px-4 pe-11 text-sm text-right text-gray-900 dark:text-white focus:outline-none focus:border-brand-hover transition-all disabled:opacity-60"
         placeholder={isHijri ? "اختر تاريخ هجري" : "اختر تاريخ ميلادي"}
         disabled={disabled}
         editable={false}

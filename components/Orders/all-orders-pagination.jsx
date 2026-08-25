@@ -1,6 +1,13 @@
 "use client";
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 
 const PAGE_SIZE_OPTIONS = [10, 20, 25, 50, 100];
@@ -55,22 +62,42 @@ export default function AllOrdersPagination({
           )}
         >
           صفوف/صفحة
-          <select
-            value={perPage}
-            onChange={(e) => onPerPageChange(Number(e.target.value))}
-            className={cn(
-              "h-9 rounded-full border px-3 text-13 font-bold bg-transparent",
-              dark
-                ? "border-white/10 text-white"
-                : "border-neutral-200 text-gray-900"
-            )}
+          <Select
+            value={String(perPage)}
+            onValueChange={(value) => onPerPageChange(Number(value))}
           >
-            {PAGE_SIZE_OPTIONS.map((size) => (
-              <option key={size} value={size}>
-                {size}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger
+              className={cn(
+                "h-9 w-auto min-w-[4.75rem] gap-1 rounded-full border ps-3 pe-2 text-13 font-bold shadow-none focus:ring-0 focus:ring-offset-0",
+                "[&>span]:min-w-fit [&>span]:overflow-visible [&>span]:whitespace-nowrap",
+                dark
+                  ? "border-white/10 bg-transparent text-white"
+                  : "border-neutral-200 bg-transparent text-gray-900"
+              )}
+            >
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent
+              dir="rtl"
+              className={cn(
+                "min-w-[72px]",
+                dark && "bg-[#0F1C16] border-white/10 text-white"
+              )}
+            >
+              {PAGE_SIZE_OPTIONS.map((size) => (
+                <SelectItem
+                  key={size}
+                  value={String(size)}
+                  className={cn(
+                    "text-13 font-bold",
+                    dark && "focus:bg-white/[0.06] focus:text-white"
+                  )}
+                >
+                  {size}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </label>
 
         <div className="flex items-center gap-2">

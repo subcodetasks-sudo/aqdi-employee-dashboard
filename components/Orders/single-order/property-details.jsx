@@ -154,14 +154,14 @@ const PropertyLocationMap = ({ location }) => {
   const { mapsUrl, addressUrl, lat, lng } = location;
 
   return (
-    <div className="overflow-hidden rounded-20 border border-surface-border bg-white shadow-sm">
+    <div className="overflow-hidden rounded-20 border border-surface-border dark:border-white/10 bg-white dark:bg-white/[0.03] shadow-sm">
       <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
         <div className="flex items-center gap-2 text-right">
           <MapPin size={16} className="text-brand-hover" />
           <div>
-            <p className="text-sm font-bold text-gray-800">رابط الموقع</p>
+            <p className="text-sm font-bold text-gray-800 dark:text-white">رابط الموقع</p>
             {lat != null && lng != null ? (
-              <p className="text-11 text-ink-placeholder" dir="ltr">
+              <p className="text-11 text-ink-placeholder dark:text-white/40" dir="ltr">
                 {lat}, {lng}
               </p>
             ) : null}
@@ -173,7 +173,7 @@ const PropertyLocationMap = ({ location }) => {
               type="button"
               onClick={() => copy(addressUrl || mapsUrl)}
               title="نسخ الرابط"
-              className="inline-flex items-center gap-1.5 rounded-full border border-surface-border bg-neutral-50 px-3 py-1.5 text-xs font-bold text-ink-subtle hover:border-brand-hover hover:text-brand-hover"
+              className="inline-flex items-center gap-1.5 rounded-full border border-surface-border dark:border-white/10 bg-neutral-50 dark:bg-white/[0.04] px-3 py-1.5 text-xs font-bold text-ink-subtle dark:text-white/70 hover:border-brand-hover hover:text-brand-hover"
             >
               <Copy size={13} />
               نسخ

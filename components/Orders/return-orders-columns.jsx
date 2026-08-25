@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { toast } from "sonner";
-import { ArrowUpDown, Check, Copy, FileText, X } from "lucide-react";
+import { Check, Copy, FileText, X } from "lucide-react";
 import greenRial from "@/public/images/greenRial.svg";
 import orangerial from "@/public/images/orangerial.svg";
 import { cn } from "@/lib/utils";
@@ -49,7 +49,7 @@ export function buildReturnOrderColumns({
       id: "contractType",
       label: "نوع العقد",
       hideable: false,
-      sticky: true,
+      sticky: "start",
       cell: (row) => (
         <span
           className={cn(
@@ -171,12 +171,12 @@ export function buildReturnOrderColumns({
       id: "receivedSince",
       label: "مستلم منذ",
       hideable: true,
-      header: () => (
-        <span className="inline-flex items-center gap-1">
-          مستلم منذ
-          <ArrowUpDown className="size-3 opacity-50" />
-        </span>
-      ),
+      sortable: true,
+      defaultSortDir: "asc",
+      getSortValue: (row) => {
+        const t = new Date(row?.received_at).getTime();
+        return Number.isFinite(t) ? t : null;
+      },
       cell: (row) => {
         const label = row?.received_since || formatRelativeShort(row?.received_at);
         if (!label) {
@@ -215,6 +215,7 @@ export function buildReturnOrderColumns({
       id: "actions",
       label: "الإجراءات",
       hideable: false,
+      sticky: "end",
       stopRowClick: true,
       cell: (row) => {
         const canPrint = Boolean(row?.is_paid === true || row?.is_paid === 1);

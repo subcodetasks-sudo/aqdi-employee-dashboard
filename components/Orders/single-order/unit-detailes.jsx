@@ -130,23 +130,17 @@ function SingleUnitBlock({ unit, data, index, formRef }) {
   };
 
   return (
-    <section
-      className={`rounded-[28px] border p-5 lg:p-6 ${
-        selected
-          ? "border-brand-hover/40 bg-brand-hover/5"
-          : "border-gray-100 bg-gray-50/80"
-      }`}
-    >
-      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+    <div className="space-y-5">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-3">
-          <h3 className="text-base font-bold text-gray-900">{unitLabel}</h3>
+          <h3 className="text-base font-bold text-gray-900 dark:text-white">{unitLabel}</h3>
           {selected ? (
             <span className="rounded-full bg-brand-hover px-3 py-1 text-11 font-bold text-white">
               الوحدة المختارة في العقد
             </span>
           ) : null}
           {unit?.id != null ? (
-            <span className="text-xs font-medium text-ink-placeholder" dir="ltr">
+            <span className="text-xs font-medium text-ink-placeholder dark:text-white/40" dir="ltr">
               ID: {unit.id}
             </span>
           ) : null}
@@ -156,7 +150,7 @@ function SingleUnitBlock({ unit, data, index, formRef }) {
             type="button"
             onClick={handleDetach}
             disabled={isDeletingUnit}
-            className="inline-flex items-center gap-1.5 rounded-full border border-red-200 bg-white px-3 py-1.5 text-xs font-bold text-red-600 hover:bg-red-50 disabled:opacity-60"
+            className="inline-flex items-center gap-1.5 rounded-full border border-red-200 dark:border-red-500/30 bg-white dark:bg-white/[0.04] px-3 py-1.5 text-xs font-bold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-[#3F1D1D] disabled:opacity-60"
           >
             <Trash2 size={14} />
             فصل عن العقد
@@ -176,15 +170,15 @@ function SingleUnitBlock({ unit, data, index, formRef }) {
         formOnly
         hideFooter
       />
-    </section>
+    </div>
   );
 }
 
 function UnitsEmptyState() {
   return (
-    <div className="flex flex-col items-center justify-center gap-3 rounded-[28px] border border-dashed border-gray-200 bg-white px-6 py-16 text-ink-placeholder">
-      <Inbox size={36} className="text-gray-300" />
-      <p className="text-sm font-bold text-gray-500">لا توجد وحدات مرتبطة بهذا العقد</p>
+    <div className="flex flex-col items-center justify-center gap-3 rounded-[28px] border border-dashed border-gray-200 dark:border-white/10 bg-white dark:bg-white/[0.03] px-6 py-16 text-ink-placeholder dark:text-white/40">
+      <Inbox size={36} className="text-gray-300 dark:text-white/20" />
+      <p className="text-sm font-bold text-gray-500 dark:text-white/60">لا توجد وحدات مرتبطة بهذا العقد</p>
       <p className="text-xs">عدد الوحدات = 0</p>
     </div>
   );
@@ -211,11 +205,11 @@ const UnitDetailes = ({ data }) => {
   };
 
   return (
-    <div className="space-y-6 p-4 lg:p-6" dir="rtl">
-      <div className="flex flex-wrap items-center gap-2 px-1">
-        <p className="text-sm font-bold text-gray-800">
+    <div className="space-y-6" dir="rtl">
+      <div className="flex flex-wrap items-center gap-2">
+        <p className="text-sm font-bold text-gray-800 dark:text-white">
           وحدات العقد
-          <span className="mr-2 rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-bold text-gray-600">
+          <span className="mr-2 rounded-full bg-gray-100 dark:bg-white/10 px-2.5 py-0.5 text-xs font-bold text-gray-600 dark:text-white/60">
             {unitsCount}
           </span>
         </p>
@@ -225,19 +219,23 @@ const UnitDetailes = ({ data }) => {
         <UnitsEmptyState />
       ) : (
         <>
-          <div className="space-y-6">
+          <div className="space-y-8 divide-y divide-surface-border dark:divide-white/10">
             {units.map((unit, index) => (
-              <SingleUnitBlock
+              <div
                 key={unit?.id ?? `unit-${index}`}
-                unit={unit}
-                data={data}
-                index={index}
-                formRef={(handle) => {
-                  const key = unit?.id ?? `unit-${index}`;
-                  if (handle) unitRefs.current.set(key, handle);
-                  else unitRefs.current.delete(key);
-                }}
-              />
+                className={index === 0 ? undefined : "pt-8"}
+              >
+                <SingleUnitBlock
+                  unit={unit}
+                  data={data}
+                  index={index}
+                  formRef={(handle) => {
+                    const key = unit?.id ?? `unit-${index}`;
+                    if (handle) unitRefs.current.set(key, handle);
+                    else unitRefs.current.delete(key);
+                  }}
+                />
+              </div>
             ))}
           </div>
 

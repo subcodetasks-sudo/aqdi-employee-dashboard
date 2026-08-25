@@ -27,7 +27,6 @@ const TABLE_STORAGE_KEY = "return-orders-table-prefs";
 export default function ReturnOrdersWrapper() {
   const {
     isDark,
-    toggleTheme,
     canChangeStatus,
     canAddStatus,
     canEditStatus,
@@ -147,7 +146,6 @@ export default function ReturnOrdersWrapper() {
         isExporting={isExporting}
         canExport={canExport}
         dark={isDark}
-        onToggleTheme={toggleTheme}
         onOpenPaymentLink={() => setPaymentLinkOpen(true)}
         canManageStatuses={canManageStatuses}
         onManageStatuses={() => setManageStatusesOpen(true)}
@@ -162,6 +160,7 @@ export default function ReturnOrdersWrapper() {
         emptyMessage="لا توجد طلبات مسترجعة مطابقة للبحث"
         onRowClick={goToDetails}
         getRowHighlight={isDraftOrderRow}
+        defaultSort={{ id: "receivedSince", direction: "asc" }}
       />
 
       <AllOrdersPagination

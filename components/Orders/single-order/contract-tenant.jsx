@@ -45,13 +45,13 @@ function ContractTenant({ data }) {
       />
 
       {isInstitution && isAgentAuth ? (
-        <div className="rounded-2xl border border-surface-border bg-white p-4">
+        <div className="rounded-2xl border border-surface-border dark:border-white/10 bg-white dark:bg-white/[0.03] p-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="text-right">
-              <p className="text-xs font-medium text-gray-400">
+              <p className="text-xs font-medium text-gray-400 dark:text-white/40">
                 صورة التفويض / الوكالة
               </p>
-              <p className="mt-1 text-sm font-bold text-gray-800">
+              <p className="mt-1 text-sm font-bold text-gray-800 dark:text-white">
                 {agencyDocumentUrl
                   ? agencyIsPdf
                     ? "ملف PDF مرفق"
@@ -63,7 +63,7 @@ function ContractTenant({ data }) {
               <button
                 type="button"
                 onClick={() => setAgencyViewerOpen(true)}
-                className="inline-flex items-center gap-1.5 rounded-full border border-[#E0E0E0] bg-neutral-50 px-3 py-1.5 text-xs font-bold text-ink-subtle hover:border-brand-hover hover:text-brand-hover"
+                className="inline-flex items-center gap-1.5 rounded-full border border-[#E0E0E0] dark:border-white/10 bg-neutral-50 dark:bg-white/[0.04] px-3 py-1.5 text-xs font-bold text-ink-subtle dark:text-white/70 hover:border-brand-hover hover:text-brand-hover"
               >
                 {agencyIsPdf ? (
                   <FileText className="size-3.5 text-[#E24444]" />
