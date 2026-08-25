@@ -152,7 +152,7 @@ export default function AddEmployeeForm({ isEdit = false, employee, onSuccess })
                     ) :
                       (
                         <div className="size-20 bg-white rounded-full flex items-center justify-center">
-                          <ImageUp className="size-8 text-[#A3A3A3]" />
+                          <ImageUp className="size-8 text-ink-placeholder" />
                         </div>
                       )
                     }

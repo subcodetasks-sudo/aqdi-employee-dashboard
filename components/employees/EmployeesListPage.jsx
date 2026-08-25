@@ -78,13 +78,13 @@ export default function EmployeesListPage() {
         </PermissionGate>
 
         <div className="relative flex-1 min-w-[200px]">
-          <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-[#9CA3AF] size-4 pointer-events-none" />
+          <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 size-4 pointer-events-none" />
           <input
             type="text"
             placeholder="بحث بالاسم أو البريد أو الجوال..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full h-10 bg-white border border-[#E5E7EB] rounded-lg pr-11 pl-4 text-[13px] focus:outline-none focus:border-[#0B5345] transition-colors"
+            className="w-full h-10 bg-white border border-[#E5E7EB] rounded-lg pr-11 pl-4 text-13 focus:outline-none focus:border-brand-dark transition-colors"
           />
         </div>
       </div>
@@ -107,12 +107,12 @@ export default function EmployeesListPage() {
               employees.map((employee, index) => (
                 <tr
                   key={employee.id}
-                  className="border-b border-[#F3F4F6] last:border-0 hover:bg-[#FAFAFA] transition-colors"
+                  className="border-b border-status-neutral-bg last:border-0 hover:bg-neutral-50 transition-colors"
                 >
                   <td className="px-4 py-3.5">
                     <div className="flex items-center gap-2.5">
                       <EmployeeAvatar name={employee.name} image={employee.profile_image} />
-                      <span className="text-[13px] font-medium text-[#111827]">
+                      <span className="text-13 font-medium text-gray-900">
                         {employee.name || "---"}
                       </span>
                     </div>
@@ -122,20 +122,20 @@ export default function EmployeesListPage() {
                   </td>
                   <td className="px-4 py-3.5">
                     {formatSalary(employee.base_salary) ? (
-                      <span className="text-[13px] font-semibold text-[#111827] tabular-nums">
+                      <span className="text-13 font-semibold text-gray-900 tabular-nums">
                         {formatSalary(employee.base_salary)} ريال
                       </span>
                     ) : (
-                      <span className="text-[12px] text-[#9CA3AF]">غير محدد</span>
+                      <span className="text-xs text-gray-400">غير محدد</span>
                     )}
                   </td>
                   <td className="px-4 py-3.5">
-                    <span className="text-[13px] text-[#374151] tabular-nums" dir="ltr">
+                    <span className="text-13 text-gray-700 tabular-nums" dir="ltr">
                       {employee.phone || "---"}
                     </span>
                   </td>
                   <td className="px-4 py-3.5">
-                    <span className="text-[13px] text-[#374151]">{employee.email || "---"}</span>
+                    <span className="text-13 text-gray-700">{employee.email || "---"}</span>
                   </td>
                   <td className="px-4 py-3.5">
                     <Switch
@@ -169,7 +169,7 @@ export default function EmployeesListPage() {
               ))
             ) : (
               <tr>
-                <td colSpan={7} className="text-center p-10 text-[#9CA3AF] text-sm">
+                <td colSpan={7} className="text-center p-10 text-gray-400 text-sm">
                   لا يوجد موظفين حالياً.
                 </td>
               </tr>

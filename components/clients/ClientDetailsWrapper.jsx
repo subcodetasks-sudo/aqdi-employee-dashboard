@@ -6,6 +6,7 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 import {
   Ban,
   ChevronLeft,
+  ChevronRight,
   FileText,
   Home,
   Loader2,
@@ -115,6 +116,8 @@ export default function ClientDetailsWrapper() {
   const backUrl = from.startsWith("/") ? from : "/home/clients";
 
   const [filter, setFilter] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const ORDERS_PAGE_SIZE = 10;
 
   const { client, contracts, isLoading, isError } = useClientDetail(clientId);
   const { mutate: toggleBlock, isPending: isBlocking } = useBlockClient();
@@ -141,6 +144,21 @@ export default function ClientDetailsWrapper() {
   const filteredOrders =
     filter === "all" ? orders : orders.filter((o) => o.statusKey === filter);
 
+  const totalOrders = filteredOrders.length;
+  const ordersLastPage = Math.max(1, Math.ceil(totalOrders / ORDERS_PAGE_SIZE));
+  const ordersPage = Math.min(currentPage, ordersLastPage);
+  const ordersStart = totalOrders === 0 ? 0 : (ordersPage - 1) * ORDERS_PAGE_SIZE + 1;
+  const ordersEnd = Math.min(ordersPage * ORDERS_PAGE_SIZE, totalOrders);
+  const paginatedOrders = filteredOrders.slice(
+    (ordersPage - 1) * ORDERS_PAGE_SIZE,
+    ordersPage * ORDERS_PAGE_SIZE
+  );
+
+  const handleFilterChange = (tabId) => {
+    setFilter(tabId);
+    setCurrentPage(1);
+  };
+
   const handleBlock = () => {
     if (!clientId) return;
     toggleBlock(clientId);
@@ -159,7 +177,7 @@ export default function ClientDetailsWrapper() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[50vh]" dir="rtl">
-        <Loader2 className="size-6 animate-spin text-[#0B5345] dark:text-emerald-300" />
+        <Loader2 className="size-6 animate-spin text-brand-dark dark:text-emerald-300" />
       </div>
     );
   }
@@ -170,12 +188,12 @@ export default function ClientDetailsWrapper() {
         <button
           type="button"
           onClick={() => router.push(backUrl)}
-          className="inline-flex items-center gap-1.5 self-start text-[14px] font-medium text-[#6B7280] dark:text-white/50 hover:text-[#0B5345] dark:hover:text-emerald-300 transition-colors"
+          className="inline-flex items-center gap-1.5 self-start text-sm font-medium text-status-neutral dark:text-white/50 hover:text-brand-dark dark:hover:text-emerald-300 transition-colors"
         >
           <ChevronLeft className="size-4 shrink-0" />
           رجوع للعملاء
         </button>
-        <div className="rounded-2xl border border-[#E8EEEC] bg-white dark:bg-[#0F1C16] dark:border-white/[0.08] p-10 text-center text-[#FA5252] text-[15px] font-medium">
+        <div className="rounded-2xl border border-[#E8EEEC] bg-white dark:bg-[#0F1C16] dark:border-white/[0.08] p-10 text-center text-[#FA5252] text-15 font-medium">
           تعذر تحميل ملف العميل من الخادم
         </div>
       </div>
@@ -192,16 +210,16 @@ export default function ClientDetailsWrapper() {
           <button
             type="button"
             onClick={() => router.push(backUrl)}
-            className="inline-flex items-center gap-1.5 self-start text-[14px] font-medium text-[#6B7280] dark:text-white/50 hover:text-[#0B5345] dark:hover:text-emerald-300 transition-colors"
+            className="inline-flex items-center gap-1.5 self-start text-sm font-medium text-status-neutral dark:text-white/50 hover:text-brand-dark dark:hover:text-emerald-300 transition-colors"
           >
             <ChevronLeft className="size-4 shrink-0" />
             رجوع للعملاء
           </button>
           <div>
-            <h1 className="text-[20px] sm:text-[22px] font-bold text-[#111827] dark:text-white leading-tight">
+            <h1 className="text-[20px] sm:text-22 font-bold text-gray-900 dark:text-white leading-tight">
               ملف العميل – {client.name}
             </h1>
-            <p className="mt-1 text-[12px] text-[#9CA3AF] dark:text-white/45 font-medium tabular-nums">
+            <p className="mt-1 text-xs text-gray-400 dark:text-white/45 font-medium tabular-nums">
               {client.clientCode} · انضم {formatJoinedLabel(client.joinedAt)}
             </p>
           </div>
@@ -214,10 +232,10 @@ export default function ClientDetailsWrapper() {
               onClick={handleBlock}
               disabled={isBlocking}
               className={cn(
-                "inline-flex items-center gap-1.5 h-9 px-3.5 rounded-full border text-[12px] font-bold transition-colors disabled:opacity-50",
+                "inline-flex items-center gap-1.5 h-9 px-3.5 rounded-full border text-xs font-bold transition-colors disabled:opacity-50",
                 client.blocked
-                  ? "border-emerald-200 bg-white text-[#0B5345] hover:bg-emerald-50 dark:border-emerald-400/30 dark:bg-transparent dark:text-emerald-300 dark:hover:bg-emerald-500/10"
-                  : "border-red-200 bg-white text-[#DC2626] hover:bg-red-50 dark:border-rose-400/30 dark:bg-transparent dark:text-rose-300 dark:hover:bg-rose-500/10"
+                  ? "border-emerald-200 bg-white text-brand-dark hover:bg-emerald-50 dark:border-emerald-400/30 dark:bg-transparent dark:text-emerald-300 dark:hover:bg-emerald-500/10"
+                  : "border-red-200 bg-white text-red-600 hover:bg-red-50 dark:border-rose-400/30 dark:bg-transparent dark:text-rose-300 dark:hover:bg-rose-500/10"
               )}
             >
               {isBlocking ? (
@@ -235,7 +253,7 @@ export default function ClientDetailsWrapper() {
                 toast.message("خصم/إعفاء مخصص (غير مربوط بالباك اند بعد)")
               }
               className={cn(
-                "inline-flex items-center gap-1.5 h-9 px-3.5 rounded-full border text-[12px] font-bold transition-colors",
+                "inline-flex items-center gap-1.5 h-9 px-3.5 rounded-full border text-xs font-bold transition-colors",
                 "border-[#E5E7EB] bg-white text-[#4B5563] hover:bg-[#F9FAFB]",
                 "dark:border-white/15 dark:bg-transparent dark:text-white/70 dark:hover:bg-white/[0.04]"
               )}
@@ -248,8 +266,8 @@ export default function ClientDetailsWrapper() {
               onClick={handleDelete}
               disabled={isDeleting}
               className={cn(
-                "inline-flex items-center gap-1.5 h-9 px-3.5 rounded-full border text-[12px] font-bold transition-colors disabled:opacity-50",
-                "border-red-200 bg-white text-[#DC2626] hover:bg-red-50",
+                "inline-flex items-center gap-1.5 h-9 px-3.5 rounded-full border text-xs font-bold transition-colors disabled:opacity-50",
+                "border-red-200 bg-white text-red-600 hover:bg-red-50",
                 "dark:border-rose-400/30 dark:bg-transparent dark:text-rose-300 dark:hover:bg-rose-500/10"
               )}
             >
@@ -283,35 +301,35 @@ export default function ClientDetailsWrapper() {
           </div>
 
           <div className="flex-1 min-w-0 flex flex-col gap-2.5">
-            <h2 className="text-[18px] font-bold text-[#111827] dark:text-white leading-tight">
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white leading-tight">
               {client.name}
             </h2>
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-[13px] font-bold text-[#0B5345] dark:text-emerald-300 tabular-nums">
+              <span className="text-13 font-bold text-brand-dark dark:text-emerald-300 tabular-nums">
                 {client.clientCode}
               </span>
               <span
-                className="text-[13px] font-medium text-[#374151] dark:text-white/70 tabular-nums"
+                className="text-13 font-medium text-gray-700 dark:text-white/70 tabular-nums"
                 dir="ltr"
               >
                 {client.mobile}
               </span>
               {client.email ? (
-                <span className="text-[12px] font-medium text-[#9CA3AF] dark:text-white/45">
+                <span className="text-xs font-medium text-gray-400 dark:text-white/45">
                   {client.email}
                 </span>
               ) : null}
               {client.platformLabel ? (
-                <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold bg-[#DCFCE7] text-[#15803D] dark:bg-emerald-500/20 dark:text-emerald-300">
+                <span className="inline-flex items-center px-2 py-0.5 rounded-md text-11 font-bold bg-[#DCFCE7] text-green-700 dark:bg-emerald-500/20 dark:text-emerald-300">
                   {client.platformLabel}
                 </span>
               ) : null}
               {client.blocked ? (
-                <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold bg-[#FEE2E2] text-[#DC2626] dark:bg-rose-500/20 dark:text-rose-300">
+                <span className="inline-flex items-center px-2 py-0.5 rounded-md text-11 font-bold bg-[#FEE2E2] text-red-600 dark:bg-rose-500/20 dark:text-rose-300">
                   محظور
                 </span>
               ) : null}
-              <span className="text-[12px] font-medium text-[#9CA3AF] dark:text-white/45 tabular-nums">
+              <span className="text-xs font-medium text-gray-400 dark:text-white/45 tabular-nums">
                 انضم {formatJoinedShort(client.joinedAt)}
               </span>
             </div>
@@ -323,7 +341,7 @@ export default function ClientDetailsWrapper() {
               target="_blank"
               rel="noopener noreferrer"
               className={cn(
-                "inline-flex items-center justify-center gap-2 h-10 px-5 rounded-full text-[13px] font-bold text-white shrink-0 transition-colors",
+                "inline-flex items-center justify-center gap-2 h-10 px-5 rounded-full text-13 font-bold text-white shrink-0 transition-colors",
                 "bg-[#25D366] hover:bg-[#1EBE57]"
               )}
             >
@@ -355,10 +373,10 @@ export default function ClientDetailsWrapper() {
               style={{ backgroundColor: def.barDark }}
               aria-hidden
             />
-            <p className="text-[11px] font-medium text-[#9CA3AF] dark:text-white/45 mb-1.5 pr-1">
+            <p className="text-11 font-medium text-gray-400 dark:text-white/45 mb-1.5 pr-1">
               {def.label}
             </p>
-            <p className="text-[18px] font-bold text-[#111827] dark:text-white tabular-nums leading-none pr-1">
+            <p className="text-lg font-bold text-gray-900 dark:text-white tabular-nums leading-none pr-1">
               {def.money ? formatMoney(client[def.key]) : client[def.key] ?? 0}
             </p>
           </div>
@@ -375,14 +393,14 @@ export default function ClientDetailsWrapper() {
       >
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 px-5 pt-5 pb-3">
           <div className="inline-flex items-center gap-2">
-            <FileText className="size-4 text-[#0B5345] dark:text-emerald-300 shrink-0" />
-            <h3 className="text-[15px] font-bold text-[#111827] dark:text-white">
+            <FileText className="size-4 text-brand-dark dark:text-emerald-300 shrink-0" />
+            <h3 className="text-15 font-bold text-gray-900 dark:text-white">
               طلبات العميل
             </h3>
           </div>
-          <p className="text-[12px] font-medium text-[#9CA3AF] dark:text-white/45">
+          <p className="text-xs font-medium text-gray-400 dark:text-white/45">
             إجمالي طلبات العميل:{" "}
-            <span className="tabular-nums text-[#374151] dark:text-white/70 font-bold">
+            <span className="tabular-nums text-gray-700 dark:text-white/70 font-bold">
               {orders.length}
             </span>
           </p>
@@ -397,12 +415,12 @@ export default function ClientDetailsWrapper() {
                 <button
                   key={tab.id}
                   type="button"
-                  onClick={() => setFilter(tab.id)}
+                  onClick={() => handleFilterChange(tab.id)}
                   className={cn(
-                    "inline-flex items-center gap-1 h-8 px-3 rounded-full text-[12px] font-bold transition-colors whitespace-nowrap",
+                    "inline-flex items-center gap-1 h-8 px-3 rounded-full text-xs font-bold transition-colors whitespace-nowrap",
                     active
-                      ? "bg-[#0B5345] text-white dark:bg-emerald-500 dark:text-[#0B1411]"
-                      : "bg-transparent text-[#6B7280] border border-[#E5E7EB] hover:bg-[#F9FAFB] dark:text-white/55 dark:border-white/12 dark:hover:bg-white/[0.04]"
+                      ? "bg-brand-dark text-white dark:bg-emerald-500 dark:text-[#0B1411]"
+                      : "bg-transparent text-status-neutral border border-[#E5E7EB] hover:bg-[#F9FAFB] dark:text-white/55 dark:border-white/12 dark:hover:bg-white/[0.04]"
                   )}
                 >
                   {tab.label}
@@ -427,7 +445,7 @@ export default function ClientDetailsWrapper() {
                 {["الطلب", "النوع", "الحالة", "حالة الدفع", ""].map((h) => (
                   <th
                     key={h || "actions"}
-                    className="px-4 py-3 text-[12px] font-semibold text-[#9CA3AF] dark:text-white/45 text-right whitespace-nowrap border-b border-[#EEF1F0] dark:border-white/[0.08]"
+                    className="px-4 py-3 text-xs font-semibold text-gray-400 dark:text-white/45 text-right whitespace-nowrap border-b border-[#EEF1F0] dark:border-white/[0.08]"
                   >
                     {h}
                   </th>
@@ -435,29 +453,29 @@ export default function ClientDetailsWrapper() {
               </tr>
             </thead>
             <tbody>
-              {filteredOrders.length === 0 ? (
+              {paginatedOrders.length === 0 ? (
                 <tr>
                   <td
                     colSpan={5}
-                    className="px-4 py-10 text-center text-[13px] text-[#9CA3AF] dark:text-white/40"
+                    className="px-4 py-10 text-center text-13 text-gray-400 dark:text-white/40"
                   >
                     لا توجد طلبات في هذا التصنيف
                   </td>
                 </tr>
               ) : (
-                filteredOrders.map((order) => (
+                paginatedOrders.map((order) => (
                   <tr
                     key={order.id}
-                    className="border-b border-[#F3F4F6] dark:border-white/[0.05] last:border-0 hover:bg-[#F8FAF9]/80 dark:hover:bg-white/[0.04] transition-colors"
+                    className="border-b border-status-neutral-bg dark:border-white/[0.05] last:border-0 hover:bg-[#F8FAF9]/80 dark:hover:bg-white/[0.04] transition-colors"
                   >
-                    <td className="px-4 py-3.5 text-[13px] font-bold text-[#111827] dark:text-white tabular-nums whitespace-nowrap">
+                    <td className="px-4 py-3.5 text-13 font-bold text-gray-900 dark:text-white tabular-nums whitespace-nowrap">
                       #{order.id}
                     </td>
-                    <td className="px-4 py-3.5 text-[13px] font-medium text-[#374151] dark:text-white/70 whitespace-nowrap">
+                    <td className="px-4 py-3.5 text-13 font-medium text-gray-700 dark:text-white/70 whitespace-nowrap">
                       {order.contract_type || "—"}
                     </td>
                     <td className="px-4 py-3.5 whitespace-nowrap">
-                      <span className="inline-flex items-center gap-1.5 text-[12px] font-bold">
+                      <span className="inline-flex items-center gap-1.5 text-xs font-bold">
                         <span
                           className="size-1.5 rounded-full shrink-0"
                           style={{ backgroundColor: order.status?.color || "#9CA3AF" }}
@@ -468,7 +486,7 @@ export default function ClientDetailsWrapper() {
                         </span>
                       </span>
                     </td>
-                    <td className="px-4 py-3.5 text-[13px] font-medium text-[#374151] dark:text-white/70 whitespace-nowrap">
+                    <td className="px-4 py-3.5 text-13 font-medium text-gray-700 dark:text-white/70 whitespace-nowrap">
                       {order.payment_label_ar || "—"}
                     </td>
                     <td className="px-4 py-3.5 text-left">
@@ -477,8 +495,8 @@ export default function ClientDetailsWrapper() {
                           `/home/users/${clientId}?from=${encodeURIComponent(backUrl)}`
                         )}`}
                         className={cn(
-                          "inline-flex items-center justify-center h-8 px-3.5 rounded-full border text-[12px] font-bold transition-colors",
-                          "border-[#0B5345]/25 bg-[#E8F5F1] text-[#0B5345] hover:bg-[#0B5345] hover:text-white",
+                          "inline-flex items-center justify-center h-8 px-3.5 rounded-full border text-xs font-bold transition-colors",
+                          "border-brand-dark/25 bg-[#E8F5F1] text-brand-dark hover:bg-brand-dark hover:text-white",
                           "dark:border-emerald-400/30 dark:bg-emerald-500/15 dark:text-emerald-300 dark:hover:bg-emerald-500 dark:hover:text-white"
                         )}
                       >
@@ -491,13 +509,47 @@ export default function ClientDetailsWrapper() {
             </tbody>
           </table>
         </div>
+
+        {totalOrders > 0 ? (
+          <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-3.5 border-t border-[#EEF1F0] dark:border-white/[0.06] text-13">
+            <div className="text-status-neutral dark:text-white/45 font-medium">
+              يعرض {ordersStart}-{ordersEnd} من {totalOrders} طلب
+            </div>
+
+            <div className="flex items-center gap-2.5">
+              <button
+                type="button"
+                disabled={ordersPage <= 1}
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                className="inline-flex items-center gap-1 text-gray-700 dark:text-white/70 font-medium hover:text-brand-dark dark:hover:text-emerald-300 disabled:opacity-40 disabled:hover:text-gray-700 dark:disabled:hover:text-white/70 transition-colors"
+              >
+                <ChevronRight className="size-3.5" />
+                السابق
+              </button>
+
+              <span className="min-w-12 text-center tabular-nums text-gray-900 dark:text-white font-semibold">
+                {ordersPage}/{ordersLastPage}
+              </span>
+
+              <button
+                type="button"
+                disabled={ordersPage >= ordersLastPage}
+                onClick={() => setCurrentPage((p) => Math.min(ordersLastPage, p + 1))}
+                className="inline-flex items-center gap-1 text-gray-700 dark:text-white/70 font-medium hover:text-brand-dark dark:hover:text-emerald-300 disabled:opacity-40 disabled:hover:text-gray-700 dark:disabled:hover:text-white/70 transition-colors"
+              >
+                التالي
+                <ChevronLeft className="size-3.5" />
+              </button>
+            </div>
+          </div>
+        ) : null}
       </section>
 
       {/* Properties CTA */}
       <section className="flex flex-col gap-3">
         <div className="inline-flex items-center gap-2">
-          <Home className="size-4 text-[#0B5345] dark:text-emerald-300 shrink-0" />
-          <h3 className="text-[15px] font-bold text-[#111827] dark:text-white">
+          <Home className="size-4 text-brand-dark dark:text-emerald-300 shrink-0" />
+          <h3 className="text-15 font-bold text-gray-900 dark:text-white">
             عقارات العميل ووحداته
           </h3>
         </div>
@@ -506,8 +558,8 @@ export default function ClientDetailsWrapper() {
             `/home/users/${clientId}?from=${encodeURIComponent(backUrl)}`
           )}`}
           className={cn(
-            "w-full inline-flex items-center justify-center gap-2.5 h-12 px-4 rounded-xl text-[13px] font-bold transition-colors",
-            "bg-[#E8F5F1] text-[#0B5345] hover:bg-[#D5EFE8]",
+            "w-full inline-flex items-center justify-center gap-2.5 h-12 px-4 rounded-xl text-13 font-bold transition-colors",
+            "bg-[#E8F5F1] text-brand-dark hover:bg-[#D5EFE8]",
             "dark:bg-emerald-500/15 dark:text-emerald-300 dark:hover:bg-emerald-500/25"
           )}
         >

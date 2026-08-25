@@ -27,12 +27,12 @@ export default function NotesTable({ notes }) {
   return (
     <div className='mt-4'>
       <h2 className="text-lg font-bold">ملاحظات :</h2>
-      < div className="w-full overflow-x-auto bg-white rounded-[24px] border border-[#E4E4E4] mt-4 shadow-sm" >
+      < div className="w-full overflow-x-auto bg-white rounded-3xl border border-neutral-200 mt-4 shadow-sm" >
         <table className="w-full border-collapse">
-          <thead className="bg-[#FAFAFA]">
+          <thead className="bg-neutral-50">
             <tr>
               {tableHeaders.map((header, index) => (
-                <th key={index} className="text-right p-[15px_20px] text-[#A3A3A3] text-[13px] font-medium border-b border-[#E4E4E4] whitespace-nowrap">
+                <th key={index} className="text-right p-[15px_20px] text-ink-placeholder text-13 font-medium border-b border-neutral-200 whitespace-nowrap">
                   {header}
                 </th>
               ))}
@@ -41,7 +41,7 @@ export default function NotesTable({ notes }) {
           <tbody className='max-h-[50vh]! overflow-y-auto no-scrollbar'>
             {notes && notes.length > 0 ? (
               notes.map((note) => (
-                <tr key={note.id} className="border-b border-[#F5F5F5] last:border-0 hover:bg-[#fafafa] transition-all">
+                <tr key={note.id} className="border-b border-neutral-100 last:border-0 hover:bg-neutral-50 transition-all">
                   <td className="p-[15px_20px] whitespace-nowrap">
                     <span className='text-black text-sm'>{formatDate(note.addition_date)}</span>
                   </td>
@@ -52,7 +52,7 @@ export default function NotesTable({ notes }) {
               ))
             ) : (
               <tr>
-                <td colSpan={tableHeaders.length} className="text-center p-8 text-[#A3A3A3] text-sm">
+                <td colSpan={tableHeaders.length} className="text-center p-8 text-ink-placeholder text-sm">
                   لا يوجد ملاحظات للموظف حالياً.
                 </td>
               </tr>

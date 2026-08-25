@@ -11,15 +11,22 @@ import {
   PanelLeft,
   Search,
 } from "lucide-react";
-import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useSidebarStore } from "@/src/stores/sidebar-store";
 import { useClientsList } from "@/src/hooks/use-clients";
+import { exportClientsCsv } from "./clients-csv";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50];
 
 const TH =
-  "px-3 py-3.5 text-[12px] font-semibold text-[#9CA3AF] dark:text-white/45 border-b border-[#EEF1F0] dark:border-white/[0.08] whitespace-nowrap";
+  "px-3 py-3.5 text-xs font-semibold text-gray-400 dark:text-white/45 border-b border-[#EEF1F0] dark:border-white/[0.08] whitespace-nowrap";
 
 function formatMoney(value) {
   const n = Number(value) || 0;
@@ -46,7 +53,7 @@ function CountBadge({ value, tone = "muted" }) {
   const n = Number(value) || 0;
   if (n === 0) {
     return (
-      <span className="inline-flex items-center justify-center min-w-[28px] text-[13px] font-medium text-[#9CA3AF] dark:text-white/35">
+      <span className="inline-flex items-center justify-center min-w-[28px] text-13 font-medium text-gray-400 dark:text-white/35">
         0
       </span>
     );
@@ -54,19 +61,19 @@ function CountBadge({ value, tone = "muted" }) {
 
   const tones = {
     completed:
-      "bg-[#DCFCE7] text-[#15803D] dark:bg-emerald-500/20 dark:text-emerald-300",
+      "bg-[#DCFCE7] text-green-700 dark:bg-emerald-500/20 dark:text-emerald-300",
     draft:
       "bg-[#FEF3C7] text-[#B45309] dark:bg-amber-500/20 dark:text-amber-300",
     property:
       "bg-[#F5E6D3] text-[#92400E] dark:bg-amber-700/25 dark:text-amber-200",
     muted:
-      "bg-[#F3F4F6] text-[#4B5563] dark:bg-white/10 dark:text-white/70",
+      "bg-status-neutral-bg text-[#4B5563] dark:bg-white/10 dark:text-white/70",
   };
 
   return (
     <span
       className={cn(
-        "inline-flex items-center justify-center size-7 rounded-full text-[12px] font-bold tabular-nums",
+        "inline-flex items-center justify-center size-7 rounded-full text-xs font-bold tabular-nums",
         tones[tone] || tones.muted
       )}
     >
@@ -79,13 +86,13 @@ function MoneyPill({ value }) {
   const n = Number(value) || 0;
   if (n === 0) {
     return (
-      <span className="text-[13px] font-medium text-[#9CA3AF] dark:text-white/35 tabular-nums">
+      <span className="text-13 font-medium text-gray-400 dark:text-white/35 tabular-nums">
         0.00
       </span>
     );
   }
   return (
-    <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-full bg-[#DCFCE7] text-[#15803D] dark:bg-emerald-500/20 dark:text-emerald-300 text-[12px] font-bold tabular-nums whitespace-nowrap">
+    <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-full bg-[#DCFCE7] text-green-700 dark:bg-emerald-500/20 dark:text-emerald-300 text-xs font-bold tabular-nums whitespace-nowrap">
       {formatMoney(n)}
     </span>
   );
@@ -131,7 +138,7 @@ export default function ClientsWrapper() {
   const end = Math.min(page * pageSize, total);
 
   const handleExport = () => {
-    toast.success("تصدير CSV (لم يتم ربطه بالباك اند بعد)");
+    exportClientsCsv(rows);
   };
 
   return (
@@ -145,7 +152,7 @@ export default function ClientsWrapper() {
           aria-expanded={isSidebarOpen}
           className={cn(
             "inline-flex items-center justify-center size-[42px] rounded-full border shrink-0 transition-colors",
-            "border-[#E4EBE8] bg-white text-[#4B5563] hover:bg-[#E8F5F1] hover:text-[#0B5345]",
+            "border-[#E4EBE8] bg-white text-[#4B5563] hover:bg-[#E8F5F1] hover:text-brand-dark",
             "dark:border-white/10 dark:bg-[#0F1C16] dark:text-white/70 dark:hover:bg-emerald-500/15 dark:hover:text-emerald-300"
           )}
         >
@@ -156,17 +163,17 @@ export default function ClientsWrapper() {
           <button
             type="button"
             onClick={() => router.back()}
-            className="inline-flex items-center gap-1.5 self-start text-[14px] font-medium text-[#6B7280] dark:text-white/50 hover:text-[#0B5345] dark:hover:text-emerald-300 transition-colors"
+            className="inline-flex items-center gap-1.5 self-start text-sm font-medium text-status-neutral dark:text-white/50 hover:text-brand-dark dark:hover:text-emerald-300 transition-colors"
           >
             <ChevronLeft className="size-4 shrink-0" />
             رجوع
           </button>
 
           <div>
-            <h1 className="text-[22px] font-bold text-[#111827] dark:text-white leading-tight mb-1">
+            <h1 className="text-22 font-bold text-gray-900 dark:text-white leading-tight mb-1">
               العملاء
             </h1>
-            <p className="text-[13px] text-[#9CA3AF] dark:text-white/45 font-medium leading-relaxed">
+            <p className="text-13 text-gray-400 dark:text-white/45 font-medium leading-relaxed">
               كل عملاء عقدي - اضغط «عرض» لملف العميل الكامل
             </p>
           </div>
@@ -182,7 +189,7 @@ export default function ClientsWrapper() {
               className={cn(
                 "relative overflow-hidden rounded-2xl border transition-colors",
                 "bg-white border-[#E8EEEC] shadow-[0_1px_3px_rgba(11,83,69,0.05)]",
-                "dark:bg-[#13241C] dark:border-white/[0.08] dark:shadow-none"
+                "dark:bg-card dark:border-white/[0.08] dark:shadow-none"
               )}
             >
               <span
@@ -191,10 +198,10 @@ export default function ClientsWrapper() {
                 style={{ backgroundColor: card.bar }}
               />
               <div className="px-4 py-4 text-center">
-                <div className="text-[28px] font-black tabular-nums text-[#111827] dark:text-white leading-none mb-2">
+                <div className="text-[28px] font-black tabular-nums text-gray-900 dark:text-white leading-none mb-2">
                   {card.value ?? 0}
                 </div>
-                <div className="text-[12px] font-medium text-[#6B7280] dark:text-white/50 whitespace-nowrap">
+                <div className="text-xs font-medium text-status-neutral dark:text-white/50 whitespace-nowrap">
                   {card.label}
                 </div>
               </div>
@@ -206,16 +213,16 @@ export default function ClientsWrapper() {
       {/* Search + export */}
       <div className="flex items-center gap-3 max-[640px]:flex-col max-[640px]:items-stretch">
         <div className="relative flex-1 min-w-0">
-          <Search className="absolute right-3.5 top-1/2 -translate-y-1/2 size-[18px] text-[#9CA3AF] dark:text-white/35 pointer-events-none" />
+          <Search className="absolute right-3.5 top-1/2 -translate-y-1/2 size-[18px] text-gray-400 dark:text-white/35 pointer-events-none" />
           <input
             type="text"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             placeholder="بحث بالاسم أو الجوال..."
             className={cn(
-              "w-full h-[44px] rounded-xl border pr-11 pl-4 text-[13px] transition-all",
-              "bg-white border-[#E5E7EB] text-[#111827] placeholder:text-[#9CA3AF]",
-              "focus:outline-none focus:border-[#0B5345] focus:ring-2 focus:ring-[#0B5345]/10",
+              "w-full h-[44px] rounded-xl border pr-11 pl-4 text-13 transition-all",
+              "bg-white border-[#E5E7EB] text-gray-900 placeholder:text-gray-400",
+              "focus:outline-none focus:border-brand-dark focus:ring-2 focus:ring-brand-dark/10",
               "dark:bg-[#0F1C16] dark:border-white/[0.1] dark:text-white dark:placeholder:text-white/35",
               "dark:focus:border-emerald-500/50 dark:focus:ring-emerald-500/15"
             )}
@@ -226,19 +233,19 @@ export default function ClientsWrapper() {
           type="button"
           onClick={handleExport}
           className={cn(
-            "h-[44px] px-4 rounded-xl border text-[13px] font-bold inline-flex items-center justify-center gap-2 transition-colors shrink-0",
-            "bg-white border-[#E5E7EB] text-[#374151] hover:bg-[#F9FAFB]",
-            "dark:bg-[#13241C] dark:border-white/[0.1] dark:text-white/80 dark:hover:bg-white/[0.06]"
+            "h-[44px] px-4 rounded-xl border text-13 font-bold inline-flex items-center justify-center gap-2 transition-colors shrink-0",
+            "bg-white border-[#E5E7EB] text-gray-700 hover:bg-[#F9FAFB]",
+            "dark:bg-card dark:border-white/[0.1] dark:text-white/80 dark:hover:bg-white/[0.06]"
           )}
         >
           <Download className="size-4" />
-          تصدير
+          <span>تصدير الصفحة الحالية</span>
         </button>
       </div>
 
       {/* Pagination bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 text-[13px]">
-        <div className="text-[#6B7280] dark:text-white/45 font-medium inline-flex items-center gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-3 text-13">
+        <div className="text-status-neutral dark:text-white/45 font-medium inline-flex items-center gap-2">
           {isFetching ? <Loader2 className="size-3.5 animate-spin" /> : null}
           يعرض {start}-{end} من {total} عميل
         </div>
@@ -246,47 +253,60 @@ export default function ClientsWrapper() {
         <div className="flex flex-wrap items-center gap-2.5">
           <button
             type="button"
-            disabled={page >= lastPage}
-            onClick={() => setCurrentPage((p) => Math.min(lastPage, p + 1))}
-            className="inline-flex items-center gap-1 text-[#374151] dark:text-white/70 font-medium hover:text-[#0B5345] dark:hover:text-emerald-300 disabled:opacity-40 disabled:hover:text-[#374151] dark:disabled:hover:text-white/70 transition-colors"
-          >
-            التالي
-            <ChevronLeft className="size-3.5" />
-          </button>
-
-          <span className="min-w-[48px] text-center tabular-nums text-[#111827] dark:text-white font-semibold">
-            {page}/{lastPage}
-          </span>
-
-          <button
-            type="button"
             disabled={page <= 1}
             onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-            className="inline-flex items-center gap-1 text-[#374151] dark:text-white/70 font-medium hover:text-[#0B5345] dark:hover:text-emerald-300 disabled:opacity-40 disabled:hover:text-[#374151] dark:disabled:hover:text-white/70 transition-colors"
+            className="inline-flex items-center gap-1 text-gray-700 dark:text-white/70 font-medium hover:text-brand-dark dark:hover:text-emerald-300 disabled:opacity-40 disabled:hover:text-gray-700 dark:disabled:hover:text-white/70 transition-colors"
           >
             <ChevronRight className="size-3.5" />
             السابق
           </button>
 
+          <span className="min-w-12 text-center tabular-nums text-gray-900 dark:text-white font-semibold">
+            {page}/{lastPage}
+          </span>
+
+          <button
+            type="button"
+            disabled={page >= lastPage}
+            onClick={() => setCurrentPage((p) => Math.min(lastPage, p + 1))}
+            className="inline-flex items-center gap-1 text-gray-700 dark:text-white/70 font-medium hover:text-brand-dark dark:hover:text-emerald-300 disabled:opacity-40 disabled:hover:text-gray-700 dark:disabled:hover:text-white/70 transition-colors"
+          >
+            التالي
+            <ChevronLeft className="size-3.5" />
+          </button>
+
           <div className="flex items-center gap-1.5 mr-1">
-            <select
-              value={pageSize}
-              onChange={(e) => setPageSize(Number(e.target.value))}
-              className={cn(
-                "h-8 rounded-lg border px-2 text-[12px] font-semibold focus:outline-none",
-                "bg-white border-[#E5E7EB] text-[#111827] focus:border-[#0B5345]",
-                "dark:bg-[#0F1C16] dark:border-white/[0.1] dark:text-white dark:focus:border-emerald-500/50"
-              )}
-            >
-              {PAGE_SIZE_OPTIONS.map((n) => (
-                <option key={n} value={n}>
-                  {n}
-                </option>
-              ))}
-            </select>
-            <span className="text-[#6B7280] dark:text-white/45 font-medium">
+            <span className="text-status-neutral dark:text-white/45 font-medium">
               يعرض
             </span>
+            <Select
+              value={String(pageSize)}
+              onValueChange={(v) => setPageSize(Number(v))}
+            >
+              <SelectTrigger
+                className={cn(
+                  "h-8 w-[72px] rounded-lg border px-2.5 text-xs font-semibold gap-1 shadow-none focus:ring-1 focus:ring-offset-0",
+                  "bg-white border-[#E5E7EB] text-gray-900 focus:border-brand-dark focus:ring-brand-dark/20",
+                  "dark:bg-[#0F1C16] dark:border-white/[0.1] dark:text-white dark:focus:border-emerald-500/50 dark:focus:ring-emerald-500/20"
+                )}
+              >
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent
+                dir="rtl"
+                className="min-w-[72px] dark:bg-[#0F1C16] dark:border-white/[0.1]"
+              >
+                {PAGE_SIZE_OPTIONS.map((n) => (
+                  <SelectItem
+                    key={n}
+                    value={String(n)}
+                    className="text-xs font-semibold dark:focus:bg-white/[0.06]"
+                  >
+                    {n}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
       </div>
@@ -301,7 +321,7 @@ export default function ClientsWrapper() {
       >
         <table className="w-full border-collapse min-w-[1000px]">
           <thead>
-            <tr className="bg-[#F8FAF9] dark:bg-[#13241C]">
+            <tr className="bg-[#F8FAF9] dark:bg-card">
               <th className={cn(TH, "text-right px-4")}>تاريخ الانضمام</th>
               <th className={cn(TH, "text-right")}>رقم العميل</th>
               <th className={cn(TH, "text-right")}>اسم العميل</th>
@@ -321,7 +341,7 @@ export default function ClientsWrapper() {
               <tr>
                 <td
                   colSpan={12}
-                  className="text-center py-16 text-[13px] text-[#9CA3AF] dark:text-white/35 font-medium"
+                  className="text-center py-16 text-13 text-gray-400 dark:text-white/35 font-medium"
                 >
                   <Loader2 className="size-5 animate-spin inline-block" />
                 </td>
@@ -330,7 +350,7 @@ export default function ClientsWrapper() {
               <tr>
                 <td
                   colSpan={12}
-                  className="text-center py-16 text-[13px] text-[#FA5252] font-medium"
+                  className="text-center py-16 text-13 text-[#FA5252] font-medium"
                 >
                   تعذر تحميل قائمة العملاء من الخادم
                 </td>
@@ -339,7 +359,7 @@ export default function ClientsWrapper() {
               <tr>
                 <td
                   colSpan={12}
-                  className="text-center py-16 text-[13px] text-[#9CA3AF] dark:text-white/35 font-medium"
+                  className="text-center py-16 text-13 text-gray-400 dark:text-white/35 font-medium"
                 >
                   لا يوجد عملاء مطابقون لبحثك
                 </td>
@@ -351,41 +371,41 @@ export default function ClientsWrapper() {
                 return (
                   <tr
                     key={row.id}
-                    className="border-b border-[#F3F4F6] dark:border-white/[0.05] last:border-0 hover:bg-[#F8FAF9]/80 dark:hover:bg-white/[0.04] transition-colors"
+                    className="border-b border-status-neutral-bg dark:border-white/[0.05] last:border-0 hover:bg-[#F8FAF9]/80 dark:hover:bg-white/[0.04] transition-colors"
                   >
                     <td className="px-4 py-3.5 align-middle">
                       <div className="flex flex-col items-start gap-1">
-                        <span className="text-[13px] font-semibold text-[#111827] dark:text-white tabular-nums leading-none">
+                        <span className="text-13 font-semibold text-gray-900 dark:text-white tabular-nums leading-none">
                           {time}
                         </span>
-                        <span className="text-[12px] text-[#6B7280] dark:text-white/45 tabular-nums leading-none">
+                        <span className="text-xs text-status-neutral dark:text-white/45 tabular-nums leading-none">
                           {date}
                         </span>
                       </div>
                     </td>
 
-                    <td className="px-3 py-3.5 text-[13px] font-bold text-[#0B5345] dark:text-emerald-300 tabular-nums whitespace-nowrap">
+                    <td className="px-3 py-3.5 text-13 font-bold text-brand-dark dark:text-emerald-300 tabular-nums whitespace-nowrap">
                       {row.clientCode}
                     </td>
 
                     <td className="px-3 py-3.5 whitespace-nowrap">
-                      <span className="text-[13px] font-bold text-[#111827] dark:text-white">
+                      <span className="text-13 font-bold text-gray-900 dark:text-white">
                         {row.name}
                       </span>
                       {row.platformLabel ? (
-                        <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded-md bg-[#DCFCE7] text-[#15803D] dark:bg-emerald-500/20 dark:text-emerald-300 text-[10px] font-bold">
+                        <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded-md bg-[#DCFCE7] text-green-700 dark:bg-emerald-500/20 dark:text-emerald-300 text-10 font-bold">
                           {row.platformLabel}
                         </span>
                       ) : null}
                       {row.blocked ? (
-                        <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded-md bg-[#FEE2E2] text-[#DC2626] dark:bg-rose-500/20 dark:text-rose-300 text-[10px] font-bold">
+                        <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded-md bg-[#FEE2E2] text-red-600 dark:bg-rose-500/20 dark:text-rose-300 text-10 font-bold">
                           محظور
                         </span>
                       ) : null}
                     </td>
 
                     <td
-                      className="px-3 py-3.5 text-[13px] font-medium text-[#374151] dark:text-white/70 tabular-nums whitespace-nowrap"
+                      className="px-3 py-3.5 text-13 font-medium text-gray-700 dark:text-white/70 tabular-nums whitespace-nowrap"
                       dir="ltr"
                     >
                       {row.mobile}
@@ -417,8 +437,8 @@ export default function ClientsWrapper() {
                       <Link
                         href={`/home/users/${row.id}?from=${encodeURIComponent("/home/clients")}`}
                         className={cn(
-                          "inline-flex items-center justify-center h-8 px-3.5 rounded-full border text-[12px] font-bold transition-colors",
-                          "border-[#0B5345]/25 bg-[#E8F5F1] text-[#0B5345] hover:bg-[#0B5345] hover:text-white",
+                          "inline-flex items-center justify-center h-8 px-3.5 rounded-full border text-xs font-bold transition-colors",
+                          "border-brand-dark/25 bg-[#E8F5F1] text-brand-dark hover:bg-brand-dark hover:text-white",
                           "dark:border-emerald-400/30 dark:bg-emerald-500/15 dark:text-emerald-300 dark:hover:bg-emerald-500 dark:hover:text-white"
                         )}
                       >

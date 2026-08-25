@@ -23,7 +23,7 @@ export default function AddNewEmployeeDialog({
         return (
           <button
             type="button"
-            className="inline-flex items-center justify-center h-8 px-3 rounded-lg border border-[#93C5FD] bg-white text-[#2563EB] text-[12px] font-semibold hover:bg-[#EFF6FF] transition-colors"
+            className="inline-flex items-center justify-center h-8 px-3 rounded-lg border border-[#93C5FD] bg-white text-[#2563EB] text-xs font-semibold hover:bg-[#EFF6FF] transition-colors"
           >
             تعديل
           </button>
@@ -34,7 +34,7 @@ export default function AddNewEmployeeDialog({
         <Button
           className={`rounded-full flex items-center justify-center shadow-none border-0 ${
             table
-              ? "w-9 h-9 bg-[#E6FFE6] text-[#10B981] hover:bg-[#10B981] hover:text-white p-0"
+              ? "w-9 h-9 bg-[#E6FFE6] text-brand-accent hover:bg-brand-accent hover:text-white p-0"
               : "text-white"
           }`}
           size={table ? "icon" : "default"}
@@ -49,7 +49,7 @@ export default function AddNewEmployeeDialog({
       return (
         <button
           type="button"
-          className="inline-flex items-center gap-1.5 h-10 px-5 rounded-lg border border-[#D1D5DB] bg-white text-[#374151] text-[13px] font-semibold hover:bg-[#F9FAFB] transition-colors whitespace-nowrap"
+          className="inline-flex items-center gap-1.5 h-10 px-5 rounded-lg border border-[#D1D5DB] bg-white text-gray-700 text-13 font-semibold hover:bg-[#F9FAFB] transition-colors whitespace-nowrap"
         >
           + إضافة موظف
         </button>

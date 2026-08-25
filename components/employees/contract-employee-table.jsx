@@ -40,12 +40,12 @@ export default function ContractEmployeeTable({ receivedContracts = [], refundab
     <div className='mt-4'>
 
       <h2 className="text-lg font-bold">العقــود التي وثقــها الموظــف :</h2>
-      < div className="w-full overflow-x-auto bg-white rounded-[24px] border border-[#E4E4E4] mt-4 shadow-sm" >
+      < div className="w-full overflow-x-auto bg-white rounded-3xl border border-neutral-200 mt-4 shadow-sm" >
         <table className="w-full border-collapse">
-          <thead className="bg-[#FAFAFA]">
+          <thead className="bg-neutral-50">
             <tr>
               {tableHeaders.map((header, index) => (
-                <th key={index} className="text-right p-[15px_20px] text-[#A3A3A3] text-[13px] font-medium border-b border-[#E4E4E4] whitespace-nowrap">
+                <th key={index} className="text-right p-[15px_20px] text-ink-placeholder text-13 font-medium border-b border-neutral-200 whitespace-nowrap">
                   {header}
                 </th>
               ))}
@@ -63,7 +63,7 @@ export default function ContractEmployeeTable({ receivedContracts = [], refundab
                 const receiverName = item.contract?.employee?.name || "---";
 
                 return (
-                  <tr key={index} className="border-b border-[#F5F5F5] last:border-0 hover:bg-[#fafafa] transition-all">
+                  <tr key={index} className="border-b border-neutral-100 last:border-0 hover:bg-neutral-50 transition-all">
                     <td className="p-[15px_20px]">
                       <div className='flex items-center gap-2'>
                         <span className='text-black text-xs'>{contractId}</span>
@@ -94,13 +94,13 @@ export default function ContractEmployeeTable({ receivedContracts = [], refundab
                       </div>
                     </td>
                     <td className="p-[15px_20px]">
-                      <div className="flex items-center gap-1.5 text-green-600 font-bold text-[13px]">
+                      <div className="flex items-center gap-1.5 text-green-600 font-bold text-13">
                         <span>{amount !== "---" ? parseFloat(amount).toLocaleString('ar-EG') : "---"}</span>
                         {item.admin_confirmed && <Check size={14} className='text-green-600' />}
                       </div>
                     </td>
                     <td className="p-[15px_20px]">
-                      <div className="flex items-center gap-1.5 text-black font-bold text-[13px]">
+                      <div className="flex items-center gap-1.5 text-black font-bold text-13">
                         <span>{dateStr}</span>
                       </div>
                     </td>
@@ -121,7 +121,7 @@ export default function ContractEmployeeTable({ receivedContracts = [], refundab
               })
             ) : (
               <tr>
-                <td colSpan={tableHeaders.length} className="text-center p-8 text-[#A3A3A3] text-sm">
+                <td colSpan={tableHeaders.length} className="text-center p-8 text-ink-placeholder text-sm">
                   لا يوجد عقود مرتبطة بهذا الموظف حالياً.
                 </td>
               </tr>
