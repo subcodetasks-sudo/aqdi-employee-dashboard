@@ -77,17 +77,17 @@ export function EmployeeAvatar({ name, image, size = "sm" }) {
 export function OutlineActionButton({ children, variant = "default", className, ...props }) {
   const variants = {
     default:
-      "border-[#D1D5DB] text-gray-700 hover:bg-[#F9FAFB]",
-    view: "border-[#D1D5DB] text-brand-dark hover:bg-[#E8F5F1]",
-    edit: "border-[#93C5FD] text-[#2563EB] hover:bg-[#EFF6FF]",
-    delete: "border-[#FCA5A5] text-red-600 hover:bg-[#FEF2F2]",
+      "border-[#D1D5DB] text-gray-700 hover:bg-[#F9FAFB] dark:border-white/15 dark:text-white/70 dark:hover:bg-white/[0.06]",
+    view: "border-[#D1D5DB] text-brand-dark hover:bg-[#E8F5F1] dark:border-emerald-500/30 dark:text-emerald-300 dark:hover:bg-emerald-500/10",
+    edit: "border-[#93C5FD] text-[#2563EB] hover:bg-[#EFF6FF] dark:border-blue-400/40 dark:text-blue-300 dark:hover:bg-blue-500/10",
+    delete: "border-[#FCA5A5] text-red-600 hover:bg-[#FEF2F2] dark:border-red-400/40 dark:text-red-300 dark:hover:bg-red-500/10",
   };
 
   return (
     <button
       type="button"
       className={cn(
-        "inline-flex items-center justify-center h-8 px-3 rounded-lg border bg-white text-xs font-semibold transition-colors whitespace-nowrap",
+        "inline-flex items-center justify-center h-8 px-3 rounded-lg border bg-white text-xs font-semibold transition-colors whitespace-nowrap dark:bg-[#0F1C16]",
         variants[variant] || variants.default,
         className
       )}
@@ -99,10 +99,10 @@ export function OutlineActionButton({ children, variant = "default", className, 
 }
 
 export const TABLE_TH =
-  "text-right px-4 py-3.5 text-xs font-semibold text-status-neutral border-b border-[#E5E7EB] whitespace-nowrap bg-[#F0F7F4]";
+  "text-right px-4 py-3.5 text-xs font-semibold text-status-neutral border-b border-[#E5E7EB] whitespace-nowrap bg-[#F0F7F4] dark:text-white/55 dark:border-white/[0.08] dark:bg-[#162820]";
 
 export const TABLE_WRAPPER =
-  "w-full overflow-x-auto bg-white rounded-2xl border border-[#E5E7EB] shadow-sm";
+  "w-full overflow-x-auto bg-white rounded-2xl border border-[#E5E7EB] shadow-sm dark:bg-[#0F1C16] dark:border-white/[0.08] dark:shadow-none";
 
 export function formatSalary(value) {
   if (value == null || value === "") return null;
@@ -153,14 +153,14 @@ export function TablePagination({ pagination, currentPage, setCurrentPage }) {
         type="button"
         onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
         disabled={currentPage === 1}
-        className="w-9 h-9 rounded-full border border-neutral-200 flex items-center justify-center text-ink-placeholder hover:bg-brand-main hover:text-white transition-all disabled:opacity-50 disabled:hover:bg-transparent"
+        className="w-9 h-9 rounded-full border border-neutral-200 flex items-center justify-center text-ink-placeholder hover:bg-brand-main hover:text-white transition-all disabled:opacity-50 disabled:hover:bg-transparent dark:border-white/15 dark:text-white/50 dark:hover:bg-emerald-500 dark:hover:text-[#0B1411]"
       >
         <ChevronRight className="size-4" />
       </button>
 
       {pages.map((page, idx) =>
         page === "..." ? (
-          <span key={`dots-${idx}`} className="text-ink-placeholder px-1">
+          <span key={`dots-${idx}`} className="text-ink-placeholder px-1 dark:text-white/40">
             ...
           </span>
         ) : (
@@ -171,8 +171,8 @@ export function TablePagination({ pagination, currentPage, setCurrentPage }) {
             className={cn(
               "w-9 h-9 rounded-full flex items-center justify-center text-13 font-medium transition-all",
               currentPage === page
-                ? "bg-brand-main text-white shadow-lg shadow-brand-main/20"
-                : "border border-neutral-200 text-ink-placeholder hover:bg-neutral-100"
+                ? "bg-brand-main text-white shadow-lg shadow-brand-main/20 dark:bg-emerald-500 dark:text-[#0B1411]"
+                : "border border-neutral-200 text-ink-placeholder hover:bg-neutral-100 dark:border-white/15 dark:text-white/50 dark:hover:bg-white/[0.06]"
             )}
           >
             {page}
@@ -184,7 +184,7 @@ export function TablePagination({ pagination, currentPage, setCurrentPage }) {
         type="button"
         onClick={() => setCurrentPage((prev) => Math.min(last_page, prev + 1))}
         disabled={currentPage === last_page}
-        className="w-9 h-9 rounded-full border border-neutral-200 flex items-center justify-center text-ink-placeholder hover:bg-brand-main hover:text-white transition-all disabled:opacity-50 disabled:hover:bg-transparent"
+        className="w-9 h-9 rounded-full border border-neutral-200 flex items-center justify-center text-ink-placeholder hover:bg-brand-main hover:text-white transition-all disabled:opacity-50 disabled:hover:bg-transparent dark:border-white/15 dark:text-white/50 dark:hover:bg-emerald-500 dark:hover:text-[#0B1411]"
       >
         <ChevronLeft className="size-4" />
       </button>

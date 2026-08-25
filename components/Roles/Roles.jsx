@@ -74,11 +74,11 @@ export default function Roles() {
   return (
     <div className="flex flex-col gap-5" dir="rtl">
       <div className="flex items-center justify-between gap-4">
-        <h2 className="text-lg font-bold text-gray-900">إدارة الأدوار</h2>
+        <h2 className="text-lg font-bold text-gray-900 dark:text-white">إدارة الأدوار</h2>
         <PermissionGate section={PERMISSION_SECTIONS.roles} action="create">
           <Link
             href="/home/roles-and-employees/roles/add"
-            className="inline-flex items-center gap-1.5 h-10 px-5 rounded-lg border border-[#D1D5DB] bg-white text-gray-700 text-13 font-semibold hover:bg-[#F9FAFB] transition-colors"
+            className="inline-flex items-center gap-1.5 h-10 px-5 rounded-lg border border-[#D1D5DB] bg-white text-gray-700 text-13 font-semibold hover:bg-[#F9FAFB] transition-colors dark:bg-[#0F1C16] dark:border-white/15 dark:text-white/75 dark:hover:bg-white/[0.06]"
           >
             + إضافة دور جديد
           </Link>
@@ -109,7 +109,7 @@ export default function Roles() {
                 return (
                   <tr
                     key={role.id}
-                    className="border-b border-status-neutral-bg last:border-0 hover:bg-neutral-50 transition-colors"
+                    className="border-b border-status-neutral-bg last:border-0 hover:bg-neutral-50 transition-colors dark:border-white/[0.06] dark:hover:bg-white/[0.04]"
                   >
                     <td className="px-4 py-3.5">
                       <RoleBadge
@@ -118,7 +118,7 @@ export default function Roles() {
                       />
                     </td>
                     <td className="px-4 py-3.5">
-                      <span className="text-13 text-gray-700">{employeeNames}</span>
+                      <span className="text-13 text-gray-700 dark:text-white/70">{employeeNames}</span>
                     </td>
                     <td className="px-4 py-3.5">
                       <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-[#D1FAE5] text-[#047857] text-xs font-bold">

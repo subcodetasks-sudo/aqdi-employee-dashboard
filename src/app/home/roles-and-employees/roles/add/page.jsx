@@ -1,8 +1,6 @@
+import AddRole from "@/components/Roles/AddRole";
 
-import AddRole from '@/components/Roles/AddRole'
-import React from 'react'
-export default async function page() {
-    return (
-        <AddRole  />
-    )
+export default async function Page({ params, searchParams }) {
+  await Promise.all([params, searchParams]);
+  return <AddRole />;
 }

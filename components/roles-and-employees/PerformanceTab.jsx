@@ -208,7 +208,7 @@ export default function PerformanceTab() {
         <select
           value={periodFilter}
           onChange={(e) => setPeriodFilter(e.target.value)}
-          className="h-9 px-3 rounded-lg border border-[#E5E7EB] bg-white text-13 text-gray-700 focus:outline-none focus:border-brand-dark"
+          className="h-9 px-3 rounded-lg border border-[#E5E7EB] bg-white text-13 text-gray-700 focus:outline-none focus:border-brand-dark dark:bg-[#0F1C16] dark:border-white/10 dark:text-white dark:[color-scheme:dark]"
         >
           {PERIOD_OPTIONS.map((opt) => (
             <option key={opt.value} value={opt.value}>

@@ -16,8 +16,6 @@ import { axiosInstance } from '@/src/utils/axios';
 import { useUserStore } from '@/src/stores/user-store';
 import { useRouter } from 'next/navigation';
 import { setAuthCookie } from '@/src/app/actions/auth';
-import { enrichUserWithRolePermissions } from '@/src/lib/permissions';
-import { requestFcmToken } from '@/src/lib/firebase/messaging';
 import { toast } from 'sonner';
 import { useIsDark, useToggleTheme } from '@/src/hooks/useThemeMode';
 
@@ -46,22 +44,10 @@ export default function LoginPage() {
 
   const {mutate ,isPending}=useMutation({
     mutationFn:async(data)=>{
-      let fcm_token = null;
-
-      try {
-        fcm_token = await requestFcmToken();
-      } catch (error) {
-        console.warn("[firebase] FCM token unavailable during login:", error);
-      }
-
       const payload = {
         email: data.email,
         password: data.password,
       };
-
-      if (fcm_token) {
-        payload.fcm_token = fcm_token;
-      }
 
       const res = await axiosInstance.post('/admin/employees/login', payload)
       return res.data
@@ -73,13 +59,12 @@ export default function LoginPage() {
     onSuccess: async (response, variables) => {
       if (response?.success && response?.data?.token) {
         try {
-          const userWithPermissions = await enrichUserWithRolePermissions(
-            response.data,
-            (roleId) => axiosInstance.get(`/admin/roles/${roleId}`).then((res) => res?.data)
-          );
           toast.success(response?.message || "تم تسجيل الدخول بنجاح");
-          setAuth(userWithPermissions, userWithPermissions?.token, variables.remember);
-          await setAuthCookie(userWithPermissions?.token, variables.remember);
+          // Permissions are resolved reactively by usePermissions() once on /home
+          // (it fetches the role by role_id if the login payload didn't include them),
+          // so we don't block the redirect on an extra round-trip here.
+          setAuth(response.data, response.data?.token, variables.remember);
+          await setAuthCookie(response.data?.token, variables.remember);
           router.push('/home');
         } catch (error) {
           console.error('Login post-processing error:', error);
@@ -225,7 +210,7 @@ export default function LoginPage() {
             <div className="mt-2">
               <Button
                 type="submit"
-                className="flex h-[58px] w-full items-center justify-between rounded-20 bg-brand-main px-6 text-base text-white shadow-none transition-all duration-300 hover:bg-brand-main/90 dark:bg-brand-accent dark:text-[#0B1411] dark:hover:bg-brand-accent-hover"
+                className="flex h-[58px] w-full items-center justify-between !rounded-[20px] bg-brand-main px-6 text-base text-white shadow-none transition-all duration-300 hover:bg-brand-main/90 dark:bg-brand-accent dark:text-[#0B1411] dark:hover:bg-brand-accent-hover"
                 disabled={isPending}
               >
                 <span>{isPending ? 'جار التحقق ...' : 'تسجيل الدخول'}</span>

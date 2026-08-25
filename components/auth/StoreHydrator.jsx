@@ -18,11 +18,8 @@ export default function StoreHydrator() {
 
     void Promise.resolve(useUserStore.persist.rehydrate()).finally(finishHydration);
 
-    const safetyTimer = setTimeout(finishHydration, 1500);
-
     return () => {
       unsubFinish();
-      clearTimeout(safetyTimer);
     };
   }, []);
 

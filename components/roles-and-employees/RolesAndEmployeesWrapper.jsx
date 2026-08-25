@@ -45,7 +45,10 @@ export default function RolesAndEmployeesWrapper() {
   const ActiveComponent = visibleTabs.find((t) => t.value === activeTab)?.Component;
 
   return (
-    <div className="flex flex-col gap-5 min-h-full p-4 md:p-6 transition-colors" dir="rtl">
+    <div
+      className="flex flex-col gap-5 min-h-full p-4 md:p-6 transition-colors dark:bg-transparent"
+      dir="rtl"
+    >
       <div className="flex items-start gap-3">
         <button
           type="button"
@@ -53,8 +56,9 @@ export default function RolesAndEmployeesWrapper() {
           aria-label={isSidebarOpen ? "طي القائمة الجانبية" : "توسيع القائمة الجانبية"}
           aria-expanded={isSidebarOpen}
           className={cn(
-            "inline-flex items-center justify-center size-[42px] rounded-full border shrink-0 transition-colors",
-            "border-[#E4EBE8] bg-white text-[#4B5563] hover:bg-[#E8F5F1] hover:text-brand-dark"
+            "inline-flex items-center justify-center size-[42px] rounded-2xl border shrink-0 transition-colors",
+            "border-[#E4EBE8] bg-white text-[#4B5563] hover:bg-[#E8F5F1] hover:text-brand-dark",
+            "dark:border-white/10 dark:bg-[#0F1C16] dark:text-white/70 dark:hover:bg-emerald-500/15 dark:hover:text-emerald-300"
           )}
         >
           <PanelLeft className="size-[18px]" />
@@ -64,17 +68,17 @@ export default function RolesAndEmployeesWrapper() {
           <button
             type="button"
             onClick={() => router.back()}
-            className="inline-flex items-center gap-1.5 self-start text-sm font-medium text-status-neutral hover:text-brand-dark transition-colors"
+            className="inline-flex items-center gap-1.5 self-start text-sm font-medium text-status-neutral hover:text-brand-dark transition-colors dark:text-white/55 dark:hover:text-emerald-300"
           >
             <ChevronLeft className="size-4 shrink-0" />
             رجوع
           </button>
 
           <div>
-            <h1 className="text-22 font-bold text-gray-900 leading-tight mb-1">
+            <h1 className="text-22 font-bold text-gray-900 leading-tight mb-1 dark:text-white">
               الموظفون والأدوار
             </h1>
-            <p className="text-13 text-gray-400 font-medium">
+            <p className="text-13 text-gray-400 font-medium dark:text-white/45">
               الأدوار والصلاحيات · الموظفون · الرواتب
             </p>
           </div>
@@ -91,8 +95,8 @@ export default function RolesAndEmployeesWrapper() {
               className={cn(
                 "h-10 px-5 rounded-full text-13 font-bold transition-all shrink-0",
                 activeTab === tab.value
-                  ? "bg-brand-dark text-white shadow-sm"
-                  : "bg-white text-[#616161] border border-[#E5E7EB] hover:border-brand-dark/30"
+                  ? "bg-brand-dark text-white shadow-sm dark:bg-emerald-500 dark:text-[#0B1411]"
+                  : "bg-white text-[#616161] border border-[#E5E7EB] hover:border-brand-dark/30 dark:bg-[#0F1C16] dark:text-white/65 dark:border-white/10 dark:hover:border-emerald-500/40"
               )}
             >
               {tab.label}

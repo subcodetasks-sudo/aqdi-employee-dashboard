@@ -1,8 +1,6 @@
+import EditRole from "@/components/Roles/EditRole";
 
-import EditRole from '@/components/Roles/EditRole'
-import React from 'react'
-export default async function page() {
-    return (
-        <EditRole  />
-    )
+export default async function Page({ params, searchParams }) {
+  await Promise.all([params, searchParams]);
+  return <EditRole />;
 }

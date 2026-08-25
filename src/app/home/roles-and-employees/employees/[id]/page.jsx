@@ -1,4 +1,5 @@
 "use client"
+import { useUnwrapPageProps } from "@/src/hooks/use-unwrap-page-props";
 import React from 'react'
 import Header from '@/components/home/Header';
 import EmployeeDetailsCard from '@/components/employees/employee-details';
@@ -10,7 +11,9 @@ import { useParams, useSearchParams } from 'next/navigation';
 import { axiosInstance } from '@/src/utils/axios';
 import { useQuery } from '@tanstack/react-query';
 
-export default function EmployeeDetailsPage() {
+export default function EmployeeDetailsPage(props) {
+  useUnwrapPageProps(props?.params, props?.searchParams);
+
   const { id } = useParams()
   const searchParams = useSearchParams()
   const isProfileView = searchParams.get('view') === 'profile'

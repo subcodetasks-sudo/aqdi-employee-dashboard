@@ -13,8 +13,10 @@ import {
   ClipboardList,
   Loader2,
   Menu,
+  Moon,
   ReceiptText,
   Settings,
+  Sun,
   TrendingUp,
   UserRound,
   Users2,
@@ -26,9 +28,7 @@ import { LuLogOut } from "react-icons/lu";
 import { useSidebarStore } from "@/src/stores/sidebar-store";
 import { useUserStore } from "@/src/stores/user-store";
 import { useUnreceivedOrdersWatcher } from "@/src/hooks/use-unreceived-orders-watcher";
-import NotificationList from "../notifiction/notification-list";
-import CommentList from "../comment/comment-list";
-import PaymentNotificationList from "../RealtimeOrders/PaymentNotificationList";
+import { useIsDark, useToggleTheme } from "@/src/hooks/useThemeMode";
 import { toast } from "sonner";
 
 const NAV_ICONS = {
@@ -88,33 +88,31 @@ export default function SideData() {
   const pathname = usePathname();
   const router = useRouter();
   const { logout, logoutLoading } = useLogout();
-  const { displayedPart, isSidebarOpen, setSidebarOpen } = useSidebarStore();
+  const { isSidebarOpen, setSidebarOpen } = useSidebarStore();
   const { can, isReady } = usePermissions();
   const { user } = useUserStore();
   const unreceivedTotal = useUnreceivedOrdersWatcher();
+  const isDark = useIsDark();
+  const { toggleTheme } = useToggleTheme();
 
   useEffect(() => {
     const media = window.matchMedia(DESKTOP_MEDIA);
     const syncSidebarForViewport = () => {
-      if (displayedPart !== "default") {
-        setSidebarOpen(true);
-        return;
-      }
       setSidebarOpen(media.matches);
     };
 
     syncSidebarForViewport();
     media.addEventListener("change", syncSidebarForViewport);
     return () => media.removeEventListener("change", syncSidebarForViewport);
-  }, [setSidebarOpen, displayedPart]);
+  }, [setSidebarOpen]);
 
   const visibleNav = SIDEBAR_NAV.map((group) => ({
     ...group,
     items: group.items.filter((item) => !isReady || can(item.section, 'view')),
   })).filter((group) => group.items.length > 0);
 
-  const isCollapsed = displayedPart === 'default' && !isSidebarOpen;
-  const panelWidth = displayedPart !== 'default' ? 'w-80' : EXPANDED_WIDTH;
+  const isCollapsed = !isSidebarOpen;
+  const panelWidth = EXPANDED_WIDTH;
 
   const userName = user?.name || 'مستخدم';
   const userRole = user?.role_relation?.name || user?.role?.name || '—';
@@ -147,9 +145,12 @@ export default function SideData() {
             : `${COLLAPSED_WIDTH} translate-x-0 max-[1200px]:w-0 max-[1200px]:!p-0 max-[1200px]:!overflow-hidden max-[1200px]:border-e-0 max-[1200px]:translate-x-full`
         }`}
       >
-        {displayedPart === 'default' && (
-          <div className={`flex h-full min-h-0 flex-col ${isCollapsed ? 'px-2 py-4' : 'px-3.5 py-5'}`}>
-            <div className={`mb-4 flex items-center gap-3 ${isCollapsed ? 'justify-center' : 'px-1'}`}>
+        <div className={`flex h-full min-h-0 flex-col ${isCollapsed ? 'px-2 py-4' : 'px-3.5 py-5'}`}>
+            <div
+              className={`relative mb-4 flex items-center gap-3 ${
+                isCollapsed ? "flex-col justify-center gap-2" : "px-1"
+              }`}
+            >
               <Link
                 href="/home"
                 className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-accent/15 ring-1 ring-brand-accent/25"
@@ -162,8 +163,8 @@ export default function SideData() {
                   className="h-7 w-auto object-contain"
                 />
               </Link>
-              {!isCollapsed && (
-                <div className="min-w-0">
+              {!isCollapsed ? (
+                <div className="min-w-0 flex-1 pe-10">
                   <h2 className="truncate text-15 font-bold leading-tight text-sidebar-foreground">
                     لوحة الموظفين
                   </h2>
@@ -171,7 +172,24 @@ export default function SideData() {
                     إدارة طلبات العقود
                   </p>
                 </div>
-              )}
+              ) : null}
+              <button
+                type="button"
+                onClick={toggleTheme}
+                title={isDark ? "الوضع الفاتح" : "الوضع الداكن"}
+                aria-label={isDark ? "الوضع الفاتح" : "الوضع الداكن"}
+                className={`flex h-9 w-9 items-center justify-center rounded-lg text-sidebar-foreground/70 transition-colors hover:bg-white/10 hover:text-sidebar-foreground ${
+                  isCollapsed
+                    ? "shrink-0"
+                    : "absolute end-1 top-1"
+                }`}
+              >
+                {isDark ? (
+                  <Sun className="size-4 text-amber-300" />
+                ) : (
+                  <Moon className="size-4" />
+                )}
+              </button>
             </div>
 
             <div className="mx-1 mb-3 h-px bg-white/10" />
@@ -278,23 +296,6 @@ export default function SideData() {
               )}
             </div>
           </div>
-        )}
-
-        {displayedPart === 'notification' && (
-          <div className="h-full overflow-y-auto px-3.5 py-5 no-scrollbar">
-            <NotificationList />
-          </div>
-        )}
-        {displayedPart === 'comments' && (
-          <div className="h-full overflow-y-auto px-3.5 py-5 no-scrollbar">
-            <CommentList />
-          </div>
-        )}
-        {displayedPart === 'payments' && (
-          <div className="h-full overflow-y-auto px-3.5 py-5 no-scrollbar">
-            <PaymentNotificationList />
-          </div>
-        )}
       </div>
     </>
   );
