@@ -31,21 +31,21 @@ export default function ContentTab() {
         <button
           type="button"
           onClick={() => toast.success(view === "pages" ? "إنشاء صفحة خدمة جديدة (واجهة تجريبية)" : "إنشاء مقال جديد (واجهة تجريبية)")}
-          className="h-9 px-4 rounded-lg bg-[#0B5345] text-white text-[13px] font-bold flex items-center gap-1.5 hover:bg-[#0F6B57] transition-colors"
+          className="h-9 px-4 rounded-lg bg-brand-dark text-white text-13 font-bold flex items-center gap-1.5 hover:bg-[#0F6B57] transition-colors"
         >
           <Plus className="size-4" />
           {view === "pages" ? "صفحة خدمة جديدة" : "مقال جديد"}
         </button>
 
-        <div className="inline-flex rounded-full border border-[#E6EBE9] bg-white p-1 gap-1">
+        <div className="inline-flex rounded-full border border-surface-border-soft bg-white p-1 gap-1">
           {VIEWS.map((item) => (
             <button
               key={item.value}
               type="button"
               onClick={() => setView(item.value)}
               className={cn(
-                "h-8 px-4 rounded-full text-[12px] font-bold transition-all",
-                view === item.value ? "bg-[#0B5345] text-white" : "text-[#6B7280] hover:bg-[#F9FAFB]"
+                "h-8 px-4 rounded-full text-xs font-bold transition-all",
+                view === item.value ? "bg-brand-dark text-white" : "text-status-neutral hover:bg-[#F9FAFB]"
               )}
             >
               {item.label}
@@ -80,7 +80,7 @@ function ServicePagesView() {
             <tbody>
               {SERVICE_PAGES.map((row) => (
                 <tr key={row.title}>
-                  <td className={cn(TD, "font-semibold text-[#111827]")}>{row.title}</td>
+                  <td className={cn(TD, "font-semibold text-gray-900")}>{row.title}</td>
                   <td className={cn(TD, "text-[#2563EB]")}>{row.link}</td>
                   <td className={TD}>{row.keyword}</td>
                   <td className={TD}>
@@ -119,10 +119,10 @@ function ArticlesView() {
             type="button"
             onClick={() => setCategory(label)}
             className={cn(
-              "h-8 px-3.5 rounded-full text-[12px] font-bold transition-all",
+              "h-8 px-3.5 rounded-full text-xs font-bold transition-all",
               category === label
-                ? "bg-[#0B5345] text-white"
-                : "bg-white text-[#374151] border border-[#E6EBE9] hover:bg-[#F9FAFB]"
+                ? "bg-brand-dark text-white"
+                : "bg-white text-gray-700 border border-surface-border-soft hover:bg-[#F9FAFB]"
             )}
           >
             {label}
@@ -150,9 +150,9 @@ function ArticlesView() {
             <tbody>
               {rows.map((row) => (
                 <tr key={row.title}>
-                  <td className={cn(TD, "font-semibold text-[#111827] whitespace-normal max-w-[280px]")}>{row.title}</td>
+                  <td className={cn(TD, "font-semibold text-gray-900 whitespace-normal max-w-[280px]")}>{row.title}</td>
                   <td className={TD}>
-                    <span className="text-[11px] font-semibold text-[#374151] bg-[#F3F4F6] rounded px-2 py-1">
+                    <span className="text-11 font-semibold text-gray-700 bg-status-neutral-bg rounded px-2 py-1">
                       {row.category}
                     </span>
                   </td>
@@ -164,7 +164,7 @@ function ArticlesView() {
                   <td className={cn(TD, "tabular-nums")}>{row.words.toLocaleString("en-US")}</td>
                   <td className={cn(TD, "tabular-nums")}>{row.views.toLocaleString("en-US")}</td>
                   <td className={cn(TD, "tabular-nums")}>{row.leads}</td>
-                  <td className={cn(TD, "font-semibold text-[#111827] tabular-nums")}>{row.revenue}</td>
+                  <td className={cn(TD, "font-semibold text-gray-900 tabular-nums")}>{row.revenue}</td>
                   <td className={TD}>
                     <EditButton />
                   </td>
@@ -178,17 +178,17 @@ function ArticlesView() {
       <SectionCard title="التقويم التحريري – قيد الإعداد">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {EDITORIAL_QUEUE.map((item) => (
-            <div key={item.title} className="rounded-lg border border-[#E6EBE9] p-3.5 flex flex-col gap-2">
+            <div key={item.title} className="rounded-lg border border-surface-border-soft p-3.5 flex flex-col gap-2">
               <p
                 className={cn(
-                  "text-[11px] font-bold w-fit rounded-full px-2 py-0.5",
-                  item.status === "مجدول" ? "bg-[#FEF3C7] text-[#B45309]" : "bg-[#F3F4F6] text-[#6B7280]"
+                  "text-11 font-bold w-fit rounded-full px-2 py-0.5",
+                  item.status === "مجدول" ? "bg-[#FEF3C7] text-[#B45309]" : "bg-status-neutral-bg text-status-neutral"
                 )}
               >
                 {item.date}
               </p>
-              <p className="text-[13px] font-semibold text-[#111827]">{item.title}</p>
-              <span className="text-[11px] font-semibold text-[#374151] bg-[#F3F4F6] rounded px-2 py-1 w-fit">
+              <p className="text-13 font-semibold text-gray-900">{item.title}</p>
+              <span className="text-11 font-semibold text-gray-700 bg-status-neutral-bg rounded px-2 py-1 w-fit">
                 {item.tag}
               </span>
             </div>
@@ -204,7 +204,7 @@ function EditButton() {
     <button
       type="button"
       onClick={() => toast.success("فتح المحرر (واجهة تجريبية)")}
-      className="h-8 px-3 rounded-lg border border-[#E6EBE9] bg-white text-[12px] font-bold text-[#374151] hover:bg-[#F9FAFB] transition-colors"
+      className="h-8 px-3 rounded-lg border border-surface-border-soft bg-white text-xs font-bold text-gray-700 hover:bg-[#F9FAFB] transition-colors"
     >
       تحرير
     </button>

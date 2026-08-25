@@ -92,7 +92,7 @@ export default function AppSectionForm({
   };
 
   return (
-    <div className="rounded-[24px] border border-[#EEEEEE] bg-[#FCFCFC] p-6">
+    <div className="rounded-3xl border border-surface-border bg-[#FCFCFC] p-6">
       <div className="mb-6">
         <h2 className="text-lg font-bold text-black">قسم التطبيق</h2>
         <p className="mt-2 max-w-2xl text-sm leading-7 text-[#707070]">
@@ -108,12 +108,12 @@ export default function AppSectionForm({
             rules={{ required: "نص الشارة مطلوب" }}
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-[14px] font-bold text-black">الشارة</FormLabel>
+                <FormLabel className="text-sm font-bold text-black">الشارة</FormLabel>
                 <FormControl>
                   <Input
                     {...field}
                     placeholder="مثال: تطبيق الجوال"
-                    className="h-[52px] rounded-[16px] border-[#EEEEEE] bg-white px-4"
+                    className="h-13 rounded-2xl border-surface-border bg-white px-4"
                   />
                 </FormControl>
                 <FormMessage />
@@ -127,14 +127,14 @@ export default function AppSectionForm({
             rules={{ required: "العنوان الرئيسي مطلوب" }}
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-[14px] font-bold text-black">
+                <FormLabel className="text-sm font-bold text-black">
                   العنوان الرئيسي
                 </FormLabel>
                 <FormControl>
                   <Textarea
                     {...field}
                     placeholder="مثال: وثّق عقودك من هاتفك الذكي"
-                    className="min-h-[110px] rounded-[20px] border-[#EEEEEE] bg-white px-4 py-3 leading-7 resize-none"
+                    className="min-h-[110px] rounded-20 border-surface-border bg-white px-4 py-3 leading-7 resize-none"
                   />
                 </FormControl>
                 <FormMessage />
@@ -148,12 +148,12 @@ export default function AppSectionForm({
             rules={{ required: "الوصف مطلوب" }}
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-[14px] font-bold text-black">الوصف</FormLabel>
+                <FormLabel className="text-sm font-bold text-black">الوصف</FormLabel>
                 <FormControl>
                   <Textarea
                     {...field}
                     placeholder="أدخل وصف قسم التطبيق"
-                    className="min-h-[120px] rounded-[20px] border-[#EEEEEE] bg-white px-4 py-3 leading-7 resize-none"
+                    className="min-h-[120px] rounded-20 border-surface-border bg-white px-4 py-3 leading-7 resize-none"
                   />
                 </FormControl>
                 <FormMessage />
@@ -175,14 +175,14 @@ export default function AppSectionForm({
             }}
             render={({ field: { onChange, value, ...field } }) => (
               <FormItem>
-                <FormLabel className="text-[14px] font-bold text-black">
+                <FormLabel className="text-sm font-bold text-black">
                   صورة القسم
                 </FormLabel>
                 <FormControl>
-                  <div className="rounded-[24px] border border-dashed border-[#D9D9D9] bg-white p-4">
+                  <div className="rounded-3xl border border-dashed border-[#D9D9D9] bg-white p-4">
                     {preview ? (
                       <div className="space-y-4">
-                        <div className="relative h-[320px] w-full overflow-hidden rounded-[20px] border border-[#EEEEEE] bg-[#FAFAFA]">
+                        <div className="relative h-[320px] w-full overflow-hidden rounded-20 border border-surface-border bg-neutral-50">
                           <Image
                             src={preview}
                             alt="صورة قسم التطبيق"
@@ -192,7 +192,7 @@ export default function AppSectionForm({
                         </div>
 
                         <div className="flex items-center gap-3 max-md:flex-col max-md:items-stretch">
-                          <label className="flex h-11 cursor-pointer items-center justify-center gap-2 rounded-full border border-[#D9D9D9] bg-white px-5 text-sm font-bold text-[#4D4D4D] transition-all hover:bg-[#FAFAFA]">
+                          <label className="flex h-11 cursor-pointer items-center justify-center gap-2 rounded-full border border-[#D9D9D9] bg-white px-5 text-sm font-bold text-ink-subtle transition-all hover:bg-neutral-50">
                             <ImageUp className="size-4" />
                             تغيير الصورة
                             <input
@@ -226,7 +226,7 @@ export default function AppSectionForm({
                         </div>
                       </div>
                     ) : (
-                      <label className="flex min-h-[180px] cursor-pointer flex-col items-center justify-center gap-3 rounded-[20px] bg-white px-6 py-8 text-center transition-all hover:bg-[#FAFAFA]">
+                      <label className="flex min-h-[180px] cursor-pointer flex-col items-center justify-center gap-3 rounded-20 bg-white px-6 py-8 text-center transition-all hover:bg-neutral-50">
                         <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#F4F7FF] text-brand-hover">
                           <ImageUp className="size-5" />
                         </div>

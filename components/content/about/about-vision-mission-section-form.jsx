@@ -65,7 +65,7 @@ function VisionMissionItem({
   };
 
   return (
-    <div className="rounded-[24px] border border-[#EAEAEA] bg-white p-5 shadow-sm">
+    <div className="rounded-3xl border border-[#EAEAEA] bg-white p-5 shadow-sm">
       <div className="mb-4">
         <h4 className="text-sm font-bold text-black">{title}</h4>
       </div>
@@ -77,11 +77,11 @@ function VisionMissionItem({
           rules={{ required: "نص الشارة مطلوب" }}
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-[13px] font-bold text-black">الشارة</FormLabel>
+              <FormLabel className="text-13 font-bold text-black">الشارة</FormLabel>
               <FormControl>
                 <Input
                   {...field}
-                  className="h-[48px] rounded-[14px] border-[#EEEEEE] bg-white px-4"
+                  className="h-12 rounded-14 border-surface-border bg-white px-4"
                 />
               </FormControl>
               <FormMessage />
@@ -95,11 +95,11 @@ function VisionMissionItem({
           rules={{ required: "العنوان مطلوب" }}
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-[13px] font-bold text-black">العنوان</FormLabel>
+              <FormLabel className="text-13 font-bold text-black">العنوان</FormLabel>
               <FormControl>
                 <Input
                   {...field}
-                  className="h-[48px] rounded-[14px] border-[#EEEEEE] bg-white px-4"
+                  className="h-12 rounded-14 border-surface-border bg-white px-4"
                 />
               </FormControl>
               <FormMessage />
@@ -113,11 +113,11 @@ function VisionMissionItem({
           rules={{ required: "الوصف مطلوب" }}
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-[13px] font-bold text-black">الوصف</FormLabel>
+              <FormLabel className="text-13 font-bold text-black">الوصف</FormLabel>
               <FormControl>
                 <Textarea
                   {...field}
-                  className="min-h-[110px] rounded-[16px] border-[#EEEEEE] bg-white px-4 py-3 text-sm leading-6 resize-none"
+                  className="min-h-[110px] rounded-2xl border-surface-border bg-white px-4 py-3 text-sm leading-6 resize-none"
                 />
               </FormControl>
               <FormMessage />
@@ -139,12 +139,12 @@ function VisionMissionItem({
           }}
           render={({ field: { onChange, value, ...field } }) => (
             <FormItem>
-              <FormLabel className="text-[13px] font-bold text-black">صورة الجزء</FormLabel>
+              <FormLabel className="text-13 font-bold text-black">صورة الجزء</FormLabel>
               <FormControl>
-                <div className="rounded-[20px] border border-dashed border-[#D9D9D9] bg-[#FCFCFC] p-3">
+                <div className="rounded-20 border border-dashed border-[#D9D9D9] bg-[#FCFCFC] p-3">
                   {preview ? (
                     <div className="space-y-3">
-                      <div className="relative h-[220px] w-full overflow-hidden rounded-[18px] border border-[#EEEEEE] bg-white">
+                      <div className="relative h-[220px] w-full overflow-hidden rounded-[18px] border border-surface-border bg-white">
                         <Image
                           src={preview}
                           alt={title}
@@ -154,7 +154,7 @@ function VisionMissionItem({
                       </div>
 
                       <div className="flex items-center gap-2 max-md:flex-col max-md:items-stretch">
-                        <label className="flex h-10 cursor-pointer items-center justify-center gap-2 rounded-full border border-[#D9D9D9] bg-white px-4 text-sm font-bold text-[#4D4D4D] transition-all hover:bg-[#FAFAFA]">
+                        <label className="flex h-10 cursor-pointer items-center justify-center gap-2 rounded-full border border-[#D9D9D9] bg-white px-4 text-sm font-bold text-ink-subtle transition-all hover:bg-neutral-50">
                           <ImageUp className="size-4" />
                           تغيير
                           <input
@@ -188,7 +188,7 @@ function VisionMissionItem({
                       </div>
                     </div>
                   ) : (
-                    <label className="flex min-h-[130px] cursor-pointer flex-col items-center justify-center gap-2 rounded-[16px] bg-white px-4 py-6 text-center transition-all hover:bg-[#FAFAFA]">
+                    <label className="flex min-h-[130px] cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl bg-white px-4 py-6 text-center transition-all hover:bg-neutral-50">
                       <ImageUp className="size-5 text-brand-hover" />
                       <div>
                         <p className="text-sm font-bold text-black">{uploadLabel}</p>
@@ -311,7 +311,7 @@ export default function AboutVisionMissionSectionForm({
   };
 
   return (
-    <div className="rounded-[24px] border border-[#EEEEEE] bg-[#FCFCFC] p-6">
+    <div className="rounded-3xl border border-surface-border bg-[#FCFCFC] p-6">
       <div className="mb-6">
         <h2 className="text-lg font-bold text-black">قسم الرؤية والرسالة</h2>
         <p className="mt-2 max-w-2xl text-sm leading-7 text-[#707070]">
@@ -328,14 +328,14 @@ export default function AboutVisionMissionSectionForm({
               rules={{ required: "عنوان القسم مطلوب" }}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-[14px] font-bold text-black">
+                  <FormLabel className="text-sm font-bold text-black">
                     عنوان القسم
                   </FormLabel>
                   <FormControl>
                     <Input
                       {...field}
                       placeholder="مثال: كل ما تريد معرفته"
-                      className="h-[52px] rounded-[16px] border-[#EEEEEE] bg-white px-4"
+                      className="h-13 rounded-2xl border-surface-border bg-white px-4"
                     />
                   </FormControl>
                   <FormMessage />
@@ -349,14 +349,14 @@ export default function AboutVisionMissionSectionForm({
               rules={{ required: "وصف القسم مطلوب" }}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-[14px] font-bold text-black">
+                  <FormLabel className="text-sm font-bold text-black">
                     وصف القسم
                   </FormLabel>
                   <FormControl>
                     <Textarea
                       {...field}
                       placeholder='مثال: يمكنك استخدام منصة "عقدي" لتوثيق عقودك السكنية والتجارية بسهولة ويسر.'
-                      className="min-h-[110px] rounded-[20px] border-[#EEEEEE] bg-white px-4 py-3 leading-7 resize-none"
+                      className="min-h-[110px] rounded-20 border-surface-border bg-white px-4 py-3 leading-7 resize-none"
                     />
                   </FormControl>
                   <FormMessage />

@@ -25,16 +25,16 @@ import {
 export default function OverviewTab() {
   return (
     <div className="flex flex-col gap-5">
-      <div className="rounded-xl bg-[#0B5345] px-6 py-5 flex flex-wrap items-center justify-between gap-6">
+      <div className="rounded-xl bg-brand-dark px-6 py-5 flex flex-wrap items-center justify-between gap-6">
         <div className="flex items-center gap-6 flex-wrap">
           <StatMini label="إجمالي الصرف" value={`${OVERVIEW_ROAS.totalSpend} ريال`} />
           <StatMini label="إيراد مُسنَد" value={`${OVERVIEW_ROAS.attributedRevenue} ريال`} />
           <StatMini label="ربح صافي" value={`${OVERVIEW_ROAS.netProfit}ريال`} />
         </div>
         <div className="text-right">
-          <p className="text-[13px] text-white/70 font-semibold">العائد على الإنفاق الإعلاني (ROAS)</p>
+          <p className="text-13 text-white/70 font-semibold">العائد على الإنفاق الإعلاني (ROAS)</p>
           <p className="text-[38px] font-extrabold text-white leading-none mt-1">{OVERVIEW_ROAS.value}</p>
-          <p className="text-[12px] text-white/60 mt-2 max-w-xs">{OVERVIEW_ROAS.hint}</p>
+          <p className="text-xs text-white/60 mt-2 max-w-xs">{OVERVIEW_ROAS.hint}</p>
         </div>
       </div>
 
@@ -70,14 +70,14 @@ export default function OverviewTab() {
                   </td>
                   <td className={cn(TD, "tabular-nums")}>{row.spend.toLocaleString("en-US")} ريال</td>
                   <td className={cn(TD, "tabular-nums")}>{row.revenue.toLocaleString("en-US")} ريال</td>
-                  <td className={cn(TD, "font-bold text-[#15803D] tabular-nums")}>{row.roas}</td>
+                  <td className={cn(TD, "font-bold text-green-700 tabular-nums")}>{row.roas}</td>
                   <td className={cn(TD, "tabular-nums")}>{row.conversions}</td>
                   <td className={cn(TD, "tabular-nums")}>{row.cac} ريال</td>
                   <td
                     className={cn(
                       TD,
                       "font-bold tabular-nums",
-                      row.profit.includes("-") ? "text-[#DC2626]" : "text-[#15803D]"
+                      row.profit.includes("-") ? "text-red-600" : "text-green-700"
                     )}
                   >
                     {row.profit}
@@ -95,10 +95,10 @@ export default function OverviewTab() {
             {TOP_GOOGLE_KEYWORDS.map((item, index) => (
               <li key={`${item.label}-${index}`} className="flex items-center justify-between gap-3">
                 <span className="flex items-center gap-2 min-w-0">
-                  <span className="size-5 rounded-full bg-[#F3F4F6] text-[#374151] text-[11px] font-bold flex items-center justify-center shrink-0">
+                  <span className="size-5 rounded-full bg-status-neutral-bg text-gray-700 text-11 font-bold flex items-center justify-center shrink-0">
                     {item.rank}
                   </span>
-                  <span className="text-[13px] text-[#374151] truncate">{item.label}</span>
+                  <span className="text-13 text-gray-700 truncate">{item.label}</span>
                 </span>
                 <TrendBadge trend={item.trend} className="shrink-0" />
               </li>
@@ -111,12 +111,12 @@ export default function OverviewTab() {
             {TOP_PAGES_VISITED.map((item) => (
               <li key={item.label} className="flex items-center justify-between gap-3">
                 <span className="flex items-center gap-2 min-w-0">
-                  <span className="text-[10px] font-bold text-[#6B7280] bg-[#F3F4F6] rounded px-1.5 py-0.5 shrink-0">
+                  <span className="text-10 font-bold text-status-neutral bg-status-neutral-bg rounded px-1.5 py-0.5 shrink-0">
                     {item.type}
                   </span>
-                  <span className="text-[13px] text-[#374151] truncate">{item.label}</span>
+                  <span className="text-13 text-gray-700 truncate">{item.label}</span>
                 </span>
-                <span className="text-[13px] font-bold text-[#111827] tabular-nums shrink-0">
+                <span className="text-13 font-bold text-gray-900 tabular-nums shrink-0">
                   {item.visits.toLocaleString("en-US")}
                 </span>
               </li>
@@ -130,9 +130,9 @@ export default function OverviewTab() {
               <li key={item.label} className="flex items-center justify-between gap-3">
                 <span className="flex items-center gap-2 min-w-0">
                   <SourceBadge source={item.source} />
-                  <span className="text-[13px] text-[#374151] truncate">{item.label}</span>
+                  <span className="text-13 text-gray-700 truncate">{item.label}</span>
                 </span>
-                <span className="text-[13px] font-bold text-[#111827] tabular-nums shrink-0">
+                <span className="text-13 font-bold text-gray-900 tabular-nums shrink-0">
                   {item.leads} طلب
                 </span>
               </li>
@@ -152,8 +152,8 @@ export default function OverviewTab() {
 function StatMini({ label, value }) {
   return (
     <div className="text-right">
-      <p className="text-[16px] font-bold text-white leading-tight">{value}</p>
-      <p className="text-[11px] text-white/60 mt-0.5">{label}</p>
+      <p className="text-base font-bold text-white leading-tight">{value}</p>
+      <p className="text-11 text-white/60 mt-0.5">{label}</p>
     </div>
   );
 }
@@ -168,20 +168,20 @@ function HighlightCampaignCard({ tone, title, campaign }) {
       )}
     >
       <div className="min-w-0">
-        <p className={cn("text-[12px] font-bold mb-1", isBest ? "text-[#15803D]" : "text-[#DC2626]")}>{title}</p>
+        <p className={cn("text-xs font-bold mb-1", isBest ? "text-green-700" : "text-red-600")}>{title}</p>
         <div className="flex items-center gap-2 mb-1.5">
           <SourceBadge source={campaign.source} />
-          <span className="text-[14px] font-bold text-[#111827] truncate">{campaign.title}</span>
+          <span className="text-sm font-bold text-gray-900 truncate">{campaign.title}</span>
         </div>
-        <p className="text-[12px] text-[#6B7280]">
+        <p className="text-xs text-status-neutral">
           {campaign.roas} · {campaign.profitLabel}
         </p>
       </div>
       <Link
         href="?tab=campaigns"
         className={cn(
-          "inline-flex items-center gap-1 text-[12px] font-bold shrink-0",
-          isBest ? "text-[#15803D]" : "text-[#DC2626]"
+          "inline-flex items-center gap-1 text-xs font-bold shrink-0",
+          isBest ? "text-green-700" : "text-red-600"
         )}
       >
         التفاصيل

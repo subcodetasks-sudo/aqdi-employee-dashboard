@@ -26,18 +26,18 @@ export default function CampaignsTab() {
           <button
             type="button"
             onClick={handleSync}
-            className="h-10 px-4 rounded-lg bg-[#0B5345] text-white text-[13px] font-bold flex items-center gap-2 hover:bg-[#0F6B57] transition-colors shrink-0"
+            className="h-10 px-4 rounded-lg bg-brand-dark text-white text-13 font-bold flex items-center gap-2 hover:bg-[#0F6B57] transition-colors shrink-0"
           >
             <RefreshCw className={cn("size-4", syncing && "animate-spin")} />
             مزامنة الآن
           </button>
 
-          <div className="flex flex-wrap items-center gap-2 text-[12px] text-[#6B7280]">
+          <div className="flex flex-wrap items-center gap-2 text-xs text-status-neutral">
             <span>تُزامن تلقائيًا من:</span>
             {[...SYNC_PLATFORMS].reverse().map((platform) => (
               <span
                 key={platform.label}
-                className="inline-flex items-center gap-1.5 rounded-full border border-[#E6EBE9] bg-white px-2.5 py-1 text-[12px] font-semibold text-[#374151]"
+                className="inline-flex items-center gap-1.5 rounded-full border border-surface-border-soft bg-white px-2.5 py-1 text-xs font-semibold text-gray-700"
               >
                 <span
                   className={cn("size-[7px] rounded-full", platform.connected ? "bg-[#16A34A]" : "bg-[#D1D5DB]")}
@@ -47,7 +47,7 @@ export default function CampaignsTab() {
             ))}
           </div>
         </div>
-        <p className="text-[11px] text-[#9CA3AF] italic">
+        <p className="text-11 text-gray-400 italic">
           الأرقام تُسحب آليًا من حسابات الإعلانات — لإدارة الربط والمعرّفات افتح تبويب «الربط والبكسلات».
         </p>
       </div>
@@ -75,17 +75,17 @@ export default function CampaignsTab() {
               {CAMPAIGNS.map((row) => (
                 <tr key={row.name}>
                   <td className={TD}>
-                    <ChevronLeft className="size-4 text-[#9CA3AF]" />
+                    <ChevronLeft className="size-4 text-gray-400" />
                   </td>
                   <td className={TD}>
                     <div className="flex items-center gap-2 mb-1">
                       <SourceBadge source={row.source} />
-                      <span className="font-semibold text-[#111827]">{row.name}</span>
+                      <span className="font-semibold text-gray-900">{row.name}</span>
                     </div>
                     <p
                       className={cn(
-                        "text-[11px] flex items-center gap-1",
-                        row.linked ? "text-[#9CA3AF]" : "text-[#DC2626]"
+                        "text-11 flex items-center gap-1",
+                        row.linked ? "text-gray-400" : "text-red-600"
                       )}
                     >
                       {row.linked ? (
@@ -107,7 +107,7 @@ export default function CampaignsTab() {
                   </td>
                   <td className={cn(TD, "tabular-nums")}>{row.spend.toLocaleString("en-US")}ريال</td>
                   <td className={cn(TD, "tabular-nums")}>{row.revenue.toLocaleString("en-US")}ريال</td>
-                  <td className={cn(TD, "font-bold text-[#15803D] tabular-nums")}>{row.roas}</td>
+                  <td className={cn(TD, "font-bold text-green-700 tabular-nums")}>{row.roas}</td>
                   <td className={cn(TD, "tabular-nums")}>{row.leads}</td>
                   <td className={cn(TD, "tabular-nums")}>{row.conversions}</td>
                   <td className={cn(TD, "tabular-nums")}>{row.cac}ريال</td>
@@ -115,7 +115,7 @@ export default function CampaignsTab() {
                     className={cn(
                       TD,
                       "font-bold tabular-nums",
-                      row.profit.includes("-") ? "text-[#DC2626]" : "text-[#15803D]"
+                      row.profit.includes("-") ? "text-red-600" : "text-green-700"
                     )}
                   >
                     {row.profit}

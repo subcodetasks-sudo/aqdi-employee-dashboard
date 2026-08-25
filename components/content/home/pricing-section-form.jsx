@@ -60,7 +60,7 @@ function PricingFeaturesFields({ control, cardIndex }) {
   });
 
   return (
-    <div className="space-y-3 rounded-[18px] border border-[#EEEEEE] bg-[#FCFCFC] p-4">
+    <div className="space-y-3 rounded-[18px] border border-surface-border bg-[#FCFCFC] p-4">
       <div className="flex items-center justify-between">
         <h5 className="text-sm font-bold text-black">مميزات الباقة</h5>
         <Button
@@ -89,7 +89,7 @@ function PricingFeaturesFields({ control, cardIndex }) {
                       <Input
                         {...field}
                         placeholder={`الميزة ${featureIndex + 1}`}
-                        className="h-[44px] rounded-[14px] border-[#EEEEEE] bg-white px-4"
+                        className="h-[44px] rounded-14 border-surface-border bg-white px-4"
                       />
                     </FormControl>
                     <FormMessage />
@@ -188,7 +188,7 @@ export default function PricingSectionForm({
   };
 
   return (
-    <div className="rounded-[24px] border border-[#EEEEEE] bg-[#FCFCFC] p-6">
+    <div className="rounded-3xl border border-surface-border bg-[#FCFCFC] p-6">
       <div className="mb-6">
         <h2 className="text-lg font-bold text-black">قسم الأسعار</h2>
         <p className="mt-2 max-w-2xl text-sm leading-7 text-[#707070]">
@@ -206,12 +206,12 @@ export default function PricingSectionForm({
               rules={{ required: "نص الشارة مطلوب" }}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-[14px] font-bold text-black">الشارة</FormLabel>
+                  <FormLabel className="text-sm font-bold text-black">الشارة</FormLabel>
                   <FormControl>
                     <Input
                       {...field}
                       placeholder="مثال: الأسعار"
-                      className="h-[52px] rounded-[16px] border-[#EEEEEE] bg-white px-4"
+                      className="h-13 rounded-2xl border-surface-border bg-white px-4"
                     />
                   </FormControl>
                   <FormMessage />
@@ -225,14 +225,14 @@ export default function PricingSectionForm({
               rules={{ required: "العنوان الرئيسي مطلوب" }}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-[14px] font-bold text-black">
+                  <FormLabel className="text-sm font-bold text-black">
                     العنوان الرئيسي
                   </FormLabel>
                   <FormControl>
                     <Input
                       {...field}
                       placeholder="مثال: وثّق عقدك"
-                      className="h-[52px] rounded-[16px] border-[#EEEEEE] bg-white px-4"
+                      className="h-13 rounded-2xl border-surface-border bg-white px-4"
                     />
                   </FormControl>
                   <FormMessage />
@@ -246,12 +246,12 @@ export default function PricingSectionForm({
               rules={{ required: "الوصف مطلوب" }}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-[14px] font-bold text-black">الوصف</FormLabel>
+                  <FormLabel className="text-sm font-bold text-black">الوصف</FormLabel>
                   <FormControl>
                     <Textarea
                       {...field}
                       placeholder="أدخل الوصف الخاص بالقسم"
-                      className="min-h-[120px] rounded-[20px] border-[#EEEEEE] bg-white px-4 py-3 leading-7 resize-none"
+                      className="min-h-[120px] rounded-20 border-surface-border bg-white px-4 py-3 leading-7 resize-none"
                     />
                   </FormControl>
                   <FormMessage />
@@ -273,7 +273,7 @@ export default function PricingSectionForm({
                 return (
                   <div
                     key={cardIndex}
-                    className="rounded-[24px] border border-[#EAEAEA] bg-white p-5 shadow-sm"
+                    className="rounded-3xl border border-[#EAEAEA] bg-white p-5 shadow-sm"
                   >
                     <div className="mb-4 flex items-center justify-between">
                       <h4 className="text-sm font-bold text-black">{cardTitle}</h4>
@@ -286,14 +286,14 @@ export default function PricingSectionForm({
                         rules={{ required: "عنوان البطاقة مطلوب" }}
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-[13px] font-bold text-black">
+                            <FormLabel className="text-13 font-bold text-black">
                               العنوان
                             </FormLabel>
                             <FormControl>
                               <Input
                                 {...field}
                                 placeholder={defaultCard.title}
-                                className="h-[48px] rounded-[14px] border-[#EEEEEE] bg-white px-4"
+                                className="h-12 rounded-14 border-surface-border bg-white px-4"
                               />
                             </FormControl>
                             <FormMessage />
@@ -307,14 +307,14 @@ export default function PricingSectionForm({
                         rules={{ required: "الوصف المختصر مطلوب" }}
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-[13px] font-bold text-black">
+                            <FormLabel className="text-13 font-bold text-black">
                               الوصف المختصر
                             </FormLabel>
                             <FormControl>
                               <Input
                                 {...field}
                                 placeholder={defaultCard.subtitle}
-                                className="h-[48px] rounded-[14px] border-[#EEEEEE] bg-white px-4"
+                                className="h-12 rounded-14 border-surface-border bg-white px-4"
                               />
                             </FormControl>
                             <FormMessage />
@@ -329,14 +329,14 @@ export default function PricingSectionForm({
                           rules={{ required: "السعر مطلوب" }}
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel className="text-[13px] font-bold text-black">
+                              <FormLabel className="text-13 font-bold text-black">
                                 السعر
                               </FormLabel>
                               <FormControl>
                                 <Input
                                   {...field}
                                   placeholder={defaultCard.price}
-                                  className="h-[48px] rounded-[14px] border-[#EEEEEE] bg-white px-4"
+                                  className="h-12 rounded-14 border-surface-border bg-white px-4"
                                 />
                               </FormControl>
                               <FormMessage />
@@ -350,14 +350,14 @@ export default function PricingSectionForm({
                           rules={{ required: "مدة السعر مطلوبة" }}
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel className="text-[13px] font-bold text-black">
+                              <FormLabel className="text-13 font-bold text-black">
                                 وصف المدة
                               </FormLabel>
                               <FormControl>
                                 <Input
                                   {...field}
                                   placeholder={defaultCard.durationLabel}
-                                  className="h-[48px] rounded-[14px] border-[#EEEEEE] bg-white px-4"
+                                  className="h-12 rounded-14 border-surface-border bg-white px-4"
                                 />
                               </FormControl>
                               <FormMessage />

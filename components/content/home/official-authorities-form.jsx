@@ -201,7 +201,7 @@ export default function OfficialAuthoritiesForm({
   };
 
   return (
-    <div className="rounded-[24px] border border-[#EEEEEE] bg-[#FCFCFC] p-6">
+    <div className="rounded-3xl border border-surface-border bg-[#FCFCFC] p-6">
       <div className="mb-6">
         <h2 className="text-lg font-bold text-black">قسم الجهات الرسمية</h2>
         <p className="mt-2 max-w-2xl text-sm leading-7 text-[#707070]">
@@ -219,12 +219,12 @@ export default function OfficialAuthoritiesForm({
               rules={{ required: "نص الشارة مطلوب" }}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-[14px] font-bold text-black">الشارة</FormLabel>
+                  <FormLabel className="text-sm font-bold text-black">الشارة</FormLabel>
                   <FormControl>
                     <Input
                       {...field}
                       placeholder="مثال: جهات موثوقة ومعتمدة"
-                      className="h-[52px] rounded-[16px] border-[#EEEEEE] bg-white px-4"
+                      className="h-13 rounded-2xl border-surface-border bg-white px-4"
                     />
                   </FormControl>
                   <FormMessage />
@@ -238,14 +238,14 @@ export default function OfficialAuthoritiesForm({
               rules={{ required: "العنوان الرئيسي مطلوب" }}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-[14px] font-bold text-black">
+                  <FormLabel className="text-sm font-bold text-black">
                     العنوان الرئيسي
                   </FormLabel>
                   <FormControl>
                     <Input
                       {...field}
                       placeholder="مثال: مرخصون من الجهات الرسمية"
-                      className="h-[52px] rounded-[16px] border-[#EEEEEE] bg-white px-4"
+                      className="h-13 rounded-2xl border-surface-border bg-white px-4"
                     />
                   </FormControl>
                   <FormMessage />
@@ -259,12 +259,12 @@ export default function OfficialAuthoritiesForm({
               rules={{ required: "الوصف مطلوب" }}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-[14px] font-bold text-black">الوصف</FormLabel>
+                  <FormLabel className="text-sm font-bold text-black">الوصف</FormLabel>
                   <FormControl>
                     <Textarea
                       {...field}
                       placeholder="أدخل الوصف الخاص بالقسم"
-                      className="min-h-[120px] rounded-[20px] border-[#EEEEEE] bg-white px-4 py-3 leading-7 resize-none"
+                      className="min-h-[120px] rounded-20 border-surface-border bg-white px-4 py-3 leading-7 resize-none"
                     />
                   </FormControl>
                   <FormMessage />
@@ -289,7 +289,7 @@ export default function OfficialAuthoritiesForm({
                 return (
                   <div
                     key={cardIndex}
-                    className="rounded-[24px] border border-[#EAEAEA] bg-white p-5 shadow-sm"
+                    className="rounded-3xl border border-[#EAEAEA] bg-white p-5 shadow-sm"
                   >
                     <div className="mb-4 flex items-center justify-between">
                       <h4 className="text-sm font-bold text-black">{cardTitle}</h4>
@@ -302,14 +302,14 @@ export default function OfficialAuthoritiesForm({
                         rules={{ required: "عنوان البطاقة مطلوب" }}
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-[13px] font-bold text-black">
+                            <FormLabel className="text-13 font-bold text-black">
                               العنوان
                             </FormLabel>
                             <FormControl>
                               <Input
                                 {...field}
                                 placeholder={defaultCard.title}
-                                className="h-[48px] rounded-[14px] border-[#EEEEEE] bg-white px-4"
+                                className="h-12 rounded-14 border-surface-border bg-white px-4"
                               />
                             </FormControl>
                             <FormMessage />
@@ -323,14 +323,14 @@ export default function OfficialAuthoritiesForm({
                         rules={{ required: "وصف البطاقة مطلوب" }}
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-[13px] font-bold text-black">
+                            <FormLabel className="text-13 font-bold text-black">
                               الوصف
                             </FormLabel>
                             <FormControl>
                               <Textarea
                                 {...field}
                                 placeholder={defaultCard.description}
-                                className="min-h-[96px] rounded-[16px] border-[#EEEEEE] bg-white px-4 py-3 text-sm leading-6 resize-none"
+                                className="min-h-[96px] rounded-2xl border-surface-border bg-white px-4 py-3 text-sm leading-6 resize-none"
                               />
                             </FormControl>
                             <FormMessage />
@@ -352,14 +352,14 @@ export default function OfficialAuthoritiesForm({
                         }}
                         render={({ field: { onChange, value, ...field } }) => (
                           <FormItem>
-                            <FormLabel className="text-[13px] font-bold text-black">
+                            <FormLabel className="text-13 font-bold text-black">
                               صورة البطاقة
                             </FormLabel>
                             <FormControl>
-                              <div className="rounded-[20px] border border-dashed border-[#D9D9D9] bg-[#FCFCFC] p-3">
+                              <div className="rounded-20 border border-dashed border-[#D9D9D9] bg-[#FCFCFC] p-3">
                                 {imageAsset.previewUrl ? (
                                   <div className="space-y-3">
-                                    <div className="overflow-hidden rounded-[18px] border border-[#EEEEEE] bg-white">
+                                    <div className="overflow-hidden rounded-[18px] border border-surface-border bg-white">
                                       <img
                                         src={imageAsset.previewUrl}
                                         alt={`صورة البطاقة ${cardIndex + 1}`}
@@ -368,7 +368,7 @@ export default function OfficialAuthoritiesForm({
                                     </div>
 
                                     <div className="flex items-center gap-2 max-md:flex-col max-md:items-stretch">
-                                      <label className="flex h-10 cursor-pointer items-center justify-center gap-2 rounded-full border border-[#D9D9D9] bg-white px-4 text-sm font-bold text-[#4D4D4D] transition-all hover:bg-[#FAFAFA]">
+                                      <label className="flex h-10 cursor-pointer items-center justify-center gap-2 rounded-full border border-[#D9D9D9] bg-white px-4 text-sm font-bold text-ink-subtle transition-all hover:bg-neutral-50">
                                         <ImageUp className="size-4" />
                                         تغيير
                                         <input
@@ -397,7 +397,7 @@ export default function OfficialAuthoritiesForm({
                                     </div>
                                   </div>
                                 ) : (
-                                  <label className="flex min-h-[120px] cursor-pointer flex-col items-center justify-center gap-2 rounded-[16px] bg-white px-4 py-6 text-center transition-all hover:bg-[#FAFAFA]">
+                                  <label className="flex min-h-[120px] cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl bg-white px-4 py-6 text-center transition-all hover:bg-neutral-50">
                                     <ImageUp className="size-5 text-brand-hover" />
                                     <div>
                                       <p className="text-sm font-bold text-black">ارفع صورة البطاقة</p>
@@ -442,14 +442,14 @@ export default function OfficialAuthoritiesForm({
                         }}
                         render={({ field: { onChange, value, ...field } }) => (
                           <FormItem>
-                            <FormLabel className="text-[13px] font-bold text-black">
+                            <FormLabel className="text-13 font-bold text-black">
                               ملف الترخيص
                             </FormLabel>
                             <FormControl>
-                              <div className="rounded-[20px] border border-dashed border-[#D9D9D9] bg-[#FCFCFC] p-3">
+                              <div className="rounded-20 border border-dashed border-[#D9D9D9] bg-[#FCFCFC] p-3">
                                 {licenseAsset.previewUrl ? (
                                   <div className="space-y-3">
-                                    <div className="rounded-[18px] border border-[#EEEEEE] bg-white p-4">
+                                    <div className="rounded-[18px] border border-surface-border bg-white p-4">
                                       {licenseAsset.isPdf ? (
                                         <div className="flex items-center gap-3">
                                           <div className="flex size-12 items-center justify-center rounded-full bg-red-50 text-red-500">
@@ -472,7 +472,7 @@ export default function OfficialAuthoritiesForm({
                                     </div>
 
                                     <div className="flex items-center gap-2 max-md:flex-col max-md:items-stretch">
-                                      <label className="flex h-10 cursor-pointer items-center justify-center gap-2 rounded-full border border-[#D9D9D9] bg-white px-4 text-sm font-bold text-[#4D4D4D] transition-all hover:bg-[#FAFAFA]">
+                                      <label className="flex h-10 cursor-pointer items-center justify-center gap-2 rounded-full border border-[#D9D9D9] bg-white px-4 text-sm font-bold text-ink-subtle transition-all hover:bg-neutral-50">
                                         <ImageUp className="size-4" />
                                         تغيير
                                         <input
@@ -501,7 +501,7 @@ export default function OfficialAuthoritiesForm({
                                     </div>
                                   </div>
                                 ) : (
-                                  <label className="flex min-h-[120px] cursor-pointer flex-col items-center justify-center gap-2 rounded-[16px] bg-white px-4 py-6 text-center transition-all hover:bg-[#FAFAFA]">
+                                  <label className="flex min-h-[120px] cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl bg-white px-4 py-6 text-center transition-all hover:bg-neutral-50">
                                     <FileText className="size-5 text-brand-hover" />
                                     <div>
                                       <p className="text-sm font-bold text-black">ارفع ملف الترخيص</p>

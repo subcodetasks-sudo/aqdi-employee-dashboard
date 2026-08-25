@@ -8,7 +8,7 @@ export default function StatCard({ value, label, trend, tone, className }) {
   return (
     <div
       className={cn(
-        "rounded-xl border border-[#E6EBE9] bg-white px-4 py-3.5 flex flex-col gap-1.5 min-w-0",
+        "rounded-xl border border-surface-border-soft bg-white px-4 py-3.5 flex flex-col gap-1.5 min-w-0",
         className
       )}
     >
@@ -16,10 +16,10 @@ export default function StatCard({ value, label, trend, tone, className }) {
         <span
           className={cn(
             "text-[19px] font-bold leading-tight truncate",
-            tone === "green" && "text-[#15803D]",
-            tone === "red" && "text-[#DC2626]",
+            tone === "green" && "text-green-700",
+            tone === "red" && "text-red-600",
             tone === "amber" && "text-[#B45309]",
-            !tone && "text-[#111827]"
+            !tone && "text-gray-900"
           )}
         >
           {value}
@@ -27,8 +27,8 @@ export default function StatCard({ value, label, trend, tone, className }) {
         {trend ? (
           <span
             className={cn(
-              "inline-flex items-center gap-0.5 text-[11px] font-bold rounded-full px-1.5 py-0.5 shrink-0",
-              trendUp ? "bg-[#DCFCE7] text-[#15803D]" : "bg-[#FEE2E2] text-[#DC2626]"
+              "inline-flex items-center gap-0.5 text-11 font-bold rounded-full px-1.5 py-0.5 shrink-0",
+              trendUp ? "bg-[#DCFCE7] text-green-700" : "bg-[#FEE2E2] text-red-600"
             )}
           >
             {trendUp ? <ArrowUp className="size-2.5" /> : <ArrowDown className="size-2.5" />}
@@ -36,7 +36,7 @@ export default function StatCard({ value, label, trend, tone, className }) {
           </span>
         ) : null}
       </div>
-      <p className="text-[12px] text-[#9CA3AF] leading-snug truncate">{label}</p>
+      <p className="text-xs text-gray-400 leading-snug truncate">{label}</p>
     </div>
   );
 }

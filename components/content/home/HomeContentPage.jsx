@@ -148,7 +148,7 @@ export default function HomeContentPage() {
               sectionKey="app"
             />
           ) : (
-            <div className="rounded-[24px] border border-[#EEEEEE] bg-[#FCFCFC] p-6">
+            <div className="rounded-3xl border border-surface-border bg-[#FCFCFC] p-6">
               <div className="mb-4 flex items-start justify-between gap-4 max-md:flex-col">
                 <div>
                   <h2 className="text-lg font-bold text-black">{tab.title}</h2>
@@ -162,7 +162,7 @@ export default function HomeContentPage() {
               </div>
 
               {isError ? (
-                <div className="rounded-[20px] border border-dashed border-[#D9D9D9] bg-white p-5">
+                <div className="rounded-20 border border-dashed border-[#D9D9D9] bg-white p-5">
                   <p className="text-sm leading-7 text-[#7A7A7A]">تعذر تحميل محتوى الصفحة.</p>
                 </div>
               ) : null}

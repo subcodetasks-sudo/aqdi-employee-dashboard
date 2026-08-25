@@ -68,7 +68,7 @@ export default function AboutHeroSectionForm({
   };
 
   return (
-    <div className="rounded-[24px] border border-[#EEEEEE] bg-[#FCFCFC] p-6">
+    <div className="rounded-3xl border border-surface-border bg-[#FCFCFC] p-6">
       <div className="mb-6">
         <h2 className="text-lg font-bold text-black">القسم الرئيسي</h2>
         <p className="mt-2 max-w-2xl text-sm leading-7 text-[#707070]">
@@ -84,12 +84,12 @@ export default function AboutHeroSectionForm({
             rules={{ required: "نص الشارة مطلوب" }}
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-[14px] font-bold text-black">الشارة</FormLabel>
+                <FormLabel className="text-sm font-bold text-black">الشارة</FormLabel>
                 <FormControl>
                   <Input
                     {...field}
                     placeholder="مثال: من نحن؟"
-                    className="h-[52px] rounded-[16px] border-[#EEEEEE] bg-white px-4"
+                    className="h-13 rounded-2xl border-surface-border bg-white px-4"
                   />
                 </FormControl>
                 <FormMessage />
@@ -103,14 +103,14 @@ export default function AboutHeroSectionForm({
             rules={{ required: "العنوان الرئيسي مطلوب" }}
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-[14px] font-bold text-black">
+                <FormLabel className="text-sm font-bold text-black">
                   العنوان الرئيسي
                 </FormLabel>
                 <FormControl>
                   <Textarea
                     {...field}
                     placeholder="مثال: نُبسّط إدارة العقود الإيجارية"
-                    className="min-h-[120px] rounded-[20px] border-[#EEEEEE] bg-white px-4 py-3 leading-7 resize-none"
+                    className="min-h-[120px] rounded-20 border-surface-border bg-white px-4 py-3 leading-7 resize-none"
                   />
                 </FormControl>
                 <FormMessage />
@@ -124,12 +124,12 @@ export default function AboutHeroSectionForm({
             rules={{ required: "الوصف مطلوب" }}
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-[14px] font-bold text-black">الوصف</FormLabel>
+                <FormLabel className="text-sm font-bold text-black">الوصف</FormLabel>
                 <FormControl>
                   <Textarea
                     {...field}
                     placeholder="أدخل وصف القسم الرئيسي"
-                    className="min-h-[120px] rounded-[20px] border-[#EEEEEE] bg-white px-4 py-3 leading-7 resize-none"
+                    className="min-h-[120px] rounded-20 border-surface-border bg-white px-4 py-3 leading-7 resize-none"
                   />
                 </FormControl>
                 <FormDescription className="text-[#8A8A8A]">

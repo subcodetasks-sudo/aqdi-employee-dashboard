@@ -28,15 +28,15 @@ export default function SeoTab() {
   return (
     <div className="flex flex-col gap-5">
       <div className="flex justify-end">
-        <div className="inline-flex rounded-full border border-[#E6EBE9] bg-white p-1 gap-1">
+        <div className="inline-flex rounded-full border border-surface-border-soft bg-white p-1 gap-1">
           {VIEWS.map((item) => (
             <button
               key={item.value}
               type="button"
               onClick={() => setView(item.value)}
               className={cn(
-                "h-8 px-4 rounded-full text-[12px] font-bold transition-all",
-                view === item.value ? "bg-[#0B5345] text-white" : "text-[#6B7280] hover:bg-[#F9FAFB]"
+                "h-8 px-4 rounded-full text-xs font-bold transition-all",
+                view === item.value ? "bg-brand-dark text-white" : "text-status-neutral hover:bg-[#F9FAFB]"
               )}
             >
               {item.label}
@@ -73,26 +73,26 @@ function KeywordsView() {
               {SEO_KEYWORDS.map((row) => (
                 <tr key={row.keyword} className={cn(row.highlight && "bg-[#F0FDF4]")}>
                   <td className={TD}>
-                    <p className="font-semibold text-[#111827]">{row.keyword}</p>
-                    <p className="text-[11px] text-[#9CA3AF] mt-0.5">{row.page}</p>
+                    <p className="font-semibold text-gray-900">{row.keyword}</p>
+                    <p className="text-11 text-gray-400 mt-0.5">{row.page}</p>
                   </td>
                   <td className={TD}>
                     <span
                       className={cn(
-                        "inline-flex items-center justify-center size-6 rounded-full text-[11px] font-bold",
-                        row.trend === "ارتفعت" ? "bg-[#DCFCE7] text-[#15803D]" : "bg-[#F3F4F6] text-[#374151]"
+                        "inline-flex items-center justify-center size-6 rounded-full text-11 font-bold",
+                        row.trend === "ارتفعت" ? "bg-[#DCFCE7] text-green-700" : "bg-status-neutral-bg text-gray-700"
                       )}
                     >
                       {row.current}
                     </span>
                   </td>
-                  <td className={cn(TD, "tabular-nums text-[#9CA3AF]")}>{row.previous}</td>
+                  <td className={cn(TD, "tabular-nums text-gray-400")}>{row.previous}</td>
                   <td className={cn(TD, "tabular-nums")}>{row.volume.toLocaleString("en-US")}</td>
                   <td className={TD}>{row.competition}</td>
                   <td className={TD}>
                     <TrendBadge trend={row.trend} />
                   </td>
-                  <td className={cn(TD, "font-semibold text-[#111827] tabular-nums")}>
+                  <td className={cn(TD, "font-semibold text-gray-900 tabular-nums")}>
                     {row.revenue.toLocaleString("en-US")} ريال
                   </td>
                 </tr>
@@ -116,18 +116,18 @@ function CrawlView() {
 
   return (
     <>
-      <div className="rounded-xl border border-[#E6EBE9] bg-white p-5 flex flex-wrap items-center justify-between gap-4">
+      <div className="rounded-xl border border-surface-border-soft bg-white p-5 flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h3 className="text-[14px] font-bold text-[#111827]">زحف وفحص الموقع تقنيًا</h3>
-          <p className="text-[12px] text-[#6B7280] mt-1 max-w-lg">
+          <h3 className="text-sm font-bold text-gray-900">زحف وفحص الموقع تقنيًا</h3>
+          <p className="text-xs text-status-neutral mt-1 max-w-lg">
             يفحص كل صفحات aqdi.sa ويكتشف الأخطاء التقنية التي تضر بترتيبك في Google.
           </p>
-          <p className="text-[11px] text-[#9CA3AF] mt-1.5">{SEO_CRAWL_META.lastScan}</p>
+          <p className="text-11 text-gray-400 mt-1.5">{SEO_CRAWL_META.lastScan}</p>
         </div>
         <button
           type="button"
           onClick={handleScan}
-          className="h-10 px-4 rounded-lg bg-[#0B5345] text-white text-[13px] font-bold flex items-center gap-2 hover:bg-[#0F6B57] transition-colors shrink-0"
+          className="h-10 px-4 rounded-lg bg-brand-dark text-white text-13 font-bold flex items-center gap-2 hover:bg-[#0F6B57] transition-colors shrink-0"
         >
           <RefreshCw className={cn("size-4", scanning && "animate-spin")} />
           ابدء فحص الموقع
@@ -150,15 +150,15 @@ function CrawlView() {
             >
               <p
                 className={cn(
-                  "text-[16px] font-bold",
-                  item.tone === "red" && "text-[#DC2626]",
+                  "text-base font-bold",
+                  item.tone === "red" && "text-red-600",
                   item.tone === "amber" && "text-[#B45309]",
-                  item.tone === "green" && "text-[#15803D]"
+                  item.tone === "green" && "text-green-700"
                 )}
               >
                 {item.value}
               </p>
-              <p className="text-[11px] text-[#6B7280] mt-0.5">{item.label}</p>
+              <p className="text-11 text-status-neutral mt-0.5">{item.label}</p>
             </div>
           ))}
         </div>
@@ -177,7 +177,7 @@ function CrawlView() {
             <tbody>
               {SEO_PAGE_ISSUES.map((row, index) => (
                 <tr key={`${row.page}-${index}`}>
-                  <td className={cn(TD, "font-semibold text-[#111827]")}>{row.page}</td>
+                  <td className={cn(TD, "font-semibold text-gray-900")}>{row.page}</td>
                   <td className={TD}>{row.issue}</td>
                   <td className={TD}>
                     <SeverityBadge severity={row.severity} />
