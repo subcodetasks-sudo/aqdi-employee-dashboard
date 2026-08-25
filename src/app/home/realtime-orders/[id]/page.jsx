@@ -1,9 +1,13 @@
 "use client";
 
+import { useUnwrapPageProps } from "@/src/hooks/use-unwrap-page-props";
 import { useEffect } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
+import Loader from "@/components/home/loader";
 
-export default function RealtimeOrderDetailsRedirect() {
+export default function RealtimeOrderDetailsRedirect(props) {
+  useUnwrapPageProps(props?.params, props?.searchParams);
+
   const { id } = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -16,5 +20,5 @@ export default function RealtimeOrderDetailsRedirect() {
     router.replace(`/home/orders/${id}${qs ? `?${qs}` : ""}`);
   }, [id, router, searchParams]);
 
-  return null;
+  return <Loader />;
 }

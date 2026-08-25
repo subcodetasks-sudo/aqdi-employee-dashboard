@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { toast } from "sonner";
 import {
   Check,
@@ -9,6 +10,7 @@ import {
   X,
 } from "lucide-react";
 import greenRial from "@/public/images/greenRial.svg";
+import waIcon from "@/public/images/waIcon.svg";
 import { cn } from "@/lib/utils";
 import { RT } from "./theme";
 import OrderActionsMenu from "./OrderActionsMenu";
@@ -74,6 +76,7 @@ export function buildRealtimeOrderColumns({
       id: "contractType",
       label: "نوع العقد",
       hideable: false,
+      sticky: "start",
       cell: (row) => (
         <span
           className={cn(
@@ -128,11 +131,87 @@ export function buildRealtimeOrderColumns({
       ),
     },
     {
+      id: "customerPhone",
+      label: "جوال العميل",
+      hideable: true,
+      stopRowClick: true,
+      cell: (row) => {
+        const phone = row?.user_mobile || row?.phone || "";
+        if (!phone) {
+          return (
+            <span className={cn("text-13", dark ? "text-white/40" : "text-[#8A8A84]")}>
+              —
+            </span>
+          );
+        }
+        const waHref = `https://wa.me/${String(phone).replace(/^0/, "966")}`;
+        return (
+          <div className="flex items-center gap-1.5 whitespace-nowrap" dir="ltr">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                navigator.clipboard.writeText(String(phone).replace(/^0/, ""));
+                toast.success("تم نسخ رقم الجوال");
+              }}
+              className={cn(
+                "text-[12px] font-extrabold tabular-nums px-1.5 py-0.5 rounded-md transition-colors",
+                dark
+                  ? "text-white/85 hover:bg-white/10"
+                  : "text-[#33413B] hover:bg-[#EEF6F2]"
+              )}
+              title="نسخ الجوال"
+            >
+              {phone}
+            </button>
+            <Link
+              href={waHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              title="تواصل واتساب"
+              className={cn(
+                "size-[26px] rounded-full border inline-flex items-center justify-center transition-colors",
+                dark
+                  ? "bg-[#0F2E20] border-[#2C5648] hover:bg-[#163A2A]"
+                  : "bg-[#E9F7EF] border-[#BFE6CE] hover:bg-[#D8F2E3]"
+              )}
+            >
+              <Image src={waIcon} alt="whatsapp" width={15} height={15} />
+            </Link>
+          </div>
+        );
+      },
+    },
+    {
+      id: "documentType",
+      label: "نوع الوثيقة",
+      hideable: true,
+      cell: (row) => (
+        <span
+          className={cn(
+            "text-13 font-semibold",
+            dark ? "text-white/70" : "text-[#33403B]"
+          )}
+        >
+          {row?.instrument_type || row?.instrument_type_trans || row?.document_type || "—"}
+        </span>
+      ),
+    },
+    {
       id: "payment",
       label: "الدفع",
       hideable: true,
       cell: (row) => {
         const paid = row?.is_paid === true || row?.is_paid === 1;
+        const rawAmount = row?.amount_payment;
+        const amountNum = Number(rawAmount);
+        const showAmount =
+          paid &&
+          rawAmount != null &&
+          rawAmount !== "" &&
+          Number.isFinite(amountNum);
+
         if (paid) {
           return (
             <div className="flex items-center gap-1.5 flex-wrap">
@@ -143,13 +222,16 @@ export function buildRealtimeOrderColumns({
                 <Check className="size-3" strokeWidth={2.75} />
                 مدفوع
               </span>
-              <span className="inline-flex items-center gap-1 font-bold text-xs text-[#007C13]">
-                {row?.amount_payment}
-                <Image src={greenRial} alt="rial" width={11} height={11} />
-              </span>
+              {showAmount ? (
+                <span className="inline-flex items-center gap-1 font-bold text-xs text-[#007C13] tabular-nums">
+                  {amountNum.toLocaleString("en-US")}
+                  <Image src={greenRial} alt="rial" width={11} height={11} />
+                </span>
+              ) : null}
             </div>
           );
         }
+
         return (
           <span
             className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-11 font-bold"
@@ -165,6 +247,12 @@ export function buildRealtimeOrderColumns({
       id: "receivedSince",
       label: "مستلم منذ",
       hideable: true,
+      sortable: true,
+      defaultSortDir: "asc",
+      getSortValue: (row) => {
+        const t = new Date(row?.received_at).getTime();
+        return Number.isFinite(t) ? t : null;
+      },
       cell: (row) => {
         const label = row?.received_since || formatRelativeShort(row?.received_at);
         const urgency = getReceivedUrgency(row?.received_at);
@@ -232,6 +320,7 @@ export function buildRealtimeOrderColumns({
       id: "actions",
       label: "الإجراءات",
       hideable: false,
+      sticky: "end",
       stopRowClick: true,
       cell: (row) => (
         <div className="flex items-center gap-1.5">

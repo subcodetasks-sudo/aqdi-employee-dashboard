@@ -23,7 +23,7 @@ export default function TenantFinancialGroup({ order, onEdit }) {
             {order.tenant?.type_label}
           </>
         }
-        badgeClassName="bg-[#DCFCE7] text-green-700"
+        badgeClassName="bg-[#DCFCE7] text-green-700 dark:bg-[#064E3B]/40 dark:text-[#6EE7B7]"
       >
         <Field label="جوال المستأجر" value={order.tenant?.phone} />
       </AccentCard>
@@ -45,8 +45,8 @@ export default function TenantFinancialGroup({ order, onEdit }) {
             className={cn(
               "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10.5px] font-bold",
               financial.paid
-                ? "bg-[#DCFCE7] text-green-700"
-                : "bg-[#FEE2E2] text-red-600"
+                ? "bg-[#DCFCE7] text-green-700 dark:bg-[#064E3B]/40 dark:text-[#6EE7B7]"
+                : "bg-[#FEE2E2] text-red-600 dark:bg-[#3F1D1D] dark:text-[#FCA5A5]"
             )}
           >
             {financial.paid ? (
@@ -65,7 +65,7 @@ export default function TenantFinancialGroup({ order, onEdit }) {
           <Field label="المدة" value={financial.duration} />
           <Field label="الدفعات" value={financial.frequency} />
           <div className="flex items-center justify-between gap-3 text-xs">
-            <span className="text-gray-400 font-medium">إجمالي الإيجار</span>
+            <span className="text-gray-400 dark:text-white/40 font-medium">إجمالي الإيجار</span>
             <Money value={financial.rent} className="text-sm" />
           </div>
         </div>
@@ -76,7 +76,7 @@ export default function TenantFinancialGroup({ order, onEdit }) {
           </span>
           <span className="inline-flex items-center gap-1.5">
             {financial.fees_paid ? (
-              <Check className="size-3.5 text-green-700" strokeWidth={2.75} />
+              <Check className="size-3.5 text-green-700 dark:text-[#6EE7B7]" strokeWidth={2.75} />
             ) : null}
             <Money value={financial.fees} />
           </span>

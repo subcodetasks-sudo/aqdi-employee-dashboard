@@ -51,7 +51,13 @@ export function mapRealtimeTableOrder(row = {}) {
     ...row,
     contract_type_key: getContractTypeKey(row),
     is_draft: isDraft,
-    user_mobile: row?.user_mobile || row?.user?.mobile,
+    user_mobile: row?.user_mobile || row?.user?.mobile || row?.phone,
+    instrument_type:
+      row?.instrument_type_trans ||
+      row?.instrument_type ||
+      row?.document_type ||
+      row?.track ||
+      null,
     employee_name: row?.employee_name || row?.employee?.name,
     received_at: row?.received_at || row?.updated_at || row?.created_at,
     status_id: row?.status?.id ?? row?.contract_status_id ?? row?.status_id,

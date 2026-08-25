@@ -3,20 +3,27 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import {
   ControllableDataTable,
   useTablePreferences,
 } from "@/components/shared/controllable-table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import NewRequestsSection from "./NewRequestsSection";
 import RealtimeOrdersToolbar from "./RealtimeOrdersToolbar";
+import RealtimeStatusFilterBar from "./RealtimeStatusFilterBar";
 import { buildRealtimeOrderColumns } from "./realtime-orders-columns";
 import {
   mapRealtimeNewOrder,
   mapRealtimeTableOrder,
 } from "./map-realtime-order";
 import { cn } from "@/lib/utils";
-import { useIsDark, useToggleTheme } from "@/src/hooks/useThemeMode";
+import { useIsDark } from "@/src/hooks/useThemeMode";
 import { useContractStatuses } from "@/src/hooks/use-contract-statuses";
 import { usePermissions } from "@/src/hooks/usePermissions";
 import { PERMISSION_SECTIONS } from "@/src/lib/permissions";
@@ -28,15 +35,15 @@ import {
   useRealtimeOrdersList,
 } from "@/src/hooks/use-realtime-new-orders";
 import { useChangeOrderStatus } from "@/src/hooks/use-change-order-status";
-import { getRealtimeExtraFilterStatuses } from "@/src/lib/contract-statuses";
+import { getRealtimeStatusChipStatuses } from "@/src/lib/contract-statuses";
 import { useReceiveContract } from "@/src/hooks/use-receive-contract";
+import { isDraftOrderRow } from "@/src/lib/draft-contract-statuses";
 import { STATUS_FILTER_PILLS } from "./mock-data";
 import ChangeOrderStatusFieldsDialog, {
   getStatusCaseFields,
   statusRequiresExtraFields,
 } from "./ChangeOrderStatusFieldsDialog";
 import ManageContractStatusesDialog from "./ManageContractStatusesDialog";
-import { useUserStore } from "@/src/stores/user-store";
 import ReturnRequestDialog from "@/components/Orders/return-request-dialog";
 import WhatsAppPaymentLinkDialog from "./WhatsAppPaymentLinkDialog";
 import {
@@ -52,83 +59,109 @@ import {
 import { usePaginatedExport } from "@/components/Orders/shared/use-paginated-export";
 
 const TABLE_STORAGE_KEY = "realtime-orders-table-prefs";
-const COMPLETION_FILTERS = ["authenticated", "incomplete"];
+const SECTION_FILTERS = ["authenticated", "canceled", "returned", "incomplete"];
+const DEFAULT_PER_PAGE = 25;
+const PAGE_SIZE_OPTIONS = [25, 50, 100];
 
 const PILL_PERMISSIONS = {
   authenticated: PERMISSION_SECTIONS.request_classification,
+  canceled: PERMISSION_SECTIONS.request_classification,
   returned: PERMISSION_SECTIONS.returned_request,
   incomplete: PERMISSION_SECTIONS.incomplete_request,
-  myFiles: [
-    PERMISSION_SECTIONS.all_requests,
-    PERMISSION_SECTIONS.completed_request,
-  ],
 };
 
-function TablePagination({ pagination, currentPage, onPageChange, dark }) {
-  if (!pagination || pagination.last_page <= 1) return null;
+function TablePagination({
+  pagination,
+  currentPage,
+  onPageChange,
+  perPage,
+  onPerPageChange,
+  dark,
+}) {
+  if (!pagination || !pagination.total) return null;
 
-  const lastPage = pagination.last_page;
-  const pages = [];
-  const start = Math.max(1, currentPage - 1);
-  const end = Math.min(lastPage, currentPage + 1);
+  const lastPage = Math.max(1, pagination.last_page ?? 1);
+  const total = pagination.total ?? 0;
+  const from = total === 0 ? 0 : (currentPage - 1) * perPage + 1;
+  const to = Math.min(currentPage * perPage, total);
 
-  if (start > 1) {
-    pages.push(1);
-    if (start > 2) pages.push("...");
-  }
-  for (let i = start; i <= end; i += 1) pages.push(i);
-  if (end < lastPage) {
-    if (end < lastPage - 1) pages.push("...");
-    pages.push(lastPage);
-  }
-
-  const btnClass = (active) =>
-    cn(
-      "size-9 rounded-full flex items-center justify-center text-13 font-medium transition-all",
-      active
-        ? "bg-brand-dark text-white"
-        : dark
-          ? "border border-white/10 text-white/55 hover:bg-white/10"
-          : "border border-neutral-200 text-ink-placeholder hover:bg-neutral-100"
-    );
+  const btnClass = cn(
+    "size-[30px] rounded-[9px] border flex items-center justify-center text-[15px] transition-colors disabled:opacity-35 disabled:cursor-default",
+    dark
+      ? "border-[#28453A] bg-[#132620] text-[#C4D8D0] hover:bg-[#1A332B]"
+      : "border-[#DFE9E4] bg-white text-[#33403B] hover:bg-[#F7FAF9]"
+  );
 
   return (
-    <div className="flex items-center justify-center gap-2.5 mt-1" dir="rtl">
-      <button
-        type="button"
-        onClick={() => onPageChange(Math.max(1, currentPage - 1))}
-        disabled={currentPage === 1}
-        className={btnClass(false)}
-      >
-        <ChevronRight className="size-4" />
-      </button>
-      {pages.map((page, idx) =>
-        page === "..." ? (
-          <span
-            key={`dots-${idx}`}
-            className={dark ? "text-white/35 px-1" : "text-ink-placeholder px-1"}
-          >
-            ...
-          </span>
-        ) : (
-          <button
-            key={page}
-            type="button"
-            onClick={() => onPageChange(page)}
-            className={btnClass(currentPage === page)}
-          >
-            {page}
-          </button>
-        )
+    <div
+      className={cn(
+        "flex items-center justify-between gap-2.5 flex-wrap pt-1 text-[12.5px]",
+        dark ? "text-[#84A093]" : "text-[#5A6B64]"
       )}
-      <button
-        type="button"
-        onClick={() => onPageChange(Math.min(lastPage, currentPage + 1))}
-        disabled={currentPage === lastPage}
-        className={btnClass(false)}
-      >
-        <ChevronLeft className="size-4" />
-      </button>
+      dir="rtl"
+    >
+      <span>
+        عرض{" "}
+        <b className={dark ? "text-[#C4D8D0]" : "text-[#33403B]"}>
+          {from}–{to}
+        </b>{" "}
+        من <b className={dark ? "text-[#C4D8D0]" : "text-[#33403B]"}>{total}</b> طلب
+      </span>
+
+      <span className="flex items-center gap-2">
+        <span className="font-bold whitespace-nowrap">صفوف/صفحة</span>
+        <Select
+          value={String(perPage)}
+          onValueChange={(value) => onPerPageChange?.(Number(value))}
+        >
+          <SelectTrigger
+            className={cn(
+              "h-[30px] w-[72px] rounded-[9px] border px-2 text-xs font-bold shadow-none focus:ring-0 focus:ring-offset-0",
+              dark
+                ? "border-[#28453A] bg-[#132620] text-[#C4D8D0]"
+                : "border-[#DFE9E4] bg-white text-[#33403B]"
+            )}
+          >
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent dir="rtl" className="min-w-[72px]">
+            {PAGE_SIZE_OPTIONS.map((n) => (
+              <SelectItem key={n} value={String(n)} className="text-xs font-bold">
+                {n}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <button
+          type="button"
+          onClick={() => onPageChange(Math.min(lastPage, currentPage + 1))}
+          disabled={currentPage >= lastPage}
+          className={btnClass}
+          title="الصفحة التالية"
+          aria-label="الصفحة التالية"
+        >
+          ‹
+        </button>
+        <span
+          className={cn(
+            "font-extrabold tabular-nums px-1.5",
+            dark ? "text-[#5FD0A8]" : "text-[#0B5F4C]"
+          )}
+        >
+          {currentPage} / {lastPage}
+        </span>
+        <button
+          type="button"
+          onClick={() => onPageChange(Math.max(1, currentPage - 1))}
+          disabled={currentPage <= 1}
+          className={btnClass}
+          title="الصفحة السابقة"
+          aria-label="الصفحة السابقة"
+        >
+          ›
+        </button>
+      </span>
     </div>
   );
 }
@@ -136,10 +169,7 @@ function TablePagination({ pagination, currentPage, onPageChange, dark }) {
 export default function RealtimeOrdersWrapper() {
   const router = useRouter();
   const isDark = useIsDark();
-  const { toggleTheme } = useToggleTheme();
   const { can, isAdmin } = usePermissions();
-  const user = useUserStore((state) => state.user);
-  const employeeId = user?.id ?? user?.employee_id ?? null;
 
   const canViewReceivedQueue =
     isAdmin ||
@@ -180,12 +210,14 @@ export default function RealtimeOrdersWrapper() {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [activeFilters, setActiveFilters] = useState([]);
+  const [activeSection, setActiveSection] = useState(null);
   const [extraStatusId, setExtraStatusId] = useState(null);
   const [contractType, setContractType] = useState(null);
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [expandedNew, setExpandedNew] = useState(false);
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
+  const [perPage, setPerPage] = useState(DEFAULT_PER_PAGE);
   const [returnDialogOpen, setReturnDialogOpen] = useState(false);
   const [returnOrder, setReturnOrder] = useState(null);
   const [paymentLinkOpen, setPaymentLinkOpen] = useState(false);
@@ -193,16 +225,20 @@ export default function RealtimeOrdersWrapper() {
   const [pendingStatusChange, setPendingStatusChange] = useState(null);
   const [manageStatusesOpen, setManageStatusesOpen] = useState(false);
 
+  const activeFilters = activeSection ? [activeSection] : [];
+  const inSectionMode = Boolean(activeSection);
+
   const {
     activeItems: statusItems,
     receivedStatusId,
     newStatusId,
     returnedStatusId,
+    canceledStatusId,
   } = useContractStatuses();
 
-  const extraStatuses = useMemo(
-    () => getRealtimeExtraFilterStatuses(statusItems),
-    [statusItems]
+  const statusChips = useMemo(
+    () => getRealtimeStatusChipStatuses(statusItems, receivedStatusId),
+    [statusItems, receivedStatusId]
   );
 
   const {
@@ -228,39 +264,42 @@ export default function RealtimeOrdersWrapper() {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [debouncedSearch, activeFilters, extraStatusId, contractType]);
+  }, [debouncedSearch, activeSection, extraStatusId, contractType, perPage]);
 
   const listParams = useMemo(() => {
-    const hasAuthenticated = activeFilters.includes("authenticated");
-    const hasIncomplete = activeFilters.includes("incomplete");
-    const hasReturned = activeFilters.includes("returned");
-    const hasMyFiles = activeFilters.includes("myFiles");
+    const hasAuthenticated = activeSection === "authenticated";
+    const hasIncomplete = activeSection === "incomplete";
+    const hasReturned = activeSection === "returned";
+    const hasCanceled = activeSection === "canceled";
     const hasCompletionFilter = hasAuthenticated || hasIncomplete;
 
     const hasExtraStatus = extraStatusId != null && extraStatusId !== "";
     const statusId = hasExtraStatus
       ? extraStatusId
-      : hasReturned
-        ? returnedStatusId
-        : hasCompletionFilter || !canViewReceivedQueue
-          ? undefined
-          : receivedStatusId;
+      : hasCanceled
+        ? canceledStatusId
+        : hasReturned
+          ? returnedStatusId
+          : hasCompletionFilter || !canViewReceivedQueue
+            ? undefined
+            : receivedStatusId;
 
     return buildAdminOrdersParams({
       page: currentPage,
+      perPage,
       search: debouncedSearch,
       isCompleted: hasAuthenticated ? 1 : hasIncomplete ? 0 : undefined,
       statusId,
-      employeeId: hasMyFiles ? employeeId : undefined,
       contractType: contractType || undefined,
     });
   }, [
-    activeFilters,
+    activeSection,
+    canceledStatusId,
     contractType,
     currentPage,
     debouncedSearch,
-    employeeId,
     extraStatusId,
+    perPage,
     receivedStatusId,
     returnedStatusId,
     canViewReceivedQueue,
@@ -335,25 +374,29 @@ export default function RealtimeOrdersWrapper() {
   };
 
   const handleToggleFilter = (id) => {
-    setActiveFilters((prev) => {
-      const isOn = prev.includes(id);
-      if (isOn) return prev.filter((item) => item !== id);
+    if (!SECTION_FILTERS.includes(id)) return;
+    setExtraStatusId(null);
+    setSearchQuery("");
+    setFiltersOpen(false);
+    setActiveSection((prev) => (prev === id ? null : id));
+  };
 
-      if (id === "returned") setExtraStatusId(null);
-
-      if (COMPLETION_FILTERS.includes(id)) {
-        return [...prev.filter((item) => !COMPLETION_FILTERS.includes(item)), id];
-      }
-      return [...prev, id];
-    });
+  const handleCloseSection = () => {
+    setActiveSection(null);
+    setSearchQuery("");
   };
 
   const handleExtraStatusChange = (statusId) => {
     setExtraStatusId(statusId);
     if (statusId != null) {
-      setActiveFilters((prev) => prev.filter((item) => item !== "returned"));
+      setActiveSection(null);
     }
   };
+
+  const activeSectionMeta =
+    STATUS_FILTER_PILLS.find((pill) => pill.id === activeSection) ?? null;
+  const sectionCount = pagination?.total ?? tableOrders.length;
+  const hasInlineFilters = extraStatusId != null || Boolean(contractType);
 
   const exportParams = useMemo(() => {
     const params = { ...listParams };
@@ -367,7 +410,7 @@ export default function RealtimeOrdersWrapper() {
     extractPage: extractStandardOrderPage,
     onExport: (rows) =>
       exportOrdersToExcel(rows, {
-        filename: "الطلبات-مباشرة",
+        filename: "الطلبات-مباشر",
         showStatusColumn: true,
       }),
   });
@@ -409,9 +452,9 @@ export default function RealtimeOrdersWrapper() {
         activeFilters={activeFilters}
         onToggleFilter={handleToggleFilter}
         filterPills={visiblePills}
-        extraStatuses={extraStatuses}
-        extraStatusId={extraStatusId}
-        onExtraStatusChange={handleExtraStatusChange}
+        filtersOpen={filtersOpen && !inSectionMode}
+        onToggleFilters={() => setFiltersOpen((open) => !open)}
+        hasActiveFilters={hasInlineFilters}
         contractType={contractType}
         onContractTypeChange={setContractType}
         columns={columns}
@@ -423,13 +466,15 @@ export default function RealtimeOrdersWrapper() {
         isExporting={isExporting}
         canExport={canExport}
         dark={isDark}
-        onToggleTheme={toggleTheme}
         onOpenPaymentLink={() => setPaymentLinkOpen(true)}
         canManageStatuses={canManageStatuses}
         onManageStatuses={() => setManageStatusesOpen(true)}
+        activeSection={activeSectionMeta}
+        sectionCount={sectionCount}
+        onCloseSection={handleCloseSection}
       />
 
-      {canViewNewRequests ? (
+      {canViewNewRequests && !inSectionMode ? (
       <NewRequestsSection
         orders={newRequests}
         totalCount={newOrdersTotal}
@@ -446,20 +491,39 @@ export default function RealtimeOrdersWrapper() {
       />
       ) : null}
 
+      {filtersOpen && !inSectionMode ? (
+        <RealtimeStatusFilterBar
+          statusChips={statusChips}
+          statusId={extraStatusId}
+          onStatusChange={handleExtraStatusChange}
+          contractType={contractType}
+          onContractTypeChange={setContractType}
+          totalCount={pagination?.total}
+          dark={isDark}
+        />
+      ) : null}
+
       <ControllableDataTable
         columns={columns}
         data={tableOrders}
         density={density}
         isColumnVisible={isColumnVisible}
         isLoading={tableLoading}
-        emptyMessage="لا توجد طلبات مطابقة للبحث"
+        emptyMessage="لا نتائج مطابقة — عدّل البحث أو الفلاتر"
         onRowClick={goToDetails}
+        getRowHighlight={isDraftOrderRow}
+        defaultSort={{ id: "receivedSince", direction: "asc" }}
       />
 
       <TablePagination
         pagination={pagination}
         currentPage={currentPage}
         onPageChange={setCurrentPage}
+        perPage={perPage}
+        onPerPageChange={(value) => {
+          setPerPage(value);
+          setCurrentPage(1);
+        }}
         dark={isDark}
       />
 

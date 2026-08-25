@@ -24,13 +24,13 @@ export default function SectionEditorDialog({
       <DialogContent
         dir="rtl"
         closeButton={false}
-        className="max-w-[min(720px,calc(100vw-2rem))] max-h-[min(92vh,920px)] overflow-y-auto rounded-[28px] border-0 p-0"
+        className="max-w-[min(720px,calc(100vw-2rem))] max-h-[min(92vh,920px)] overflow-y-auto rounded-[28px] border-0 p-0 bg-white dark:bg-[#0F1C16] text-foreground dark:text-white"
       >
         <button
           type="button"
           onClick={() => onOpenChange(false)}
           aria-label="إغلاق"
-          className="absolute end-5 top-5 flex size-9 items-center justify-center rounded-full bg-neutral-100 text-ink-placeholder transition-all hover:bg-[#FFEBEB] hover:text-[#E24444] dark:bg-white/10 dark:text-white/60"
+          className="absolute end-5 top-5 flex size-9 items-center justify-center rounded-full bg-neutral-100 text-ink-placeholder transition-all hover:bg-[#FFEBEB] hover:text-[#E24444] dark:bg-white/10 dark:text-white/60 dark:hover:bg-[#3F1D1D] dark:hover:text-[#FCA5A5]"
         >
           <X className="size-4" />
         </button>
@@ -47,7 +47,7 @@ export default function SectionEditorDialog({
           </DialogTitle>
         </div>
 
-        <div className="px-6 py-5">{children}</div>
+        <div className="px-6 py-5 dark:text-white">{children}</div>
       </DialogContent>
     </Dialog>
   );

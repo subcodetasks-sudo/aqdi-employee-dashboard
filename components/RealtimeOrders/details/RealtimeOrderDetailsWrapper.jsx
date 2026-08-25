@@ -20,7 +20,7 @@ import { mapOrderDetailView } from "./map-order-detail";
 
 function resolveBackLink(from) {
   if (from === "/home/realtime-orders" || from?.startsWith("/home/realtime-orders")) {
-    return { href: "/home/realtime-orders", label: "الطلبات مباشرة" };
+    return { href: "/home/realtime-orders", label: "الطلبات مباشر" };
   }
   if (from?.startsWith("/home/clients") || from?.startsWith("/home/users")) {
     return { href: from, label: "العملاء" };
@@ -36,7 +36,7 @@ function OrderDetailsBody() {
   const searchParams = useSearchParams();
   const id = params?.id;
   const { orderData, isLoading, isError, refetch } = useSingleOrderContext();
-  const { setOrderId, setDisplayedPart, setSidebarOpen } = useSidebarStore();
+  const { setOrderId, setDisplayedPart } = useSidebarStore();
   const { can, isAdmin } = usePermissions();
   const { activeItems: statuses } = useContractStatuses();
 
@@ -73,7 +73,6 @@ function OrderDetailsBody() {
 
   const handleOpenNotes = () => {
     setOrderId(id);
-    setSidebarOpen(true);
     setDisplayedPart("comments");
   };
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Maximize2, Minimize2, Plus, RefreshCw, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -12,6 +12,29 @@ import {
 import NewRequestCard from "./NewRequestCard";
 import NewRequestStatCard from "./NewRequestStatCard";
 import { RT } from "./theme";
+
+async function enterBrowserFullscreen(el) {
+  if (!el) return;
+  const request =
+    el.requestFullscreen ||
+    el.webkitRequestFullscreen ||
+    el.msRequestFullscreen;
+  if (request) await request.call(el);
+}
+
+async function exitBrowserFullscreen() {
+  const doc = document;
+  if (!doc.fullscreenElement && !doc.webkitFullscreenElement) return;
+  const exit =
+    doc.exitFullscreen || doc.webkitExitFullscreen || doc.msExitFullscreen;
+  if (exit) await exit.call(doc);
+}
+
+function isBrowserFullscreen() {
+  return Boolean(
+    document.fullscreenElement || document.webkitFullscreenElement
+  );
+}
 
 export default function NewRequestsDialog({
   open,
@@ -27,23 +50,57 @@ export default function NewRequestsDialog({
   dark,
   isLoading,
 }) {
+  const contentRef = useRef(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
+
+  useEffect(() => {
+    const sync = () => setIsFullscreen(isBrowserFullscreen());
+    document.addEventListener("fullscreenchange", sync);
+    document.addEventListener("webkitfullscreenchange", sync);
+    return () => {
+      document.removeEventListener("fullscreenchange", sync);
+      document.removeEventListener("webkitfullscreenchange", sync);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!open && isBrowserFullscreen()) {
+      exitBrowserFullscreen().catch(() => {});
+    }
+    if (!open) setIsFullscreen(false);
+  }, [open]);
+
+  const toggleFullscreen = useCallback(async () => {
+    try {
+      if (isBrowserFullscreen()) {
+        await exitBrowserFullscreen();
+      } else {
+        await enterBrowserFullscreen(contentRef.current);
+      }
+    } catch {
+      /* user denied or unsupported */
+    }
+  }, []);
 
   return (
     <Dialog
       open={open}
       onOpenChange={(next) => {
-        if (!next) setIsFullscreen(false);
+        if (!next) {
+          exitBrowserFullscreen().catch(() => {});
+          setIsFullscreen(false);
+        }
         onOpenChange?.(next);
       }}
     >
       <DialogContent
+        ref={contentRef}
         closeButton={false}
         dir="rtl"
         className={cn(
           "w-full p-0 gap-0 overflow-hidden border-0 shadow-2xl flex flex-col",
           isFullscreen
-            ? "left-0 top-0 h-screen w-screen max-w-none max-h-none translate-x-0 translate-y-0 rounded-none sm:rounded-none"
+            ? "!fixed !inset-0 !left-0 !top-0 !h-screen !w-screen !max-w-none !max-h-none !translate-x-0 !translate-y-0 !rounded-none"
             : "max-w-[min(1200px,calc(100vw-2rem))] max-h-[min(920px,calc(100vh-2rem))] rounded-2xl translate-x-[-50%] translate-y-[-50%]",
           dark ? "bg-[#0B1411]" : "bg-[#F4F6F5]"
         )}
@@ -53,7 +110,6 @@ export default function NewRequestsDialog({
           {total} طلب بانتظار الاستلام
         </DialogDescription>
 
-        {/* Dark teal header bar */}
         <div
           className="flex items-center justify-between gap-3 px-4 sm:px-5 py-3.5 shrink-0"
           style={{ backgroundColor: RT.brandDeep }}
@@ -95,7 +151,7 @@ export default function NewRequestsDialog({
             <button
               type="button"
               aria-label={isFullscreen ? "تصغير" : "توسيع"}
-              onClick={() => setIsFullscreen((value) => !value)}
+              onClick={toggleFullscreen}
               className="size-9 rounded-lg bg-white/10 text-white flex items-center justify-center hover:bg-white/15 transition-colors"
             >
               {isFullscreen ? (

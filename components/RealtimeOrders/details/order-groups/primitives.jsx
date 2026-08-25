@@ -134,14 +134,19 @@ export function GridField({ label, value }) {
 }
 
 export function Money({ value, className }) {
+  const amount = Number(
+    typeof value === "string" ? value.replace(/,/g, "").trim() : value
+  );
+  const display = Number.isFinite(amount) ? amount.toLocaleString("en-US") : "—";
+
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 font-black text-green-700",
+        "inline-flex items-center gap-1 font-black text-green-700 dark:text-[#6EE7B7]",
         className
       )}
     >
-      {Number(value ?? 0).toLocaleString("en-US")}
+      {display}
       <Image src={greenRial} alt="" width={12} height={12} />
     </span>
   );
