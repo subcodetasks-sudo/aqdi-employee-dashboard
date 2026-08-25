@@ -30,10 +30,10 @@ export default function ContractSettingsTab({ activeSub, onSubChange }) {
             type="button"
             onClick={() => onSubChange(tab.id)}
             className={cn(
-              "h-10 px-4 rounded-xl text-[13px] font-bold transition-all shrink-0",
+              "h-10 px-4 rounded-xl text-13 font-bold transition-all shrink-0",
               activeSub === tab.id
                 ? "bg-[#054D44] text-white shadow-sm"
-                : "bg-white text-[#374151] border border-[#E6EBE9] hover:border-[#054D44]/30 dark:bg-[#13241C] dark:text-white/70 dark:border-white/10"
+                : "bg-white text-gray-700 border border-surface-border-soft hover:border-[#054D44]/30 dark:bg-card dark:text-white/70 dark:border-white/10"
             )}
           >
             {tab.label}

@@ -32,10 +32,10 @@ export default function SystemSettingsHeader({ activeTab }) {
 
       <div className="flex min-w-0 flex-1 flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
-          <h1 className="text-[26px] font-bold leading-tight text-[#111827] dark:text-white">
+          <h1 className="text-[26px] font-bold leading-tight text-gray-900 dark:text-white">
             إعدادات النظام
           </h1>
-          <p className="mt-1.5 text-[13px] font-medium text-[#9CA3AF]">
+          <p className="mt-1.5 text-13 font-medium text-gray-400">
             {crumbs.join(" • ")}
           </p>
         </div>
@@ -43,7 +43,7 @@ export default function SystemSettingsHeader({ activeTab }) {
         <button
           type="button"
           onClick={() => router.back()}
-          className="inline-flex items-center gap-1.5 h-10 px-4 rounded-xl border border-[#E6EBE9] bg-white text-[13px] font-semibold text-[#6B7280] hover:bg-[#F9FAFB] hover:text-[#054D44] transition-colors dark:bg-[#13241C] dark:border-white/10 dark:text-white/60 dark:hover:text-white"
+          className="inline-flex items-center gap-1.5 h-10 px-4 rounded-xl border border-surface-border-soft bg-white text-13 font-semibold text-status-neutral hover:bg-[#F9FAFB] hover:text-[#054D44] transition-colors dark:bg-card dark:border-white/10 dark:text-white/60 dark:hover:text-white"
         >
           رجوع
           <ChevronLeft className="size-4" />

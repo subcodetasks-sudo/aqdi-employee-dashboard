@@ -50,10 +50,10 @@ export default function SystemSettingsWrapper() {
             type="button"
             onClick={() => updateParams({ tab: tab.id, sub: tab.id === "contracts" ? contractSub : null })}
             className={cn(
-              "h-11 px-6 rounded-xl text-[14px] font-bold transition-all shrink-0",
+              "h-11 px-6 rounded-xl text-sm font-bold transition-all shrink-0",
               activeTab === tab.id
                 ? "bg-[#054D44] text-white shadow-sm"
-                : "bg-white text-[#111827] border border-[#E6EBE9] hover:border-[#054D44]/30 dark:bg-[#13241C] dark:text-white dark:border-white/10"
+                : "bg-white text-gray-900 border border-surface-border-soft hover:border-[#054D44]/30 dark:bg-card dark:text-white dark:border-white/10"
             )}
           >
             {tab.label}

@@ -6,16 +6,16 @@ import { cn } from "@/lib/utils";
 import { useSidebarStore } from "@/src/stores/sidebar-store";
 
 export const SETTINGS_ADD_TRIGGER_CLASS =
-  "h-10 px-4 rounded-xl border border-[#E6EBE9] bg-white text-[13px] font-bold text-[#111827] hover:border-[#054D44]/40 hover:text-[#054D44] shadow-sm inline-flex items-center gap-1.5 transition-colors";
+  "h-10 px-4 rounded-xl border border-surface-border-soft bg-white text-13 font-bold text-gray-900 hover:border-[#054D44]/40 hover:text-[#054D44] shadow-sm inline-flex items-center gap-1.5 transition-colors";
 
 export const SETTINGS_EDIT_TRIGGER_CLASS =
-  "h-8 px-3.5 rounded-lg border border-[#E5E7EB] bg-white text-[12px] font-bold text-[#059669] hover:bg-[#ECFDF5] shadow-none inline-flex items-center justify-center transition-colors";
+  "h-8 px-3.5 rounded-lg border border-[#E5E7EB] bg-white text-xs font-bold text-[#059669] hover:bg-[#ECFDF5] shadow-none inline-flex items-center justify-center transition-colors";
 
 export const SETTINGS_DELETE_TRIGGER_CLASS =
-  "h-8 px-3.5 rounded-lg border border-[#FECACA] bg-[#FEF2F2] text-[12px] font-bold text-[#DC2626] hover:bg-[#FEE2E2] shadow-none inline-flex items-center justify-center transition-colors";
+  "h-8 px-3.5 rounded-lg border border-[#FECACA] bg-[#FEF2F2] text-xs font-bold text-red-600 hover:bg-[#FEE2E2] shadow-none inline-flex items-center justify-center transition-colors";
 
 export const SETTINGS_VIEW_TRIGGER_CLASS =
-  "h-8 px-3.5 rounded-lg border border-[#E5E7EB] bg-[#F3F4F6] text-[12px] font-bold text-[#374151] hover:bg-[#E5E7EB] shadow-none inline-flex items-center justify-center transition-colors";
+  "h-8 px-3.5 rounded-lg border border-[#E5E7EB] bg-status-neutral-bg text-xs font-bold text-gray-700 hover:bg-[#E5E7EB] shadow-none inline-flex items-center justify-center transition-colors";
 
 export function SettingsListHeader({
   title,
@@ -47,15 +47,15 @@ export function SettingsListHeader({
           <button
             type="button"
             onClick={() => router.push(backHref)}
-            className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#6B7280] hover:text-[#054D44] transition-colors mb-1.5"
+            className="inline-flex items-center gap-1.5 text-13 font-semibold text-status-neutral hover:text-[#054D44] transition-colors mb-1.5"
           >
             <ChevronLeft className="size-4" />
             رجوع
           </button>
-          <h1 className="text-[24px] font-bold text-[#111827] dark:text-white leading-tight">
+          <h1 className="text-[24px] font-bold text-gray-900 dark:text-white leading-tight">
             {title}
           </h1>
-          <p className="mt-1 text-[13px] font-medium text-[#9CA3AF]">{subtitle}</p>
+          <p className="mt-1 text-13 font-medium text-gray-400">{subtitle}</p>
         </div>
       </div>
 
@@ -81,10 +81,10 @@ export function StatusBadge({ active }) {
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full px-3 py-1 text-[12px] font-bold whitespace-nowrap",
+        "inline-flex items-center rounded-full px-3 py-1 text-xs font-bold whitespace-nowrap",
         active
-          ? "bg-[#E6F7EF] text-[#15803D]"
-          : "bg-[#F3F4F6] text-[#6B7280]"
+          ? "bg-[#E6F7EF] text-green-700"
+          : "bg-status-neutral-bg text-status-neutral"
       )}
     >
       {active ? "مفعل" : "غير مفعل"}
@@ -96,9 +96,9 @@ export function SectionHeading({ title, description, action }) {
   return (
     <div className="flex flex-wrap items-start justify-between gap-3">
       <div className="min-w-0">
-        <h2 className="text-[16px] font-bold text-[#054D44]">{title}</h2>
+        <h2 className="text-base font-bold text-[#054D44]">{title}</h2>
         {description ? (
-          <p className="mt-1 text-[13px] font-medium text-[#9CA3AF]">{description}</p>
+          <p className="mt-1 text-13 font-medium text-gray-400">{description}</p>
         ) : null}
       </div>
       {action}
@@ -108,7 +108,7 @@ export function SectionHeading({ title, description, action }) {
 
 export function SettingsTable({ headers, children, minWidth = "860px" }) {
   return (
-    <div className="overflow-x-auto rounded-2xl border border-[#E6EBE9] bg-white shadow-[0_4px_12px_rgba(11,83,69,0.04)] dark:bg-[#13241C] dark:border-white/10">
+    <div className="overflow-x-auto rounded-2xl border border-surface-border-soft bg-white shadow-[0_4px_12px_rgba(11,83,69,0.04)] dark:bg-card dark:border-white/10">
       <table className="w-full border-collapse" style={{ minWidth }}>
         <thead>
           <tr className="bg-[#F4F6F5] dark:bg-white/[0.04]">
@@ -119,7 +119,7 @@ export function SettingsTable({ headers, children, minWidth = "860px" }) {
                 <th
                   key={label}
                   className={cn(
-                    "whitespace-nowrap px-5 py-3.5 text-right text-[13px] font-bold text-[#4B5563] dark:text-white/55",
+                    "whitespace-nowrap px-5 py-3.5 text-right text-13 font-bold text-[#4B5563] dark:text-white/55",
                     className
                   )}
                 >
@@ -137,7 +137,7 @@ export function SettingsTable({ headers, children, minWidth = "860px" }) {
 
 export function SettingsTableRow({ children }) {
   return (
-    <tr className="border-b border-[#F3F4F6] last:border-0 hover:bg-[#FAFBFA] dark:border-white/[0.06] dark:hover:bg-white/[0.03] transition-colors">
+    <tr className="border-b border-status-neutral-bg last:border-0 hover:bg-[#FAFBFA] dark:border-white/[0.06] dark:hover:bg-white/[0.03] transition-colors">
       {children}
     </tr>
   );
@@ -147,7 +147,7 @@ export function SettingsTd({ children, className, ...props }) {
   return (
     <td
       className={cn(
-        "px-5 py-3.5 text-[13px] font-medium text-[#111827] dark:text-white align-middle",
+        "px-5 py-3.5 text-13 font-medium text-gray-900 dark:text-white align-middle",
         className
       )}
       {...props}
@@ -161,8 +161,8 @@ export function SettingsContentCard({ children, className }) {
   return (
     <div
       className={cn(
-        "rounded-2xl border border-[#E6EBE9] bg-white p-6 shadow-[0_4px_12px_rgba(11,83,69,0.04)]",
-        "dark:bg-[#13241C] dark:border-white/10",
+        "rounded-2xl border border-surface-border-soft bg-white p-6 shadow-[0_4px_12px_rgba(11,83,69,0.04)]",
+        "dark:bg-card dark:border-white/10",
         className
       )}
     >
@@ -176,7 +176,7 @@ export function SettingsEmptyRow({ colSpan, message = "لا توجد بيانا�
     <tr>
       <td
         colSpan={colSpan}
-        className="px-5 py-16 text-center text-[13px] font-medium text-[#9CA3AF]"
+        className="px-5 py-16 text-center text-13 font-medium text-gray-400"
       >
         {message}
       </td>
@@ -208,13 +208,13 @@ export function SettingsPagination({ page, lastPage, onPageChange }) {
         type="button"
         onClick={() => onPageChange(Math.max(1, page - 1))}
         disabled={page === 1}
-        className="size-9 rounded-full border border-[#E6EBE9] bg-white text-[#6B7280] hover:bg-[#F4F6F5] disabled:opacity-40"
+        className="size-9 rounded-full border border-surface-border-soft bg-white text-status-neutral hover:bg-[#F4F6F5] disabled:opacity-40"
       >
         <ChevronLeft className="size-4 mx-auto" />
       </button>
       {pages.map((item, idx) =>
         item === "..." ? (
-          <span key={`dots-${idx}`} className="px-1 text-[#9CA3AF]">
+          <span key={`dots-${idx}`} className="px-1 text-gray-400">
             ...
           </span>
         ) : (
@@ -223,10 +223,10 @@ export function SettingsPagination({ page, lastPage, onPageChange }) {
             type="button"
             onClick={() => onPageChange(item)}
             className={cn(
-              "size-9 rounded-full text-[13px] font-bold transition-colors",
+              "size-9 rounded-full text-13 font-bold transition-colors",
               page === item
                 ? "bg-[#054D44] text-white"
-                : "border border-[#E6EBE9] bg-white text-[#6B7280] hover:bg-[#F4F6F5]"
+                : "border border-surface-border-soft bg-white text-status-neutral hover:bg-[#F4F6F5]"
             )}
           >
             {item}
@@ -237,7 +237,7 @@ export function SettingsPagination({ page, lastPage, onPageChange }) {
         type="button"
         onClick={() => onPageChange(Math.min(lastPage, page + 1))}
         disabled={page === lastPage}
-        className="size-9 rounded-full border border-[#E6EBE9] bg-white text-[#6B7280] hover:bg-[#F4F6F5] disabled:opacity-40"
+        className="size-9 rounded-full border border-surface-border-soft bg-white text-status-neutral hover:bg-[#F4F6F5] disabled:opacity-40"
       >
         <ChevronRight className="size-4 mx-auto" />
       </button>
@@ -250,14 +250,14 @@ export function OutlineButton({ tone = "brand", children, className, ...props })
     brand:
       "border-[#054D44]/30 text-[#054D44] hover:bg-[#E8F5F1]",
     danger:
-      "border-[#FECACA] text-[#DC2626] hover:bg-[#FFF0F0]",
+      "border-[#FECACA] text-red-600 hover:bg-[#FFF0F0]",
   };
 
   return (
     <button
       type="button"
       className={cn(
-        "h-8 px-3 rounded-lg border text-[12px] font-bold transition-colors whitespace-nowrap",
+        "h-8 px-3 rounded-lg border text-xs font-bold transition-colors whitespace-nowrap",
         tones[tone],
         className
       )}
@@ -273,7 +273,7 @@ export function PrimaryButton({ children, className, ...props }) {
     <button
       type="button"
       className={cn(
-        "h-10 px-5 rounded-xl bg-[#054D44] text-white text-[13px] font-bold hover:bg-[#043F38] transition-colors",
+        "h-10 px-5 rounded-xl bg-[#054D44] text-white text-13 font-bold hover:bg-[#043F38] transition-colors",
         className
       )}
       {...props}
@@ -288,7 +288,7 @@ export function GhostAddButton({ children, className, ...props }) {
     <button
       type="button"
       className={cn(
-        "h-9 px-4 rounded-xl border border-[#E6EBE9] bg-white text-[13px] font-bold text-[#111827] hover:border-[#054D44]/40 hover:text-[#054D44] transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-[#E6EBE9] disabled:hover:text-[#111827]",
+        "h-9 px-4 rounded-xl border border-surface-border-soft bg-white text-13 font-bold text-gray-900 hover:border-[#054D44]/40 hover:text-[#054D44] transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-surface-border-soft disabled:hover:text-gray-900",
         className
       )}
       {...props}

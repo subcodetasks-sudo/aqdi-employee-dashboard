@@ -52,9 +52,9 @@ export default function GeneralSettingsTab() {
 
   if (isError) {
     return (
-      <div className="rounded-[24px] border border-[#FECACA] bg-[#FFF5F5] p-8 text-center">
-        <p className="text-[15px] font-bold text-[#B91C1C]">تعذر تحميل الإعدادات العامة</p>
-        <p className="mt-2 text-[13px] text-[#991B1B]">
+      <div className="rounded-3xl border border-[#FECACA] bg-[#FFF5F5] p-8 text-center">
+        <p className="text-15 font-bold text-[#B91C1C]">تعذر تحميل الإعدادات العامة</p>
+        <p className="mt-2 text-13 text-[#991B1B]">
           {error?.response?.data?.message || error?.message || "تأكد من توفر الـ API ثم أعد المحاولة"}
         </p>
       </div>
@@ -64,7 +64,7 @@ export default function GeneralSettingsTab() {
   return (
     <div className="flex flex-col gap-8">
       <section className="flex flex-col gap-4">
-        <h2 className="text-[14px] font-bold text-[#054D44]">إعدادات الموقع والتطبيق</h2>
+        <h2 className="text-sm font-bold text-[#054D44]">إعدادات الموقع والتطبيق</h2>
 
         <div className="grid grid-cols-5 gap-3 max-[1200px]:grid-cols-3 max-[768px]:grid-cols-2 max-[480px]:grid-cols-1">
           {GENERAL_SETTINGS_FIELDS.map((item) => {
@@ -73,7 +73,7 @@ export default function GeneralSettingsTab() {
             return (
               <div
                 key={item.key}
-                className="flex flex-col items-center gap-3 rounded-2xl border border-[#E6EBE9] bg-white px-4 py-5 shadow-[0_4px_12px_rgba(11,83,69,0.04)] dark:bg-[#13241C] dark:border-white/10"
+                className="flex flex-col items-center gap-3 rounded-2xl border border-surface-border-soft bg-white px-4 py-5 shadow-[0_4px_12px_rgba(11,83,69,0.04)] dark:bg-card dark:border-white/10"
               >
                 <span
                   className={cn(
@@ -82,13 +82,13 @@ export default function GeneralSettingsTab() {
                   )}
                 />
                 <div className="text-center">
-                  <p className="text-[14px] font-bold text-[#111827] dark:text-white">
+                  <p className="text-sm font-bold text-gray-900 dark:text-white">
                     {item.label}
                   </p>
                   <p
                     className={cn(
-                      "mt-1 text-[12px] font-bold",
-                      enabled ? "text-[#054D44]" : "text-[#DC2626]"
+                      "mt-1 text-xs font-bold",
+                      enabled ? "text-[#054D44]" : "text-red-600"
                     )}
                   >
                     {enabled ? "مفعل" : "معطل"}
@@ -114,7 +114,7 @@ export default function GeneralSettingsTab() {
       </section>
 
       <section className="flex flex-col gap-4">
-        <h2 className="text-[14px] font-bold text-[#054D44]">
+        <h2 className="text-sm font-bold text-[#054D44]">
           إعدادات النظام ({SYSTEM_CATEGORIES.length} فئة)
         </h2>
 
@@ -123,16 +123,16 @@ export default function GeneralSettingsTab() {
             <Link
               key={category.id}
               href={category.href}
-              className="group flex items-center gap-3 rounded-2xl border border-[#E6EBE9] bg-white px-3 py-3.5 shadow-[0_4px_12px_rgba(11,83,69,0.04)] transition-all hover:border-[#054D44]/30 hover:shadow-md dark:bg-[#13241C] dark:border-white/10"
+              className="group flex items-center gap-3 rounded-2xl border border-surface-border-soft bg-white px-3 py-3.5 shadow-[0_4px_12px_rgba(11,83,69,0.04)] transition-all hover:border-[#054D44]/30 hover:shadow-md dark:bg-card dark:border-white/10"
             >
               <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-lg bg-[#E8F5F1] text-[#054D44] dark:bg-emerald-500/15 dark:text-emerald-300">
                 <AlignJustify className="size-4" />
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block truncate text-[13px] font-bold text-[#111827] dark:text-white">
+                <span className="block truncate text-13 font-bold text-gray-900 dark:text-white">
                   {category.label}
                 </span>
-                <span className="mt-0.5 block truncate text-[11px] font-medium text-[#9CA3AF]">
+                <span className="mt-0.5 block truncate text-11 font-medium text-gray-400">
                   {category.subtitle}
                 </span>
               </span>
