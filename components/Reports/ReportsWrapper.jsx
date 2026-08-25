@@ -2,7 +2,9 @@
 
 import { useMemo, useState } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { exportPanelTablesToCsv, printReportPanel } from "@/src/lib/report-export";
 import ReportsHeader from "./shared/ReportsHeader";
 import ReportsFilters from "./shared/ReportsFilters";
 import { REPORT_TABS } from "./mock-data";
@@ -91,13 +93,31 @@ export default function ReportsWrapper() {
   };
 
   const ActivePanel = TAB_COMPONENTS[activeTab];
+  const activeTabLabel = REPORT_TABS.find((tab) => tab.id === activeTab)?.label ?? "تقرير";
+
+  const handlePrint = () => {
+    if (!printReportPanel()) {
+      toast.error("تعذر تجهيز التقرير للطباعة");
+    }
+  };
+
+  const handleExportCsv = () => {
+    const exported = exportPanelTablesToCsv("reports-print-area", activeTabLabel);
+    if (!exported) {
+      toast.message("لا توجد بيانات جدولية في هذا التقرير للتصدير");
+    }
+  };
 
   return (
     <div
       className="flex flex-col gap-5 min-h-full -m-[45px] p-[45px] max-[1700px]:-m-[30px] max-[1700px]:p-[30px] bg-[#F4F6F5] dark:bg-[#0B1411]"
       dir="rtl"
     >
-      <ReportsHeader lastUpdated={lastUpdated} />
+      <ReportsHeader
+        lastUpdated={lastUpdated}
+        onPrint={handlePrint}
+        onExportCsv={handleExportCsv}
+      />
 
       <div className="flex flex-wrap gap-2">
         {REPORT_TABS.map((tab) => (
@@ -106,17 +126,17 @@ export default function ReportsWrapper() {
             type="button"
             onClick={() => setActiveTab(tab.id)}
             className={cn(
-              "h-10 px-5 rounded-full text-[13px] font-bold transition-all shrink-0 flex items-center gap-2",
+              "h-10 px-5 rounded-full text-13 font-bold transition-all shrink-0 flex items-center gap-2",
               activeTab === tab.id
-                ? "bg-[#0B5345] text-white shadow-sm"
-                : "bg-white text-[#616161] border border-[#EEEEEE] hover:bg-[#F9FAFB] dark:bg-[#13241C] dark:text-white/70 dark:border-white/10"
+                ? "bg-brand-dark text-white shadow-sm"
+                : "bg-white text-[#616161] border border-surface-border hover:bg-[#F9FAFB] dark:bg-card dark:text-white/70 dark:border-white/10"
             )}
           >
             {tab.label}
             {tab.badge && (
               <span
                 className={cn(
-                  "text-[10px] font-bold px-1.5 py-0.5 rounded",
+                  "text-10 font-bold px-1.5 py-0.5 rounded",
                   activeTab === tab.id
                     ? "bg-white/20 text-white"
                     : "bg-[#FEF3C7] text-[#B45309]"
@@ -142,7 +162,9 @@ export default function ReportsWrapper() {
         onEmployeeChange={(value) => updateFilter("employee_id", value, setEmployee)}
       />
 
-      <ActivePanel period={period} dateFrom={dateFrom} dateTo={dateTo} contractType={contractType} employee={employee} />
+      <div id="reports-print-area">
+        <ActivePanel period={period} dateFrom={dateFrom} dateTo={dateTo} contractType={contractType} employee={employee} />
+      </div>
     </div>
   );
 }

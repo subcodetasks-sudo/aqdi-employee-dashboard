@@ -13,7 +13,7 @@ export function reportErrorMessage(error, fallback) {
 export default function ReportError({ title, error, fallback }) {
     return (
         <ReportSectionCard title={title}>
-            <p className="text-[13px] text-[#DC2626] dark:text-red-300">
+            <p className="text-13 text-red-600 dark:text-red-300">
                 {reportErrorMessage(error, fallback)}
             </p>
         </ReportSectionCard>

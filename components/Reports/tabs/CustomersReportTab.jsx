@@ -8,11 +8,11 @@ import { useCustomersReport } from "@/src/hooks/use-reports";
 import ReportError from "../shared/ReportError";
 
 const TH =
-  "px-3 py-3 text-[12px] font-semibold text-[#9CA3AF] border-b border-[#EEF1F0] whitespace-nowrap text-right dark:text-white/50 dark:border-white/10";
-const TD = "px-3 py-3 text-[13px] text-[#374151] border-b border-[#F3F4F6] whitespace-nowrap dark:text-white/70 dark:border-white/10";
+  "px-3 py-3 text-xs font-semibold text-gray-400 border-b border-[#EEF1F0] whitespace-nowrap text-right dark:text-white/50 dark:border-white/10";
+const TD = "px-3 py-3 text-13 text-gray-700 border-b border-status-neutral-bg whitespace-nowrap dark:text-white/70 dark:border-white/10";
 
-export default function CustomersReportTab({ period, dateFrom, dateTo }) {
-  const { data, isLoading, isError, error } = useCustomersReport(period, dateFrom, dateTo);
+export default function CustomersReportTab({ period, dateFrom, dateTo, contractType, employee }) {
+  const { data, isLoading, isError, error } = useCustomersReport(period, dateFrom, dateTo, contractType, employee);
   if (isLoading) return <Loader />;
   if (isError) return <ReportError title="العملاء" error={error} fallback="تعذّر تحميل تقرير العملاء." />;
   const k = data?.kpis ?? {};
@@ -41,7 +41,7 @@ export default function CustomersReportTab({ period, dateFrom, dateTo }) {
               <tbody>
                 {(data?.top_customers ?? []).map((row) => (
                   <tr key={row.customer_id ?? row.mobile}>
-                    <td className={`${TD} font-semibold text-[#111827] dark:text-white`}>{row.name}</td>
+                    <td className={`${TD} font-semibold text-gray-900 dark:text-white`}>{row.name}</td>
                     <td className={`${TD} tabular-nums`} dir="ltr">
                       {row.mobile}
                     </td>

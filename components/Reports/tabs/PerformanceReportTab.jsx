@@ -63,16 +63,16 @@ export default function PerformanceReportTab({ period, dateFrom, dateTo }) {
           <table className="w-full min-w-[480px] border-collapse">
             <thead>
               <tr>
-                <th className="px-3 py-3 text-[12px] font-semibold text-[#9CA3AF] border-b border-[#EEF1F0] text-right dark:text-white/50 dark:border-white/10">
+                <th className="px-3 py-3 text-xs font-semibold text-gray-400 border-b border-[#EEF1F0] text-right dark:text-white/50 dark:border-white/10">
                   الخدمة
                 </th>
-                <th className="px-3 py-3 text-[12px] font-semibold text-[#9CA3AF] border-b border-[#EEF1F0] text-right dark:text-white/50 dark:border-white/10">
+                <th className="px-3 py-3 text-xs font-semibold text-gray-400 border-b border-[#EEF1F0] text-right dark:text-white/50 dark:border-white/10">
                   الكمية
                 </th>
-                <th className="px-3 py-3 text-[12px] font-semibold text-[#9CA3AF] border-b border-[#EEF1F0] text-right dark:text-white/50 dark:border-white/10">
+                <th className="px-3 py-3 text-xs font-semibold text-gray-400 border-b border-[#EEF1F0] text-right dark:text-white/50 dark:border-white/10">
                   القيمة
                 </th>
-                <th className="px-3 py-3 text-[12px] font-semibold text-[#9CA3AF] border-b border-[#EEF1F0] text-right dark:text-white/50 dark:border-white/10">
+                <th className="px-3 py-3 text-xs font-semibold text-gray-400 border-b border-[#EEF1F0] text-right dark:text-white/50 dark:border-white/10">
                   النسبة
                 </th>
               </tr>
@@ -83,16 +83,16 @@ export default function PerformanceReportTab({ period, dateFrom, dateTo }) {
                   key={row.service ?? row.label}
                   className={cn(row.highlight && "bg-[#FFF7ED] dark:bg-amber-500/10")}
                 >
-                  <td className="px-3 py-3 text-[13px] font-semibold text-[#111827] border-b border-[#F3F4F6] dark:text-white dark:border-white/10">
+                  <td className="px-3 py-3 text-13 font-semibold text-gray-900 border-b border-status-neutral-bg dark:text-white dark:border-white/10">
                     {row.label}
                   </td>
-                  <td className="px-3 py-3 text-[13px] text-[#374151] border-b border-[#F3F4F6] dark:text-white/70 dark:border-white/10">
+                  <td className="px-3 py-3 text-13 text-gray-700 border-b border-status-neutral-bg dark:text-white/70 dark:border-white/10">
                     {row.qty}
                   </td>
-                  <td className="px-3 py-3 text-[13px] text-[#374151] border-b border-[#F3F4F6] tabular-nums dark:text-white/70 dark:border-white/10">
+                  <td className="px-3 py-3 text-13 text-gray-700 border-b border-status-neutral-bg tabular-nums dark:text-white/70 dark:border-white/10">
                     {Number(row.value ?? 0).toLocaleString("en-US")} ريال
                   </td>
-                  <td className="px-3 py-3 text-[13px] text-[#374151] border-b border-[#F3F4F6] dark:text-white/70 dark:border-white/10">
+                  <td className="px-3 py-3 text-13 text-gray-700 border-b border-status-neutral-bg dark:text-white/70 dark:border-white/10">
                     {row.percent ?? 0}%
                   </td>
                 </tr>

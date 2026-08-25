@@ -68,18 +68,18 @@ export default function OperatingExpenseDialog({ open, onOpenChange, expense }) 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="sm:max-w-[480px] p-8 rounded-[32px] border-0 dark:bg-[#13241C] dark:text-white"
+        className="sm:max-w-[480px] p-8 rounded-32 border-0 dark:bg-card dark:text-white"
         dir="rtl"
       >
         <DialogHeader className="mb-6">
-          <DialogTitle className="text-[20px] font-black text-black dark:text-white border-b border-[#F5F5F5] dark:border-white/10 pb-4">
+          <DialogTitle className="text-[20px] font-black text-black dark:text-white border-b border-neutral-100 dark:border-white/10 pb-4">
             {isEdit ? "تعديل مصروف تشغيلي" : "إضافة مصروف تشغيلي"}
           </DialogTitle>
         </DialogHeader>
 
         <div className="flex flex-col gap-5">
           <label className="flex flex-col gap-1.5">
-            <span className="text-[12px] font-semibold text-[#6B7280] dark:text-white/60">
+            <span className="text-xs font-semibold text-status-neutral dark:text-white/60">
               اسم المصروف
             </span>
             <input
@@ -87,12 +87,12 @@ export default function OperatingExpenseDialog({ open, onOpenChange, expense }) 
               value={form.expense}
               onChange={(e) => setForm((prev) => ({ ...prev, expense: e.target.value }))}
               placeholder="مثال: إيجار المكتب"
-              className="h-11 px-3 rounded-lg border border-[#E6EBE9] text-[14px] font-semibold text-[#111827] focus:outline-none focus:border-[#0B5345] dark:bg-[#0F1C16] dark:border-white/10 dark:text-white"
+              className="h-11 px-3 rounded-lg border border-surface-border-soft text-sm font-semibold text-gray-900 focus:outline-none focus:border-brand-dark dark:bg-[#0F1C16] dark:border-white/10 dark:text-white"
             />
           </label>
 
           <label className="flex flex-col gap-1.5">
-            <span className="text-[12px] font-semibold text-[#6B7280] dark:text-white/60">
+            <span className="text-xs font-semibold text-status-neutral dark:text-white/60">
               المبلغ (ريال)
             </span>
             <input
@@ -101,7 +101,7 @@ export default function OperatingExpenseDialog({ open, onOpenChange, expense }) 
               value={form.amount}
               onChange={(e) => setForm((prev) => ({ ...prev, amount: e.target.value }))}
               placeholder="0.00"
-              className="h-11 px-3 rounded-lg border border-[#E6EBE9] text-[14px] font-semibold text-[#111827] focus:outline-none focus:border-[#0B5345] dark:bg-[#0F1C16] dark:border-white/10 dark:text-white"
+              className="h-11 px-3 rounded-lg border border-surface-border-soft text-sm font-semibold text-gray-900 focus:outline-none focus:border-brand-dark dark:bg-[#0F1C16] dark:border-white/10 dark:text-white"
             />
           </label>
 
@@ -109,7 +109,7 @@ export default function OperatingExpenseDialog({ open, onOpenChange, expense }) 
             type="button"
             onClick={handleSubmit}
             disabled={isPending || !canSubmit}
-            className="w-full h-[50px] bg-[#0B5345] text-white rounded-[16px] font-bold text-[15px] hover:brightness-110 transition-all disabled:opacity-60 mt-2"
+            className="w-full h-[50px] bg-brand-dark text-white rounded-2xl font-bold text-15 hover:brightness-110 transition-all disabled:opacity-60 mt-2"
           >
             {isPending ? (
               <Loader2 className="animate-spin mx-auto size-5" />

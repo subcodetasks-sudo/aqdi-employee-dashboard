@@ -9,9 +9,9 @@ import HorizontalBarChart from "../shared/HorizontalBarChart";
 import ReportSectionCard from "../shared/ReportSectionCard";
 
 const TH =
-  "px-3 py-3 text-[12px] font-semibold text-[#9CA3AF] border-b border-[#EEF1F0] whitespace-nowrap text-right dark:text-white/50 dark:border-white/10";
+  "px-3 py-3 text-xs font-semibold text-gray-400 border-b border-[#EEF1F0] whitespace-nowrap text-right dark:text-white/50 dark:border-white/10";
 
-const TD = "px-3 py-3 text-[13px] text-[#374151] border-b border-[#F3F4F6] whitespace-nowrap dark:text-white/70 dark:border-white/10";
+const TD = "px-3 py-3 text-13 text-gray-700 border-b border-status-neutral-bg whitespace-nowrap dark:text-white/70 dark:border-white/10";
 
 const CHART_COLORS = ["#0B5345", "#0D9488", "#1E40AF", "#7C3AED", "#CA8A04", "#DC2626", "#6B7280"];
 
@@ -19,10 +19,10 @@ function StatusPill({ isOnDuty, label }) {
   return (
     <span
       className={cn(
-        "inline-flex px-2.5 py-0.5 rounded-full text-[11px] font-bold",
+        "inline-flex px-2.5 py-0.5 rounded-full text-11 font-bold",
         isOnDuty
-          ? "bg-[#DCFCE7] text-[#15803D] dark:bg-emerald-500/15 dark:text-emerald-300"
-          : "bg-[#F3F4F6] text-[#6B7280] dark:bg-white/10 dark:text-white/60"
+          ? "bg-[#DCFCE7] text-green-700 dark:bg-emerald-500/15 dark:text-emerald-300"
+          : "bg-status-neutral-bg text-status-neutral dark:bg-white/10 dark:text-white/60"
       )}
     >
       {label ?? (isOnDuty ? "في الخدمة" : "خارج الخدمة")}
@@ -104,7 +104,7 @@ export default function EmployeesReportTab({ period, dateFrom, dateTo }) {
   if (isError) {
     return (
       <ReportSectionCard title="الموظفون">
-        <p className="text-[13px] text-[#DC2626]">
+        <p className="text-13 text-red-600">
           تعذّر تحميل بيانات أداء الموظفين من الخادم. حاول تحديث الصفحة.
         </p>
       </ReportSectionCard>
@@ -145,7 +145,7 @@ export default function EmployeesReportTab({ period, dateFrom, dateTo }) {
 
                   return (
                     <tr key={item.employee?.id}>
-                      <td className={cn(TD, "font-semibold text-[#111827] dark:text-white")}>
+                      <td className={cn(TD, "font-semibold text-gray-900 dark:text-white")}>
                         {item.employee?.name_label ?? item.employee?.name}
                       </td>
                       <td className={TD}>{item.shift?.label_ar ?? "—"}</td>
@@ -155,7 +155,7 @@ export default function EmployeesReportTab({ period, dateFrom, dateTo }) {
                       <td className={TD}>{cardValue(item, "received")}</td>
                       <td className={TD}>{cardValue(item, "assigned")}</td>
                       <td className={TD}>{cardValue(item, "returned")}</td>
-                      <td className={cn(TD, openNow > 0 && "text-[#DC2626] font-semibold dark:text-red-300")}>{openNow}</td>
+                      <td className={cn(TD, openNow > 0 && "text-red-600 font-semibold dark:text-red-300")}>{openNow}</td>
                       <td className={TD}>{cardValue(item, "late_over_24h")}</td>
                       <td className={TD}>{cardValue(item, "completed")}</td>
                       <td className={TD}>
@@ -170,7 +170,7 @@ export default function EmployeesReportTab({ period, dateFrom, dateTo }) {
                 })
               ) : (
                 <tr>
-                  <td colSpan={13} className="text-center p-6 text-[#9CA3AF] text-sm dark:text-white/50">
+                  <td colSpan={13} className="text-center p-6 text-gray-400 text-sm dark:text-white/50">
                     لا توجد بيانات لعرضها في هذه الفترة.
                   </td>
                 </tr>
@@ -178,7 +178,7 @@ export default function EmployeesReportTab({ period, dateFrom, dateTo }) {
             </tbody>
           </table>
         </div>
-        <p className="text-[11px] text-[#9CA3AF] mt-2 dark:text-white/50">
+        <p className="text-11 text-gray-400 mt-2 dark:text-white/50">
           * يُحسب SLA الاستلام من لحظة وصول الطلب حتى أول إجراء من الموظف.
         </p>
       </ReportSectionCard>
@@ -187,12 +187,12 @@ export default function EmployeesReportTab({ period, dateFrom, dateTo }) {
         {completedByEmployee.length > 0 ? (
           <HorizontalBarChart items={completedByEmployee} />
         ) : (
-          <p className="text-[13px] text-[#9CA3AF] dark:text-white/50">لا توجد بيانات لعرضها.</p>
+          <p className="text-13 text-gray-400 dark:text-white/50">لا توجد بيانات لعرضها.</p>
         )}
       </ReportSectionCard>
 
       <ReportSectionCard title="أداء الموظفين – تفصيلي">
-        <p className="text-[13px] text-[#6B7280] leading-relaxed dark:text-white/60">
+        <p className="text-13 text-status-neutral leading-relaxed dark:text-white/60">
           تشمل هذه البيانات الطلبات المسندة والمسترجعة ومتوسط المعالجة والإيراد المحقق لكل موظف.
         </p>
       </ReportSectionCard>

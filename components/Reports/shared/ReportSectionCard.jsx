@@ -6,14 +6,14 @@ export default function ReportSectionCard({ title, children, className, action }
   return (
     <div
       className={cn(
-        "rounded-xl border border-[#E6EBE9] bg-white p-5 flex flex-col gap-4 min-w-0 dark:border-white/10 dark:bg-[#13241C]",
+        "rounded-xl border border-surface-border-soft bg-white p-5 flex flex-col gap-4 min-w-0 dark:border-white/10 dark:bg-card",
         className
       )}
     >
       {(title || action) && (
         <div className="flex items-center justify-between gap-3">
           {title ? (
-            <h3 className="text-[14px] font-bold text-[#111827] dark:text-white">{title}</h3>
+            <h3 className="text-sm font-bold text-gray-900 dark:text-white">{title}</h3>
           ) : (
             <span />
           )}
@@ -30,28 +30,28 @@ export function ReportLineList({ items }) {
     <div className="flex flex-col">
       {items.map((item, index) => (
         <div key={item.label}>
-          {item.separator && index > 0 && <div className="border-t border-[#E6EBE9] my-2 dark:border-white/10" />}
+          {item.separator && index > 0 && <div className="border-t border-surface-border-soft my-2 dark:border-white/10" />}
           <div className="flex items-center justify-between gap-4 py-1.5">
             <span
               className={cn(
-                "text-[13px]",
+                "text-13",
                 item.bold ? "font-bold" : "font-medium",
-                item.tone === "green" && "text-[#15803D] dark:text-emerald-300",
-                item.tone === "red" && "text-[#DC2626] dark:text-red-300",
+                item.tone === "green" && "text-green-700 dark:text-emerald-300",
+                item.tone === "red" && "text-red-600 dark:text-red-300",
                 item.tone === "gold" && "text-[#B45309] dark:text-amber-300",
-                !item.tone && "text-[#374151] dark:text-white/70"
+                !item.tone && "text-gray-700 dark:text-white/70"
               )}
             >
               {item.label}
             </span>
             <span
               className={cn(
-                "text-[13px] tabular-nums shrink-0",
+                "text-13 tabular-nums shrink-0",
                 item.bold ? "font-bold" : "font-semibold",
-                item.tone === "green" && "text-[#15803D] dark:text-emerald-300",
-                item.tone === "red" && "text-[#DC2626] dark:text-red-300",
+                item.tone === "green" && "text-green-700 dark:text-emerald-300",
+                item.tone === "red" && "text-red-600 dark:text-red-300",
                 item.tone === "gold" && "text-[#B45309] dark:text-amber-300",
-                !item.tone && "text-[#111827] dark:text-white"
+                !item.tone && "text-gray-900 dark:text-white"
               )}
             >
               {item.value}

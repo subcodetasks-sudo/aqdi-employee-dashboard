@@ -25,23 +25,23 @@ export default function HorizontalBarChart({
         return (
           <div key={item.label} className="flex items-center gap-3 min-w-0">
             {showValue && valuePosition === "start" && (
-              <span className="text-[13px] font-semibold text-[#111827] w-14 shrink-0 text-left tabular-nums dark:text-white">
+              <span className="text-13 font-semibold text-gray-900 w-14 shrink-0 text-left tabular-nums dark:text-white">
                 {formatDisplay(item.value, item.suffix)}
               </span>
             )}
             <div className="flex-1 min-w-0 flex items-center gap-2">
-              <div className="flex-1 h-7 bg-[#F3F4F6] rounded-md overflow-hidden dark:bg-white/10">
+              <div className="flex-1 h-7 bg-status-neutral-bg rounded-md overflow-hidden dark:bg-white/10">
                 <div
                   className="h-full rounded-md transition-all duration-500"
                   style={{ width: `${width}%`, backgroundColor: item.color ?? "#0B5345" }}
                 />
               </div>
-              <span className="text-[13px] text-[#374151] shrink-0 min-w-[80px] text-right truncate dark:text-white/70">
+              <span className="text-13 text-gray-700 shrink-0 min-w-[80px] text-right truncate dark:text-white/70">
                 {item.label}
               </span>
             </div>
             {showValue && valuePosition === "end" && (
-              <span className="text-[13px] font-semibold text-[#111827] w-20 shrink-0 text-left tabular-nums dark:text-white">
+              <span className="text-13 font-semibold text-gray-900 w-20 shrink-0 text-left tabular-nums dark:text-white">
                 {formatDisplay(item.value, item.suffix)}
               </span>
             )}
@@ -68,7 +68,7 @@ export function VerticalBarChart({ items, className, height = 160 }) {
               style={{ height: barHeight }}
               title={`${item.date ?? item.label}: ${val.toLocaleString("en-US")}`}
             />
-            <span className="text-[10px] text-[#9CA3AF] truncate w-full text-center dark:text-white/50">
+            <span className="text-10 text-gray-400 truncate w-full text-center dark:text-white/50">
               {item.date ?? item.label}
             </span>
           </div>
