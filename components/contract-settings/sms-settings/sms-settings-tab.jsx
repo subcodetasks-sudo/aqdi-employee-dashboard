@@ -65,11 +65,11 @@ export default function SmsSettingsTab() {
 
   if (isError) {
     return (
-      <div className="rounded-[24px] border border-[#FECACA] bg-[#FFF5F5] p-8 text-center">
-        <p className="text-[15px] font-bold text-[#B91C1C]">
+      <div className="rounded-3xl border border-[#FECACA] bg-[#FFF5F5] p-8 text-center">
+        <p className="text-15 font-bold text-[#B91C1C]">
           تعذر تحميل إعدادات رسائل SMS
         </p>
-        <p className="mt-2 text-[13px] text-[#991B1B]">
+        <p className="mt-2 text-13 text-[#991B1B]">
           {error?.response?.data?.message ||
             error?.message ||
             "تأكد من توفر الـ API ثم أعد المحاولة"}
@@ -80,18 +80,18 @@ export default function SmsSettingsTab() {
 
   return (
     <div className="space-y-6">
-      <div className="border-b border-[#F5F5F5] pb-6 text-right">
-        <h2 className="text-[22px] font-black text-black">إعدادات رسائل SMS</h2>
-        <p className="mt-2 text-[13px] leading-7 text-[#707070]">
+      <div className="border-b border-neutral-100 pb-6 text-right">
+        <h2 className="text-22 font-black text-black">إعدادات رسائل SMS</h2>
+        <p className="mt-2 text-13 leading-7 text-[#707070]">
           قوالب رسائل SMS عامة لكل المشروع (مرة واحدة). ليست مرتبطة بنوع صك أو عقد.
         </p>
       </div>
 
-      <div className="mx-auto max-w-3xl space-y-5 rounded-[24px] border border-[#E4E4E4] bg-white p-6 shadow-sm">
+      <div className="mx-auto max-w-3xl space-y-5 rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm">
         {SMS_SETTINGS_FIELDS.map((field) => (
           <div key={field.key} className="space-y-2 text-right">
             <label className="text-sm font-bold text-black">{field.label}</label>
-            <p className="text-[12px] text-[#A3A3A3]">{field.description}</p>
+            <p className="text-xs text-ink-placeholder">{field.description}</p>
             <Textarea
               value={form[field.key]}
               onChange={(e) => {
@@ -107,13 +107,13 @@ export default function SmsSettingsTab() {
                 });
               }}
               rows={4}
-              className={`min-h-[110px] rounded-[16px] resize-none ${
-                fieldErrors[field.key] ? "border-red-400" : "border-[#EEEEEE]"
+              className={`min-h-[110px] rounded-2xl resize-none ${
+                fieldErrors[field.key] ? "border-red-400" : "border-surface-border"
               }`}
               placeholder={field.label}
             />
             {fieldErrors[field.key] ? (
-              <p className="text-[12px] font-medium text-red-500">
+              <p className="text-xs font-medium text-red-500">
                 {fieldErrors[field.key]}
               </p>
             ) : null}

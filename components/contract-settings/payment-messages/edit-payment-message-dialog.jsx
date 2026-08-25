@@ -96,7 +96,7 @@ export default function EditPaymentMessageDialog({ item, type, triggerVariant = 
               <h2 className="text-xl font-black text-black">
                 {isEdit ? "تعديل" : "إضافة"} {meta?.label}
               </h2>
-              <p className="mt-1 text-sm text-[#737373]">{meta?.description}</p>
+              <p className="mt-1 text-sm text-neutral-500">{meta?.description}</p>
             </div>
             <Button variant="ghost" type="button" onClick={() => setOpen(false)}>
               <X className="size-4" />
@@ -109,7 +109,7 @@ export default function EditPaymentMessageDialog({ item, type, triggerVariant = 
             type="button"
             disabled={isPending}
             onClick={handleSubmit}
-            className="mx-auto mt-6 block h-12 min-w-[160px] rounded-[16px] bg-brand-hover font-bold"
+            className="mx-auto mt-6 block h-12 min-w-[160px] rounded-2xl bg-brand-hover font-bold"
           >
             {isPending ? (
               <Loader2 className="animate-spin" />

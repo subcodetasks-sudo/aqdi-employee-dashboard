@@ -68,11 +68,11 @@ export default function MeterFeeSettingsTab() {
 
   if (isError) {
     return (
-      <div className="rounded-[24px] border border-[#FECACA] bg-[#FFF5F5] p-8 text-center">
-        <p className="text-[15px] font-bold text-[#B91C1C]">
+      <div className="rounded-3xl border border-[#FECACA] bg-[#FFF5F5] p-8 text-center">
+        <p className="text-15 font-bold text-[#B91C1C]">
           تعذر تحميل رسوم العدادات
         </p>
-        <p className="mt-2 text-[13px] text-[#991B1B]">
+        <p className="mt-2 text-13 text-[#991B1B]">
           {error?.response?.data?.message ||
             error?.message ||
             "تأكد من توفر الـ API ثم أعد المحاولة"}
@@ -83,15 +83,15 @@ export default function MeterFeeSettingsTab() {
 
   return (
     <div className="space-y-6">
-      <div className="border-b border-[#F5F5F5] pb-6 text-right">
-        <h2 className="text-[22px] font-black text-black">رسوم العدادات</h2>
-        <p className="mt-2 text-[13px] leading-7 text-[#707070]">
+      <div className="border-b border-neutral-100 pb-6 text-right">
+        <h2 className="text-22 font-black text-black">رسوم العدادات</h2>
+        <p className="mt-2 text-13 leading-7 text-[#707070]">
           4 رسوم ثابتة على مستوى المشروع للمستأجر السكني والتجاري. الحقول اختيارية،
           والحد الأدنى 0.
         </p>
       </div>
 
-      <div className="mx-auto max-w-3xl space-y-5 rounded-[24px] border border-[#E4E4E4] bg-white p-6 shadow-sm">
+      <div className="mx-auto max-w-3xl space-y-5 rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm">
         <div className="grid gap-5 sm:grid-cols-2">
           {METER_FEE_SETTINGS_FIELDS.map((field) => (
             <div key={field.key} className="space-y-2 text-right">
@@ -116,15 +116,15 @@ export default function MeterFeeSettingsTab() {
                     return next;
                   });
                 }}
-                className={`h-12 rounded-[16px] ${
+                className={`h-12 rounded-2xl ${
                   fieldErrors[field.key]
                     ? "border-red-400"
-                    : "border-[#EEEEEE] bg-[#FAFAFA]"
+                    : "border-surface-border bg-neutral-50"
                 }`}
                 placeholder="0"
               />
               {fieldErrors[field.key] ? (
-                <p className="text-[12px] font-medium text-red-500">
+                <p className="text-xs font-medium text-red-500">
                   {fieldErrors[field.key]}
                 </p>
               ) : null}

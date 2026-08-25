@@ -32,9 +32,9 @@ export default function PaymentMessagesTab() {
 
   return (
     <div className="space-y-6">
-      <div className="border-b border-[#F5F5F5] pb-6 text-right">
-        <h2 className="text-[22px] font-black text-black">إعدادات رسائل الدفع</h2>
-        <p className="mt-2 text-[13px] leading-7 text-[#707070]">
+      <div className="border-b border-neutral-100 pb-6 text-right">
+        <h2 className="text-22 font-black text-black">إعدادات رسائل الدفع</h2>
+        <p className="mt-2 text-13 leading-7 text-[#707070]">
           رسالتان ثابتتان: واحدة لنجاح الدفع وأخرى لفشله. يمكنك إضافتهما أو تعديلهما فقط،
           بدون إمكانية الحذف.
         </p>

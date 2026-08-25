@@ -3,7 +3,7 @@
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
-const fieldClass = "h-12 rounded-[16px] bg-[#FAFAFA] border-[#EEEEEE]";
+const fieldClass = "h-12 rounded-2xl bg-neutral-50 border-surface-border";
 
 export default function PaymentMessageFormFields({ form, onChange }) {
   const update = (key, value) => onChange({ ...form, [key]: value });
@@ -18,7 +18,7 @@ export default function PaymentMessageFormFields({ form, onChange }) {
           placeholder="اكتب رسالة الدفع هنا..."
           value={form.message}
           onChange={(e) => update("message", e.target.value)}
-          className="min-h-[120px] rounded-[16px] bg-[#FAFAFA] border-[#EEEEEE] resize-none"
+          className="min-h-[120px] rounded-2xl bg-neutral-50 border-surface-border resize-none"
         />
       </div>
 

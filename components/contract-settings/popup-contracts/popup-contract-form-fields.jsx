@@ -43,7 +43,7 @@ export default function PopupContractFormFields({
           onValueChange={onInstrumentTypeChange}
           disabled={instrumentTypeDisabled || options.length === 0}
         >
-          <SelectTrigger className="h-12 rounded-[16px]">
+          <SelectTrigger className="h-12 rounded-2xl">
             <SelectValue
               placeholder={
                 options.length === 0
@@ -63,7 +63,7 @@ export default function PopupContractFormFields({
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <div className="flex items-center justify-between rounded-[16px] border border-[#EEEEEE] bg-[#FAFAFA] px-4 py-3">
+        <div className="flex items-center justify-between rounded-2xl border border-surface-border bg-neutral-50 px-4 py-3">
           <label className="text-sm font-medium">حالة بوب أب العقد</label>
           <Switch
             dir="ltr"
@@ -72,7 +72,7 @@ export default function PopupContractFormFields({
           />
         </div>
 
-        <div className="flex items-center justify-between rounded-[16px] border border-[#EEEEEE] bg-[#FAFAFA] px-4 py-3">
+        <div className="flex items-center justify-between rounded-2xl border border-surface-border bg-neutral-50 px-4 py-3">
           <label className="text-sm font-medium">حالة بوب أب العقار</label>
           <Switch
             dir="ltr"

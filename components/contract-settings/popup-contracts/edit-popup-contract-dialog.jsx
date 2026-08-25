@@ -99,7 +99,7 @@ export default function EditPopupContractDialog({ item, usedInstrumentTypes = []
         <Button
           variant="outline"
           size="icon"
-          className="size-9 rounded-full border-0 bg-[#E6FFE6] text-[#10B981] hover:bg-[#10B981] hover:text-white"
+          className="size-9 rounded-full border-0 bg-[#E6FFE6] text-brand-accent hover:bg-brand-accent hover:text-white"
           title="تعديل"
         >
           <Pencil className="size-4" />

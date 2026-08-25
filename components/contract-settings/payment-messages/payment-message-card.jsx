@@ -23,9 +23,9 @@ export default function PaymentMessageCard({ item, type }) {
             <span className="text-2xl" aria-hidden>
               {meta.emoji}
             </span>
-            <h3 className="text-[18px] font-black text-black">{meta.label}</h3>
+            <h3 className="text-lg font-black text-black">{meta.label}</h3>
           </div>
-          <p className="text-[13px] leading-6 text-[#616161]">{meta.description}</p>
+          <p className="text-13 leading-6 text-[#616161]">{meta.description}</p>
         </div>
 
         {hasItem ? (
@@ -36,24 +36,24 @@ export default function PaymentMessageCard({ item, type }) {
       <div className="flex flex-1 flex-col gap-6 p-6">
         {hasItem ? (
           <>
-            <div className="rounded-[20px] border border-[#F0F0F0] bg-[#FCFCFC] p-5">
-              <p className="mb-2 text-[12px] font-bold text-[#A3A3A3]">نص الرسالة</p>
-              <p className="text-[15px] font-bold leading-8 text-black">
+            <div className="rounded-20 border border-[#F0F0F0] bg-[#FCFCFC] p-5">
+              <p className="mb-2 text-xs font-bold text-ink-placeholder">نص الرسالة</p>
+              <p className="text-15 font-bold leading-8 text-black">
                 {item.message || "—"}
               </p>
             </div>
 
-            <div className="mt-auto grid gap-3 rounded-[18px] bg-[#FAFAFA] p-4 text-[12px] text-[#737373]">
+            <div className="mt-auto grid gap-3 rounded-[18px] bg-neutral-50 p-4 text-xs text-neutral-500">
               <div className="flex flex-col gap-1">
-                <span className="font-bold text-[#A3A3A3]">نص الزر الأول</span>
-                <span className="text-[13px] font-medium text-black">{item.button_text || "—"}</span>
+                <span className="font-bold text-ink-placeholder">نص الزر الأول</span>
+                <span className="text-13 font-medium text-black">{item.button_text || "—"}</span>
                 <span className="break-all" dir="ltr">
                   {item.button_link || "—"}
                 </span>
               </div>
               <div className="flex flex-col gap-1">
-                <span className="font-bold text-[#A3A3A3]">نص الزر الثاني</span>
-                <span className="text-[13px] font-medium text-black">{item.button_text_2 || "—"}</span>
+                <span className="font-bold text-ink-placeholder">نص الزر الثاني</span>
+                <span className="text-13 font-medium text-black">{item.button_text_2 || "—"}</span>
                 <span className="break-all" dir="ltr">
                   {item.button_link_2 || "—"}
                 </span>
@@ -61,12 +61,12 @@ export default function PaymentMessageCard({ item, type }) {
             </div>
           </>
         ) : (
-          <div className="flex flex-1 flex-col items-center justify-center rounded-[20px] border border-dashed border-[#E0E0E0] bg-[#FAFAFA] px-6 py-10 text-center">
+          <div className="flex flex-1 flex-col items-center justify-center rounded-20 border border-dashed border-[#E0E0E0] bg-neutral-50 px-6 py-10 text-center">
             <span className="mb-3 text-4xl" aria-hidden>
               {meta.emoji}
             </span>
-            <p className="mb-2 text-[16px] font-black text-black">لا توجد رسالة مضافة بعد</p>
-            <p className="mb-6 max-w-sm text-[13px] leading-7 text-[#737373]">
+            <p className="mb-2 text-base font-black text-black">لا توجد رسالة مضافة بعد</p>
+            <p className="mb-6 max-w-sm text-13 leading-7 text-neutral-500">
               يمكنك إضافة رسالة واحدة فقط من نوع {meta.label.toLowerCase()}، ثم تعديلها لاحقاً
               بدون حذف.
             </p>
