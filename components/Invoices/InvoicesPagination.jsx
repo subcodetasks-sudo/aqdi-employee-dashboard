@@ -46,7 +46,7 @@ export default function InvoicesPagination({
       </p>
 
       {lastPage > 1 && (
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5" dir="ltr">
           <button
             type="button"
             onClick={() => onPageChange(Math.max(1, page - 1))}

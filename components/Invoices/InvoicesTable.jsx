@@ -64,14 +64,24 @@ export default function InvoicesTable({ rows, isLoading, onSelectInvoice }) {
         </thead>
         <tbody>
           {isLoading ? (
-            <tr>
-              <td
-                colSpan={9}
-                className="text-center py-16 text-13 text-gray-400 dark:text-white/35 font-medium"
-              >
-                جاري التحميل...
-              </td>
-            </tr>
+            Array.from({ length: 8 }).map((_, rowIndex) => (
+              <tr key={`invoice-skel-${rowIndex}`}>
+                {Array.from({ length: 9 }).map((__, colIndex) => (
+                  <td
+                    key={`invoice-skel-${rowIndex}-${colIndex}`}
+                    className="px-3 py-3.5 border-b border-[#EEF1F0] dark:border-white/[0.06]"
+                  >
+                    <div
+                      className="h-3.5 rounded-md bg-[#EEF1F0] dark:bg-white/[0.06] animate-pulse mx-auto"
+                      style={{
+                        width: `${50 + ((rowIndex + colIndex) % 5) * 8}%`,
+                        opacity: 1 - rowIndex * 0.07,
+                      }}
+                    />
+                  </td>
+                ))}
+              </tr>
+            ))
           ) : rows.length === 0 ? (
             <tr>
               <td
