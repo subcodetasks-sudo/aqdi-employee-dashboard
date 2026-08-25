@@ -115,6 +115,97 @@ export function useClientDetail(clientId) {
   };
 }
 
+function mapRealEstateUnit(unit = {}) {
+  return {
+    id: unit.id,
+    type: unit.unit_type_name || "—",
+    number: unit.unit_number || "—",
+    area: unit.unit_area || "—",
+    floor: unit.floor_number || "—",
+    rooms: unit.tootal_rooms || "—",
+    usage: unit.unit_usage_name || "—",
+  };
+}
+
+function mapRealEstateToProperty(realEstate = {}, units = []) {
+  return {
+    id: realEstate.id,
+    title: realEstate.name_real_estate || `عقار #${realEstate.id}`,
+    street: realEstate.street || null,
+    buildingNumber: realEstate.building_number || null,
+    addedAt: realEstate.date_first_registration || null,
+    orderId: null,
+    propertyName: realEstate.name_real_estate || null,
+    documentType: realEstate.instrument_type || null,
+    deedNumber: realEstate.instrument_number || null,
+    region: null,
+    city: realEstate.property_city_name || null,
+    district: realEstate.property_place_name || null,
+    ownerId: realEstate.national_num || null,
+    ownerMobile: realEstate.mobile || null,
+    units: units
+      .filter((u) => u.real_estates_units_id === realEstate.id)
+      .map(mapRealEstateUnit),
+  };
+}
+
+/** Same `/admin/users/{id}` endpoint as `useClientDetail`, shares its cache — also
+ *  exposes `real_estates_list`/`units_list` mapped into property cards. */
+export function useClientProperties(clientId) {
+  const query = useQuery({
+    queryKey: [CLIENT_QUERY_KEY, String(clientId)],
+    queryFn: async () => {
+      const res = await axiosInstance.get(`${CLIENTS_API}/${clientId}`);
+      const payload = unwrapData(res);
+      return payload?.user ?? payload;
+    },
+    enabled: clientId != null && clientId !== "",
+  });
+
+  const user = query.data;
+  const client = user ? mapUserToClientRow(user) : null;
+  const realEstates = user?.real_estates_list ?? [];
+  const units = user?.units_list ?? [];
+
+  const properties = realEstates.map((re) => mapRealEstateToProperty(re, units));
+
+  const unassignedUnits = units.filter(
+    (u) => !realEstates.some((re) => re.id === u.real_estates_units_id)
+  );
+  if (unassignedUnits.length > 0) {
+    properties.push({
+      id: "unassigned",
+      title: "وحدات غير مرتبطة بعقار",
+      street: null,
+      buildingNumber: null,
+      addedAt: null,
+      orderId: null,
+      propertyName: null,
+      documentType: null,
+      deedNumber: null,
+      region: null,
+      city: null,
+      district: null,
+      ownerId: null,
+      ownerMobile: null,
+      units: unassignedUnits.map(mapRealEstateUnit),
+    });
+  }
+
+  return {
+    client,
+    properties,
+    totals: {
+      properties: realEstates.length,
+      units: units.length,
+    },
+    isLoading: query.isLoading,
+    isError: query.isError,
+    error: query.error,
+    refetch: query.refetch,
+  };
+}
+
 export function useDeleteClient() {
   const queryClient = useQueryClient();
 

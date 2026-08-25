@@ -53,7 +53,10 @@ const PILL_PERMISSIONS = {
   incomplete: PERMISSION_SECTIONS.incomplete_request,
 };
 
-export function useAllOrdersWrapper() {
+export function useAllOrdersWrapper({
+  lockedFilter = null,
+  exportFilename = "جميع-الطلبات",
+} = {}) {
   const router = useRouter();
   const isDark = useIsDark();
   const { toggleTheme } = useToggleTheme();
@@ -81,6 +84,7 @@ export function useAllOrdersWrapper() {
     can(PERMISSION_SECTIONS.returned_request, "edit");
 
   const visiblePills = ALL_ORDERS_FILTER_PILLS.filter((pill) => {
+    if (lockedFilter && STATUS_PILLS.includes(pill.id)) return false;
     const section = PILL_PERMISSIONS[pill.id];
     if (!section) return true;
     return isAdmin || can(section, "view");
@@ -88,7 +92,9 @@ export function useAllOrdersWrapper() {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [activeFilters, setActiveFilters] = useState([]);
+  const [activeFilters, setActiveFilters] = useState(() =>
+    lockedFilter ? [lockedFilter] : []
+  );
   const [extraStatusId, setExtraStatusId] = useState(null);
   const [contractType, setContractType] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -107,8 +113,8 @@ export function useAllOrdersWrapper() {
   } = useContractStatuses();
 
   const extraStatuses = useMemo(
-    () => getAllOrdersExtraFilterStatuses(statusItems),
-    [statusItems]
+    () => (lockedFilter ? [] : getAllOrdersExtraFilterStatuses(statusItems)),
+    [statusItems, lockedFilter]
   );
 
   useEffect(() => {
@@ -231,6 +237,7 @@ export function useAllOrdersWrapper() {
   };
 
   const handleToggleFilter = (id) => {
+    if (lockedFilter && STATUS_PILLS.includes(id)) return;
     setActiveFilters((prev) => {
       const isOn = prev.includes(id);
       if (isOn) return prev.filter((item) => item !== id);
@@ -249,6 +256,7 @@ export function useAllOrdersWrapper() {
   };
 
   const handleExtraStatusChange = (statusId) => {
+    if (lockedFilter) return;
     setExtraStatusId(statusId);
     if (statusId != null) {
       setActiveFilters((prev) =>
@@ -269,7 +277,7 @@ export function useAllOrdersWrapper() {
     extractPage: extractStandardOrderPage,
     onExport: (rows) =>
       exportOrdersToExcel(rows, {
-        filename: "جميع-الطلبات",
+        filename: exportFilename,
         showStatusColumn: true,
       }),
   });
@@ -321,5 +329,7 @@ export function useAllOrdersWrapper() {
     handleExtraStatusChange,
     handleExport,
     isExporting,
+    exportParams,
+    listParams,
   };
 }
