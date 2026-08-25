@@ -71,7 +71,9 @@ export const useUserStore = create(
       onRehydrateStorage: () => (state, error) => {
         if (!error && typeof window !== 'undefined') {
           const storedToken = getActiveStorage()?.getItem('token');
-          if (storedToken && !state?.token) {
+          // Restore token only when we also have a user — never mark authenticated
+          // with a bare token (RoutePermissionGuard treats !user as logged out).
+          if (storedToken && !state?.token && state?.user) {
             useUserStore.setState({ token: storedToken, isAuthenticated: true });
           }
         }

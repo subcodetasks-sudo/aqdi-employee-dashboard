@@ -105,6 +105,9 @@ function isPillCoveredStatus(name = "") {
   if (!normalized) return true;
   if (normalized === "جديد") return true;
   if (normalized === "مستلم") return true;
+  if (normalized === "ملغى" || normalized === "ملغي" || normalized.includes("ملغ")) {
+    return true;
+  }
   if (
     normalized === "استرجاع" ||
     normalized.includes("استرجاع") ||
@@ -119,6 +122,20 @@ export function getRealtimeExtraFilterStatuses(statusItems = []) {
   return (statusItems ?? []).filter(
     (item) => !isPillCoveredStatus(item?.name)
   );
+}
+
+/** Status chips for the #statusF row (مستلم + in-pipeline statuses, no archived). */
+export function getRealtimeStatusChipStatuses(statusItems = [], receivedStatusId) {
+  const items = statusItems ?? [];
+  const received = items.find((item) => String(item?.id) === String(receivedStatusId));
+  const rest = getRealtimeExtraFilterStatuses(items);
+  const chips = [];
+  if (received) chips.push(received);
+  rest.forEach((item) => {
+    if (String(item?.id) === String(receivedStatusId)) return;
+    chips.push(item);
+  });
+  return chips;
 }
 
 function isAllOrdersPillCoveredStatus(name = "") {

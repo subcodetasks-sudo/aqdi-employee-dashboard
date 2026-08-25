@@ -16,7 +16,6 @@ function runNotificationSideEffects(parsed, { queryClient, sidebarStore, router 
       });
     }
 
-    sidebarStore.setSidebarOpen(true);
     sidebarStore.setDisplayedPart("comments");
 
     if (navigate && orderId && router) {
@@ -27,7 +26,6 @@ function runNotificationSideEffects(parsed, { queryClient, sidebarStore, router 
 
   if (isOrderNotification) {
     invalidateOrdersCaches(queryClient, { orderId });
-    sidebarStore.setSidebarOpen(true);
     sidebarStore.setDisplayedPart("notification");
 
     if (navigate && orderId && router) {

@@ -14,9 +14,8 @@ const fetchUnreceivedOrdersTotal = async () => {
   return response?.data?.data?.pagination?.total ?? 0;
 };
 
-function openNotificationsSidebar({ queryClient, setSidebarOpen, setDisplayedPart }) {
+function openNotificationsSidebar({ queryClient, setDisplayedPart }) {
   queryClient.invalidateQueries({ queryKey: ['unReceivedOrders'] });
-  setSidebarOpen(true);
   setDisplayedPart('notification');
 }
 
@@ -26,7 +25,7 @@ export function useUnreceivedOrdersWatcher() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
-  const { setDisplayedPart, setSidebarOpen } = useSidebarStore();
+  const { setDisplayedPart } = useSidebarStore();
   const previousTotalRef = useRef(null);
   const tab = searchParams.get('tab');
   const isAllOrdersPage = isAllOrdersListPath(pathname) && (!tab || tab === 'all');
@@ -41,8 +40,8 @@ export function useUnreceivedOrdersWatcher() {
   useEffect(() => {
     if (!isAllOrdersPage || total === undefined || total <= 0) return;
 
-    openNotificationsSidebar({ queryClient, setSidebarOpen, setDisplayedPart });
-  }, [isAllOrdersPage, total, queryClient, setSidebarOpen, setDisplayedPart]);
+    openNotificationsSidebar({ queryClient, setDisplayedPart });
+  }, [isAllOrdersPage, total, queryClient, setDisplayedPart]);
 
   useEffect(() => {
     if (total === undefined) return;
@@ -53,10 +52,10 @@ export function useUnreceivedOrdersWatcher() {
       previousTotal !== null &&
       total > previousTotal
     ) {
-      openNotificationsSidebar({ queryClient, setSidebarOpen, setDisplayedPart });
+      openNotificationsSidebar({ queryClient, setDisplayedPart });
     }
     previousTotalRef.current = total;
-  }, [isAllOrdersPage, total, queryClient, setSidebarOpen, setDisplayedPart]);
+  }, [isAllOrdersPage, total, queryClient, setDisplayedPart]);
 
   return total ?? 0;
 }

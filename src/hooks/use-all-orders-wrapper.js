@@ -21,7 +21,7 @@ import {
 } from "@/components/Orders/shared/orders-export";
 import { usePaginatedExport } from "@/components/Orders/shared/use-paginated-export";
 import { printOrderContract } from "@/components/Orders/single-order/print-contract";
-import { useIsDark, useToggleTheme } from "@/src/hooks/useThemeMode";
+import { useIsDark } from "@/src/hooks/useThemeMode";
 import { useContractStatuses } from "@/src/hooks/use-contract-statuses";
 import { usePermissions } from "@/src/hooks/usePermissions";
 import { PERMISSION_SECTIONS } from "@/src/lib/permissions";
@@ -59,7 +59,6 @@ export function useAllOrdersWrapper({
 } = {}) {
   const router = useRouter();
   const isDark = useIsDark();
-  const { toggleTheme } = useToggleTheme();
   const { can, isAdmin } = usePermissions();
 
   const canChangeStatus =
@@ -285,7 +284,6 @@ export function useAllOrdersWrapper({
   return {
     router,
     isDark,
-    toggleTheme,
     canChangeStatus,
     canAddStatus,
     canEditStatus,

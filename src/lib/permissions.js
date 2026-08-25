@@ -207,22 +207,3 @@ export function extractPermissionsFromRole(roleResponse) {
     permissions: roleData.permissions,
   });
 }
-
-/** Attach permission names to login user from role when missing. */
-export async function enrichUserWithRolePermissions(userData, fetchRole) {
-  if (!userData) return userData;
-
-  let permissions = normalizeUserPermissions(userData);
-  if (permissions.length === 0 && userData.role_id && fetchRole) {
-    try {
-      const roleResponse = await fetchRole(userData.role_id);
-      permissions = extractPermissionsFromRole(roleResponse);
-    } catch {
-      // keep empty; hook may retry
-    }
-  }
-
-  if (permissions.length === 0) return userData;
-
-  return { ...userData, permissions };
-}

@@ -6,22 +6,12 @@ export const useSidebarStore = create((set) => ({
   isSidebarOpen: false,
   setOrderId: (id) => set({ orderId: id }),
   setDisplayedPart: (part) => set({ displayedPart: part }),
-  // Closing the shell always returns to the nav panel so the next open
-  // does not revive a stale notifications/comments view.
-  setSidebarOpen: (isSidebarOpen) =>
-    set(
-      isSidebarOpen
-        ? { isSidebarOpen }
-        : { isSidebarOpen: false, displayedPart: "default" }
-    ),
+  // Closing the nav shell does not clear utility panels (notifications /
+  // comments / payments) — those live in a separate left-side panel.
+  setSidebarOpen: (isSidebarOpen) => set({ isSidebarOpen }),
   // PanelLeft / menu toggle is for the navigation sidebar only.
-  // If notifications or comments are showing, switch back to nav (keep open)
-  // instead of just flipping width while leaving displayedPart stale.
   toggleSidebar: () =>
-    set((state) => {
-      if (state.displayedPart !== "default") {
-        return { displayedPart: "default", isSidebarOpen: true };
-      }
-      return { isSidebarOpen: !state.isSidebarOpen, displayedPart: "default" };
-    }),
+    set((state) => ({
+      isSidebarOpen: !state.isSidebarOpen,
+    })),
 }));
