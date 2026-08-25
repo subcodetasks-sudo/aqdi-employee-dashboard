@@ -54,7 +54,7 @@ export default function HomeWelcomeWrapper() {
         <>
             <Header page="welcome" title={null} isMain={true} />
 
-            <div className="[&>h1]:mb-[15px] [&>h1]:text-[24px] [&>h1]:font-bold [&>h1]:text-black [&>p]:mb-[44px] [&>p]:max-w-2xl [&>p]:text-[14px] [&>p]:text-[#363636]">
+            <div className="[&>h1]:mb-[15px] [&>h1]:text-[24px] [&>h1]:font-bold [&>h1]:text-black [&>p]:mb-[44px] [&>p]:max-w-2xl [&>p]:text-sm [&>p]:text-[#363636]">
                 <h1>الإتقــان طريــق الخلــود في الأثــر ...</h1>
                 <p>
                     الإتقان ليس في كثرة العمل، بل في صدق النية وجودة الأداء. من يعمل بضمير يترك أثراً لا يُمحى، قال تعالى: ﴿لِيَبْلُوَكُمْ أَيُّكُمْ أَحْسَنُ عَمَلًا﴾ ‏. ‏العبرة، بمعيار الجودة ‏والإحسان، ﻻبالكثرة والقلة !

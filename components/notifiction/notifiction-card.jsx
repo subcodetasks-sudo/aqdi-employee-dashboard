@@ -1,8 +1,13 @@
 "use client"
 import React from 'react'
-import { Clock, Hand, Loader2 } from 'lucide-react'
+import { Hand, Loader2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useReceiveContract } from '@/src/hooks/use-receive-contract'
+import { getWaitingMinutes } from '@/components/RealtimeOrders/map-realtime-order'
+
+// No backend SLA flag exists for unreceived orders yet — 12h is a stated
+// client-side assumption for when to switch the waiting label to overdue-red.
+const OVERDUE_HOURS = 12
 
 export default function NotifictionCard({ order }) {
   const router = useRouter()
@@ -12,37 +17,51 @@ export default function NotifictionCard({ order }) {
     },
   })
 
-  return (
-    <div className='bg-white rounded-[18px] p-4 border border-[#F0F0F0] shadow flex flex-col gap-3.5' >
-      {/* Top Row: Time and Notification Icon */}
-      <div className='flex items-center justify-between w-full'>
-        <div className='relative'>
-          <div className='w-9 h-9 rounded-full bg-[#F9F9F9] flex items-center justify-center border border-[#F0F0F0] text-[18px]'>
-            🎉
-          </div>
-          <div className='absolute top-0 right-0 w-[9px] h-[9px] bg-[#FF4444] rounded-full border-2 border-white'></div>
-        </div>
-        <div className='flex items-center gap-1.5 text-[#A3A3A3] text-[12px] font-medium'>
-          <div className='w-[22px] h-[22px] rounded-full bg-[#F5F5F5] flex items-center justify-center text-[#616161]'>
-            <Clock size={12} strokeWidth={2.5} />
-          </div>
-          <span>منذ {new Date(order?.updated_at).toLocaleDateString('ar-SA', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
-        </div>
+  const waitingHours = Math.floor(getWaitingMinutes(order) / 60)
+  const isOverdue = waitingHours >= OVERDUE_HOURS
+  const dateLabel = order?.updated_at
+    ? new Date(order.updated_at).toLocaleDateString('ar-SA', { day: '2-digit', month: '2-digit', year: 'numeric' })
+    : ''
+  const waitingLabel = isOverdue ? `بلا استلام منذ ${waitingHours} ساعة` : 'بانتظار الاستلام'
 
+  return (
+    <div className='bg-surface-input border border-surface-border rounded-[16px] p-3.5 flex flex-col gap-3'>
+      <div className='flex items-center justify-between gap-2'>
+        <div className='flex items-center gap-2 min-w-0'>
+          <span className='relative shrink-0'>
+            <span className='flex items-center justify-center h-8 w-8 rounded-full bg-brand-accent/10 text-base'>
+              🎉
+            </span>
+            <span className='absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-[#FF4444] ring-2 ring-surface-input' />
+          </span>
+          <h4 className='text-13 font-black text-ink-heading leading-tight truncate'>
+            طلب جديد {order?.contract_type || ''}
+          </h4>
+        </div>
+        <span className='text-11 font-bold text-ink-placeholder tabular-nums shrink-0'>#{order?.uuid}</span>
       </div>
 
-      {/* Bottom Row: Action Button and Request Details */}
-      <div className='flex items-center justify-between w-full'>
+      <div className='flex flex-col gap-0.5'>
+        <span className={`text-11 font-bold ${isOverdue ? 'text-[#D33A2C]' : 'text-ink-placeholder'}`}>{dateLabel}</span>
+        <span className={`text-11 font-bold ${isOverdue ? 'text-[#D33A2C]' : 'text-ink-placeholder'}`}>{waitingLabel}</span>
+      </div>
 
-        <div className='flex flex-col text-right'>
-          <h4 className='text-[16px] font-black text-black leading-none'>طلب جديد</h4>
-          <span className='text-[13px] text-[#A3A3A3] font-bold mt-1'>{order?.uuid}</span>
-        </div>
-        <button onClick={() => acceptOrder(order)} disabled={isPending} className='bg-[#00801E] hover:bg-[#006418] transition-all duration-300 text-white h-[36px] px-5 rounded-[18px] flex items-center gap-2 font-bold text-[13px]'>
+      <div className='flex items-center gap-2'>
+        <button
+          type='button'
+          onClick={() => router.push(`/home/orders/${order?.id}`)}
+          className='h-9 flex-1 rounded-full border border-surface-border bg-white text-ink-body text-13 font-bold hover:bg-surface-muted transition-colors'
+        >
+          استعراض
+        </button>
+        <button
+          type='button'
+          onClick={() => acceptOrder(order)}
+          disabled={isPending}
+          className='h-9 flex-[1.3] rounded-full bg-brand-accent hover:bg-brand-accent-hover disabled:opacity-60 transition-colors text-white flex items-center justify-center gap-1.5 font-bold text-13'
+        >
+          {isPending ? <Loader2 className='animate-spin h-4 w-4' /> : <Hand size={14} strokeWidth={2.5} className='rotate-[15deg]' />}
           <span>استلام</span>
-          {
-            isPending ? <Loader2 className='animate-spin h-4 w-4' /> : <Hand size={15} strokeWidth={2.5} className="rotate-[15deg]" />
-          }
         </button>
       </div>
     </div>

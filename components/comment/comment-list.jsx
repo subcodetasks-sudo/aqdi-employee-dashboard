@@ -4,9 +4,8 @@ import CommentForm from './comment-form'
 import CommentCard from './comment-card'
 import { useSidebarStore } from '@/src/stores/sidebar-store'
 import { useQuery } from '@tanstack/react-query'
-import { Loader2, X } from 'lucide-react'
+import { Loader2, MessageSquare, X } from 'lucide-react'
 import { axiosInstance } from '@/src/utils/axios'
-import { Button } from '../ui/button'
 
 export default function CommentList() {
   const { orderId, setDisplayedPart, displayedPart } = useSidebarStore();
@@ -27,28 +26,37 @@ export default function CommentList() {
   return (
     <div className='flex flex-col gap-6'>
       <div className='flex items-center gap-2'>
-        <p className='font-bold text-lg text-black '>التعليقات</p>
-        <Button onClick={() => setDisplayedPart("default")} className="size-8 rounded-full flex items-center justify-center ms-auto">
+        <p className='font-bold text-lg text-ink-heading'>التعليقات</p>
+        <button
+          onClick={() => setDisplayedPart("default")}
+          aria-label='إغلاق التعليقات'
+          className='size-8 rounded-full bg-surface-muted hover:bg-surface-muted-hover text-ink-body flex items-center justify-center ms-auto transition-colors'
+        >
           <X className='h-4 w-4' />
-        </Button>
+        </button>
       </div>
 
-      <CommentForm  />
+      <CommentForm />
 
       <div className='flex flex-col gap-4'>
-        <p className='font-bold  text-black'>ملاحظات الموظفيــن :</p>
-        {
-          isLoading ? (
-            <div className='flex items-center justify-center'>
-              <Loader2 className='animate-spin h-6 w-6 text-brand-main' />
+        <p className='font-bold text-13 text-ink-body'>ملاحظات الموظفيــن :</p>
+        {isLoading ? (
+          <div className='flex items-center justify-center py-6'>
+            <Loader2 className='animate-spin h-6 w-6 text-brand-accent' />
+          </div>
+        ) : comments?.length ? (
+          comments.map((comment) => (
+            <CommentCard key={comment.id} comment={comment} />
+          ))
+        ) : (
+          <div className='flex flex-col items-center justify-center gap-2 rounded-[18px] py-10 px-4 bg-surface-input border border-surface-border text-center'>
+            <div className='flex items-center justify-center h-10 w-10 rounded-full bg-brand-accent/10 text-brand-accent'>
+              <MessageSquare size={18} strokeWidth={2} />
             </div>
-          ) : (
-            comments?.map((comment) => (
-              <CommentCard key={comment.id} comment={comment} />
-            ))
-          )
-        }
-
+            <p className='text-13 font-bold text-ink-body'>لا توجد ملاحظات بعد</p>
+            <p className='text-11 text-ink-placeholder'>أول من يكتب ملاحظة يظهر هنا</p>
+          </div>
+        )}
       </div>
     </div>
   )

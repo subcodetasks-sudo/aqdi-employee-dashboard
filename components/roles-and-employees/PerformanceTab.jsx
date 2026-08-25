@@ -34,7 +34,7 @@ const MOCK_PERFORMANCE = [
       lateOver24h: 4,
     },
     metrics: [
-      { label: "سرعة الاستلام أثناء الدوام", value: 100, color: "bg-[#0B5345]" },
+      { label: "سرعة الاستلام أثناء الدوام", value: 100, color: "bg-brand-dark" },
       { label: "التزام المعالجة (بدون تأخير > 24س)", value: 79, color: "bg-[#F59E0B]" },
       { label: "حجم الإنجاز مقارنة بالأعلى", value: 0, color: "bg-[#D1D5DB]" },
     ],
@@ -53,8 +53,8 @@ const MOCK_PERFORMANCE = [
       lateOver24h: 0,
     },
     metrics: [
-      { label: "سرعة الاستلام أثناء الدوام", value: 100, color: "bg-[#0B5345]" },
-      { label: "التزام المعالجة (بدون تأخير > 24س)", value: 100, color: "bg-[#0B5345]" },
+      { label: "سرعة الاستلام أثناء الدوام", value: 100, color: "bg-brand-dark" },
+      { label: "التزام المعالجة (بدون تأخير > 24س)", value: 100, color: "bg-brand-dark" },
       { label: "حجم الإنجاز مقارنة بالأعلى", value: 0, color: "bg-[#D1D5DB]" },
     ],
   },
@@ -83,8 +83,8 @@ function ScoreRing({ score }) {
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-        <span className="text-[28px] font-black text-[#111827] leading-none">{score}</span>
-        <span className="text-[11px] text-[#9CA3AF] mt-1">من 100</span>
+        <span className="text-[28px] font-black text-gray-900 leading-none">{score}</span>
+        <span className="text-11 text-gray-400 mt-1">من 100</span>
       </div>
     </div>
   );
@@ -98,18 +98,18 @@ function PerformanceCard({ employee, timeFilter }) {
       <div className="p-5 flex flex-col gap-5">
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
-            <h3 className="text-[16px] font-bold text-[#111827]">{displayName}</h3>
-            <p className="text-[12px] text-[#9CA3AF] mt-1">{employee.shift}</p>
+            <h3 className="text-base font-bold text-gray-900">{displayName}</h3>
+            <p className="text-xs text-gray-400 mt-1">{employee.shift}</p>
             <span
               className={cn(
-                "inline-flex items-center gap-1.5 mt-2 px-2.5 py-1 rounded-full text-[11px] font-semibold",
+                "inline-flex items-center gap-1.5 mt-2 px-2.5 py-1 rounded-full text-11 font-semibold",
                 employee.onDuty
                   ? "bg-[#D1FAE5] text-[#047857]"
-                  : "bg-[#F3F4F6] text-[#6B7280]"
+                  : "bg-status-neutral-bg text-status-neutral"
               )}
             >
               {employee.onDuty && (
-                <span className="size-1.5 rounded-full bg-[#10B981]" />
+                <span className="size-1.5 rounded-full bg-brand-accent" />
               )}
               {employee.onDuty ? "داخل الدوام الآن" : "خارج الدوام"}
             </span>
@@ -119,29 +119,29 @@ function PerformanceCard({ employee, timeFilter }) {
 
         <div className="grid grid-cols-2 gap-3">
           <div className="rounded-xl bg-[#F9FAFB] p-3 text-center">
-            <p className="text-[18px] font-black text-[#111827]">{employee.stats.openNow}</p>
-            <p className="text-[11px] text-[#9CA3AF] mt-0.5">مفتوح الآن</p>
+            <p className="text-lg font-black text-gray-900">{employee.stats.openNow}</p>
+            <p className="text-11 text-gray-400 mt-0.5">مفتوح الآن</p>
           </div>
           <div className="rounded-xl bg-[#F9FAFB] p-3 text-center">
-            <p className="text-[18px] font-black text-[#111827]">{employee.stats.receivedToday}</p>
-            <p className="text-[11px] text-[#9CA3AF] mt-0.5">
+            <p className="text-lg font-black text-gray-900">{employee.stats.receivedToday}</p>
+            <p className="text-11 text-gray-400 mt-0.5">
               استلم ({timeFilter === "today" ? "اليوم" : "الفترة"})
             </p>
           </div>
           <div className="rounded-xl bg-[#F9FAFB] p-3 text-center">
-            <p className="text-[18px] font-black text-[#111827]">{employee.stats.completed}</p>
-            <p className="text-[11px] text-[#9CA3AF] mt-0.5">منجز بالفترة</p>
+            <p className="text-lg font-black text-gray-900">{employee.stats.completed}</p>
+            <p className="text-11 text-gray-400 mt-0.5">منجز بالفترة</p>
           </div>
           <div className="rounded-xl bg-[#F9FAFB] p-3 text-center">
             <p
               className={cn(
-                "text-[18px] font-black",
-                employee.stats.lateOver24h > 0 ? "text-[#DC2626]" : "text-[#111827]"
+                "text-lg font-black",
+                employee.stats.lateOver24h > 0 ? "text-red-600" : "text-gray-900"
               )}
             >
               {employee.stats.lateOver24h}
             </p>
-            <p className="text-[11px] text-[#9CA3AF] mt-0.5">متأخر &gt; 24س</p>
+            <p className="text-11 text-gray-400 mt-0.5">متأخر &gt; 24س</p>
           </div>
         </div>
 
@@ -149,10 +149,10 @@ function PerformanceCard({ employee, timeFilter }) {
           {employee.metrics.map((metric) => (
             <div key={metric.label}>
               <div className="flex items-center justify-between mb-1.5">
-                <span className="text-[11px] text-[#6B7280]">{metric.label}</span>
-                <span className="text-[11px] font-bold text-[#374151]">{metric.value}%</span>
+                <span className="text-11 text-status-neutral">{metric.label}</span>
+                <span className="text-11 font-bold text-gray-700">{metric.value}%</span>
               </div>
-              <div className="h-2 rounded-full bg-[#F3F4F6] overflow-hidden">
+              <div className="h-2 rounded-full bg-status-neutral-bg overflow-hidden">
                 <div
                   className={cn("h-full rounded-full transition-all", metric.color)}
                   style={{ width: `${metric.value}%` }}
@@ -163,14 +163,14 @@ function PerformanceCard({ employee, timeFilter }) {
         </div>
 
         <div className="rounded-xl border border-dashed border-[#E5E7EB] p-4">
-          <p className="text-[12px] font-semibold text-[#374151] mb-1">آخر التحركات</p>
-          <p className="text-[12px] text-[#9CA3AF]">لا تحركات مسجلة بعد</p>
+          <p className="text-xs font-semibold text-gray-700 mb-1">آخر التحركات</p>
+          <p className="text-xs text-gray-400">لا تحركات مسجلة بعد</p>
         </div>
       </div>
 
       <Link
         href={`/home/roles-and-employees/employees/${employee.id}`}
-        className="flex items-center justify-center gap-1.5 py-3.5 border-t border-[#E5E7EB] text-[13px] font-semibold text-[#0B5345] hover:bg-[#F0F7F4] transition-colors"
+        className="flex items-center justify-center gap-1.5 py-3.5 border-t border-[#E5E7EB] text-13 font-semibold text-brand-dark hover:bg-[#F0F7F4] transition-colors"
       >
         التفاصيل الكاملة
         <ChevronLeft className="size-4" />
@@ -197,10 +197,10 @@ export default function PerformanceTab() {
     <div className="flex flex-col gap-5" dir="rtl">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h2 className="text-[16px] font-bold text-[#111827]">
+          <h2 className="text-base font-bold text-gray-900">
             أداء الموظفين حسب الورديات ({timeLabel})
           </h2>
-          <p className="text-[12px] text-[#9CA3AF] mt-1 max-w-xl">
+          <p className="text-xs text-gray-400 mt-1 max-w-xl">
             يُحسب التوقيت للطلبات المستلمة خلال ساعات الوردية — البيانات تجريبية حتى ربط واجهة الأداء
           </p>
         </div>
@@ -208,7 +208,7 @@ export default function PerformanceTab() {
         <select
           value={periodFilter}
           onChange={(e) => setPeriodFilter(e.target.value)}
-          className="h-9 px-3 rounded-lg border border-[#E5E7EB] bg-white text-[13px] text-[#374151] focus:outline-none focus:border-[#0B5345]"
+          className="h-9 px-3 rounded-lg border border-[#E5E7EB] bg-white text-13 text-gray-700 focus:outline-none focus:border-brand-dark"
         >
           {PERIOD_OPTIONS.map((opt) => (
             <option key={opt.value} value={opt.value}>
@@ -225,10 +225,10 @@ export default function PerformanceTab() {
             type="button"
             onClick={() => setTimeFilter(filter.value)}
             className={cn(
-              "px-4 py-2.5 text-[13px] font-semibold transition-colors border-b-2 -mb-px",
+              "px-4 py-2.5 text-13 font-semibold transition-colors border-b-2 -mb-px",
               timeFilter === filter.value
-                ? "text-[#0B5345] border-[#0B5345]"
-                : "text-[#9CA3AF] border-transparent hover:text-[#374151]"
+                ? "text-brand-dark border-brand-dark"
+                : "text-gray-400 border-transparent hover:text-gray-700"
             )}
           >
             {filter.label}

@@ -54,7 +54,7 @@ export default function RolesAndEmployeesWrapper() {
           aria-expanded={isSidebarOpen}
           className={cn(
             "inline-flex items-center justify-center size-[42px] rounded-full border shrink-0 transition-colors",
-            "border-[#E4EBE8] bg-white text-[#4B5563] hover:bg-[#E8F5F1] hover:text-[#0B5345]"
+            "border-[#E4EBE8] bg-white text-[#4B5563] hover:bg-[#E8F5F1] hover:text-brand-dark"
           )}
         >
           <PanelLeft className="size-[18px]" />
@@ -64,17 +64,17 @@ export default function RolesAndEmployeesWrapper() {
           <button
             type="button"
             onClick={() => router.back()}
-            className="inline-flex items-center gap-1.5 self-start text-[14px] font-medium text-[#6B7280] hover:text-[#0B5345] transition-colors"
+            className="inline-flex items-center gap-1.5 self-start text-sm font-medium text-status-neutral hover:text-brand-dark transition-colors"
           >
             <ChevronLeft className="size-4 shrink-0" />
             رجوع
           </button>
 
           <div>
-            <h1 className="text-[22px] font-bold text-[#111827] leading-tight mb-1">
+            <h1 className="text-22 font-bold text-gray-900 leading-tight mb-1">
               الموظفون والأدوار
             </h1>
-            <p className="text-[13px] text-[#9CA3AF] font-medium">
+            <p className="text-13 text-gray-400 font-medium">
               الأدوار والصلاحيات · الموظفون · الرواتب
             </p>
           </div>
@@ -89,10 +89,10 @@ export default function RolesAndEmployeesWrapper() {
               type="button"
               onClick={() => setActiveTab(tab.value)}
               className={cn(
-                "h-10 px-5 rounded-full text-[13px] font-bold transition-all shrink-0",
+                "h-10 px-5 rounded-full text-13 font-bold transition-all shrink-0",
                 activeTab === tab.value
-                  ? "bg-[#0B5345] text-white shadow-sm"
-                  : "bg-white text-[#616161] border border-[#E5E7EB] hover:border-[#0B5345]/30"
+                  ? "bg-brand-dark text-white shadow-sm"
+                  : "bg-white text-[#616161] border border-[#E5E7EB] hover:border-brand-dark/30"
               )}
             >
               {tab.label}

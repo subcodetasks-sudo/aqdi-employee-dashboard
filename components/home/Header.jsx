@@ -50,7 +50,7 @@ export default function Header({orderId, isSingleOrder, page, title, isMain, fir
                         onClick={toggleSidebar}
                         aria-label={isSidebarOpen ? 'طي القائمة الجانبية' : 'توسيع القائمة الجانبية'}
                         aria-expanded={isSidebarOpen}
-                        className="w-[52px] h-[52px] rounded-full bg-sidebar text-sidebar-foreground transition-all duration-300 flex items-center justify-center hover:bg-sidebar-hover hover:scale-105 shrink-0"
+                        className="w-13 h-13 rounded-full bg-sidebar text-sidebar-foreground transition-all duration-300 flex items-center justify-center hover:bg-sidebar-hover hover:scale-105 shrink-0"
                     >
                         <PanelLeft className="size-5" />
                     </button>
@@ -62,11 +62,11 @@ export default function Header({orderId, isSingleOrder, page, title, isMain, fir
                             onClick={toggleSidebar}
                             aria-label={isSidebarOpen ? 'إغلاق القائمة الجانبية' : 'فتح القائمة الجانبية'}
                             aria-expanded={isSidebarOpen}
-                            className="w-[52px] h-[52px] rounded-full bg-brand-hover transition-all duration-300 flex items-center justify-center hover:bg-brand-main hover:scale-105"
+                            className="w-13 h-13 rounded-full bg-brand-hover transition-all duration-300 flex items-center justify-center hover:bg-brand-main hover:scale-105"
                         >
                             <Image src={mainPagesHeaderIcon} alt="" className="w-4 h-auto object-contain" />
                         </button> :
-                        <button className="w-[52px] h-[52px] rounded-full bg-surface-muted transition-all duration-300 flex items-center justify-center hover:bg-surface-muted-hover hover:scale-105" onClick={() => { router.back() }}>
+                        <button className="w-13 h-13 rounded-full bg-surface-muted transition-all duration-300 flex items-center justify-center hover:bg-surface-muted-hover hover:scale-105" onClick={() => { router.back() }}>
                             <i className="fa-solid fa-arrow-right"></i>
                         </button>
                 }
@@ -79,22 +79,22 @@ export default function Header({orderId, isSingleOrder, page, title, isMain, fir
                     <div className="flex items-center gap-2.5">
                         {
                             first ?
-                                <Link href={firstURL} className="text-[14px] text-ink-body transition-all hover:text-brand-main">{first}</Link>
+                                <Link href={firstURL} className="text-sm text-ink-body transition-all hover:text-brand-main">{first}</Link>
                                 : null
                         }
                         {
                             second ?
                                 <>
-                                    <i className="fa-solid fa-chevron-left text-[14px] text-ink-body"></i>
-                                    <Link href={secondURL} className="text-[14px] text-ink-body transition-all hover:text-brand-main">{second}</Link>
+                                    <i className="fa-solid fa-chevron-left text-sm text-ink-body"></i>
+                                    <Link href={secondURL} className="text-sm text-ink-body transition-all hover:text-brand-main">{second}</Link>
                                 </>
                                 : null
                         }
                         {
                             third ?
                                 <>
-                                    <i className="fa-solid fa-chevron-left text-[14px] text-ink-body"></i>
-                                    <Link href={thirdURL} className="text-[14px] text-ink-body transition-all hover:text-brand-main">{third}</Link>
+                                    <i className="fa-solid fa-chevron-left text-sm text-ink-body"></i>
+                                    <Link href={thirdURL} className="text-sm text-ink-body transition-all hover:text-brand-main">{third}</Link>
                                 </>
                                 : null
                         }
@@ -120,7 +120,7 @@ export default function Header({orderId, isSingleOrder, page, title, isMain, fir
                             }
                             setSidebarOpen(true);
                             setDisplayedPart("comments");
-                        }} className={` ${displayedPart === "comments" ? "bg-brand-main" : " bg-surface-muted"} w-[52px] h-[52px] rounded-full transition-all duration-300 flex items-center justify-center hover:bg-surface-muted-hover hover:scale-105`} aria-label="تعليقات الطلب"><i className={`fa-regular fa-comments text-[18px] ${displayedPart === "comments" ? "text-white" : "text-ink-subtle"}`}></i></button>
+                        }} className={` ${displayedPart === "comments" ? "bg-brand-main" : " bg-surface-muted"} w-13 h-13 rounded-full transition-all duration-300 flex items-center justify-center hover:bg-surface-muted-hover hover:scale-105`} aria-label="تعليقات الطلب"><i className={`fa-regular fa-comments text-lg ${displayedPart === "comments" ? "text-white" : "text-ink-subtle"}`}></i></button>
                         :
                         null
                 }
@@ -131,8 +131,8 @@ export default function Header({orderId, isSingleOrder, page, title, isMain, fir
                         setSidebarOpen(true);
                         setDisplayedPart("notification");
                     }
-                }} className={` ${displayedPart === "notification" ? "bg-brand-main" : " bg-surface-muted"} w-[52px] h-[52px] rounded-full transition-all duration-300 flex items-center justify-center hover:bg-surface-muted-hover hover:scale-105`}><Image src={notificationIcon} alt="Aakdi" className="w-[20px] h-auto object-contain" /></button>
-                <div className="h-[52px] bg-surface-muted rounded-[26px] flex items-center gap-2.5 p-[6px_10px] transition-all duration-300 hover:bg-surface-muted-hover hover:scale-105 max-[992px]:w-[52px] max-[992px]:p-0 justify-center">
+                }} className={` ${displayedPart === "notification" ? "bg-brand-main" : " bg-surface-muted"} w-13 h-13 rounded-full transition-all duration-300 flex items-center justify-center hover:bg-surface-muted-hover hover:scale-105`}><Image src={notificationIcon} alt="Aakdi" className="w-[20px] h-auto object-contain" /></button>
+                <div className="h-13 bg-surface-muted rounded-[26px] flex items-center gap-2.5 p-[6px_10px] transition-all duration-300 hover:bg-surface-muted-hover hover:scale-105 max-[992px]:w-13 max-[992px]:p-0 justify-center">
                     <Image
                         src={user?.profile_image || defaultUser}
                         alt="Aakdi"
@@ -141,13 +141,13 @@ export default function Header({orderId, isSingleOrder, page, title, isMain, fir
                         className="w-[39px] h-[39px] object-cover rounded-full overflow-hidden max-[992px]:w-full max-[992px]:h-full"
                     />
                     <div className="max-[992px]:hidden">
-                        <h3 className="text-[12px] font-medium text-black">{user?.name}</h3>
-                        <span className="text-[10px] font-normal text-ink-subtle">{user?.role_relation?.name}</span>
+                        <h3 className="text-xs font-medium text-black">{user?.name}</h3>
+                        <span className="text-10 font-normal text-ink-subtle">{user?.role_relation?.name}</span>
                     </div>
                 </div>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="outline" className="w-[52px] h-[52px] rounded-full !bg-black !text-white border-none shadow-none hover:!bg-ink-body transition-all duration-300 flex items-center justify-center hover:scale-105">
+                        <Button variant="outline" className="w-13 h-13 rounded-full !bg-black !text-white border-none shadow-none hover:!bg-ink-body transition-all duration-300 flex items-center justify-center hover:scale-105">
                             <i className="fa-solid fa-chevron-down"></i>
                         </Button>
                     </DropdownMenuTrigger>

@@ -38,7 +38,7 @@ export default function Salaries() {
 
   return (
     <div className="flex flex-col gap-5" dir="rtl">
-      <p className="text-[13px] font-medium text-[#0B5345]">
+      <p className="text-13 font-medium text-brand-dark">
         رواتب الموظفين — انقر موظفًا لعرض سجل رواتبه
       </p>
 
@@ -66,12 +66,12 @@ export default function Salaries() {
                     onClick={() =>
                       router.push(`/home/roles-and-employees/employees/${employee.id}`)
                     }
-                    className="border-b border-[#F3F4F6] last:border-0 hover:bg-[#F0F7F4] transition-colors cursor-pointer group"
+                    className="border-b border-status-neutral-bg last:border-0 hover:bg-[#F0F7F4] transition-colors cursor-pointer group"
                   >
                     <td className="px-4 py-3.5">
                       <div className="flex items-center gap-2.5">
                         <EmployeeAvatar name={employee.name} image={employee.profile_image} />
-                        <span className="text-[13px] font-medium text-[#111827]">
+                        <span className="text-13 font-medium text-gray-900">
                           {employee.name || "---"}
                         </span>
                       </div>
@@ -81,32 +81,32 @@ export default function Salaries() {
                     </td>
                     <td className="px-4 py-3.5">
                       {formatSalary(employee.base_salary) ? (
-                        <span className="text-[13px] font-semibold text-[#111827] tabular-nums">
+                        <span className="text-13 font-semibold text-gray-900 tabular-nums">
                           {formatSalary(employee.base_salary)} ريال
                         </span>
                       ) : (
-                        <span className="text-[12px] text-[#9CA3AF]">—</span>
+                        <span className="text-xs text-gray-400">—</span>
                       )}
                     </td>
                     <td className="px-4 py-3.5">
-                      <span className="text-[13px] text-[#6B7280] tabular-nums">
+                      <span className="text-13 text-status-neutral tabular-nums">
                         {lastPayment ? formatDateShort(lastPayment) : "—"}
                       </span>
                     </td>
                     <td className="px-4 py-3.5">
-                      <span className="text-[13px] font-semibold text-[#111827] tabular-nums">
+                      <span className="text-13 font-semibold text-gray-900 tabular-nums">
                         {formatSalary(totalPaid) || "0"} ريال
                       </span>
                     </td>
                     <td className="px-4 py-3.5">
-                      <ChevronLeft className="size-4 text-[#9CA3AF] group-hover:text-[#0B5345] transition-colors" />
+                      <ChevronLeft className="size-4 text-gray-400 group-hover:text-brand-dark transition-colors" />
                     </td>
                   </tr>
                 );
               })
             ) : (
               <tr>
-                <td colSpan={6} className="text-center p-10 text-[#9CA3AF] text-sm">
+                <td colSpan={6} className="text-center p-10 text-gray-400 text-sm">
                   لا يوجد موظفين حالياً.
                 </td>
               </tr>

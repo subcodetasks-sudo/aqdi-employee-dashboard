@@ -33,7 +33,7 @@ export function RoleBadge({ role, colorIndex = 0, className }) {
   return (
     <span
       className={cn(
-        "inline-flex items-center px-3 py-1 rounded-full text-[12px] font-semibold whitespace-nowrap",
+        "inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap",
         colors.bg,
         colors.text,
         className
@@ -45,12 +45,12 @@ export function RoleBadge({ role, colorIndex = 0, className }) {
 }
 
 export function EmployeeAvatar({ name, image, size = "sm" }) {
-  const sizeClass = size === "sm" ? "size-8 text-[12px]" : "size-10 text-[14px]";
+  const sizeClass = size === "sm" ? "size-8 text-xs" : "size-10 text-sm";
 
   if (image) {
     const px = size === "sm" ? 32 : 40;
     return (
-      <div className={cn("rounded-full overflow-hidden border border-[#E4E4E4] shrink-0", sizeClass)}>
+      <div className={cn("rounded-full overflow-hidden border border-neutral-200 shrink-0", sizeClass)}>
         <Image
           src={image}
           alt={name || ""}
@@ -77,17 +77,17 @@ export function EmployeeAvatar({ name, image, size = "sm" }) {
 export function OutlineActionButton({ children, variant = "default", className, ...props }) {
   const variants = {
     default:
-      "border-[#D1D5DB] text-[#374151] hover:bg-[#F9FAFB]",
-    view: "border-[#D1D5DB] text-[#0B5345] hover:bg-[#E8F5F1]",
+      "border-[#D1D5DB] text-gray-700 hover:bg-[#F9FAFB]",
+    view: "border-[#D1D5DB] text-brand-dark hover:bg-[#E8F5F1]",
     edit: "border-[#93C5FD] text-[#2563EB] hover:bg-[#EFF6FF]",
-    delete: "border-[#FCA5A5] text-[#DC2626] hover:bg-[#FEF2F2]",
+    delete: "border-[#FCA5A5] text-red-600 hover:bg-[#FEF2F2]",
   };
 
   return (
     <button
       type="button"
       className={cn(
-        "inline-flex items-center justify-center h-8 px-3 rounded-lg border bg-white text-[12px] font-semibold transition-colors whitespace-nowrap",
+        "inline-flex items-center justify-center h-8 px-3 rounded-lg border bg-white text-xs font-semibold transition-colors whitespace-nowrap",
         variants[variant] || variants.default,
         className
       )}
@@ -99,7 +99,7 @@ export function OutlineActionButton({ children, variant = "default", className, 
 }
 
 export const TABLE_TH =
-  "text-right px-4 py-3.5 text-[12px] font-semibold text-[#6B7280] border-b border-[#E5E7EB] whitespace-nowrap bg-[#F0F7F4]";
+  "text-right px-4 py-3.5 text-xs font-semibold text-status-neutral border-b border-[#E5E7EB] whitespace-nowrap bg-[#F0F7F4]";
 
 export const TABLE_WRAPPER =
   "w-full overflow-x-auto bg-white rounded-2xl border border-[#E5E7EB] shadow-sm";
@@ -153,14 +153,14 @@ export function TablePagination({ pagination, currentPage, setCurrentPage }) {
         type="button"
         onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
         disabled={currentPage === 1}
-        className="w-9 h-9 rounded-full border border-[#E4E4E4] flex items-center justify-center text-[#A3A3A3] hover:bg-brand-main hover:text-white transition-all disabled:opacity-50 disabled:hover:bg-transparent"
+        className="w-9 h-9 rounded-full border border-neutral-200 flex items-center justify-center text-ink-placeholder hover:bg-brand-main hover:text-white transition-all disabled:opacity-50 disabled:hover:bg-transparent"
       >
         <ChevronRight className="size-4" />
       </button>
 
       {pages.map((page, idx) =>
         page === "..." ? (
-          <span key={`dots-${idx}`} className="text-[#A3A3A3] px-1">
+          <span key={`dots-${idx}`} className="text-ink-placeholder px-1">
             ...
           </span>
         ) : (
@@ -169,10 +169,10 @@ export function TablePagination({ pagination, currentPage, setCurrentPage }) {
             type="button"
             onClick={() => setCurrentPage(page)}
             className={cn(
-              "w-9 h-9 rounded-full flex items-center justify-center text-[13px] font-medium transition-all",
+              "w-9 h-9 rounded-full flex items-center justify-center text-13 font-medium transition-all",
               currentPage === page
                 ? "bg-brand-main text-white shadow-lg shadow-brand-main/20"
-                : "border border-[#E4E4E4] text-[#A3A3A3] hover:bg-[#f5f5f5]"
+                : "border border-neutral-200 text-ink-placeholder hover:bg-neutral-100"
             )}
           >
             {page}
@@ -184,7 +184,7 @@ export function TablePagination({ pagination, currentPage, setCurrentPage }) {
         type="button"
         onClick={() => setCurrentPage((prev) => Math.min(last_page, prev + 1))}
         disabled={currentPage === last_page}
-        className="w-9 h-9 rounded-full border border-[#E4E4E4] flex items-center justify-center text-[#A3A3A3] hover:bg-brand-main hover:text-white transition-all disabled:opacity-50 disabled:hover:bg-transparent"
+        className="w-9 h-9 rounded-full border border-neutral-200 flex items-center justify-center text-ink-placeholder hover:bg-brand-main hover:text-white transition-all disabled:opacity-50 disabled:hover:bg-transparent"
       >
         <ChevronLeft className="size-4" />
       </button>

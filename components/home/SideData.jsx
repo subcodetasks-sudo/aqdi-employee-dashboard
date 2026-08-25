@@ -73,7 +73,7 @@ function NavLink({ item, pathname, collapsed, badgeCount }) {
         {!collapsed && <span className="truncate">{item.label}</span>}
       </span>
       {!collapsed && typeof badgeCount === 'number' && (
-        <span className="flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-[#E8923A] px-1.5 text-[11px] font-semibold leading-none text-white">
+        <span className="flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-[#E8923A] px-1.5 text-11 font-semibold leading-none text-white">
           {badgeCount > 99 ? '99+' : badgeCount}
         </span>
       )}
@@ -164,10 +164,10 @@ export default function SideData() {
               </Link>
               {!isCollapsed && (
                 <div className="min-w-0">
-                  <h2 className="truncate text-[15px] font-bold leading-tight text-sidebar-foreground">
+                  <h2 className="truncate text-15 font-bold leading-tight text-sidebar-foreground">
                     لوحة الموظفين
                   </h2>
-                  <p className="mt-0.5 truncate text-[11px] font-normal text-sidebar-foreground/55">
+                  <p className="mt-0.5 truncate text-11 font-normal text-sidebar-foreground/55">
                     إدارة طلبات العقود
                   </p>
                 </div>
@@ -251,10 +251,10 @@ export default function SideData() {
                         />
                       </span>
                       <span className="min-w-0">
-                        <span className="block truncate text-[13px] font-semibold text-sidebar-foreground">
+                        <span className="block truncate text-13 font-semibold text-sidebar-foreground">
                           {userName}
                         </span>
-                        <span className="mt-0.5 block truncate text-[11px] text-sidebar-foreground/55">
+                        <span className="mt-0.5 block truncate text-11 text-sidebar-foreground/55">
                           صلاحية: {userRole}
                         </span>
                       </span>

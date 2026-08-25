@@ -32,19 +32,19 @@ export default function CommentForm() {
 
   return (
     <div className='flex flex-col gap-4' dir="rtl">
-      <h3 className='font-bold text-black text-right'>هل ترغب بذكر ملاحظة !</h3>
-      
-      <textarea 
-        className='w-full min-h-40 p-6 rounded-xl border border-[#EBEBEB] bg-white text-base font-medium placeholder:text-[#A3A3A3] focus:outline-none focus:ring-1 focus:ring-[#A000F0] resize-none text-right'
+      <h3 className='font-bold text-ink-heading text-right'>هل ترغب بذكر ملاحظة !</h3>
+
+      <textarea
+        className='w-full min-h-40 p-6 rounded-xl border border-surface-border bg-surface-input text-base font-medium placeholder:text-ink-placeholder focus:outline-none focus:ring-1 focus:ring-brand-accent resize-none text-right'
         placeholder='أكتب هنا ...'
         value={comment}
         onChange={(e) => setComment(e.target.value)}
       />
 
-      <button 
+      <button
         onClick={handleSubmit}
         disabled={isPending}
-        className='w-full h-12 bg-[#A000F0] hover:bg-[#8A00D1] transition-all duration-300 text-white font-bold rounded-xl flex items-center justify-center gap-2'
+        className='w-full h-12 bg-brand-accent hover:bg-brand-accent-hover disabled:opacity-60 transition-colors duration-300 text-white font-bold rounded-xl flex items-center justify-center gap-2'
       >
         {isPending ? <Loader2 className='animate-spin h-5 w-5' /> : 'إضافة'}
       </button>
