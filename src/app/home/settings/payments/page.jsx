@@ -45,7 +45,7 @@ const statusLabels = {
 function FilterGroup({ label, options, value, onChange }) {
   return (
     <div className="flex flex-col gap-2">
-      <span className="text-[13px] font-bold text-[#111827]">{label}</span>
+      <span className="text-13 font-bold text-gray-900">{label}</span>
       <div className="flex flex-wrap gap-2">
         {options.map((option) => (
           <button
@@ -53,10 +53,10 @@ function FilterGroup({ label, options, value, onChange }) {
             type="button"
             onClick={() => onChange(option.value)}
             className={cn(
-              "px-4 py-2 rounded-xl text-[13px] font-bold transition-colors border",
+              "px-4 py-2 rounded-xl text-13 font-bold transition-colors border",
               value === option.value
                 ? "bg-[#054D44] text-white border-[#054D44]"
-                : "bg-white text-[#6B7280] border-[#E6EBE9] hover:border-[#054D44]/40 hover:text-[#054D44]"
+                : "bg-white text-status-neutral border-surface-border-soft hover:border-[#054D44]/40 hover:text-[#054D44]"
             )}
           >
             {option.label}
@@ -105,7 +105,7 @@ export default function PaymentsPage() {
         }
       />
 
-      <div className="rounded-2xl border border-[#E6EBE9] bg-white p-5 flex flex-col md:flex-row md:items-end gap-6 shadow-[0_4px_12px_rgba(11,83,69,0.04)]">
+      <div className="rounded-2xl border border-surface-border-soft bg-white p-5 flex flex-col md:flex-row md:items-end gap-6 shadow-[0_4px_12px_rgba(11,83,69,0.04)]">
         <FilterGroup
           label="الفترة الزمنية"
           options={periodFilters}
@@ -143,12 +143,12 @@ export default function PaymentsPage() {
               <SettingsTd className="text-center">
                 <span
                   className={cn(
-                    "inline-flex rounded-full px-3 py-1 text-[11px] font-bold",
+                    "inline-flex rounded-full px-3 py-1 text-11 font-bold",
                     payment.status === "success"
-                      ? "bg-[#E6F7EF] text-[#15803D]"
+                      ? "bg-[#E6F7EF] text-green-700"
                       : payment.status === "failed"
-                        ? "bg-[#FEF2F2] text-[#DC2626]"
-                        : "bg-[#F3F4F6] text-[#6B7280]"
+                        ? "bg-[#FEF2F2] text-red-600"
+                        : "bg-status-neutral-bg text-status-neutral"
                   )}
                 >
                   {statusLabels[payment.status] || payment.status || "—"}

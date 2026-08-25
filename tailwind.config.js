@@ -14,7 +14,21 @@ module.exports = {
 			borderRadius: {
 				lg: 'var(--radius)',
 				md: 'calc(var(--radius) - 2px)',
-				sm: 'calc(var(--radius) - 4px)'
+				sm: 'calc(var(--radius) - 4px)',
+				14: '0.875rem',
+				20: '1.25rem',
+				32: '2rem',
+			},
+			fontSize: {
+				10: ['0.625rem', { lineHeight: '0.875rem' }],
+				11: ['0.6875rem', { lineHeight: '1rem' }],
+				13: ['0.8125rem', { lineHeight: '1.125rem' }],
+				15: ['0.9375rem', { lineHeight: '1.375rem' }],
+				22: ['1.375rem', { lineHeight: '1.75rem' }],
+			},
+			spacing: {
+				13: '3.25rem',
+				'13.5': '3.375rem',
 			},
 			colors: {
 				background: 'hsl(var(--background))',
@@ -52,6 +66,7 @@ module.exports = {
 				ring: 'hsl(var(--ring))',
 				brand: {
 					main: '#0c6055',
+					dark: '#0B5345',
 					hover: '#0004E2',
 					sec: '#453B2F',
 					text: '#363636',
@@ -70,6 +85,7 @@ module.exports = {
 					'muted-hover': '#EEEEEE',
 					input: '#F9F9F9',
 					border: '#EEEEEE',
+					'border-soft': '#E6EBE9',
 				},
 				ink: {
 					heading: '#000000',

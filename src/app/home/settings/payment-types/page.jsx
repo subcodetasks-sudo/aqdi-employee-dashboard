@@ -44,7 +44,7 @@ export default function PaymentTypesPage() {
                 <div>
                   <p>{item.name_ar || item.name}</p>
                   {item.name_en ? (
-                    <p className="mt-0.5 text-[12px] text-[#9CA3AF]" dir="ltr">
+                    <p className="mt-0.5 text-xs text-gray-400" dir="ltr">
                       {item.name_en}
                     </p>
                   ) : null}

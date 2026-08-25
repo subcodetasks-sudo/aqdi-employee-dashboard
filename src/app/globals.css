@@ -59,8 +59,7 @@
   --border: 0 0% 90%;
   --input: 0 0% 90%;
   --ring: 172 78% 21%;
-  --radius: 1.5rem;
-  
+  --radius: 0.5rem;
   --main-color: #0c6055;
   --main-hover: #0004E2;
   --sec-color: #453B2F;
@@ -142,6 +141,52 @@
   background: #10B981;
 }
 
+@property --conic-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes conic-border-spin {
+  to {
+    --conic-angle: 360deg;
+  }
+}
+
+.conic-border-badge {
+  border: 1.5px solid transparent;
+  background:
+    linear-gradient(#dcfce7, #dcfce7) padding-box,
+    conic-gradient(
+      from var(--conic-angle),
+      #22c55e 0%,
+      #86efac 18%,
+      #dcfce7 35%,
+      transparent 50%,
+      #16a34a 68%,
+      #0c6055 85%,
+      #22c55e 100%
+    )
+      border-box;
+  animation: conic-border-spin 2.8s linear infinite;
+}
+
+.dark .conic-border-badge {
+  background:
+    linear-gradient(#10291f, #10291f) padding-box,
+    conic-gradient(
+      from var(--conic-angle),
+      #34d399 0%,
+      #6ee7b7 18%,
+      #10291f 35%,
+      transparent 50%,
+      #10b981 68%,
+      #0c6055 85%,
+      #34d399 100%
+    )
+      border-box;
+}
+
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
@@ -164,5 +209,21 @@ img {
 a {
   text-decoration: none;
   color: inherit;
+}
+
+/* Reports print/PDF export: only the active report panel is visible when printing. */
+@media print {
+  body.reports-printing * {
+    visibility: hidden !important;
+  }
+  body.reports-printing #reports-print-area,
+  body.reports-printing #reports-print-area * {
+    visibility: visible !important;
+  }
+  body.reports-printing #reports-print-area {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+  }
 }
 

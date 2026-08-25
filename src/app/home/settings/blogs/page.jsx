@@ -82,7 +82,7 @@ export default function BlogsPage() {
               <SettingsTd>
                 <div>
                   <p className="font-bold">{blog.title}</p>
-                  <p className="mt-0.5 text-[11px] text-[#9CA3AF]">{blog.slug}</p>
+                  <p className="mt-0.5 text-11 text-gray-400">{blog.slug}</p>
                 </div>
               </SettingsTd>
               <SettingsTd className="max-w-[320px]">
@@ -91,12 +91,12 @@ export default function BlogsPage() {
               <SettingsTd className="text-center">
                 <span
                   className={cn(
-                    "inline-flex rounded-full px-3 py-1 text-[11px] font-bold",
+                    "inline-flex rounded-full px-3 py-1 text-11 font-bold",
                     blog.status === "published"
-                      ? "bg-[#E6F7EF] text-[#15803D]"
+                      ? "bg-[#E6F7EF] text-green-700"
                       : blog.status === "draft"
                         ? "bg-[#FFF7ED] text-[#C2410C]"
-                        : "bg-[#F3F4F6] text-[#6B7280]"
+                        : "bg-status-neutral-bg text-status-neutral"
                   )}
                 >
                   {blog.status === "published" ? "منشور" : blog.status === "draft" ? "مسودة" : blog.status || "—"}
@@ -108,8 +108,8 @@ export default function BlogsPage() {
               <SettingsTd className="text-center">
                 <span
                   className={cn(
-                    "inline-flex rounded-full px-3 py-1 text-[11px] font-bold",
-                    blog.isActive ? "bg-[#E6F7EF] text-[#15803D]" : "bg-[#F3F4F6] text-[#6B7280]"
+                    "inline-flex rounded-full px-3 py-1 text-11 font-bold",
+                    blog.isActive ? "bg-[#E6F7EF] text-green-700" : "bg-status-neutral-bg text-status-neutral"
                   )}
                 >
                   {blog.isActive ? "نشط" : "غير نشط"}

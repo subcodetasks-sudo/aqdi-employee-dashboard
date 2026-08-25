@@ -28,11 +28,11 @@ export default function BlogDetailsPage() {
 
       {isLoading ? (
         <SettingsContentCard>
-          <p className="text-center text-[#9CA3AF] py-10">جاري التحميل...</p>
+          <p className="text-center text-gray-400 py-10">جاري التحميل...</p>
         </SettingsContentCard>
       ) : isError || !blog ? (
         <SettingsContentCard>
-          <p className="text-center text-[#9CA3AF] py-10">تعذر تحميل المقال.</p>
+          <p className="text-center text-gray-400 py-10">تعذر تحميل المقال.</p>
         </SettingsContentCard>
       ) : (
         <SettingsContentCard>

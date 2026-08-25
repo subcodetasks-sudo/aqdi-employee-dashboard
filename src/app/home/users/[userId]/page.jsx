@@ -47,7 +47,7 @@ function LegacyUserDetailsPage({ userId, from }) {
 
   if (isError || !user) {
     return (
-      <div className="p-6 text-center text-[#FA5252] text-[15px]" dir="rtl">
+      <div className="p-6 text-center text-[#FA5252] text-15" dir="rtl">
         حدث خطأ أثناء تحميل بيانات المستخدم
       </div>
     );

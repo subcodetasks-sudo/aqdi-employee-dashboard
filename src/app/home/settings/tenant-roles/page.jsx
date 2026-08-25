@@ -49,12 +49,12 @@ export default function TenantRolesPage() {
       <SettingsListHeader title="صلاحيات المستأجر" action={<TenantRoleFormDialog />} />
 
       <div className="relative max-w-md">
-        <Search className="absolute right-3 top-1/2 size-4 -translate-y-1/2 text-[#A3A3A3]" />
+        <Search className="absolute right-3 top-1/2 size-4 -translate-y-1/2 text-ink-placeholder" />
         <Input
           value={searchInput}
           onChange={(e) => setSearchInput(e.target.value)}
           placeholder="بحث في العنوان / التعريف / اسم الحقل..."
-          className="h-11 pr-10 rounded-xl border-[#E6EBE9] bg-white"
+          className="h-11 pr-10 rounded-xl border-surface-border-soft bg-white"
         />
       </div>
 
@@ -69,7 +69,7 @@ export default function TenantRolesPage() {
               <SettingsTd className="min-w-[220px]">
                 <p className="font-bold">{role.text_of_reason || role.name || "—"}</p>
                 {role.service_definition ? (
-                  <p className="mt-1 text-[12px] text-[#737373] line-clamp-2">
+                  <p className="mt-1 text-xs text-neutral-500 line-clamp-2">
                     {String(role.service_definition)
                       .replace(/<[^>]*>/g, " ")
                       .replace(/\s+/g, " ")
@@ -79,10 +79,10 @@ export default function TenantRolesPage() {
               </SettingsTd>
               <SettingsTd className="text-center">
                 <span
-                  className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-bold ${
+                  className={`inline-flex rounded-full px-2.5 py-1 text-11 font-bold ${
                     role.has_user_input
-                      ? "bg-[#E6F7EF] text-[#15803D]"
-                      : "bg-[#F3F4F6] text-[#6B7280]"
+                      ? "bg-[#E6F7EF] text-green-700"
+                      : "bg-status-neutral-bg text-status-neutral"
                   }`}
                 >
                   {role.has_user_input ? "نعم" : "لا"}
@@ -92,12 +92,12 @@ export default function TenantRolesPage() {
                 {role.has_user_input ? (
                   <div>
                     <p className="font-bold">{role.input_field_label || "—"}</p>
-                    <p className="mt-0.5 text-[11px] text-[#9CA3AF]">
+                    <p className="mt-0.5 text-11 text-gray-400">
                       النوع: {role.input_field_type || "—"}
                     </p>
                   </div>
                 ) : (
-                  <span className="text-[#9CA3AF]">—</span>
+                  <span className="text-gray-400">—</span>
                 )}
               </SettingsTd>
               <SettingsTd>

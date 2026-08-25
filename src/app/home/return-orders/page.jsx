@@ -1,9 +1,12 @@
-import ReturnOrdersWrapper from '@/components/Orders/ReturnOrdersWrapper'
-import React from 'react'
+"use client";
 
-export default function Page({searchParams}) {
+import ReturnOrdersWrapper from "@/components/Orders/ReturnOrdersWrapper";
+
+export default function Page() {
   return (
-    <ReturnOrdersWrapper searchParams={searchParams} />
-  )
+    <div className="flex flex-col gap-4 min-h-full" dir="rtl">
+      <ReturnOrdersWrapper />
+    </div>
+  );
 }
 

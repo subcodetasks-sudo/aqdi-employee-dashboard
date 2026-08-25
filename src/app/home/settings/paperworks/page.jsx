@@ -60,7 +60,7 @@ export default function PaperworksPage() {
             <SettingsTableRow key={`${item.contract_type}-${item.id}`}>
               <SettingsTd>
                 <div className="flex items-center gap-3">
-                  <div className="relative size-10 shrink-0 overflow-hidden rounded-xl border border-[#E6EBE9] bg-white flex items-center justify-center">
+                  <div className="relative size-10 shrink-0 overflow-hidden rounded-xl border border-surface-border-soft bg-white flex items-center justify-center">
                     {item.icon_url ? (
                       <Image
                         src={item.icon_url}
@@ -69,13 +69,13 @@ export default function PaperworksPage() {
                         className="object-contain p-1"
                       />
                     ) : (
-                      <FileText className="size-5 text-[#A3A3A3]" />
+                      <FileText className="size-5 text-ink-placeholder" />
                     )}
                   </div>
                   <div>
                     <p>{item.name_ar || item.name}</p>
                     {item.name_en ? (
-                      <p className="mt-0.5 text-[12px] text-[#9CA3AF]" dir="ltr">
+                      <p className="mt-0.5 text-xs text-gray-400" dir="ltr">
                         {item.name_en}
                       </p>
                     ) : null}
