@@ -6,9 +6,9 @@ import {
   ChevronLeft,
   Eye,
   LayoutGrid,
-  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import Loader from "@/components/home/loader";
 import { useClientProperties } from "@/src/hooks/use-clients";
 
 function FieldCell({ label, value, className }) {
@@ -238,11 +238,7 @@ export default function ClientPropertiesWrapper() {
     useClientProperties(clientId);
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[50vh]" dir="rtl">
-        <Loader2 className="size-6 animate-spin text-brand-dark dark:text-emerald-300" />
-      </div>
-    );
+    return <Loader />;
   }
 
   if (isError || !client) {

@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
+  ArrowDown,
+  ArrowUp,
   ChevronLeft,
   ChevronRight,
   Download,
@@ -105,6 +107,8 @@ export default function ClientsWrapper() {
   const [searchQuery, setSearchQuery] = useState("");
   const [pageSize, setPageSize] = useState(25);
   const [currentPage, setCurrentPage] = useState(1);
+  // Matches design.html custSort default: newest join first
+  const [joinedSortDir, setJoinedSortDir] = useState("desc");
 
   useEffect(() => {
     const handler = setTimeout(() => setSearchQuery(searchInput.trim()), 500);
@@ -120,6 +124,22 @@ export default function ClientsWrapper() {
     perPage: pageSize,
     search: searchQuery,
   });
+
+  const sortedRows = useMemo(() => {
+    const dir = joinedSortDir === "asc" ? 1 : -1;
+    return [...rows].sort((a, b) => {
+      const at = a?.joinedAt ? new Date(a.joinedAt).getTime() : NaN;
+      const bt = b?.joinedAt ? new Date(b.joinedAt).getTime() : NaN;
+      const aMissing = !Number.isFinite(at);
+      const bMissing = !Number.isFinite(bt);
+      if (aMissing && bMissing) return 0;
+      if (aMissing) return 1;
+      if (bMissing) return -1;
+      return (at - bt) * dir;
+    });
+  }, [rows, joinedSortDir]);
+
+  const JoinedSortIcon = joinedSortDir === "asc" ? ArrowUp : ArrowDown;
 
   const statCards = summary
     ? [
@@ -322,7 +342,23 @@ export default function ClientsWrapper() {
         <table className="w-full border-collapse min-w-[1000px]">
           <thead>
             <tr className="bg-[#F8FAF9] dark:bg-card">
-              <th className={cn(TH, "text-right px-4")}>تاريخ الانضمام</th>
+              <th className={cn(TH, "text-right px-4")}>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setJoinedSortDir((d) => (d === "desc" ? "asc" : "desc"))
+                  }
+                  title="ترتيب حسب تاريخ الانضمام"
+                  className={cn(
+                    "inline-flex items-center gap-1 transition-colors",
+                    "hover:text-[#0E5F4E] dark:hover:text-[#5FD0A8]",
+                    "text-[#0B5F4C] dark:text-[#5FD0A8]"
+                  )}
+                >
+                  تاريخ الانضمام
+                  <JoinedSortIcon className="size-3 opacity-90" strokeWidth={2.5} />
+                </button>
+              </th>
               <th className={cn(TH, "text-right")}>رقم العميل</th>
               <th className={cn(TH, "text-right")}>اسم العميل</th>
               <th className={cn(TH, "text-right")}>رقم الجوال</th>
@@ -338,14 +374,24 @@ export default function ClientsWrapper() {
           </thead>
           <tbody>
             {isLoading ? (
-              <tr>
-                <td
-                  colSpan={12}
-                  className="text-center py-16 text-13 text-gray-400 dark:text-white/35 font-medium"
-                >
-                  <Loader2 className="size-5 animate-spin inline-block" />
-                </td>
-              </tr>
+              Array.from({ length: 8 }).map((_, rowIndex) => (
+                <tr key={`clients-skel-${rowIndex}`}>
+                  {Array.from({ length: 12 }).map((__, colIndex) => (
+                    <td
+                      key={`clients-skel-${rowIndex}-${colIndex}`}
+                      className="px-3 py-3.5 border-b border-[#F0F0ED] dark:border-white/[0.06]"
+                    >
+                      <div
+                        className="h-3.5 rounded-md bg-[#EEF1F0] dark:bg-white/[0.06] animate-pulse mx-auto"
+                        style={{
+                          width: `${50 + ((rowIndex + colIndex) % 5) * 8}%`,
+                          opacity: 1 - rowIndex * 0.07,
+                        }}
+                      />
+                    </td>
+                  ))}
+                </tr>
+              ))
             ) : isError ? (
               <tr>
                 <td
@@ -365,7 +411,7 @@ export default function ClientsWrapper() {
                 </td>
               </tr>
             ) : (
-              rows.map((row) => {
+              sortedRows.map((row) => {
                 const { time, date } = splitDateTime(row.joinedAt);
 
                 return (
