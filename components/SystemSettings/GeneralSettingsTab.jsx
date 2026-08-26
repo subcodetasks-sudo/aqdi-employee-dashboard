@@ -132,7 +132,7 @@ export default function GeneralSettingsTab() {
           إعدادات النظام ({SYSTEM_CATEGORIES.length} فئة)
         </h2>
 
-        <div className="grid grid-cols-6 gap-3 max-[1400px]:grid-cols-4 max-[1100px]:grid-cols-3 max-[768px]:grid-cols-2 max-[480px]:grid-cols-1">
+        <div className="grid grid-cols-4 gap-3 max-[1400px]:grid-cols-4 max-[1100px]:grid-cols-3 max-[768px]:grid-cols-2 max-[480px]:grid-cols-1">
           {SYSTEM_CATEGORIES.map((category) => (
             <Link
               key={category.id}

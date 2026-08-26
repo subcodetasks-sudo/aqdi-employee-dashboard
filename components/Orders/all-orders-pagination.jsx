@@ -19,6 +19,7 @@ export default function AllOrdersPagination({
   perPage,
   onPerPageChange,
   dark,
+  unitLabel = "طلب",
 }) {
   const total = pagination?.total ?? 0;
   const lastPage = Math.max(1, pagination?.last_page ?? 1);
@@ -51,7 +52,7 @@ export default function AllOrdersPagination({
           {from}-{to}
         </span>{" "}
         من{" "}
-        <span className="tabular-nums font-bold">{total}</span> طلب
+        <span className="tabular-nums font-bold">{total}</span> {unitLabel}
       </p>
 
       <div className="flex items-center gap-3">

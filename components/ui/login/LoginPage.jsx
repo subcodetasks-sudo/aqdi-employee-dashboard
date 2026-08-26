@@ -63,7 +63,7 @@ export default function LoginPage() {
           // Permissions are resolved reactively by usePermissions() once on /home
           // (it fetches the role by role_id if the login payload didn't include them),
           // so we don't block the redirect on an extra round-trip here.
-          setAuth(response.data, response.data?.token, variables.remember);
+          setAuth(response.data, response.data?.token, variables.remember, response.data?.refresh_token ?? null);
           await setAuthCookie(response.data?.token, variables.remember);
           router.push('/home');
         } catch (error) {
