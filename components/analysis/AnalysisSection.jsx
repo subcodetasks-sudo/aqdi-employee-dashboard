@@ -26,7 +26,7 @@ export default function AnalysisSection({
     return (
         <section className="min-w-0 w-full border-b border-[#E5E5E5] pb-6 last:border-b-0">
             <div className="flex items-center justify-between gap-4 mb-5">
-                <h2 className="text-[18px] font-bold text-black">{title}</h2>
+                <h2 className="text-lg font-bold text-black">{title}</h2>
                 <button
                     type="button"
                     onClick={() => setOpen((v) => !v)}
@@ -35,7 +35,7 @@ export default function AnalysisSection({
                     className="w-8 h-8 shrink-0 rounded-full bg-[#363636] flex items-center justify-center transition-transform hover:bg-[#1a1a1a]"
                 >
                     <i
-                        className={`fa-solid fa-chevron-down text-white text-[11px] transition-transform duration-200 ${
+                        className={`fa-solid fa-chevron-down text-white text-11 transition-transform duration-200 ${
                             open ? "" : "-rotate-90"
                         }`}
                     />

@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import EditInstrumentSmsDialog from "./edit-instrument-sms-dialog";
 import { axiosInstance } from "@/src/utils/axios";
 import {
   buildSettingContractPayload,
@@ -84,10 +85,10 @@ function EditLabelDialog({ item }) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="inline-flex items-center gap-1.5 text-[13px] font-bold text-black hover:text-brand-main"
+        className="inline-flex items-center gap-1.5 text-13 font-bold text-black hover:text-brand-main"
       >
         <span className="max-w-[220px] truncate">{item?.label || "—"}</span>
-        <Pencil className="size-3.5 shrink-0 text-[#A3A3A3]" />
+        <Pencil className="size-3.5 shrink-0 text-ink-placeholder" />
       </button>
 
       <DialogContent closeButton={false} className="max-w-lg">
@@ -95,14 +96,14 @@ function EditLabelDialog({ item }) {
           <div className="flex items-center justify-between border-b border-[#F0F0F0] pb-5">
             <div className="text-right">
               <h2 className="text-xl font-black text-black">تعديل الاسم الظاهر</h2>
-              <p className="mt-1 text-sm text-[#737373]">
+              <p className="mt-1 text-sm text-neutral-500">
                 {item?.type_name || "—"}
               </p>
             </div>
             <button
               type="button"
               onClick={() => setOpen(false)}
-              className="rounded-full p-2 text-[#737373] hover:bg-[#F5F5F5]"
+              className="rounded-full p-2 text-neutral-500 hover:bg-neutral-100"
             >
               <X className="size-5" />
             </button>
@@ -115,7 +116,7 @@ function EditLabelDialog({ item }) {
             <Input
               value={label}
               onChange={(e) => setLabel(e.target.value)}
-              className="h-12 rounded-[16px]"
+              className="h-12 rounded-2xl"
               placeholder="الاسم الظاهر مع نوع الصك"
             />
           </div>
@@ -209,11 +210,11 @@ export default function InstrumentTypesTab() {
 
   if (isError) {
     return (
-      <div className="rounded-[24px] border border-[#FECACA] bg-[#FFF5F5] p-8 text-center">
-        <p className="text-[15px] font-bold text-[#B91C1C]">
+      <div className="rounded-3xl border border-[#FECACA] bg-[#FFF5F5] p-8 text-center">
+        <p className="text-15 font-bold text-[#B91C1C]">
           تعذر تحميل إعدادات أنواع الصكوك
         </p>
-        <p className="mt-2 text-[13px] text-[#991B1B]">
+        <p className="mt-2 text-13 text-[#991B1B]">
           {error?.response?.data?.message ||
             error?.message ||
             "تأكد من توفر الـ API ثم أعد المحاولة"}
@@ -224,9 +225,9 @@ export default function InstrumentTypesTab() {
 
   return (
     <div className="space-y-6">
-      <div className="border-b border-[#F5F5F5] pb-6 text-right">
-        <h2 className="text-[22px] font-black text-black">أنواع الصكوك</h2>
-        <p className="mt-2 text-[13px] leading-7 text-[#707070]">
+      <div className="border-b border-neutral-100 pb-6 text-right">
+        <h2 className="text-22 font-black text-black">أنواع الصكوك</h2>
+        <p className="mt-2 text-13 leading-7 text-[#707070]">
           قائمة أنواع الصكوك ثابتة ولا يمكن حذفها. تحكم في الإظهار في العقار والعقد،
           وعدّل الاسم الظاهر (label) لكل نوع.
           {items.length > 0 && (
@@ -235,14 +236,14 @@ export default function InstrumentTypesTab() {
         </p>
       </div>
 
-      <div className="w-full overflow-x-auto rounded-[24px] border border-[#E4E4E4] bg-white shadow-sm">
+      <div className="w-full overflow-x-auto rounded-3xl border border-neutral-200 bg-white shadow-sm">
         <table className="w-full border-collapse">
-          <thead className="bg-[#FAFAFA]">
+          <thead className="bg-neutral-50">
             <tr>
               {tableHeaders.map((header) => (
                 <th
                   key={header}
-                  className="whitespace-nowrap border-b border-[#E4E4E4] p-[15px_20px] text-right text-[13px] font-medium text-[#A3A3A3]"
+                  className="whitespace-nowrap border-b border-neutral-200 p-[15px_20px] text-right text-13 font-medium text-ink-placeholder"
                 >
                   {header}
                 </th>
@@ -259,10 +260,10 @@ export default function InstrumentTypesTab() {
               return (
                 <tr
                   key={item.instrument_type}
-                  className="border-b border-[#F5F5F5] transition-all last:border-0 hover:bg-[#fafafa]"
+                  className="border-b border-neutral-100 transition-all last:border-0 hover:bg-neutral-50"
                 >
                   <td className="p-[15px_20px] align-middle">
-                    <span className="text-[13px] font-bold text-black">
+                    <span className="text-13 font-bold text-black">
                       {item.type_name}
                     </span>
                   </td>

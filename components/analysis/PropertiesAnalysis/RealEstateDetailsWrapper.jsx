@@ -24,7 +24,7 @@ export default function RealEstateDetailsWrapper() {
 
   if (error || !estate) {
     return (
-      <div className="p-6 text-center text-[#A3A3A3]" dir="rtl">
+      <div className="p-6 text-center text-ink-placeholder" dir="rtl">
         تعذر تحميل بيانات العقار
       </div>
     );
@@ -38,20 +38,20 @@ export default function RealEstateDetailsWrapper() {
         isMain={false}
         first="الرئيــسية"
         firstURL="/"
-        second="التحليــلات"
-        secondURL="/home/analysis"
+        second="التقارير"
+        secondURL="/home/reports?tab=properties"
         third={pageTitle}
         thirdURL={`/home/real-estates/${id}`}
       />
 
-      <div className="flex items-center justify-between pb-4 border-b border-[#F5F5F5]">
+      <div className="flex items-center justify-between pb-4 border-b border-neutral-100">
         <div className="flex flex-col gap-1 text-right">
-          <h2 className="text-[22px] font-black text-black">{pageTitle}</h2>
-          <p className="text-[13px] text-gray-500">
+          <h2 className="text-22 font-black text-black">{pageTitle}</h2>
+          <p className="text-13 text-gray-500">
             رقم العقار: <span className="font-bold text-black">{estate.id}</span>
           </p>
         </div>
-        <span className="px-4 py-2 rounded-full text-[12px] font-bold bg-[#E6F0FF] text-[#3B82F6]">
+        <span className="px-4 py-2 rounded-full text-xs font-bold bg-[#E6F0FF] text-[#3B82F6]">
           {estate.property_type_name || "عقار"}
         </span>
       </div>

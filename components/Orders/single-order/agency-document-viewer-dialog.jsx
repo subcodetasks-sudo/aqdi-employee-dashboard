@@ -71,11 +71,11 @@ export default function AgencyDocumentViewerDialog({
         dir="rtl"
       >
         <div className="flex items-center justify-between border-b border-[#EBEBEB] bg-white px-6 py-4">
-          <h2 className="text-[18px] font-bold text-black">{title}</h2>
+          <h2 className="text-lg font-bold text-black">{title}</h2>
           <button
             type="button"
             onClick={() => onOpenChange(false)}
-            className="flex size-9 items-center justify-center rounded-full text-[#A3A3A3] transition-colors hover:bg-[#F5F5F5] hover:text-[#E24444]"
+            className="flex size-9 items-center justify-center rounded-full text-ink-placeholder transition-colors hover:bg-neutral-100 hover:text-[#E24444]"
             aria-label="إغلاق"
           >
             <X className="size-5" />
@@ -142,7 +142,7 @@ export default function AgencyDocumentViewerDialog({
               </div>
             </>
           ) : (
-            <p className="min-h-[min(70vh,640px)] text-center text-[15px] text-[#737373]">
+            <p className="min-h-[min(70vh,640px)] text-center text-15 text-neutral-500">
               لا يوجد ملف وكالة مرفق
             </p>
           )}
@@ -152,7 +152,7 @@ export default function AgencyDocumentViewerDialog({
           <button
             type="button"
             onClick={() => onOpenChange(false)}
-            className="h-[52px] min-w-[200px] rounded-xl bg-brand-hover text-[16px] font-bold text-white transition-colors hover:bg-brand-hover/90"
+            className="h-13 min-w-[200px] rounded-xl bg-brand-hover text-base font-bold text-white transition-colors hover:bg-brand-hover/90"
           >
             إغلاق
           </button>
@@ -179,7 +179,7 @@ function ViewerToolButton({ icon: Icon, label, onClick, disabled }) {
 
 export function LegalAgentStatusBadge() {
   return (
-    <span className="inline-flex items-center gap-2 whitespace-nowrap rounded-full bg-[#F0E6FF] px-4 py-2.5 text-[13px] font-bold text-[#7C3AED]">
+    <span className="inline-flex items-center gap-2 whitespace-nowrap rounded-full bg-[#F0E6FF] px-4 py-2.5 text-13 font-bold text-[#7C3AED]">
       <UserPlus className="size-4 shrink-0" />
       يوجد وكيل للمالك
     </span>

@@ -11,10 +11,10 @@ import {
 const columnsWrapClass = "flex flex-row items-start gap-3";
 
 const columnClass =
-  "bg-[#F3F3F3] rounded-[20px] p-2 min-w-[min(280px,calc(50vw-32px))] max-w-[min(320px,calc(50vw-24px))] max-h-[min(70vh,480px)] overflow-y-auto";
+  "bg-[#F3F3F3] rounded-20 p-2 min-w-[min(280px,calc(50vw-32px))] max-w-[min(320px,calc(50vw-24px))] max-h-[min(70vh,480px)] overflow-y-auto";
 
 const rowClass =
-  "flex items-center gap-2.5 w-full rounded-[14px] px-2.5 py-3 text-right transition-colors hover:bg-white/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-main/30";
+  "flex items-center gap-2.5 w-full rounded-14 px-2.5 py-3 text-right transition-colors hover:bg-white/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-main/30";
 
 function getRowIconClass(name = "") {
   const text = String(name);
@@ -29,7 +29,7 @@ function getRowIconClass(name = "") {
 function PriceRowIcon({ name }) {
   return (
     <span className="w-8 h-8 rounded-[10px] bg-white border border-[#E8E8E8] flex items-center justify-center shrink-0 text-[#333]">
-      <i className={`fa-solid ${getRowIconClass(name)} text-[13px]`} aria-hidden />
+      <i className={`fa-solid ${getRowIconClass(name)} text-13`} aria-hidden />
     </span>
   );
 }
@@ -57,10 +57,10 @@ function PriceRow({ period, sectionName }) {
     >
       <PriceRowIcon name={sectionName} />
       <span className="flex-1 min-w-0">
-        <span className="block text-[13px] font-semibold text-[#1A1A1A] leading-snug truncate">
+        <span className="block text-13 font-semibold text-[#1A1A1A] leading-snug truncate">
           {label}
         </span>
-        <span className="block text-[11px] font-bold text-brand-main mt-0.5">{price}</span>
+        <span className="block text-11 font-bold text-brand-main mt-0.5">{price}</span>
       </span>
       <Copy className="size-3.5 shrink-0 text-[#C4C4C4]" strokeWidth={2} />
       <ChevronLeft className="size-3.5 shrink-0 text-[#C4C4C4]" strokeWidth={2} />
@@ -73,9 +73,9 @@ function PricesContractColumn({ group }) {
 
   return (
     <div className={columnClass}>
-      <p className="text-[13px] font-bold text-[#1A1A1A] px-2.5 py-2 mb-1">{group.name}</p>
+      <p className="text-13 font-bold text-[#1A1A1A] px-2.5 py-2 mb-1">{group.name}</p>
       {!hasItems ? (
-        <p className="text-[12px] text-[#A3A3A3] text-center py-6">لا توجد أسعار</p>
+        <p className="text-xs text-ink-placeholder text-center py-6">لا توجد أسعار</p>
       ) : (
         group.sections.flatMap((section) =>
           section.items.map((period) => (
@@ -93,7 +93,7 @@ export default function OrderPricesPanel({ enabled = true }) {
   if (isLoading) {
     return (
       <div className={`${columnClass} flex items-center justify-center py-12`}>
-        <Loader2 className="size-6 animate-spin text-[#A3A3A3]" />
+        <Loader2 className="size-6 animate-spin text-ink-placeholder" />
       </div>
     );
   }

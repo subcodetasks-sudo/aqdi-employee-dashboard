@@ -1,4 +1,4 @@
-const BADGE_BASE = "px-3 py-1 rounded-full text-[11px] font-bold whitespace-nowrap";
+const BADGE_BASE = "px-3 py-1 rounded-full text-11 font-bold whitespace-nowrap";
 
 /** Contract/document badge colors matching the orders table design. */
 export function getContractTypeBadgeClass(row = {}) {

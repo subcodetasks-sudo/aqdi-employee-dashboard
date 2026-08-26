@@ -1,0 +1,39 @@
+"use client";
+
+import { ReportKpiGrid } from "../shared/ReportKpiCard";
+import HorizontalBarChart from "../shared/HorizontalBarChart";
+import ReportSectionCard from "../shared/ReportSectionCard";
+import ReportError from "../shared/ReportError";
+import Loader from "@/components/home/loader";
+import { useOrdersReport } from "@/src/hooks/use-reports";
+
+const KPI_FIELDS = [["total", "إجمالي الطلبات", "file"], ["new", "طلبات جديدة", "filePlus", "danger"], ["paid", "مدفوعة", "creditCard"], ["draft", "مسودة عقد", "fileEdit", "warning"], ["incomplete", "غير مكتمل", "xCircle", "warning"], ["canceled", "ملغية", "xCircle", "danger"], ["returned", "مسترجعة", "undo", "muted"]];
+
+export default function OrdersReportTab({ period, dateFrom, dateTo, contractType, employee }) {
+  const { data, isLoading, isError, error, refetch } = useOrdersReport(period, dateFrom, dateTo, contractType, employee);
+  if (isLoading) return <Loader />;
+  if (isError) return <ReportError title="الطلبات" error={error} fallback="تعذّر تحميل تقرير الطلبات." onRetry={refetch} />;
+  const kpis = KPI_FIELDS.map(([key, label, icon, tone]) => ({ key, label, value: data?.kpis?.[key] ?? 0, icon, tone }));
+  const minutes = data?.kpis?.avg_completion_minutes ?? 0;
+  kpis.push({ key: "avgTime", label: "متوسط مدة الإنجاز", value: `${Math.floor(minutes / 60)} س و ${minutes % 60} د`, icon: "clock", isText: true });
+  const colorize = (items = []) => items.map((item, index) => ({ ...item, label: item.label ?? item.stage, color: ["#0B5345", "#1E40AF", "#CA8A04", "#DC2626"][index % 4] }));
+  return (
+    <div className="flex flex-col gap-5" dir="rtl">
+      <ReportKpiGrid items={kpis} columns="grid-cols-2 sm:grid-cols-4 xl:grid-cols-8" />
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <ReportSectionCard title="الطلبات حسب الموظف">
+          <HorizontalBarChart items={colorize(data?.by_employee)} />
+        </ReportSectionCard>
+
+        <ReportSectionCard title="الطلبات حسب نوع العقد">
+          <HorizontalBarChart items={colorize(data?.by_contract_type)} />
+        </ReportSectionCard>
+      </div>
+
+      <ReportSectionCard title="الطلبات حسب المرحلة">
+        <HorizontalBarChart items={colorize(data?.by_stage)} />
+      </ReportSectionCard>
+    </div>
+  );
+}

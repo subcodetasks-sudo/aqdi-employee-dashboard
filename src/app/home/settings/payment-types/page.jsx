@@ -1,94 +1,85 @@
 "use client";
 
-import Header from "@/components/home/Header";
+import {
+  useUnwrapPageProps
+} from "@/src/hooks/use-unwrap-page-props";
 import AddPaymentTypeDialog from "@/components/analysis/settings/payment-types/add-payment-type-dialog";
 import EditPaymentTypeDialog from "@/components/analysis/settings/payment-types/edit-payment-type-dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { usePaymentTypes } from "@/src/hooks/use-payment-types";
-import { Building2, Pentagon } from "lucide-react";
-import { useState } from "react";
+import PermissionGate from "@/components/auth/PermissionGate";
+import { PERMISSION_SECTIONS } from "@/src/lib/permissions";
+import {
+  SettingsEmptyRow,
+  SettingsLoadingRows,
+  SettingsListHeader,
+  SettingsTable,
+  SettingsTableRow,
+  SettingsTd,
+  SettingsPageShell,
+} from "@/components/SystemSettings/shared";
+import {
+  contractTypeLabel,
+  extractAlertList,
+  fetchBothContractTypes,
+} from "@/components/SystemSettings/settings-list/fetch-contract-type-lists";
+import { useQuery } from "@tanstack/react-query";
 
-function PaymentTypesGrid({ activeTab }) {
-  const { items, isLoading } = usePaymentTypes(activeTab);
+const HEADERS = [
+  "الاسم",
+  { label: "نوع العقد", className: "text-center" },
+  { label: "الإجراءات", className: "text-left" },
+];
 
-  if (isLoading) {
-    return <p className="text-sm text-[#A3A3A3] py-8">جاري التحميل...</p>;
-  }
+export default function PaymentTypesPage(props) {
+  useUnwrapPageProps(props?.params, props?.searchParams);
 
-  if (!items.length) {
-    return <p className="text-sm text-[#A3A3A3] py-8">لا توجد طرق دفع</p>;
-  }
-
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
-      {items.map((item) => (
-        <div
-          key={item.id}
-          className="bg-gray-200 rounded-[16px] border border-[#E4E4E4] p-4 transition-all"
-        >
-          <h3 className="text-sm font-bold text-[#616161]">طريقة الدفع</h3>
-          <div className="mt-4 space-y-1">
-            <p className="text-sm font-bold">{item.name_ar || item.name}</p>
-            {item.name_en ? (
-              <p className="text-xs text-[#737373]" dir="ltr">
-                {item.name_en}
-              </p>
-            ) : null}
-          </div>
-          <div className="flex items-center justify-end gap-2 mt-4">
-            <EditPaymentTypeDialog paymentType={item} />
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-export default function PaymentTypesPage() {
-  const [activeTab, setActiveTab] = useState("housing");
+  const { data = [], isLoading } = useQuery({
+    queryKey: ["payment-types"],
+    queryFn: () => fetchBothContractTypes("/admin/payment-types", extractAlertList),
+  });
 
   return (
-    <div className="p-6">
-      <Header
-        page="welcome"
-        title="الإعـدادات"
-        isMain={false}
-        first="الرئيــسية"
-        firstURL="/"
-        second="الإعـدادات"
-        secondURL="/home/settings"
-        third="طرق الدفع"
-        thirdURL="/home/settings/payment-types"
+    <SettingsPageShell>
+      <SettingsListHeader
+        title="طرق الدفع"
+        action={
+          <PermissionGate section={PERMISSION_SECTIONS.app_content} action="create">
+            <AddPaymentTypeDialog />
+          </PermissionGate>
+        }
       />
 
-      <Tabs dir="rtl" value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <div className="flex items-center justify-between mb-4">
-          <TabsList className="bg-transparent gap-4">
-            <TabsTrigger
-              value="housing"
-              className="data-[state=active]:bg-brand-hover data-[state=active]:text-white font-bold p-4 px-8 rounded-full gap-2 bg-gray-200"
-            >
-              <Pentagon className="w-4 h-4" />
-              سكني
-            </TabsTrigger>
-            <TabsTrigger
-              value="commercial"
-              className="data-[state=active]:bg-brand-hover data-[state=active]:text-white font-bold p-4 px-8 rounded-full gap-2 bg-gray-200"
-            >
-              <Building2 className="w-4 h-4" />
-              تجاري
-            </TabsTrigger>
-          </TabsList>
-          <AddPaymentTypeDialog activeTab={activeTab} />
-        </div>
-
-        <TabsContent value="housing">
-          <PaymentTypesGrid activeTab="housing" />
-        </TabsContent>
-        <TabsContent value="commercial">
-          <PaymentTypesGrid activeTab="commercial" />
-        </TabsContent>
-      </Tabs>
-    </div>
+      <SettingsTable headers={HEADERS} minWidth="640px">
+        {isLoading ? (
+          <SettingsLoadingRows colSpan={3} />
+        ) : data.length === 0 ? (
+          <SettingsEmptyRow colSpan={3} />
+        ) : (
+          data.map((item) => (
+            <SettingsTableRow key={`${item.contract_type}-${item.id}`}>
+              <SettingsTd>
+                <div>
+                  <p>{item.name_ar || item.name}</p>
+                  {item.name_en ? (
+                    <p className="mt-0.5 text-xs text-gray-400" dir="ltr">
+                      {item.name_en}
+                    </p>
+                  ) : null}
+                </div>
+              </SettingsTd>
+              <SettingsTd className="text-center">
+                {contractTypeLabel(item.contract_type)}
+              </SettingsTd>
+              <SettingsTd>
+                <div className="flex items-center justify-end gap-2">
+                  <PermissionGate section={PERMISSION_SECTIONS.app_content} action="edit">
+                    <EditPaymentTypeDialog paymentType={item} />
+                  </PermissionGate>
+                </div>
+              </SettingsTd>
+            </SettingsTableRow>
+          ))
+        )}
+      </SettingsTable>
+    </SettingsPageShell>
   );
 }

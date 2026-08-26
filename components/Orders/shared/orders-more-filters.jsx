@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/select";
 
 const fieldClass =
-  "h-[46px] rounded-[14px] border-[#EEEEEE] bg-[#F9F9F9] text-[14px]";
+  "h-[46px] rounded-14 border-surface-border bg-surface-input text-sm";
 
 export default function OrdersMoreFilters({
   filters,
@@ -22,9 +22,9 @@ export default function OrdersMoreFilters({
   };
 
   return (
-    <div className="bg-white rounded-[20px] border border-[#E4E4E4] p-5 shadow-sm grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+    <div className="bg-white rounded-20 border border-neutral-200 p-5 shadow-sm grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
       <div className="space-y-1.5">
-        <label className="text-[12px] font-bold text-[#616161]">رقم الطلب</label>
+        <label className="text-xs font-bold text-[#616161]">رقم الطلب</label>
         <Input
           value={filters.uuid}
           onChange={(e) => update("uuid", e.target.value)}
@@ -34,7 +34,7 @@ export default function OrdersMoreFilters({
       </div>
 
       <div className="space-y-1.5">
-        <label className="text-[12px] font-bold text-[#616161]">رقم الجوال</label>
+        <label className="text-xs font-bold text-[#616161]">رقم الجوال</label>
         <Input
           value={filters.user_mobile}
           onChange={(e) => update("user_mobile", e.target.value)}
@@ -45,7 +45,7 @@ export default function OrdersMoreFilters({
       </div>
 
       <div className="space-y-1.5">
-        <label className="text-[12px] font-bold text-[#616161]">نوع العقد</label>
+        <label className="text-xs font-bold text-[#616161]">نوع العقد</label>
         <Input
           value={filters.contract_type}
           onChange={(e) => update("contract_type", e.target.value)}
@@ -55,7 +55,7 @@ export default function OrdersMoreFilters({
       </div>
 
       <div className="space-y-1.5">
-        <label className="text-[12px] font-bold text-[#616161]">نوع الوثيقة</label>
+        <label className="text-xs font-bold text-[#616161]">نوع الوثيقة</label>
         <Input
           value={filters.instrument_type}
           onChange={(e) => update("instrument_type", e.target.value)}
@@ -65,7 +65,7 @@ export default function OrdersMoreFilters({
       </div>
 
       <div className="space-y-1.5">
-        <label className="text-[12px] font-bold text-[#616161]">اسم المستلم</label>
+        <label className="text-xs font-bold text-[#616161]">اسم المستلم</label>
         <Input
           value={filters.employee_name}
           onChange={(e) => update("employee_name", e.target.value)}
@@ -76,7 +76,7 @@ export default function OrdersMoreFilters({
 
       {showStatusField && (
         <div className="space-y-1.5">
-          <label className="text-[12px] font-bold text-[#616161]">حالة الطلب</label>
+          <label className="text-xs font-bold text-[#616161]">حالة الطلب</label>
           <Input
             value={filters.status_name}
             onChange={(e) => update("status_name", e.target.value)}
@@ -87,7 +87,7 @@ export default function OrdersMoreFilters({
       )}
 
       <div className="space-y-1.5">
-        <label className="text-[12px] font-bold text-[#616161]">حالة الدفع</label>
+        <label className="text-xs font-bold text-[#616161]">حالة الدفع</label>
         <Select
           value={filters.payment_status || "all"}
           onValueChange={(value) => update("payment_status", value === "all" ? "" : value)}
@@ -104,7 +104,7 @@ export default function OrdersMoreFilters({
       </div>
 
       <div className="space-y-1.5">
-        <label className="text-[12px] font-bold text-[#616161]">المبلغ من</label>
+        <label className="text-xs font-bold text-[#616161]">المبلغ من</label>
         <Input
           type="number"
           value={filters.amount_min}
@@ -115,7 +115,7 @@ export default function OrdersMoreFilters({
       </div>
 
       <div className="space-y-1.5">
-        <label className="text-[12px] font-bold text-[#616161]">المبلغ إلى</label>
+        <label className="text-xs font-bold text-[#616161]">المبلغ إلى</label>
         <Input
           type="number"
           value={filters.amount_max}
@@ -126,7 +126,7 @@ export default function OrdersMoreFilters({
       </div>
 
       <div className="space-y-1.5">
-        <label className="text-[12px] font-bold text-[#616161]">من تاريخ</label>
+        <label className="text-xs font-bold text-[#616161]">من تاريخ</label>
         <Input
           type="date"
           value={filters.date_from}
@@ -136,7 +136,7 @@ export default function OrdersMoreFilters({
       </div>
 
       <div className="space-y-1.5">
-        <label className="text-[12px] font-bold text-[#616161]">إلى تاريخ</label>
+        <label className="text-xs font-bold text-[#616161]">إلى تاريخ</label>
         <Input
           type="date"
           value={filters.date_to}

@@ -1,12 +1,14 @@
-"use client"
-import { Button } from '@/components/ui/button';
+"use client";
+
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
-  DialogTrigger
+  DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -14,11 +16,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, X, Loader2 } from 'lucide-react';
-import { useState, useEffect } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { axiosInstance } from '@/src/utils/axios';
-import { toast } from 'sonner';
+import { Textarea } from "@/components/ui/textarea";
+import { SETTINGS_EDIT_TRIGGER_CLASS, SettingsAddTrigger } from "@/components/SystemSettings/shared";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { axiosInstance } from "@/src/utils/axios";
+import { ChevronLeft, Loader2, MessageSquareText, X } from "lucide-react";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
+
+const fieldClass =
+  "h-11 rounded-xl border-[#E6EBE9] bg-white text-[13px] font-semibold focus:ring-0 focus:border-[#054D44] data-[placeholder]:text-[#9CA3AF]";
 
 export default function AddNewMessageForEmployeeDialog({ isEdit, messageAlert }) {
   const [open, setOpen] = useState(false);
@@ -28,7 +35,6 @@ export default function AddNewMessageForEmployeeDialog({ isEdit, messageAlert })
 
   const queryClient = useQueryClient();
 
-  // Reset or pre-fill states when dialog opens or messageAlert changes
   useEffect(() => {
     if (open) {
       setSelectedSection(messageAlert?.message_alert_section_id?.toString() || "");
@@ -37,148 +43,219 @@ export default function AddNewMessageForEmployeeDialog({ isEdit, messageAlert })
     }
   }, [open, messageAlert]);
 
-  // Fetch sections
-  const { data: sectionsData } = useQuery({
+  const { data: sectionsData, isLoading: sectionsLoading } = useQuery({
     queryKey: ["message-alert-sections-employee"],
-    queryFn: () => axiosInstance.get("admin/message-alert-sections/employee/options/list").then(res => res.data),
-    enabled: open
+    queryFn: () =>
+      axiosInstance.get("admin/message-alert-sections/employee/options/list").then((res) => res.data),
+    enabled: open,
   });
   const sections = sectionsData?.data?.items || sectionsData?.data || [];
 
-  // Fetch section items
-  const { data: itemsData } = useQuery({
+  const { data: itemsData, isLoading: itemsLoading } = useQuery({
     queryKey: ["message-alert-section-items-employee", selectedSection],
-    queryFn: () => axiosInstance.get(`/admin/message-alert-section-items?type=employee&message_alert_section_id=${selectedSection}`).then(res => res.data),
-    enabled: open && !!selectedSection
+    queryFn: () =>
+      axiosInstance
+        .get(
+          `/admin/message-alert-section-items?type=employee&message_alert_section_id=${selectedSection}`
+        )
+        .then((res) => res.data),
+    enabled: open && !!selectedSection,
   });
 
-  const currentSectionObj = sections.find(s => s.id?.toString() === selectedSection);
+  const currentSectionObj = sections.find((s) => s.id?.toString() === selectedSection);
   const items = currentSectionObj?.items || itemsData?.data?.items || itemsData?.data || [];
+  const currentItemObj = items.find((item) => item.id?.toString() === selectedItem);
 
-  // Create or Update mutation
+  const sectionLabel = currentSectionObj?.name_ar || currentSectionObj?.name_en;
+  const itemLabel = currentItemObj?.name_ar || currentItemObj?.name_en;
+
   const mutation = useMutation({
     mutationFn: (payload) => {
       if (isEdit && messageAlert?.id) {
         return axiosInstance.post(`/admin/message-alerts/employee/${messageAlert.id}`, payload);
-      } else {
-        return axiosInstance.post("/admin/message-alerts/employee", payload);
       }
+      return axiosInstance.post("/admin/message-alerts/employee", payload);
     },
     onSuccess: (res) => {
-      toast.success(res?.data?.message || (isEdit ? "تم تعديل الرسالة بنجاح" : "تم إضافة الرسالة بنجاح"));
+      toast.success(
+        res?.data?.message || (isEdit ? "تم تعديل الرسالة بنجاح" : "تم إضافة الرسالة بنجاح")
+      );
       setOpen(false);
       queryClient.invalidateQueries({ queryKey: ["message-alerts-employee"] });
     },
     onError: (err) => {
       toast.error(err?.response?.data?.message || "حدث خطأ ما");
-    }
+    },
   });
 
   const handleSubmit = () => {
-    if (!selectedSection || !selectedItem || !message) {
+    if (!selectedSection || !selectedItem || !message.trim()) {
       toast.error("يرجى ملء جميع الحقول المطلوبة");
       return;
     }
     mutation.mutate({
       message_alert_section_id: Number(selectedSection),
       message_alert_section_item_id: Number(selectedItem),
-      message
+      message: message.trim(),
     });
   };
 
   return (
-    <Dialog dir='rtl' open={open} onOpenChange={setOpen}>
+    <Dialog dir="rtl" open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {isEdit ? (
-          <Button className='bg-red-500/20 text-red-500 text-xs'>
+          <button type="button" className={SETTINGS_EDIT_TRIGGER_CLASS}>
             تعديل
-          </Button>
+          </button>
         ) : (
-          <Button className='bg-brand-hover text-white h-12'>
-            إضافة رساله جديدة
-            <Plus className='w-4 h-4' />
-          </Button>
+          <SettingsAddTrigger>إضافة</SettingsAddTrigger>
         )}
       </DialogTrigger>
-      <DialogContent closeButton={false} className="max-w-3xl">
-        <DialogHeader>
-          <div className='flex items-center justify-between border-b pb-6'>
-            {/* header and close button */}
-            <h2 className='text-xl font-bold'>إضــافة رساله جديدة</h2>
-            <Button variant="ghost" onClick={() => setOpen(false)}>
-              <X className='w-4 h-4' />
-            </Button>
-          </div>
 
-          <div className='space-y-4'>
-            <div dir='rtl' className='space-y-4 text-right'>
-              {/* اختر القسم */}
-              <div className="space-y-2 grow">
-                <label className="text-sm font-medium">
-                  اختر القسم <span className="text-red-500">*</span>
-                </label>
-
-                <Select dir='rtl' value={selectedSection} onValueChange={(val) => {
-                  setSelectedSection(val);
-                  setSelectedItem(""); // Reset item on section change
-                }}>
-                  <SelectTrigger className='h-12'>
-                    <SelectValue placeholder="اختر القسم ..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {sections.map(sec => (
-                      <SelectItem key={sec.id} value={sec.id?.toString()}>
-                        {sec.name_ar || sec.name_en}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* اختر بند القسم */}
-              <div className="space-y-2 grow">
-                <label className="text-sm font-medium">
-                  اختر بند القسم <span className="text-red-500">*</span>
-                </label>
-
-                <Select dir='rtl' value={selectedItem} onValueChange={setSelectedItem} disabled={!selectedSection}>
-                  <SelectTrigger className='h-12'>
-                    <SelectValue placeholder="اختر بند القسم ..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {items.map(item => (
-                      <SelectItem key={item.id} value={item.id?.toString()}>
-                        {item.name_ar || item.name_en}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* الرسالة */}
-              <div className="space-y-2 grow">
-                <label className="text-sm font-medium">
-                  الرسالة <span className="text-red-500">*</span>
-                </label>
-                <Input
-                  placeholder="اكتب هنا ..."
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  className='h-12'
-                />
+      <DialogContent
+        closeButton={false}
+        className="max-w-lg max-h-[90vh] gap-0 overflow-x-hidden overflow-y-auto rounded-2xl border-[#E6EBE9] p-0 shadow-[0_12px_40px_rgba(11,83,69,0.12)] sm:max-w-lg"
+      >
+        <DialogHeader className="space-y-0 border-b border-[#EEF1F0] px-5 py-4 text-right">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex min-w-0 items-start gap-3 text-right">
+              <span className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-xl bg-[#E8F5F1] text-[#054D44]">
+                <MessageSquareText className="size-4" />
+              </span>
+              <div className="min-w-0">
+                <DialogTitle className="text-base font-black text-[#111827]">
+                  {isEdit ? "تعديل رسالة الموظف" : "إضافة رسالة موظف"}
+                </DialogTitle>
+                <p className="mt-1 text-[12px] font-medium text-[#6B7280]">
+                  اربط الرسالة بقسم وبند، ثم اكتب النص الذي يظهر للموظف.
+                </p>
               </div>
             </div>
-
-            {/* زر الإضافة */}
-            <Button
-              disabled={mutation.isPending}
-              onClick={handleSubmit}
-              className="mx-auto block h-12 bg-brand-hover"
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              className="shrink-0 rounded-full p-1.5 text-neutral-500 hover:bg-neutral-100"
+              aria-label="إغلاق"
             >
-              {mutation.isPending ? <Loader2 className='animate-spin mx-auto' /> : (isEdit ? "تعديل" : "إضافة")}
-            </Button>
+              <X className="size-4" />
+            </button>
           </div>
         </DialogHeader>
+
+        <div dir="rtl" className="flex min-w-0 max-w-full flex-col gap-4 overflow-hidden px-5 py-4 text-right">
+          {(sectionLabel || itemLabel) && (
+            <div className="flex flex-wrap items-center gap-1.5 rounded-xl border border-[#DCEEE8] bg-[#F4FBF8] px-3 py-2.5 text-[12px] font-bold text-[#054D44]">
+              <span className={cn(!sectionLabel && "text-[#9CA3AF]")}>
+                {sectionLabel || "القسم"}
+              </span>
+              <ChevronLeft className="size-3.5 shrink-0 text-[#8AADA3]" />
+              <span className={cn(!itemLabel && "text-[#9CA3AF]")}>
+                {itemLabel || "بند القسم"}
+              </span>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <label className="flex flex-col gap-1.5">
+              <span className="text-[13px] font-bold text-[#111827]">
+                القسم <span className="text-red-500">*</span>
+              </span>
+              <Select
+                dir="rtl"
+                value={selectedSection}
+                onValueChange={(val) => {
+                  setSelectedSection(val);
+                  setSelectedItem("");
+                }}
+              >
+                <SelectTrigger className={fieldClass}>
+                  <SelectValue
+                    placeholder={sectionsLoading ? "جاري التحميل..." : "اختر القسم"}
+                  />
+                </SelectTrigger>
+                <SelectContent dir="rtl">
+                  {sections.map((sec) => (
+                    <SelectItem key={sec.id} value={sec.id?.toString()}>
+                      {sec.name_ar || sec.name_en}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </label>
+
+            <label className="flex flex-col gap-1.5">
+              <span className="text-[13px] font-bold text-[#111827]">
+                بند القسم <span className="text-red-500">*</span>
+              </span>
+              <Select
+                dir="rtl"
+                value={selectedItem}
+                onValueChange={setSelectedItem}
+                disabled={!selectedSection}
+              >
+                <SelectTrigger className={cn(fieldClass, !selectedSection && "opacity-60")}>
+                  <SelectValue
+                    placeholder={
+                      !selectedSection
+                        ? "اختر القسم أولاً"
+                        : itemsLoading
+                          ? "جاري التحميل..."
+                          : "اختر البند"
+                    }
+                  />
+                </SelectTrigger>
+                <SelectContent dir="rtl">
+                  {items.map((item) => (
+                    <SelectItem key={item.id} value={item.id?.toString()}>
+                      {item.name_ar || item.name_en}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </label>
+          </div>
+
+          <label className="flex flex-col gap-1.5">
+            <span className="text-[13px] font-bold text-[#111827]">
+              نص الرسالة <span className="text-red-500">*</span>
+            </span>
+            <Textarea
+              placeholder="اكتب الرسالة التوضيحية التي ستظهر للموظف..."
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              rows={5}
+              className="min-h-[120px] resize-none rounded-xl border-[#E6EBE9] bg-white text-[13px] font-medium leading-relaxed focus-visible:border-[#054D44] focus-visible:ring-0"
+            />
+            <span className="text-[11px] font-semibold text-[#9CA3AF]">
+              {message.trim().length} حرف
+            </span>
+          </label>
+        </div>
+
+        <div className="flex items-center justify-end gap-2 border-t border-[#EEF1F0] px-5 py-3">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setOpen(false)}
+            className="h-10 rounded-xl border-[#054D44]/30 px-4 text-[13px] font-bold text-[#054D44] hover:bg-[#E8F5F1]"
+          >
+            إلغاء
+          </Button>
+          <Button
+            type="button"
+            disabled={mutation.isPending}
+            onClick={handleSubmit}
+            className="h-10 min-w-[104px] rounded-xl bg-[#054D44] px-5 text-[13px] font-bold text-white hover:bg-[#043F38]"
+          >
+            {mutation.isPending ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : isEdit ? (
+              "حفظ التعديل"
+            ) : (
+              "إضافة الرسالة"
+            )}
+          </Button>
+        </div>
       </DialogContent>
     </Dialog>
   );

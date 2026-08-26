@@ -15,11 +15,25 @@ import {
   normalizeOrderForReturnRequest,
 } from "@/components/analysis/returned/refund-contract-utils"
 import { openDialogAfterMenuClose } from "@/src/lib/open-dialog-after-menu-close"
-import { invalidateOrdersCaches } from "@/src/lib/invalidate-orders-caches"
+import { invalidateOrdersCaches, invalidateContractStatusCaches } from "@/src/lib/invalidate-orders-caches"
+import {
+  CONTRACT_STATUSES_ACTIVE_API,
+  CONTRACT_STATUSES_ACTIVE_QUERY_KEY,
+  CONTRACT_STATUSES_API,
+  buildContractStatusWritePayload,
+  extractContractStatusItems,
+} from "@/src/lib/contract-statuses"
+import ChangeOrderStatusFieldsDialog, {
+  getStatusCaseFields,
+  statusRequiresExtraFields,
+} from "@/components/RealtimeOrders/ChangeOrderStatusFieldsDialog"
+import { postOrderStatus } from "@/src/lib/order-status-api"
 
 export default function ChangeStatusDialog({ orderId, order, queryKey }) {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [returnDialogOpen, setReturnDialogOpen] = useState(false);
+  const [statusFieldsOpen, setStatusFieldsOpen] = useState(false);
+  const [pendingStatus, setPendingStatus] = useState(null);
   const [newCategory, setNewCategory] = useState({
     name: '',
     description: '',
@@ -32,15 +46,15 @@ export default function ChangeStatusDialog({ orderId, order, queryKey }) {
   const currentStatus = getOrderContractStatusDisplay(order ?? returnOrder)
 
   function getStatus() {
-    return axiosInstance("/admin/contract-statuses")
+    return axiosInstance(CONTRACT_STATUSES_ACTIVE_API)
   }
   const { data: statusData } = useQuery({
-    queryKey: ["status"],
+    queryKey: [CONTRACT_STATUSES_ACTIVE_QUERY_KEY],
     queryFn: getStatus
   })
 
   const statusItems = useMemo(() => {
-    const items = statusData?.data?.data?.items ?? []
+    const items = extractContractStatusItems(statusData)
     const currentId = currentStatus?.id
 
     if (currentId == null || currentId === "") return items
@@ -51,30 +65,32 @@ export default function ChangeStatusDialog({ orderId, order, queryKey }) {
   }, [statusData, currentStatus?.id])
 
   function addStatus() {
-    return axiosInstance.post("/admin/contract-statuses", newCategory)
+    return axiosInstance.post(
+      CONTRACT_STATUSES_API,
+      buildContractStatusWritePayload(newCategory)
+    )
   }
   const { mutate: addStatusMutate, isPending: addStatusPending } = useMutation({
     mutationFn: addStatus,
     onSuccess: (res) => {
       setIsAddModalOpen(false);
       setNewCategory({ name: '', description: '', color_text: '#000000', color: '#000000' });
-      queryClient.invalidateQueries({ queryKey: ["status"] });
-      invalidateOrdersCaches(queryClient);
-      changeStatusMutate(res?.data?.data?.id)
+      invalidateContractStatusCaches(queryClient);
+      changeStatusMutate({ statusId: res?.data?.data?.id })
     },
     onError: (error) => {
       toast.error(error.response.data.message);
     }
   })
 
-  function changeStatus(statusId) {
-    return axiosInstance.post(`/admin/orders/${orderId}/contract-status`, {
-      contract_status_id: statusId
-    })
+  function changeStatus({ statusId, extraValues, fields }) {
+    return postOrderStatus(orderId, { statusId, extraValues, fields })
   }
   const { mutate: changeStatusMutate, isPending: changeStatusPending } = useMutation({
     mutationFn: changeStatus,
     onSuccess: (res) => {
+      setStatusFieldsOpen(false)
+      setPendingStatus(null)
       toast.success(res?.data?.message || "تم تغيير حالة الطلب")
       invalidateOrdersCaches(queryClient, { queryKey, orderId })
     },
@@ -109,7 +125,13 @@ export default function ChangeStatusDialog({ orderId, order, queryKey }) {
       return
     }
 
-    changeStatusMutate(status.id)
+    if (statusRequiresExtraFields(status)) {
+      setPendingStatus(status)
+      openDialogAfterMenuClose(() => setStatusFieldsOpen(true))
+      return
+    }
+
+    changeStatusMutate({ statusId: status.id })
   }
 
   return (
@@ -119,19 +141,19 @@ export default function ChangeStatusDialog({ orderId, order, queryKey }) {
         <button
           type="button"
           onClick={(e) => e.stopPropagation()}
-          className="w-8 h-8 rounded-full flex items-center justify-center bg-[#F5F5F5] text-[#4D4D4D] hover:bg-brand-main hover:text-white transition-all"
+          className="size-8 rounded-lg border border-surface-border-soft flex items-center justify-center bg-white text-status-neutral hover:text-brand-dark hover:border-brand-dark/30 transition-colors"
           aria-label="إجراءات الطلب"
         >
-          <i className="fa-solid fa-ellipsis-vertical text-[14px]"></i>
+          <i className="fa-solid fa-ellipsis-vertical text-sm"></i>
         </button>
       </DropdownMenuTrigger>
 
       <DropdownMenuContent
-        className="w-64 rounded-[16px] shadow-lg border-[#EEEEEE] p-2"
+        className="w-64 rounded-2xl shadow-lg border-surface-border p-2"
         onClick={(e) => e.stopPropagation()}
       >
         <DropdownMenuLabel>تغيير حالة الطلب</DropdownMenuLabel>
-        <DropdownMenuSeparator className="bg-[#F5F5F5] my-1" />
+        <DropdownMenuSeparator className="bg-neutral-100 my-1" />
 
         {statusItems.map((item) => (
           <div key={item?.id}>
@@ -140,16 +162,16 @@ export default function ChangeStatusDialog({ orderId, order, queryKey }) {
                 handleStatusClick(item)
               }}
               disabled={changeStatusPending}
-              className="cursor-pointer hover:bg-[#F9F9F9] rounded-lg p-2"
+              className="cursor-pointer hover:bg-surface-input rounded-lg p-2"
             >
-              <span className="font-medium text-[13px]">{item?.name}</span>
+              <span className="font-medium text-13">{item?.name}</span>
               {changeStatusPending ? (
                 <Loader2 className="animate-spin mr-auto size-4" />
               ) : (
-                <i className="fa-solid fa-chevron-left mr-auto text-[#A3A3A3] text-[10px]"></i>
+                <i className="fa-solid fa-chevron-left mr-auto text-ink-placeholder text-10"></i>
               )}
             </DropdownMenuItem>
-            <DropdownMenuSeparator className="bg-[#F5F5F5] my-1" />
+            <DropdownMenuSeparator className="bg-neutral-100 my-1" />
           </div>
         ))}
 
@@ -157,14 +179,14 @@ export default function ChangeStatusDialog({ orderId, order, queryKey }) {
           onSelect={() => {
             openDialogAfterMenuClose(() => setIsAddModalOpen(true))
           }}
-          className="cursor-pointer hover:bg-[#F9F9F9] rounded-lg p-2"
+          className="cursor-pointer hover:bg-surface-input rounded-lg p-2"
         >
           <Plus className="size-4" />
-          <span className="font-medium text-[13px]">أخـرى</span>
-          <i className="fa-solid fa-chevron-left mr-auto text-[#A3A3A3] text-[10px]"></i>
+          <span className="font-medium text-13">أخـرى</span>
+          <i className="fa-solid fa-chevron-left mr-auto text-ink-placeholder text-10"></i>
         </DropdownMenuItem>
 
-        <DropdownMenuSeparator className="bg-[#F5F5F5] my-1" />
+        <DropdownMenuSeparator className="bg-neutral-100 my-1" />
 
         <DropdownMenuItem
           className="cursor-pointer hover:bg-[#FFF5F5] text-red-600 rounded-lg p-2"
@@ -175,11 +197,11 @@ export default function ChangeStatusDialog({ orderId, order, queryKey }) {
           }}
         >
           <TrashIcon className='text-red-600 size-4' />
-          <span className="font-medium text-[13px] text-red-600">حذف الطلـب</span>
+          <span className="font-medium text-13 text-red-600">حذف الطلـب</span>
           {isDeleting ? (
             <Loader2 className="animate-spin mr-auto size-4" />
           ) : (
-            <i className="fa-solid fa-chevron-left mr-auto text-red-300 text-[10px]"></i>
+            <i className="fa-solid fa-chevron-left mr-auto text-red-300 text-10"></i>
           )}
         </DropdownMenuItem>
       </DropdownMenuContent>
@@ -193,28 +215,46 @@ export default function ChangeStatusDialog({ orderId, order, queryKey }) {
         queryKey={queryKey}
       />
       
+      <ChangeOrderStatusFieldsDialog
+        open={statusFieldsOpen}
+        onOpenChange={(next) => {
+          setStatusFieldsOpen(next)
+          if (!next) setPendingStatus(null)
+        }}
+        status={pendingStatus}
+        isPending={changeStatusPending}
+        onSubmit={(extraValues) => {
+          if (!pendingStatus) return
+          changeStatusMutate({
+            statusId: pendingStatus.id,
+            extraValues,
+            fields: getStatusCaseFields(pendingStatus),
+          })
+        }}
+      />
+
       <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
-        <DialogContent className="sm:max-w-[600px] p-8 rounded-[32px] border-0" dir="rtl">
+        <DialogContent className="sm:max-w-[600px] p-8 rounded-[18px] border-0" dir="rtl">
           <DialogHeader className="mb-6">
-            <DialogTitle className="text-[22px] font-black text-black border-b border-[#F5F5F5] pb-4">إضافة حالة العقد</DialogTitle>
+            <DialogTitle className="text-lg font-black text-[#22302C] border-b border-[#EEF1EF] pb-4">إضافة حالة العقد</DialogTitle>
           </DialogHeader>
 
           <div className="flex flex-col gap-6">
             <div className="flex flex-col gap-3">
-              <label className="text-[13px] font-bold text-black px-1">
-                اسم الحالة <span className="text-[#FF4D4F] mr-1">*</span>
+              <label className="text-13 font-bold text-black px-1">
+                اسم الحالة <span className="text-status-danger mr-1">*</span>
               </label>
               <input
                 type="text"
                 placeholder="ادخل اسم الحالة هنــا ..."
                 value={newCategory.name}
                 onChange={(e) => setNewCategory(prev => ({ ...prev, name: e.target.value }))}
-                className="w-full h-[54px] bg-[#F9F9F9] border border-[#EEEEEE] rounded-[16px] px-5 text-[15px] focus:outline-none focus:border-brand-main focus:bg-white transition-all font-medium text-right"
+                className="w-full h-13.5 bg-surface-input border border-surface-border rounded-2xl px-5 text-15 focus:outline-none focus:border-brand-main focus:bg-white transition-all font-medium text-right"
               />
             </div>
 
             <div className="flex flex-col gap-3">
-              <label className="text-[13px] font-bold text-black px-1">
+              <label className="text-13 font-bold text-black px-1">
                 وصف الحالة
               </label>
               <textarea
@@ -222,23 +262,23 @@ export default function ChangeStatusDialog({ orderId, order, queryKey }) {
                 value={newCategory.description}
                 onChange={(e) => setNewCategory(prev => ({ ...prev, description: e.target.value }))}
                 rows={3}
-                className="w-full min-h-[96px] bg-[#F9F9F9] border border-[#EEEEEE] rounded-[16px] px-5 py-3 text-[15px] focus:outline-none focus:border-brand-main focus:bg-white transition-all font-medium text-right resize-none"
+                className="w-full min-h-[96px] bg-surface-input border border-surface-border rounded-2xl px-5 py-3 text-15 focus:outline-none focus:border-brand-main focus:bg-white transition-all font-medium text-right resize-none"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-6">
               <div className="flex flex-col gap-3">
-                <label className="text-[13px] font-bold text-black px-1">
-                  لون النص <span className="text-[#FF4D4F] mr-1">*</span>
+                <label className="text-13 font-bold text-black px-1">
+                  لون النص <span className="text-status-danger mr-1">*</span>
                 </label>
                 <div className="relative">
                   <input
                     type="text"
                     value={newCategory.color_text}
                     onChange={(e) => setNewCategory(prev => ({ ...prev, color_text: e.target.value }))}
-                    className="w-full h-[54px] bg-[#F9F9F9] border border-[#EEEEEE] rounded-[16px] pr-5 pl-14 text-[15px] focus:outline-none focus:border-brand-main focus:bg-white transition-all font-bold text-right"
+                    className="w-full h-13.5 bg-surface-input border border-surface-border rounded-2xl pr-5 pl-14 text-15 focus:outline-none focus:border-brand-main focus:bg-white transition-all font-bold text-right"
                   />
-                  <div className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full border-2 border-white shadow-sm overflow-hidden ring-1 ring-[#EEEEEE]">
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full border-2 border-white shadow-sm overflow-hidden ring-1 ring-surface-border">
                     <input
                       type="color"
                       value={newCategory.color_text}
@@ -250,17 +290,17 @@ export default function ChangeStatusDialog({ orderId, order, queryKey }) {
               </div>
 
               <div className="flex flex-col gap-3">
-                <label className="text-[13px] font-bold text-black px-1">
-                  لون الخلفية <span className="text-[#FF4D4F] mr-1">*</span>
+                <label className="text-13 font-bold text-black px-1">
+                  لون الخلفية <span className="text-status-danger mr-1">*</span>
                 </label>
                 <div className="relative">
                   <input
                     type="text"
                     value={newCategory.color}
                     onChange={(e) => setNewCategory(prev => ({ ...prev, color: e.target.value }))}
-                    className="w-full h-[54px] bg-[#F9F9F9] border border-[#EEEEEE] rounded-[16px] pr-5 pl-14 text-[15px] focus:outline-none focus:border-brand-main focus:bg-white transition-all font-bold text-right"
+                    className="w-full h-13.5 bg-surface-input border border-surface-border rounded-2xl pr-5 pl-14 text-15 focus:outline-none focus:border-brand-main focus:bg-white transition-all font-bold text-right"
                   />
-                  <div className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full border-2 border-white shadow-sm overflow-hidden ring-1 ring-[#EEEEEE]">
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full border-2 border-white shadow-sm overflow-hidden ring-1 ring-surface-border">
                     <input
                       type="color"
                       value={newCategory.color}
@@ -275,7 +315,7 @@ export default function ChangeStatusDialog({ orderId, order, queryKey }) {
             <button
               onClick={() => addStatusMutate()}
               disabled={addStatusPending}
-              className="w-full h-[54px] bg-brand-main text-white rounded-[16px] font-bold text-[16px] hover:bg-brand-main/90 transition-all shadow-lg shadow-brand-main/25 mt-4"
+              className="w-full h-13.5 bg-brand-main text-white rounded-2xl font-bold text-base hover:bg-brand-main/90 transition-all shadow-lg shadow-brand-main/25 mt-4"
             >
               {addStatusPending ? <Loader2 className="animate-spin mx-auto" /> : "إضـــافة الحالة"}
             </button>

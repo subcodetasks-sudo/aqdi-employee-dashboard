@@ -142,7 +142,7 @@ function StatItem({ icon: Icon, label, value }) {
         <Icon size={16} />
       </div>
       <div>
-        <p className="font-bold text-[15px] text-black">{value}</p>
+        <p className="font-bold text-15 text-black">{value}</p>
         <p className="text-xs text-muted-foreground">{label}</p>
       </div>
     </div>

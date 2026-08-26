@@ -1,23 +1,38 @@
 "use client";
 
+import {
+  useUnwrapPageProps
+} from "@/src/hooks/use-unwrap-page-props";
 import { useEffect, useState } from "react";
-import Header from "@/components/home/Header";
-import Loader from "@/components/home/loader";
-import { Input } from "@/components/ui/input";
 import TenantRoleFormDialog from "@/components/analysis/settings/tenant-roles/tenant-role-form-dialog";
 import DeleteTenantRoleDialog from "@/components/analysis/settings/tenant-roles/delete-tenant-role-dialog";
+import PermissionGate from "@/components/auth/PermissionGate";
+import { PERMISSION_SECTIONS } from "@/src/lib/permissions";
+import {
+  SettingsEmptyRow,
+  SettingsLoadingRows,
+  SettingsListHeader,
+  SettingsPagination,
+  SettingsTable,
+  SettingsTableRow,
+  SettingsTd,
+  SettingsPageShell,
+} from "@/components/SystemSettings/shared";
+import { Input } from "@/components/ui/input";
 import { useAdminTenantRoles } from "@/src/hooks/use-admin-tenant-roles";
-import { ChevronLeft, ChevronRight, Search } from "lucide-react";
+import { Search } from "lucide-react";
 
 const PER_PAGE = 20;
-const TABLE_HEADERS = [
+const HEADERS = [
   "العنوان",
-  "حقل مستخدم",
+  { label: "حقل مستخدم", className: "text-center" },
   "ملخص الحقل",
-  "الإجراءات",
+  { label: "الإجراءات", className: "text-left" },
 ];
 
-export default function TenantRolesPage() {
+export default function TenantRolesPage(props) {
+  useUnwrapPageProps(props?.params, props?.searchParams);
+
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -39,185 +54,88 @@ export default function TenantRolesPage() {
   });
 
   return (
-    <div className="min-h-screen p-6 flex flex-col gap-6" dir="rtl">
-      <Header
-        page="welcome"
-        title="الإعـدادات"
-        isMain={false}
-        first="الرئيــسية"
-        firstURL="/"
-        second="الإعـدادات"
-        secondURL="/home/settings"
-        third="صلاحيات المستأجر"
-        thirdURL="/home/settings/tenant-roles"
+    <SettingsPageShell>
+      <SettingsListHeader
+        title="صلاحيات المستأجر"
+        action={
+          <PermissionGate section={PERMISSION_SECTIONS.tenant_roles} action="create">
+            <TenantRoleFormDialog />
+          </PermissionGate>
+        }
       />
 
-      <div className="flex flex-wrap items-center justify-between gap-4 pb-6 border-b border-[#F5F5F5] mt-2">
-        <div className="flex flex-col gap-1.5 text-right">
-          <h2 className="text-[22px] font-black text-black">صلاحيات المستأجر</h2>
-          <p className="text-[13px] text-gray-500 font-medium">
-            إدارة صلاحيات المستأجر الظاهرة في التطبيق والعقود
-            {pagination?.total != null ? (
-              <span className="mr-2 text-brand-main">({pagination.total})</span>
-            ) : null}
-          </p>
-        </div>
-        <TenantRoleFormDialog />
-      </div>
-
       <div className="relative max-w-md">
-        <Search className="absolute right-3 top-1/2 size-4 -translate-y-1/2 text-[#A3A3A3]" />
+        <Search className="absolute right-3 top-1/2 size-4 -translate-y-1/2 text-ink-placeholder" />
         <Input
           value={searchInput}
           onChange={(e) => setSearchInput(e.target.value)}
           placeholder="بحث في العنوان / التعريف / اسم الحقل..."
-          className="h-12 pr-10"
+          className="h-11 pr-10 rounded-xl border-surface-border-soft bg-white"
         />
       </div>
 
-      {isLoading ? (
-        <Loader />
-      ) : (
-        <div className="w-full overflow-x-auto bg-white rounded-[24px] border border-[#E4E4E4] shadow-sm">
-          <table className="w-full border-collapse">
-            <thead className="bg-[#FAFAFA]">
-              <tr>
-                {TABLE_HEADERS.map((header) => (
-                  <th
-                    key={header}
-                    className="text-right p-[15px_20px] text-[#A3A3A3] text-[13px] font-medium border-b border-[#E4E4E4] whitespace-nowrap"
-                  >
-                    {header}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {items.length > 0 ? (
-                items.map((role) => (
-                  <tr
-                    key={role.id}
-                    className="border-b border-[#F5F5F5] last:border-0 hover:bg-[#fafafa] transition-all"
-                  >
-                    <td className="p-[15px_20px] align-middle min-w-[220px]">
-                      <p className="text-black text-[13px] font-bold leading-relaxed">
-                        {role.text_of_reason || role.name || "—"}
-                      </p>
-                      {role.service_definition ? (
-                        <p className="mt-1 text-[12px] text-[#737373] line-clamp-2">
-                          {String(role.service_definition)
-                            .replace(/<[^>]*>/g, " ")
-                            .replace(/\s+/g, " ")
-                            .trim()}
-                        </p>
-                      ) : null}
-                    </td>
-                    <td className="p-[15px_20px] align-middle">
-                      <span
-                        className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-bold ${
-                          role.has_user_input
-                            ? "bg-[#E6FCF5] text-[#0C6055]"
-                            : "bg-[#F5F5F5] text-[#737373]"
-                        }`}
-                      >
-                        {role.has_user_input ? "نعم" : "لا"}
-                      </span>
-                    </td>
-                    <td className="p-[15px_20px] align-middle">
-                      {role.has_user_input ? (
-                        <div className="text-right">
-                          <p className="text-[13px] font-bold text-black">
-                            {role.input_field_label || "—"}
-                          </p>
-                          <p className="mt-0.5 text-[11px] text-[#A3A3A3]">
-                            النوع: {role.input_field_type || "—"}
-                          </p>
-                        </div>
-                      ) : (
-                        <span className="text-[13px] text-[#A3A3A3]">—</span>
-                      )}
-                    </td>
-                    <td className="p-[15px_20px] align-middle">
-                      <div className="flex items-center gap-2">
-                        <TenantRoleFormDialog role={role} />
-                        <DeleteTenantRoleDialog role={role} />
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td
-                    colSpan={TABLE_HEADERS.length}
-                    className="text-center p-10 text-[#A3A3A3] text-sm"
-                  >
-                    لا توجد صلاحيات حالياً. اضغط على &quot;إضافة صلاحية&quot; للبدء.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      {pagination && pagination.last_page > 1 ? (
-        <div className="flex items-center justify-center gap-2.5 mt-2" dir="rtl">
-          <button
-            type="button"
-            onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-            disabled={currentPage === 1}
-            className="w-9 h-9 rounded-full border border-[#E4E4E4] flex items-center justify-center text-[#A3A3A3] hover:bg-brand-main hover:text-white transition-all disabled:opacity-50"
-          >
-            <ChevronRight className="size-4" />
-          </button>
-
-          {Array.from({ length: pagination.last_page }, (_, i) => i + 1)
-            .filter((page) => {
-              if (pagination.last_page <= 7) return true;
-              return (
-                page === 1 ||
-                page === pagination.last_page ||
-                Math.abs(page - currentPage) <= 1
-              );
-            })
-            .reduce((acc, page, idx, arr) => {
-              if (idx > 0 && page - arr[idx - 1] > 1) acc.push("...");
-              acc.push(page);
-              return acc;
-            }, [])
-            .map((page, idx) =>
-              page === "..." ? (
-                <span key={`dots-${idx}`} className="text-[#A3A3A3] px-1">
-                  ...
-                </span>
-              ) : (
-                <button
-                  key={page}
-                  type="button"
-                  onClick={() => setCurrentPage(page)}
-                  className={`w-9 h-9 rounded-full flex items-center justify-center text-[13px] font-medium transition-all ${
-                    currentPage === page
-                      ? "bg-brand-main text-white shadow-lg shadow-brand-main/20"
-                      : "border border-[#E4E4E4] text-[#A3A3A3] hover:bg-[#f5f5f5]"
+      <SettingsTable headers={HEADERS} minWidth="860px">
+        {isLoading ? (
+          <SettingsLoadingRows colSpan={4} />
+        ) : items.length === 0 ? (
+          <SettingsEmptyRow colSpan={4} />
+        ) : (
+          items.map((role) => (
+            <SettingsTableRow key={role.id}>
+              <SettingsTd className="min-w-[220px]">
+                <p className="font-bold">{role.text_of_reason || role.name || "—"}</p>
+                {role.service_definition ? (
+                  <p className="mt-1 text-xs text-neutral-500 line-clamp-2">
+                    {String(role.service_definition)
+                      .replace(/<[^>]*>/g, " ")
+                      .replace(/\s+/g, " ")
+                      .trim()}
+                  </p>
+                ) : null}
+              </SettingsTd>
+              <SettingsTd className="text-center">
+                <span
+                  className={`inline-flex rounded-full px-2.5 py-1 text-11 font-bold ${
+                    role.has_user_input
+                      ? "bg-[#E6F7EF] text-green-700"
+                      : "bg-status-neutral-bg text-status-neutral"
                   }`}
                 >
-                  {page}
-                </button>
-              )
-            )}
+                  {role.has_user_input ? "نعم" : "لا"}
+                </span>
+              </SettingsTd>
+              <SettingsTd>
+                {role.has_user_input ? (
+                  <div>
+                    <p className="font-bold">{role.input_field_label || "—"}</p>
+                    <p className="mt-0.5 text-11 text-gray-400">
+                      النوع: {role.input_field_type || "—"}
+                    </p>
+                  </div>
+                ) : (
+                  <span className="text-gray-400">—</span>
+                )}
+              </SettingsTd>
+              <SettingsTd>
+                <div className="flex items-center justify-end gap-2">
+                  <PermissionGate section={PERMISSION_SECTIONS.tenant_roles} action="edit">
+                    <TenantRoleFormDialog role={role} />
+                  </PermissionGate>
+                  <PermissionGate section={PERMISSION_SECTIONS.tenant_roles} action="delete">
+                    <DeleteTenantRoleDialog role={role} />
+                  </PermissionGate>
+                </div>
+              </SettingsTd>
+            </SettingsTableRow>
+          ))
+        )}
+      </SettingsTable>
 
-          <button
-            type="button"
-            onClick={() =>
-              setCurrentPage((prev) => Math.min(pagination.last_page, prev + 1))
-            }
-            disabled={currentPage === pagination.last_page}
-            className="w-9 h-9 rounded-full border border-[#E4E4E4] flex items-center justify-center text-[#A3A3A3] hover:bg-brand-main hover:text-white transition-all disabled:opacity-50"
-          >
-            <ChevronLeft className="size-4" />
-          </button>
-        </div>
-      ) : null}
-    </div>
+      <SettingsPagination
+        page={currentPage}
+        lastPage={pagination?.last_page}
+        onPageChange={setCurrentPage}
+      />
+    </SettingsPageShell>
   );
 }

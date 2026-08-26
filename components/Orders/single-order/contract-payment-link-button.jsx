@@ -42,11 +42,11 @@ function PaidBadge({ orderData }) {
 
   return (
     <div className="flex h-auto items-center gap-2 rounded-2xl bg-[#E6FFE6] px-4 py-3 shrink-0">
-      <span className="rounded-full bg-white/80 px-3 py-1 text-[11px] font-bold whitespace-nowrap text-[#10B981]">
+      <span className="rounded-full bg-white/80 px-3 py-1 text-11 font-bold whitespace-nowrap text-brand-accent">
         مدفوع
       </span>
       {amount != null && amount !== "" ? (
-        <div className="flex items-center gap-1 text-[13px] font-bold text-[#007C13]">
+        <div className="flex items-center gap-1 text-13 font-bold text-[#007C13]">
           <span>{amount}</span>
           <Image src={greenRial} alt="rial" width={14} height={14} />
         </div>

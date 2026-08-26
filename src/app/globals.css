@@ -1,43 +1,6 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-@plugin "@tailwindcss/typography";
-
-@font-face {
-  font-family: "Alexandria";
-  src: url("../webfonts/Alexandria/Alexandria-ExtraBold.woff2") format("woff2"), url("../webfonts/Alexandria/Alexandria-ExtraBold.woff") format("woff"), url("../webfonts/Alexandria/Alexandria-ExtraBold.ttf") format("truetype");
-  font-weight: 800;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Alexandria";
-  src: url("../webfonts/Alexandria/Alexandria-Regular.woff2") format("woff2"), url("../webfonts/Alexandria/Alexandria-Regular.woff") format("woff"), url("../webfonts/Alexandria/Alexandria-Regular.ttf") format("truetype");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Alexandria";
-  src: url("../webfonts/Alexandria/Alexandria-Light.woff2") format("woff2"), url("../webfonts/Alexandria/Alexandria-Light.woff") format("woff"), url("../webfonts/Alexandria/Alexandria-Light.ttf") format("truetype");
-  font-weight: 300;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Alexandria";
-  src: url("../webfonts/Alexandria/Alexandria-Bold.woff2") format("woff2"), url("../webfonts/Alexandria/Alexandria-Bold.woff") format("woff"), url("../webfonts/Alexandria/Alexandria-Bold.ttf") format("truetype");
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Alexandria";
-  src: url("../webfonts/Alexandria/Alexandria-SemiBold.woff2") format("woff2"), url("../webfonts/Alexandria/Alexandria-SemiBold.woff") format("woff"), url("../webfonts/Alexandria/Alexandria-Bold.ttf") format("truetype");
-  font-weight: 600;
-  font-style: normal;
-  font-display: swap;
-}
 
 :root {
   --background: 0 0% 100%;
@@ -59,11 +22,50 @@
   --border: 0 0% 90%;
   --input: 0 0% 90%;
   --ring: 172 78% 21%;
-  --radius: 1.5rem;
-  
+  --radius: 0.5rem;
   --main-color: #0c6055;
   --main-hover: #0004E2;
   --sec-color: #453B2F;
+}
+
+.dark {
+  --background: 150 28% 6%;
+  --foreground: 140 20% 96%;
+  --card: 150 24% 9%;
+  --card-foreground: 140 20% 96%;
+  --popover: 150 24% 10%;
+  --popover-foreground: 140 20% 96%;
+  --primary: 160 45% 42%;
+  --primary-foreground: 150 30% 8%;
+  --secondary: 150 18% 16%;
+  --secondary-foreground: 140 20% 96%;
+  --muted: 150 16% 14%;
+  --muted-foreground: 140 10% 65%;
+  --accent: 150 16% 14%;
+  --accent-foreground: 160 55% 65%;
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 150 14% 18%;
+  --input: 150 14% 18%;
+  --ring: 160 45% 42%;
+
+  --main-color: #10B981;
+  --main-hover: #34D399;
+  --sec-color: #A8B5A8;
+
+  /* Native <select>/<option> menus ignore most Tailwind; color-scheme
+     forces the browser dropdown to use dark system chrome. */
+  color-scheme: dark;
+}
+
+.dark select,
+.dark select option {
+  color-scheme: dark;
+}
+
+.dark select option {
+  background-color: #0f1c16;
+  color: #f5f5f5;
 }
 
 .active {
@@ -74,11 +76,12 @@
 @layer base {
   body {
     @apply bg-background text-foreground;
-    font-family: "Alexandria", system-ui, sans-serif;
+    font-family: var(--font-tajawal), system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     max-width: 100vw;
     overflow-x: hidden;
+    font-size: 12px;
   }
   
   * {
@@ -105,6 +108,62 @@
   background: var(--main-hover);
 }
 
+.dark ::-webkit-scrollbar-track {
+  background: #13241C;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: #0B5345;
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #10B981;
+}
+
+@property --conic-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes conic-border-spin {
+  to {
+    --conic-angle: 360deg;
+  }
+}
+
+.conic-border-badge {
+  border: 1.5px solid transparent;
+  background:
+    linear-gradient(#dcfce7, #dcfce7) padding-box,
+    conic-gradient(
+      from var(--conic-angle),
+      #22c55e 0%,
+      #86efac 18%,
+      #dcfce7 35%,
+      transparent 50%,
+      #16a34a 68%,
+      #0c6055 85%,
+      #22c55e 100%
+    )
+      border-box;
+  animation: conic-border-spin 2.8s linear infinite;
+}
+
+.dark .conic-border-badge {
+  background:
+    linear-gradient(#10291f, #10291f) padding-box,
+    conic-gradient(
+      from var(--conic-angle),
+      #34d399 0%,
+      #6ee7b7 18%,
+      #10291f 35%,
+      transparent 50%,
+      #10b981 68%,
+      #0c6055 85%,
+      #34d399 100%
+    )
+      border-box;
+}
+
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
@@ -129,14 +188,19 @@ a {
   color: inherit;
 }
 
-/* Table headers */
-table thead,
-table thead tr {
-  background-color: #f2f2f2 !important;
+/* Reports print/PDF export: only the active report panel is visible when printing. */
+@media print {
+  body.reports-printing * {
+    visibility: hidden !important;
+  }
+  body.reports-printing #reports-print-area,
+  body.reports-printing #reports-print-area * {
+    visibility: visible !important;
+  }
+  body.reports-printing #reports-print-area {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+  }
 }
 
-table thead th {
-  color: #000000 !important;
-  font-weight: 700 !important;
-  border-bottom-color: #e4e4e4 !important;
-}

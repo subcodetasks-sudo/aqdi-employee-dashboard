@@ -12,6 +12,7 @@ import {
   getContractPeriodLabel,
 } from "@/src/lib/contract-period-utils";
 import { getInstrumentTypeLabel } from "@/src/lib/instrument-types";
+import { SETTINGS_VIEW_TRIGGER_CLASS } from "@/components/SystemSettings/shared";
 import { X } from "lucide-react";
 import { useState } from "react";
 
@@ -21,7 +22,9 @@ export default function ViewDurationDialog({ duration }) {
   return (
     <Dialog dir="rtl" open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-green-500/20 text-green-600 text-xs">عرض</Button>
+        <button type="button" className={SETTINGS_VIEW_TRIGGER_CLASS}>
+          عرض
+        </button>
       </DialogTrigger>
       <DialogContent closeButton={false} className="max-w-lg">
         <DialogHeader>
@@ -34,17 +37,17 @@ export default function ViewDurationDialog({ duration }) {
 
           <div className="space-y-4 text-right">
             <div>
-              <p className="text-sm text-[#737373] mb-1">مدة العقد</p>
+              <p className="text-sm text-neutral-500 mb-1">مدة العقد</p>
               <p className="text-base font-bold">{getContractPeriodLabel(duration)}</p>
             </div>
             <div>
-              <p className="text-sm text-[#737373] mb-1">السعر</p>
+              <p className="text-sm text-neutral-500 mb-1">السعر</p>
               <p className="text-base font-bold text-brand-main">
                 {formatContractPeriodPrice(duration?.price) || "—"}
               </p>
             </div>
             <div>
-              <p className="text-sm text-[#737373] mb-1">تصنيف وثيقة الملكية</p>
+              <p className="text-sm text-neutral-500 mb-1">تصنيف وثيقة الملكية</p>
               <p className="text-base font-bold">
                 {getInstrumentTypeLabel(duration?.instrument_type)}
               </p>

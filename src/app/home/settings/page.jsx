@@ -1,8 +1,10 @@
+"use client";
 
-import SettingsWrapper from '@/components/analysis/settings/SettingsWrapper'
-import React from 'react'
-export default async function page() {
-    return (
-        <SettingsWrapper />
-    )
+import { useUnwrapPageProps } from "@/src/hooks/use-unwrap-page-props";
+import SystemSettingsWrapper from "@/components/SystemSettings/SystemSettingsWrapper";
+
+export default function SettingsPage(props) {
+  useUnwrapPageProps(props?.params, props?.searchParams);
+
+  return <SystemSettingsWrapper />;
 }

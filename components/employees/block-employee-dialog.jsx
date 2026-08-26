@@ -76,14 +76,14 @@ export default function BlockEmployeeDialog({ employee }) {
           size="icon"
           className={`w-9 h-9 rounded-full border-0 transition-all shadow-none ${
             isBlocked
-              ? "bg-[#E6FFE6] text-[#10B981] hover:bg-[#10B981] hover:text-white"
-              : "bg-[#F5F5F5] text-[#1A1A1A] hover:bg-[#E8E8E8]"
+              ? "bg-[#E6FFE6] text-brand-accent hover:bg-brand-accent hover:text-white"
+              : "bg-neutral-100 text-[#1A1A1A] hover:bg-[#E8E8E8]"
           }`}
         >
           <Ban className="size-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden rounded-[32px] border-0" dir="rtl">
+      <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden rounded-32 border-0" dir="rtl">
         <div className="p-8 flex flex-col items-center gap-6">
           
           {/* Top Status Icon */}
@@ -95,10 +95,10 @@ export default function BlockEmployeeDialog({ employee }) {
 
           {/* Title & Target name */}
           <div className="flex flex-col gap-2 text-center w-full">
-            <h3 className="text-[22px] font-black text-black">
+            <h3 className="text-22 font-black text-black">
               {isBlocked ? "إلغاء حظر الموظف" : "حظر الموظف"}
             </h3>
-            <p className={`text-[16px] font-bold px-4 py-1.5 rounded-full inline-block mx-auto ${
+            <p className={`text-base font-bold px-4 py-1.5 rounded-full inline-block mx-auto ${
               isBlocked ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-500'
             }`}>
               {employee?.name}
@@ -107,7 +107,7 @@ export default function BlockEmployeeDialog({ employee }) {
 
           {/* Dialog Body Content */}
           {isBlocked ? (
-            <p className="text-[15px] font-medium text-[#737373] text-center max-w-sm">
+            <p className="text-15 font-medium text-neutral-500 text-center max-w-sm">
               هل أنت متأكد من إلغاء حظر هذا الموظف؟ سيتمكن من تسجيل الدخول واستئناف أنشطته بشكل طبيعي.
             </p>
           ) : (
@@ -115,21 +115,21 @@ export default function BlockEmployeeDialog({ employee }) {
               {/* Reason Field */}
               <div className="space-y-1.5">
                 <label className="text-sm font-bold text-black flex items-center gap-1.5">
-                  <FileText className="size-4 text-[#A3A3A3]" />
+                  <FileText className="size-4 text-ink-placeholder" />
                   سبب الحظر <span className="text-red-500">*</span>
                 </label>
                 <textarea
                   placeholder="أدخل سبب حظر الموظف هنا..."
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
-                  className="w-full h-24 p-3 text-[14px] bg-[#F9F9F9] border border-[#EEEEEE] rounded-[16px] resize-none focus:outline-none focus:border-brand-main focus:bg-white transition-all shadow-inner"
+                  className="w-full h-24 p-3 text-sm bg-surface-input border border-surface-border rounded-2xl resize-none focus:outline-none focus:border-brand-main focus:bg-white transition-all shadow-inner"
                 />
               </div>
 
               {/* Block Until Field */}
               <div className="space-y-1.5">
                 <label className="text-sm font-bold text-black flex items-center gap-1.5">
-                  <Calendar className="size-4 text-[#A3A3A3]" />
+                  <Calendar className="size-4 text-ink-placeholder" />
                   حظر حتى تاريخ (اختياري)
                 </label>
                 <input
@@ -137,9 +137,9 @@ export default function BlockEmployeeDialog({ employee }) {
                   value={blockedUntil}
                   min={new Date().toISOString().split('T')[0]}
                   onChange={(e) => setBlockedUntil(e.target.value)}
-                  className="w-full h-[46px] px-4 text-[14px] bg-[#F9F9F9] border border-[#EEEEEE] rounded-[16px] focus:outline-none focus:border-brand-main focus:bg-white transition-all shadow-inner text-right"
+                  className="w-full h-[46px] px-4 text-sm bg-surface-input border border-surface-border rounded-2xl focus:outline-none focus:border-brand-main focus:bg-white transition-all shadow-inner text-right"
                 />
-                <p className="text-xs text-[#A3A3A3]">اتركه فارغاً للحظر الدائم</p>
+                <p className="text-xs text-ink-placeholder">اتركه فارغاً للحظر الدائم</p>
               </div>
             </div>
           )}
@@ -149,7 +149,7 @@ export default function BlockEmployeeDialog({ employee }) {
             <button
               onClick={handleConfirm}
               disabled={isPending}
-              className={`flex-1 h-[54px] text-white rounded-[16px] font-bold text-[16px] transition-all shadow-lg flex items-center justify-center ${
+              className={`flex-1 h-13.5 text-white rounded-2xl font-bold text-base transition-all shadow-lg flex items-center justify-center ${
                 isBlocked
                   ? "bg-green-600 hover:bg-green-700 shadow-green-600/25"
                   : "bg-red-500 hover:bg-red-600 shadow-red-500/25"
@@ -164,7 +164,7 @@ export default function BlockEmployeeDialog({ employee }) {
             <button
               onClick={() => setOpen(false)}
               disabled={isPending}
-              className="flex-1 h-[54px] bg-[#F5F5F5] text-[#737373] rounded-[16px] font-bold text-[16px] hover:bg-[#EEEEEE] transition-all"
+              className="flex-1 h-13.5 bg-neutral-100 text-neutral-500 rounded-2xl font-bold text-base hover:bg-surface-border transition-all"
             >
               إلغاء
             </button>

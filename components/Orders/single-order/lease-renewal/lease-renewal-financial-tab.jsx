@@ -13,7 +13,7 @@ import {
   isEmptyDisplayValue,
 } from "../contract-summary-view";
 
-const MoneyCard = ({ label, value, accent = "border-[#10B981]" }) => {
+const MoneyCard = ({ label, value, accent = "border-brand-accent" }) => {
   const empty = isEmptyDisplayValue(value);
   return (
     <div
@@ -24,10 +24,10 @@ const MoneyCard = ({ label, value, accent = "border-[#10B981]" }) => {
       <div className="flex items-center justify-between gap-2">
         <Wallet className={`size-5 shrink-0 ${empty ? "text-[#BDBDBD]" : "text-[#3B82F6]"}`} />
         <div className="text-right flex-1 min-w-0">
-          <p className="text-[11px] text-[#9E9E9E] mb-0.5">{label}</p>
+          <p className="text-11 text-[#9E9E9E] mb-0.5">{label}</p>
           <p
-            className={`text-[15px] font-black ${
-              empty ? "text-[#A3A3A3]" : "text-black"
+            className={`text-15 font-black ${
+              empty ? "text-ink-placeholder" : "text-black"
             }`}
           >
             {formatDisplayValue(value)}
@@ -41,8 +41,8 @@ const MoneyCard = ({ label, value, accent = "border-[#10B981]" }) => {
 const InactiveCard = ({ label }) => (
   <div className="bg-[#ECECEC] rounded-2xl p-4 opacity-70 border-r-[3px] border-r-[#BDBDBD]">
     <div className="flex items-center justify-between gap-2">
-      <X className="size-5 text-[#FF4D4F] shrink-0" />
-      <p className="text-[13px] font-bold text-[#9E9E9E] text-right flex-1">{label}</p>
+      <X className="size-5 text-status-danger shrink-0" />
+      <p className="text-13 font-bold text-[#9E9E9E] text-right flex-1">{label}</p>
     </div>
   </div>
 );
@@ -51,8 +51,8 @@ const PermissionCard = ({ label, active }) =>
   active ? (
     <div className="bg-white rounded-2xl p-4 shadow-sm border-r-[3px] border-r-[#9C27B0]">
       <div className="flex items-center justify-between gap-2">
-        <Check className="size-5 text-[#10B981] shrink-0" />
-        <p className="text-[13px] font-bold text-black text-right flex-1">{label}</p>
+        <Check className="size-5 text-brand-accent shrink-0" />
+        <p className="text-13 font-bold text-black text-right flex-1">{label}</p>
       </div>
     </div>
   ) : (
@@ -81,25 +81,25 @@ export default function LeaseRenewalFinancialTab({ orderData }) {
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 w-full min-w-0">
-      <div className="bg-[#F4F4F4] rounded-[20px] p-4 min-w-0 overflow-hidden">
+      <div className="bg-[#F4F4F4] rounded-20 p-4 min-w-0 overflow-hidden">
         <ContractStepEditor
           title="البيانات المالية"
           step="step4"
           fields={LEASE_RENEWAL_FINANCIAL_FIELDS}
         >
           <div className="space-y-3">
-            <MoneyCard label="إجمالي قيمة العقد" value={totalValue} accent="border-[#10B981]" />
+            <MoneyCard label="إجمالي قيمة العقد" value={totalValue} accent="border-brand-accent" />
             <MoneyCard
               label="طريقة الدفعات"
               value={step4.payment_type_name || "—"}
               accent="border-[#BDBDBD]"
             />
             {electricityMeter ? (
-              <div className="bg-white rounded-2xl p-4 shadow-sm border-r-[3px] border-r-[#10B981]">
+              <div className="bg-white rounded-2xl p-4 shadow-sm border-r-[3px] border-r-brand-accent">
                 <div className="flex items-start justify-between gap-2">
-                  <Check className="size-5 text-[#10B981] shrink-0 mt-0.5" />
+                  <Check className="size-5 text-brand-accent shrink-0 mt-0.5" />
                   <div className="text-right flex-1 min-w-0">
-                    <p className="text-[11px] text-[#9E9E9E] mb-1">عداد الكهرباء</p>
+                    <p className="text-11 text-[#9E9E9E] mb-1">عداد الكهرباء</p>
                     <div className="flex items-center gap-2 justify-end min-w-0">
                       <button
                         type="button"
@@ -107,11 +107,11 @@ export default function LeaseRenewalFinancialTab({ orderData }) {
                           navigator.clipboard.writeText(String(electricityMeter));
                           toast.success("تم النسخ");
                         }}
-                        className="text-[#A3A3A3] hover:text-brand-main shrink-0"
+                        className="text-ink-placeholder hover:text-brand-main shrink-0"
                       >
                         <Copy className="size-3.5" />
                       </button>
-                      <p className="text-[11px] font-mono text-black break-all" dir="ltr">
+                      <p className="text-11 font-mono text-black break-all" dir="ltr">
                         {electricityMeter}
                       </p>
                     </div>
@@ -130,14 +130,14 @@ export default function LeaseRenewalFinancialTab({ orderData }) {
         </ContractStepEditor>
       </div>
 
-      <div className="bg-[#F4F4F4] rounded-[20px] p-4 min-w-0 overflow-hidden">
+      <div className="bg-[#F4F4F4] rounded-20 p-4 min-w-0 overflow-hidden">
         <ContractStepEditor
           title="مدة العقد"
           step="step4"
           fields={LEASE_RENEWAL_CONTRACT_DATE_FIELDS}
         >
           <div className="space-y-3">
-            <MoneyCard label="تاريخ بداية العقد" value={startDate} accent="border-[#10B981]" />
+            <MoneyCard label="تاريخ بداية العقد" value={startDate} accent="border-brand-accent" />
             <MoneyCard label="نوع التاريخ" value={dateType} accent="border-[#3B82F6]" />
             <MoneyCard
               label="الغرامة اليومية"
@@ -148,7 +148,7 @@ export default function LeaseRenewalFinancialTab({ orderData }) {
         </ContractStepEditor>
       </div>
 
-      <div className="bg-[#F4F4F4] rounded-[20px] p-4 min-w-0 overflow-hidden">
+      <div className="bg-[#F4F4F4] rounded-20 p-4 min-w-0 overflow-hidden">
         <ContractStepEditor title="الصلاحيات" step="step4" fields={[]} showEdit={false}>
           <div className="space-y-3">
             <PermissionCard label="التأجير من الباطن" active={Boolean(step4.other_conditions)} />
@@ -162,7 +162,7 @@ export default function LeaseRenewalFinancialTab({ orderData }) {
         </ContractStepEditor>
       </div>
 
-      <div className="bg-[#F4F4F4] rounded-[20px] p-4 flex flex-col h-fit min-w-0 overflow-hidden sm:col-span-2 xl:col-span-1">
+      <div className="bg-[#F4F4F4] rounded-20 p-4 flex flex-col h-fit min-w-0 overflow-hidden sm:col-span-2 xl:col-span-1">
         <ContractStepEditor title="تحويل الطلب" step="step4" fields={[]} showEdit={false}>
           <LeaseRenewalDraftTransfer
             orderId={orderData?.id}

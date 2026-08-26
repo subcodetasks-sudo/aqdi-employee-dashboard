@@ -98,15 +98,15 @@ export default function OrderSectionErrorDialog({
           <button
             type="button"
             onClick={() => onOpenChange(false)}
-            className="text-[#737373] hover:text-black transition-colors text-xl leading-none w-8 h-8 flex items-center justify-center"
+            className="text-neutral-500 hover:text-black transition-colors text-xl leading-none w-8 h-8 flex items-center justify-center"
             aria-label="إغلاق"
           >
             ✕
           </button>
         </div>
 
-        <div className="bg-[#F5F5F5] rounded-[20px] p-5 sm:p-6 mb-6 max-h-[min(50vh,360px)] overflow-y-auto">
-          <p className="text-[14px] leading-[1.9] text-[#1A1A1A] whitespace-pre-wrap text-right">
+        <div className="bg-neutral-100 rounded-20 p-5 sm:p-6 mb-6 max-h-[min(50vh,360px)] overflow-y-auto">
+          <p className="text-sm leading-[1.9] text-[#1A1A1A] whitespace-pre-wrap text-right">
             {messageText || "—"}
           </p>
         </div>
@@ -127,18 +127,18 @@ export default function OrderSectionErrorDialog({
               <button
                 type="button"
                 onClick={copyPhone}
-                className="text-[#737373] hover:text-black transition-colors"
+                className="text-neutral-500 hover:text-black transition-colors"
                 aria-label="نسخ رقم الجوال"
               >
                 <Copy className="size-4" />
               </button>
-              <span className="text-[15px] font-semibold text-[#1A1A1A]" dir="ltr">
+              <span className="text-15 font-semibold text-[#1A1A1A]" dir="ltr">
                 {phone}
               </span>
             </div>
           </div>
         ) : (
-          <p className="text-center text-[13px] text-[#E24444] mb-6">
+          <p className="text-center text-13 text-[#E24444] mb-6">
             {context === "agent"
               ? "لا يوجد رقم جوال مسجل للوكيل"
               : "لا يوجد رقم جوال مسجل للعميل"}
@@ -150,7 +150,7 @@ export default function OrderSectionErrorDialog({
             type="button"
             onClick={handleConfirm}
             disabled={!phone || !messageText.trim()}
-            className="flex items-center justify-center gap-2 h-[48px] min-w-[140px] px-8 rounded-[14px] bg-[#1D4ED8] text-white text-[15px] font-bold hover:bg-[#1e40af] transition-colors shadow-[0_8px_20px_rgba(29,78,216,0.35)] disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
+            className="flex items-center justify-center gap-2 h-12 min-w-[140px] px-8 rounded-14 bg-[#1D4ED8] text-white text-15 font-bold hover:bg-[#1e40af] transition-colors shadow-[0_8px_20px_rgba(29,78,216,0.35)] disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
           >
             <WhatsAppIcon className="size-[18px] shrink-0" />
             موافق
@@ -158,7 +158,7 @@ export default function OrderSectionErrorDialog({
           <button
             type="button"
             onClick={copyMessage}
-            className="flex items-center justify-center gap-2 text-[14px] font-semibold text-[#737373] hover:text-black transition-colors"
+            className="flex items-center justify-center gap-2 text-sm font-semibold text-neutral-500 hover:text-black transition-colors"
           >
             <Copy className="size-4 shrink-0" />
             نسخ الرسالة

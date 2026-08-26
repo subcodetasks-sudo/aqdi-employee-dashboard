@@ -31,12 +31,12 @@ export default function SalaryTable({ salaries }) {
   return (
     <div className='mt-4'>
       <h2 className="text-lg font-bold">سجـل الرواتـب و المكـافأة :</h2>
-      < div className="w-full overflow-x-auto bg-white rounded-[24px] border border-[#E4E4E4] mt-4 shadow-sm" >
+      < div className="w-full overflow-x-auto bg-white rounded-3xl border border-neutral-200 mt-4 shadow-sm" >
         <table className="w-full border-collapse">
-          <thead className="bg-[#FAFAFA]">
+          <thead className="bg-neutral-50">
             <tr>
               {tableHeaders.map((header, index) => (
-                <th key={index} className="text-right p-[15px_20px] text-[#A3A3A3] text-[13px] font-medium border-b border-[#E4E4E4] whitespace-nowrap">
+                <th key={index} className="text-right p-[15px_20px] text-ink-placeholder text-13 font-medium border-b border-neutral-200 whitespace-nowrap">
                   {header}
                 </th>
               ))}
@@ -45,7 +45,7 @@ export default function SalaryTable({ salaries }) {
           <tbody className='max-h-[50vh]! overflow-y-auto no-scrollbar'>
             {salaries && salaries.length > 0 ? (
               salaries.map((salary) => (
-                <tr key={salary.id} className="border-b border-[#F5F5F5] last:border-0 hover:bg-[#fafafa] transition-all">
+                <tr key={salary.id} className="border-b border-neutral-100 last:border-0 hover:bg-neutral-50 transition-all">
                   <td className="p-[15px_20px]">
                     <span className='text-black text-xs'>{formatDate(salary.addition_date)}</span>
                   </td>
@@ -53,22 +53,22 @@ export default function SalaryTable({ salaries }) {
                     <span className='text-black text-xs'>{formatDate(salary.due_date)}</span>
                   </td>
                   <td className="p-[15px_20px]">
-                    <div className="flex items-center gap-1.5 text-brand-hover font-bold text-[13px]">
+                    <div className="flex items-center gap-1.5 text-brand-hover font-bold text-13">
                       <span>{parseFloat(salary.basic_salary || 0).toLocaleString('ar-EG')}</span>
                     </div>
                   </td>
                   <td className="p-[15px_20px]">
-                    <div className="flex items-center gap-1.5 text-red-500 font-bold text-[13px]">
+                    <div className="flex items-center gap-1.5 text-red-500 font-bold text-13">
                       <span>{parseFloat(salary.deduction || 0).toLocaleString('ar-EG')}</span>
                     </div>
                   </td>
                   <td className="p-[15px_20px]">
-                    <div className="flex items-center gap-1.5 text-green-600 font-bold text-[13px]">
+                    <div className="flex items-center gap-1.5 text-green-600 font-bold text-13">
                       <span>{parseFloat(salary.bonus || 0).toLocaleString('ar-EG')}</span>
                     </div>
                   </td>
                   <td className='p-[15px_20px]'>
-                    <div className="flex items-center gap-1.5 text-brand-main font-bold text-[13px]">
+                    <div className="flex items-center gap-1.5 text-brand-main font-bold text-13">
                       <span>{parseFloat(salary.total || 0).toLocaleString('ar-EG')}</span>
                     </div>
                   </td>
@@ -76,7 +76,7 @@ export default function SalaryTable({ salaries }) {
               ))
             ) : (
               <tr>
-                <td colSpan={tableHeaders.length} className="text-center p-8 text-[#A3A3A3] text-sm">
+                <td colSpan={tableHeaders.length} className="text-center p-8 text-ink-placeholder text-sm">
                   لا يوجد سجل رواتب للموظف حالياً.
                 </td>
               </tr>

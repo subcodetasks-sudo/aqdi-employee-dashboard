@@ -1,27 +1,45 @@
-"use client"
-import React from 'react';
-import Header from '@/components/home/Header';
-import { Button } from '@/components/ui/button';
-import AddNewMessageForEmployeeDialog from '@/components/analysis/settings/message-for-employees/add-message-for-employee';
-import DisplayMessageForEmployeeDialog from '@/components/analysis/settings/message-for-employees/display-message-for-employee';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { axiosInstance } from '@/src/utils/axios';
-import { toast } from 'sonner';
-import Loader from '@/components/home/loader';
-import { Trash2, Loader2 } from 'lucide-react';
+"use client";
 
-export default function EmployeeTermsPage() {
+import {
+  useUnwrapPageProps
+} from "@/src/hooks/use-unwrap-page-props";
+import AddNewMessageForEmployeeDialog from "@/components/analysis/settings/message-for-employees/add-message-for-employee";
+import DisplayMessageForEmployeeDialog from "@/components/analysis/settings/message-for-employees/display-message-for-employee";
+import PermissionGate from "@/components/auth/PermissionGate";
+import { PERMISSION_SECTIONS } from "@/src/lib/permissions";
+import {
+  SETTINGS_DELETE_TRIGGER_CLASS,
+  SettingsEmptyRow,
+  SettingsLoadingRows,
+  SettingsListHeader,
+  SettingsTable,
+  SettingsTableRow,
+  SettingsTd,
+  SettingsPageShell,
+} from "@/components/SystemSettings/shared";
+import { axiosInstance } from "@/src/utils/axios";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+
+const HEADERS = [
+  "القسم",
+  "البند",
+  "الرسالة",
+  { label: "الإجراءات", className: "text-left" },
+];
+
+export default function EmployeeTermsPage(props) {
+  useUnwrapPageProps(props?.params, props?.searchParams);
+
   const queryClient = useQueryClient();
 
-  // Fetch employee message alerts
   const { data: alertsResponse, isLoading } = useQuery({
     queryKey: ["message-alerts-employee"],
-    queryFn: () => axiosInstance.get("/admin/message-alerts/employee").then(res => res.data)
+    queryFn: () => axiosInstance.get("/admin/message-alerts/employee").then((res) => res.data),
   });
 
   const alerts = alertsResponse?.data?.items || alertsResponse?.data || [];
 
-  // Delete mutation
   const deleteMutation = useMutation({
     mutationFn: (id) => axiosInstance.post(`/admin/message-alerts/employee/${id}/delete`),
     onSuccess: (res) => {
@@ -30,57 +48,55 @@ export default function EmployeeTermsPage() {
     },
     onError: (err) => {
       toast.error(err?.response?.data?.message || "حدث خطأ أثناء حذف الرسالة");
-    }
+    },
   });
 
-  if (isLoading) return <Loader />;
-
   return (
-    <div className="min-h-screen p-6" dir="rtl">
-      <Header 
-        page='welcome' 
-        title={"الإعـدادات"} 
-        isMain={false} 
-        first="الرئيــسية" 
-        firstURL="/" 
-        second='الإعـدادات' 
-        secondURL="/home/settings" 
-        third="رســائل توضيحية للموظفيــن" 
-        thirdURL="/home/settings/message-for-employee" 
+    <SettingsPageShell>
+      <SettingsListHeader
+        title="رسائل توضيحية للموظفين"
+        action={
+          <PermissionGate section={PERMISSION_SECTIONS.message_alerts} action="create">
+            <AddNewMessageForEmployeeDialog isEdit={false} />
+          </PermissionGate>
+        }
       />
 
-      <div className='flex items-center justify-between'>
-        <h2 className='text-xl font-bold'>رســائل توضيحية للموظفيــن</h2>
-        <AddNewMessageForEmployeeDialog isEdit={false} />
-      </div>
-
-      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4'>
-        {alerts?.map((item) => (
-          <div className='bg-gray-200 rounded-[16px] border border-[#E4E4E4] p-4 transition-all group' key={item.id}>
-            <div className='flex items-center justify-between'>
-              <h3>{item.section?.name_ar || 'بدون قسم'}</h3>
-              <div className='flex items-center gap-2'>
-                <AddNewMessageForEmployeeDialog isEdit={true} messageAlert={item} />
-                <Button 
-                  disabled={deleteMutation.isPending} 
-                  onClick={() => deleteMutation.mutate(item.id)} 
-                  className='bg-red-500/10 hover:bg-red-500/20 text-red-500 text-xs font-bold rounded-lg h-9 w-9 p-0 flex items-center justify-center'
-                >
-                  {deleteMutation.isPending && deleteMutation.variables === item.id ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Trash2 size={15} />
-                  )}
-                </Button>
-              </div>
-            </div>
-            <div className=' mt-4 flex items-center justify-between'>
-              <p>{item?.message || 'بدون بند'}</p>
-              <DisplayMessageForEmployeeDialog messageAlert={item} />
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
+      <SettingsTable headers={HEADERS} minWidth="860px">
+        {isLoading ? (
+          <SettingsLoadingRows colSpan={4} />
+        ) : alerts.length === 0 ? (
+          <SettingsEmptyRow colSpan={4} />
+        ) : (
+          alerts.map((item) => (
+            <SettingsTableRow key={item.id}>
+              <SettingsTd>{item.section?.name_ar || "بدون قسم"}</SettingsTd>
+              <SettingsTd>{item.section_item?.name_ar || item?.message || "بدون بند"}</SettingsTd>
+              <SettingsTd className="max-w-[320px]">
+                <p className="line-clamp-2">{item?.message || "—"}</p>
+              </SettingsTd>
+              <SettingsTd>
+                <div className="flex items-center justify-end gap-2">
+                  <DisplayMessageForEmployeeDialog messageAlert={item} />
+                  <PermissionGate section={PERMISSION_SECTIONS.message_alerts} action="edit">
+                    <AddNewMessageForEmployeeDialog isEdit messageAlert={item} />
+                  </PermissionGate>
+                  <PermissionGate section={PERMISSION_SECTIONS.message_alerts} action="delete">
+                    <button
+                      type="button"
+                      disabled={deleteMutation.isPending}
+                      onClick={() => deleteMutation.mutate(item.id)}
+                      className={SETTINGS_DELETE_TRIGGER_CLASS}
+                    >
+                      حذف
+                    </button>
+                  </PermissionGate>
+                </div>
+              </SettingsTd>
+            </SettingsTableRow>
+          ))
+        )}
+      </SettingsTable>
+    </SettingsPageShell>
   );
 }

@@ -11,7 +11,7 @@ export function usePaginatedExport({ buildUrl, onExport, extractPage }) {
     setIsExporting(true);
     try {
       const rows = await fetchAllPaginatedItems(buildUrl, extractPage);
-      const exported = onExport(rows);
+      const exported = await onExport(rows);
 
       if (!exported) {
         toast.error("لا توجد بيانات للتصدير");

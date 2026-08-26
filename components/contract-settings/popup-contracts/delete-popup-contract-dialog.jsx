@@ -31,29 +31,29 @@ export default function DeletePopupContractDialog({ item }) {
         <Button
           variant="outline"
           size="icon"
-          className="size-9 rounded-full border-0 bg-[#FFEBEB] text-[#FF4D4F] hover:bg-[#FF4D4F] hover:text-white"
+          className="size-9 rounded-full border-0 bg-[#FFEBEB] text-status-danger hover:bg-status-danger hover:text-white"
           title="حذف"
         >
           <Trash2 className="size-4" />
         </Button>
       </DialogTrigger>
       <DialogContent
-        className="overflow-hidden rounded-[32px] border-0 p-0 sm:max-w-[500px]"
+        className="overflow-hidden rounded-32 border-0 p-0 sm:max-w-[500px]"
         dir="rtl"
       >
         <div className="flex flex-col items-center gap-6 p-8 text-center">
-          <div className="mt-4 flex h-24 w-24 items-center justify-center rounded-full bg-[#FFEBEB] text-[#FF4D4F] shadow-inner">
+          <div className="mt-4 flex h-24 w-24 items-center justify-center rounded-full bg-[#FFEBEB] text-status-danger shadow-inner">
             <Trash2 className="size-10" />
           </div>
           <div className="flex flex-col gap-2">
-            <h3 className="text-[22px] font-black text-black">
+            <h3 className="text-22 font-black text-black">
               هل أنت متأكد من حذف المحتوى الإرشادي؟
             </h3>
-            <p className="mx-auto inline-block max-w-full rounded-full bg-[#FFEBEB] px-4 py-1.5 text-[15px] font-bold text-[#FF4D4F]">
+            <p className="mx-auto inline-block max-w-full rounded-full bg-[#FFEBEB] px-4 py-1.5 text-15 font-bold text-status-danger">
               {getPopupInstrumentTypeLabel(item?.instrument_type)}
             </p>
           </div>
-          <p className="text-[15px] font-medium text-[#737373]">
+          <p className="text-15 font-medium text-neutral-500">
             هذا الإجراء لا يمكن التراجع عنه بعد الحذف.
           </p>
           <div className="mt-2 flex w-full items-center gap-4">
@@ -61,14 +61,14 @@ export default function DeletePopupContractDialog({ item }) {
               type="button"
               onClick={() => mutate()}
               disabled={isPending}
-              className="h-[54px] flex-1 rounded-[16px] bg-[#FF4D4F] text-[16px] font-bold text-white shadow-lg shadow-[#FF4D4F]/25 transition-all hover:bg-[#E03E3E] disabled:opacity-70"
+              className="h-13.5 flex-1 rounded-2xl bg-status-danger text-base font-bold text-white shadow-lg shadow-status-danger/25 transition-all hover:bg-[#E03E3E] disabled:opacity-70"
             >
               {isPending ? <Loader2 className="mx-auto animate-spin" /> : "تأكيـد الحـذف"}
             </button>
             <button
               type="button"
               onClick={() => setOpen(false)}
-              className="h-[54px] flex-1 rounded-[16px] bg-[#F5F5F5] text-[16px] font-bold text-[#737373] transition-all hover:bg-[#EEEEEE]"
+              className="h-13.5 flex-1 rounded-2xl bg-neutral-100 text-base font-bold text-neutral-500 transition-all hover:bg-surface-border"
             >
               إلغاء
             </button>

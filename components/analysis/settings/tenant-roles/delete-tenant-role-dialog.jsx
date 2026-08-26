@@ -15,7 +15,8 @@ import {
 } from "@/src/hooks/use-admin-tenant-roles";
 import { TENANT_ROLES_QUERY_KEY } from "@/src/hooks/use-tenant-roles";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Loader2, Trash2, X } from "lucide-react";
+import { Loader2, X } from "lucide-react";
+import { SETTINGS_DELETE_TRIGGER_CLASS } from "@/components/SystemSettings/shared";
 import { toast } from "sonner";
 
 export default function DeleteTenantRoleDialog({ role }) {
@@ -41,13 +42,9 @@ export default function DeleteTenantRoleDialog({ role }) {
   return (
     <Dialog dir="rtl" open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button
-          type="button"
-          className="bg-red-500/15 text-red-500 text-xs h-9 px-3 hover:bg-red-500/25"
-        >
-          <Trash2 className="size-3.5" />
+        <button type="button" className={SETTINGS_DELETE_TRIGGER_CLASS}>
           حذف
-        </Button>
+        </button>
       </DialogTrigger>
       <DialogContent closeButton={false} className="max-w-md">
         <DialogHeader>
@@ -58,7 +55,7 @@ export default function DeleteTenantRoleDialog({ role }) {
             </Button>
           </div>
           <div className="space-y-4 pt-2 text-right" dir="rtl">
-            <p className="text-sm text-[#4D4D4D] leading-relaxed">
+            <p className="text-sm text-ink-subtle leading-relaxed">
               هل أنت متأكد من حذف صلاحية{" "}
               <span className="font-bold text-black">
                 {role?.text_of_reason || role?.name || `#${role?.id}`}

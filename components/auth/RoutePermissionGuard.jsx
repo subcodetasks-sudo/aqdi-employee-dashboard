@@ -4,14 +4,20 @@ import { useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import Loader from '@/components/home/loader';
+import HomeWelcomeSkeleton from '@/components/home/home-welcome-skeleton';
 import { usePermissions } from '@/src/hooks/usePermissions';
-import { useUserStore } from '@/src/stores/user-store';
 import { getSectionForPath } from '@/src/lib/permissions';
+
+function PageLoadingFallback({ pathname }) {
+  if (pathname === '/home') {
+    return <HomeWelcomeSkeleton />;
+  }
+  return <Loader />;
+}
 
 export default function RoutePermissionGuard({ children }) {
   const pathname = usePathname();
   const router = useRouter();
-  const logout = useUserStore((state) => state.logout);
   const { canRoute, isReady, isPermissionsLoading, firstAllowedHref, user } = usePermissions();
 
   const section = getSectionForPath(pathname);
@@ -21,11 +27,11 @@ export default function RoutePermissionGuard({ children }) {
   useEffect(() => {
     if (!isReady) return;
 
+    // Redirect only — do not call logout() here. Clearing storage on a null user
+    // races with persist rehydration and can wipe a valid session (esp. on
+    // secondary pages that mount extra API calls like return-orders).
     if (!user) {
-      void (async () => {
-        await logout();
-        router.replace('/login');
-      })();
+      router.replace('/login');
       return;
     }
 
@@ -33,22 +39,22 @@ export default function RoutePermissionGuard({ children }) {
 
     toast.error('ليس لديك صلاحية للوصول إلى هذه الصفحة');
     router.replace(firstAllowedHref);
-  }, [isReady, allowed, firstAllowedHref, isPermissionsLoading, logout, router, user]);
+  }, [isReady, allowed, firstAllowedHref, isPermissionsLoading, router, user]);
 
   if (!isReady) {
-    return <Loader />;
+    return <PageLoadingFallback pathname={pathname} />;
   }
 
   if (!user) {
-    return <Loader />;
+    return <PageLoadingFallback pathname={pathname} />;
   }
 
   if (isPermissionsLoading && requiresPermissionCheck) {
-    return <Loader />;
+    return <PageLoadingFallback pathname={pathname} />;
   }
 
   if (!allowed && requiresPermissionCheck) {
-    return <Loader />;
+    return <PageLoadingFallback pathname={pathname} />;
   }
 
   return children;

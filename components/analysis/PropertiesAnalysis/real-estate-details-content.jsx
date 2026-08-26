@@ -30,7 +30,7 @@ const getContractTypeLabel = (type) => {
 };
 
 const DetailCard = ({ label, value, copyable = false, borderColor = "border-gray-200" }) => (
-  <div className={`bg-white p-4 rounded-[16px] shadow-sm border-r-4 ${borderColor}`}>
+  <div className={`bg-white p-4 rounded-2xl shadow-sm border-r-4 ${borderColor}`}>
     <span className="text-gray-400 text-xs font-medium block mb-1">{label}</span>
     <p className="flex items-center gap-2 text-gray-800 font-bold text-sm">
       {copyable && value && value !== "---" && (

@@ -1,13 +1,6 @@
-"use client"
-import { Button } from '@/components/ui/button'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTrigger
-} from "@/components/ui/dialog"
-import { Loader2, Plus, X } from 'lucide-react'
-import { useState } from 'react';
+"use client";
+
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -16,103 +9,79 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { axiosInstance } from '@/src/utils/axios';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
+import SettingsFormDialog, {
+  SettingsFieldLabel,
+  settingsFieldClass,
+} from "@/components/SystemSettings/SettingsFormDialog";
+import { SettingsAddTrigger } from "@/components/SystemSettings/shared";
+import { axiosInstance } from "@/src/utils/axios";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+
 export default function AddNewUsageDialog() {
   const [open, setOpen] = useState(false);
   const [unitName, setUnitName] = useState("");
   const [unitType, setUnitType] = useState("");
-
   const queryClient = useQueryClient();
 
-  function addNewUsage() {
-    return axiosInstance.post("/admin/unit-usages", {
-      name_ar: unitName,
-      contract_type: unitType,
-    })
-  }
-
-  const {mutate: addNewUsageMutate, isPending: addNewUsagePending} = useMutation({
-    mutationFn: addNewUsage,
+  const { mutate, isPending } = useMutation({
+    mutationFn: () =>
+      axiosInstance.post("/admin/unit-usages", {
+        name_ar: unitName,
+        contract_type: unitType,
+      }),
     onSuccess: (res) => {
       toast.success(res?.data?.message || "تم إضافة استخدام الوحدة بنجاح");
       setOpen(false);
       setUnitName("");
       setUnitType("");
-
       queryClient.invalidateQueries({ queryKey: ["unit-usages"] });
     },
     onError: (error) => {
       toast.error(error?.response?.data?.message || "حدث خطأ أثناء إضافة نوع الوحدة");
-    }
-  })
+    },
+  });
 
   const handleSubmit = () => {
-    addNewUsageMutate();
-
+    if (!unitName.trim() || !unitType) {
+      toast.error("يرجى ملء جميع الحقول المطلوبة");
+      return;
+    }
+    mutate();
   };
+
   return (
-    <Dialog dir='rtl' open={open} onOpenChange={setOpen}>
-      <DialogTrigger>
-        <Button className='bg-brand-hover text-white h-12'>
-          إضافة استخدام جديد
-          <Plus className='w-4 h-4' />
-        </Button>
-      </DialogTrigger>
-      <DialogContent closeButton={false} className="max-w-3xl">
-        <DialogHeader>
-          <div className='flex items-center justify-between  border-b pb-6'>
-            {/* header and close button */}
-            <h2 className='text-xl font-bold'>إضافة استخدام جديد</h2>
-            <Button variant="ghost" onClick={() => setOpen(false)}>
-              <X className='w-4 h-4' />
-            </Button>
-          </div>
-          <div dir='rtl' className='space-y-4 text-right'>
+    <SettingsFormDialog
+      open={open}
+      onOpenChange={setOpen}
+      trigger={<SettingsAddTrigger />}
+      title="عنصر جديد"
+      onSubmit={handleSubmit}
+      submitLabel="حفظ"
+      isPending={isPending}
+    >
+      <label className="flex flex-col gap-1.5">
+        <SettingsFieldLabel required>استخدام الوحدة</SettingsFieldLabel>
+        <Input
+          placeholder="اكتب هنا ..."
+          value={unitName}
+          onChange={(e) => setUnitName(e.target.value)}
+          className={settingsFieldClass}
+        />
+      </label>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium">
-                استخدام الوحدة <span className="text-red-500">*</span>
-              </label>
-              <Input
-                placeholder="اكتب هنا ..."
-                value={unitName}
-                onChange={(e) => setUnitName(e.target.value)}
-                className='h-12'
-              />
-            </div>
-
-            {/* تصنيف الوحدة */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium">
-                تصنيف الوحدة <span className="text-red-500">*</span>
-              </label>
-
-              <Select dir='rtl' onValueChange={setUnitType}>
-                <SelectTrigger className='h-12'>
-                  <SelectValue placeholder="اختر نوع الوحدة سكني - تجاري ..." />
-                </SelectTrigger>
-
-                <SelectContent>
-                  <SelectItem value="housing">سكني</SelectItem>
-                  <SelectItem value="commercial">تجاري</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* زر الإضافة */}
-            <Button
-              disabled={addNewUsagePending}
-              onClick={handleSubmit}
-              className="mx-auto block  h-12 bg-brand-hover"
-            >
-              {addNewUsagePending ? <Loader2 className='animate-spin'/> : "إضافة"}
-            </Button>
-          </div>
-
-        </DialogHeader>
-      </DialogContent>
-    </Dialog>
-  )
+      <label className="flex flex-col gap-1.5">
+        <SettingsFieldLabel required>تصنيف الوحدة</SettingsFieldLabel>
+        <Select dir="rtl" value={unitType || undefined} onValueChange={setUnitType}>
+          <SelectTrigger className={settingsFieldClass}>
+            <SelectValue placeholder="سكني أو تجاري" />
+          </SelectTrigger>
+          <SelectContent dir="rtl">
+            <SelectItem value="housing">سكني</SelectItem>
+            <SelectItem value="commercial">تجاري</SelectItem>
+          </SelectContent>
+        </Select>
+      </label>
+    </SettingsFormDialog>
+  );
 }

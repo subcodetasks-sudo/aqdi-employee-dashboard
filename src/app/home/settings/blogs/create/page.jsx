@@ -1,33 +1,26 @@
 "use client";
 
-import Header from "@/components/home/Header";
+import { useUnwrapPageProps } from "@/src/hooks/use-unwrap-page-props";
 import CreateBlogForm from "@/components/analysis/settings/blogs/create-blog-form";
+import {
+  SettingsContentCard,
+  SettingsListHeader,
+  SettingsPageShell,
+} from "@/components/SystemSettings/shared";
 
-export default function CreateBlogPage() {
+export default function CreateBlogPage(props) {
+  useUnwrapPageProps(props?.params, props?.searchParams);
+
   return (
-    <div className="min-h-screen p-6 flex flex-col gap-6" dir="rtl">
-      <Header
-        page="welcome"
-        title="الإعـدادات"
-        isMain={false}
-        first="الرئيــسية"
-        firstURL="/"
-        second="الإعـدادات"
-        secondURL="/home/settings"
-        third="المدونة"
-        thirdURL="/home/settings/blogs"
+    <SettingsPageShell>
+      <SettingsListHeader
+        title="إضافة مقال جديد"
+        subtitle="أنشئ مقالاً جديداً وحدد وقت النشر أو احفظه كمسودة"
+        backHref="/home/settings/blogs"
       />
-
-      <div className="flex flex-col gap-1.5 pb-6 border-b border-[#F5F5F5] mt-4">
-        <h2 className="text-[22px] font-black text-black">إضافة مقال جديد</h2>
-        <p className="text-[13px] text-gray-500 font-medium">
-          أنشئ مقالاً جديداً وحدد وقت النشر أو احفظه كمسودة
-        </p>
-      </div>
-
-      <div className="bg-white rounded-[24px] border border-[#E4E4E4] p-6 shadow-sm">
+      <SettingsContentCard>
         <CreateBlogForm />
-      </div>
-    </div>
+      </SettingsContentCard>
+    </SettingsPageShell>
   );
 }

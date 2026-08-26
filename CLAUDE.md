@@ -46,7 +46,7 @@ Don't assume one `lib` or one `components` dir — check whether an import is `@
 
 ### Route structure
 
-Feature pages live under `src/app/home/<feature>/page.jsx` (one directory per sidebar item — `orders`, `employees`, `roles`, `salaries`, `settings`, `content/home`, `content/about`, the various `*-analysis` sections, etc.), with `[id]/page.jsx` for detail views. Corresponding non-page components (forms, tables, cards) live in root `components/<Feature>/...`, mirrored by feature name (e.g. `components/content/home/*-section-form.jsx` for `src/app/home/content/home`).
+Feature pages live under `src/app/home/<feature>/page.jsx` (one directory per sidebar item — `orders`, `roles-and-employees`, `clients`, `realtime-orders`, `marketing-and-content`, `settings`, `reports`, `return-orders`, `invoices`), with `[id]/page.jsx` for detail views. Several of these are single routes with an internal `Tabs` UI that consolidates what used to be many separate pages (e.g. `/home/orders` hosts the former draft/completed/reliable/whatsapp/etc. order-status pages as `?tab=` panels; `/home/reports` hosts the former `*-analysis` pages the same way). Corresponding non-page components (forms, tables, cards) live in root `components/<Feature>/...`, mirrored by feature name (e.g. `components/content/home/*-section-form.jsx` for the "المحتوى" tab of `/home/marketing-and-content`).
 
 ### Forms
 
@@ -59,3 +59,13 @@ TipTap (`@tiptap/*`) is used for rich-text editing; `jspdf`, `xlsx`, `html2canva
 ### UI kit
 
 shadcn/ui ("new-york" style, `components.json`) generates into `components/ui/*`, aliased as `@/components/ui`. Icons: `lucide-react` (shadcn default) and `react-icons`/FontAwesome elsewhere in the app. Styling is Tailwind (`tailwind.config.js`) with `styled-components` and Bootstrap/`react-bootstrap` also present in some legacy areas — check the surrounding file before picking a styling approach.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

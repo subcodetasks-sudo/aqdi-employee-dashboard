@@ -38,16 +38,16 @@ export default function OrderMessageDialog({ open, onOpenChange, messageAlert })
           <button
             type="button"
             onClick={() => onOpenChange(false)}
-            className="text-[#737373] hover:text-black transition-colors text-xl leading-none w-8 h-8 flex items-center justify-center"
+            className="text-neutral-500 hover:text-black transition-colors text-xl leading-none w-8 h-8 flex items-center justify-center"
             aria-label="إغلاق"
           >
             ✕
           </button>
-          <h2 className="text-[22px] font-bold text-black">{title}</h2>
+          <h2 className="text-22 font-bold text-black">{title}</h2>
         </div>
 
-        <div className="bg-[#F5F5F5] rounded-[20px] p-5 sm:p-6 mb-8 max-h-[min(60vh,420px)] overflow-y-auto">
-          <p className="text-[14px] leading-[1.9] text-[#1A1A1A] whitespace-pre-wrap text-right">
+        <div className="bg-neutral-100 rounded-20 p-5 sm:p-6 mb-8 max-h-[min(60vh,420px)] overflow-y-auto">
+          <p className="text-sm leading-[1.9] text-[#1A1A1A] whitespace-pre-wrap text-right">
             <span className="ml-1.5" aria-hidden>
               ✅
             </span>
@@ -58,7 +58,7 @@ export default function OrderMessageDialog({ open, onOpenChange, messageAlert })
         <button
           type="button"
           onClick={handleCopy}
-          className="mx-auto flex items-center justify-center gap-2 h-[48px] min-w-[140px] px-8 rounded-[14px] bg-[#1D4ED8] text-white text-[15px] font-bold hover:bg-[#1e40af] transition-colors shadow-[0_8px_20px_rgba(29,78,216,0.35)]"
+          className="mx-auto flex items-center justify-center gap-2 h-12 min-w-[140px] px-8 rounded-14 bg-[#1D4ED8] text-white text-15 font-bold hover:bg-[#1e40af] transition-colors shadow-[0_8px_20px_rgba(29,78,216,0.35)]"
         >
           <Copy className="size-4 shrink-0" strokeWidth={2.5} />
           نسخ

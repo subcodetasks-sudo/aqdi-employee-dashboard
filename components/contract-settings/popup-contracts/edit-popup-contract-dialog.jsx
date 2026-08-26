@@ -6,6 +6,7 @@ import {
   Dialog,
   DialogContent,
   DialogHeader,
+  DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { axiosInstance } from "@/src/utils/axios";
@@ -99,21 +100,33 @@ export default function EditPopupContractDialog({ item, usedInstrumentTypes = []
         <Button
           variant="outline"
           size="icon"
-          className="size-9 rounded-full border-0 bg-[#E6FFE6] text-[#10B981] hover:bg-[#10B981] hover:text-white"
+          className="size-9 rounded-full border-0 bg-[#E6FFE6] text-brand-accent hover:bg-brand-accent hover:text-white"
           title="تعديل"
         >
           <Pencil className="size-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent closeButton={false} className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <div className="flex items-center justify-between border-b pb-6">
-            <h2 className="text-xl font-bold">تعديل المحتوى الإرشادي</h2>
-            <Button variant="ghost" type="button" onClick={() => setOpen(false)}>
+      <DialogContent
+        closeButton={false}
+        className="max-w-lg max-h-[90vh] gap-0 overflow-x-hidden overflow-y-auto rounded-2xl border-[#E6EBE9] p-0 shadow-[0_12px_40px_rgba(11,83,69,0.12)] sm:max-w-lg"
+      >
+        <DialogHeader className="space-y-0 border-b border-[#EEF1F0] px-5 py-4 text-right">
+          <div className="flex items-center justify-between gap-3">
+            <DialogTitle className="text-base font-black text-[#111827]">
+              تعديل المحتوى الإرشادي
+            </DialogTitle>
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              className="rounded-full p-1.5 text-neutral-500 hover:bg-neutral-100"
+              aria-label="إغلاق"
+            >
               <X className="size-4" />
-            </Button>
+            </button>
           </div>
+        </DialogHeader>
 
+        <div className="min-w-0 max-w-full overflow-hidden px-5 py-4">
           <PopupContractFormFields
             instrumentOptions={instrumentOptions}
             instrumentTypeDisabled
@@ -143,16 +156,26 @@ export default function EditPopupContractDialog({ item, usedInstrumentTypes = []
               setForm((current) => ({ ...current, buttonLink: value }))
             }
           />
+        </div>
 
+        <div className="flex items-center justify-end gap-2 border-t border-[#EEF1F0] px-5 py-3">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setOpen(false)}
+            className="h-10 rounded-xl border-[#054D44]/30 px-4 text-[13px] font-bold text-[#054D44] hover:bg-[#E8F5F1]"
+          >
+            إلغاء
+          </Button>
           <Button
             type="button"
             disabled={isPending}
             onClick={handleSubmit}
-            className="mx-auto mt-4 block h-12 min-w-[140px] bg-brand-hover"
+            className="h-10 min-w-[96px] rounded-xl bg-[#054D44] px-5 text-[13px] font-bold text-white hover:bg-[#043F38]"
           >
-            {isPending ? <Loader2 className="animate-spin" /> : "حفظ التعديل"}
+            {isPending ? <Loader2 className="size-4 animate-spin" /> : "حفظ"}
           </Button>
-        </DialogHeader>
+        </div>
       </DialogContent>
     </Dialog>
   );

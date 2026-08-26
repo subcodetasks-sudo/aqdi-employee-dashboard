@@ -59,17 +59,17 @@ export default function FirebasePushToast({
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0 space-y-1">
               <span
-                className={`inline-flex rounded-full px-2.5 py-0.5 text-[10px] font-bold ${styles.badgeClass}`}
+                className={`inline-flex rounded-full px-2.5 py-0.5 text-10 font-bold ${styles.badgeClass}`}
               >
                 {styles.badge}
               </span>
-              <p className="text-[15px] font-bold leading-6 text-[#111827]">{title}</p>
+              <p className="text-15 font-bold leading-6 text-gray-900">{title}</p>
             </div>
 
             <button
               type="button"
               onClick={onDismiss}
-              className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[#F5F5F5] text-[#9CA3AF] transition-colors hover:bg-[#EEEEEE] hover:text-[#4B5563]"
+              className="flex size-8 shrink-0 items-center justify-center rounded-full bg-neutral-100 text-gray-400 transition-colors hover:bg-surface-border hover:text-[#4B5563]"
               aria-label="إغلاق الإشعار"
             >
               <X className="size-4" />
@@ -77,11 +77,11 @@ export default function FirebasePushToast({
           </div>
 
           {body ? (
-            <p className="text-[13px] leading-6 text-[#6B7280] line-clamp-3">{body}</p>
+            <p className="text-13 leading-6 text-status-neutral line-clamp-3">{body}</p>
           ) : null}
 
           {orderId ? (
-            <p className="text-[12px] font-semibold text-[#9CA3AF]" dir="ltr">
+            <p className="text-xs font-semibold text-gray-400" dir="ltr">
               #{orderId}
             </p>
           ) : null}
@@ -90,7 +90,7 @@ export default function FirebasePushToast({
             <button
               type="button"
               onClick={onAction}
-              className={`mt-1 inline-flex h-9 items-center justify-center rounded-full px-4 text-[12px] font-bold text-white transition-colors ${styles.actionClass}`}
+              className={`mt-1 inline-flex h-9 items-center justify-center rounded-full px-4 text-xs font-bold text-white transition-colors ${styles.actionClass}`}
             >
               عرض التفاصيل
             </button>

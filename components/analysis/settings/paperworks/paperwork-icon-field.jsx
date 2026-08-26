@@ -40,9 +40,9 @@ export default function PaperworkIconField({
     <div className="space-y-2">
       <label className="text-sm font-medium">الأيقونة</label>
       <div className="flex items-center gap-4">
-        <label className="flex items-center justify-center gap-2 h-12 px-6 rounded-[14px] border border-dashed border-[#D4D4D4] bg-[#FAFAFA] cursor-pointer hover:bg-[#F5F5F5] transition-all">
-          <ImageUp className="size-5 text-[#A3A3A3]" />
-          <span className="text-[13px] font-medium text-[#616161]">اختر أيقونة</span>
+        <label className="flex items-center justify-center gap-2 h-12 px-6 rounded-14 border border-dashed border-[#D4D4D4] bg-neutral-50 cursor-pointer hover:bg-neutral-100 transition-all">
+          <ImageUp className="size-5 text-ink-placeholder" />
+          <span className="text-13 font-medium text-[#616161]">اختر أيقونة</span>
           <input
             type="file"
             accept="image/*"
@@ -53,7 +53,7 @@ export default function PaperworkIconField({
 
         {preview ? (
           <div className="flex items-center gap-2">
-            <div className="relative size-16 rounded-xl overflow-hidden border border-[#EEEEEE] bg-white">
+            <div className="relative size-16 rounded-xl overflow-hidden border border-surface-border bg-white">
               <Image src={preview} alt="أيقونة ورقة العمل" fill className="object-contain p-1" />
             </div>
             <Button

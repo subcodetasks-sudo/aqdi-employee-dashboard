@@ -31,7 +31,7 @@ export default function AnalysisMetricCard({
             <div className="flex items-start justify-between gap-3 w-full">
                 <div className="flex flex-col gap-2 min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                        <span className={`text-[12px] font-normal leading-snug ${getLabelColorClass(item)}`}>
+                        <span className={`text-xs font-normal leading-snug ${getLabelColorClass(item)}`}>
                             {item.name}
                         </span>
                         <PercentageBadge percentage={item.percentage} />

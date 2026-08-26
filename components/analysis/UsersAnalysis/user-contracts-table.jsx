@@ -37,14 +37,14 @@ export default function UserContractsTable({ contracts = [], userId = null }) {
   return (
     <div className="mt-4">
       <h2 className="text-lg font-bold">طلبات المستخدم :</h2>
-      <div className="w-full overflow-x-auto bg-white rounded-[24px] border border-[#E4E4E4] mt-4 shadow-sm">
+      <div className="w-full overflow-x-auto bg-white rounded-3xl border border-neutral-200 mt-4 shadow-sm">
         <table className="w-full border-collapse">
-          <thead className="bg-[#FAFAFA]">
+          <thead className="bg-neutral-50">
             <tr>
               {tableHeaders.map((header, index) => (
                 <th
                   key={index}
-                  className="text-right p-[15px_20px] text-[#A3A3A3] text-[13px] font-medium border-b border-[#E4E4E4] whitespace-nowrap"
+                  className="text-right p-[15px_20px] text-ink-placeholder text-13 font-medium border-b border-neutral-200 whitespace-nowrap"
                 >
                   {header}
                 </th>
@@ -63,8 +63,8 @@ export default function UserContractsTable({ contracts = [], userId = null }) {
                 <tr
                   key={contract.id}
                   style={draftStyle}
-                  className={`border-b border-[#F5F5F5] last:border-0 transition-all ${
-                    isDraft ? "hover:brightness-[0.98]" : "hover:bg-[#fafafa]"
+                  className={`border-b border-neutral-100 last:border-0 transition-all ${
+                    isDraft ? "hover:brightness-[0.98]" : "hover:bg-neutral-50"
                   }`}
                 >
                   <td className="p-[15px_20px]">
@@ -78,19 +78,19 @@ export default function UserContractsTable({ contracts = [], userId = null }) {
                               toast.success("تم نسخ رقم الطلب");
                             }}
                             size={14}
-                            className="text-[#A3A3A3] cursor-pointer hover:text-brand-main"
+                            className="text-ink-placeholder cursor-pointer hover:text-brand-main"
                           />
                         )}
                       </div>
                       {isDraft ? (
-                        <span className="rounded-full bg-[#FEF3C7] px-2.5 py-0.5 text-[10px] font-bold text-[#B45309] ring-1 ring-[#F59E0B]/40">
+                        <span className="rounded-full bg-[#FEF3C7] px-2.5 py-0.5 text-10 font-bold text-[#B45309] ring-1 ring-[#F59E0B]/40">
                           مسودة
                         </span>
                       ) : null}
                     </div>
                   </td>
-                  <td className="p-[15px_20px] text-black text-[13px]">{contract.contract_type || "—"}</td>
-                  <td className="p-[15px_20px] text-green-600 font-bold text-[13px]">
+                  <td className="p-[15px_20px] text-black text-13">{contract.contract_type || "—"}</td>
+                  <td className="p-[15px_20px] text-green-600 font-bold text-13">
                     {parseFloat(contract.amount_payment || 0).toLocaleString("ar-EG")}
                   </td>
                   <td className="p-[15px_20px]">
@@ -102,7 +102,7 @@ export default function UserContractsTable({ contracts = [], userId = null }) {
                       {contract.payment_label_ar || "—"}
                     </span>
                   </td>
-                  <td className="p-[15px_20px] text-[#616161] text-[12px] whitespace-nowrap">
+                  <td className="p-[15px_20px] text-[#616161] text-xs whitespace-nowrap">
                     {formatDate(contract.created_at)}
                   </td>
                   <td className="p-[15px_20px]">
@@ -116,7 +116,7 @@ export default function UserContractsTable({ contracts = [], userId = null }) {
                       {contract.status?.name || "—"}
                     </span>
                   </td>
-                  <td className="p-[15px_20px] text-[13px] text-[#616161]">
+                  <td className="p-[15px_20px] text-13 text-[#616161]">
                     {contract.employee_name || "—"}
                   </td>
                   <td className="p-[15px_20px]">
@@ -128,9 +128,9 @@ export default function UserContractsTable({ contracts = [], userId = null }) {
                       <Link
                         href={`/home/orders/${contract.id}`}
                         aria-label="عرض الطلب"
-                        className="w-8 h-8 rounded-full flex items-center justify-center bg-[#F5F5F5] text-[#4D4D4D] hover:bg-brand-main hover:text-white transition-all"
+                        className="w-8 h-8 rounded-full flex items-center justify-center bg-neutral-100 text-ink-subtle hover:bg-brand-main hover:text-white transition-all"
                       >
-                        <i className="fa-regular fa-eye text-[13px]" />
+                        <i className="fa-regular fa-eye text-13" />
                       </Link>
                     </div>
                   </td>
@@ -139,7 +139,7 @@ export default function UserContractsTable({ contracts = [], userId = null }) {
               })
             ) : (
               <tr>
-                <td colSpan={tableHeaders.length} className="text-center p-8 text-[#A3A3A3] text-sm">
+                <td colSpan={tableHeaders.length} className="text-center p-8 text-ink-placeholder text-sm">
                   لا يوجد طلبات مرتبطة بهذا المستخدم حالياً.
                 </td>
               </tr>

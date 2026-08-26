@@ -28,7 +28,7 @@ const fetchListTotal = async (url) => {
 
 export function useOrderStatusCounts(
   statusItems = [],
-  { baseUrl, statusParam = "contract_status_id", extraParams = "" } = {}
+  { baseUrl, statusParam = "status_id", extraParams = "" } = {}
 ) {
   const params = extraParams ? extraParams.replace(/^&/, "") : "";
   const allUrl = params ? `${baseUrl}?${params}` : baseUrl;

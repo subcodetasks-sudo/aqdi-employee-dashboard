@@ -16,13 +16,18 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import TextEditor from "@/components/analysis/settings/terms/TextEditor";
+import dynamic from "next/dynamic";
 import { axiosInstance } from "@/src/utils/axios";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ImageUp, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+
+const TextEditor = dynamic(
+  () => import("@/components/analysis/settings/terms/TextEditor"),
+  { ssr: false }
+);
 
 const blogSchema = z.object({
   title: z.string().min(2, "عنوان المقال مطلوب"),
@@ -185,14 +190,14 @@ export default function BlogForm({ blogId = null, blog = null }) {
           name="title"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-[14px] font-bold text-black">
+              <FormLabel className="text-sm font-bold text-black">
                 عنوان المقال <span className="text-red-500">*</span>
               </FormLabel>
               <FormControl>
                 <Input
                   {...field}
                   placeholder="أدخل عنوان المقال"
-                  className="h-[52px] rounded-[14px] border-[#EEEEEE] bg-[#F9F9F9]"
+                  className="h-13 rounded-14 border-surface-border bg-surface-input"
                 />
               </FormControl>
               <FormMessage />
@@ -201,14 +206,14 @@ export default function BlogForm({ blogId = null, blog = null }) {
         />
 
         {isEdit && blog?.slug && (
-          <div className="rounded-[14px] border border-[#EEEEEE] bg-[#FAFAFA] px-4 py-3">
-            <p className="text-[12px] text-[#A3A3A3] mb-1">الرابط المختصر</p>
-            <p className="text-[13px] font-medium text-black" dir="ltr">{blog.slug}</p>
+          <div className="rounded-14 border border-surface-border bg-neutral-50 px-4 py-3">
+            <p className="text-xs text-ink-placeholder mb-1">الرابط المختصر</p>
+            <p className="text-13 font-medium text-black" dir="ltr">{blog.slug}</p>
           </div>
         )}
 
         <div className="space-y-2">
-          <label className="text-[14px] font-bold text-black block">
+          <label className="text-sm font-bold text-black block">
             محتوى المقال <span className="text-red-500">*</span>
           </label>
           <div className="min-h-[320px]">
@@ -226,12 +231,12 @@ export default function BlogForm({ blogId = null, blog = null }) {
             name="meta_title"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-[14px] font-bold text-black">عنوان SEO</FormLabel>
+                <FormLabel className="text-sm font-bold text-black">عنوان SEO</FormLabel>
                 <FormControl>
                   <Input
                     {...field}
                     placeholder="Meta title"
-                    className="h-[52px] rounded-[14px] border-[#EEEEEE] bg-[#F9F9F9]"
+                    className="h-13 rounded-14 border-surface-border bg-surface-input"
                   />
                 </FormControl>
                 <FormMessage />
@@ -244,12 +249,12 @@ export default function BlogForm({ blogId = null, blog = null }) {
             name="meta_description"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-[14px] font-bold text-black">وصف SEO</FormLabel>
+                <FormLabel className="text-sm font-bold text-black">وصف SEO</FormLabel>
                 <FormControl>
                   <Textarea
                     {...field}
                     placeholder="Meta description"
-                    className="min-h-[52px] rounded-[14px] border-[#EEEEEE] bg-[#F9F9F9] resize-none"
+                    className="min-h-13 rounded-14 border-surface-border bg-surface-input resize-none"
                   />
                 </FormControl>
                 <FormMessage />
@@ -263,12 +268,12 @@ export default function BlogForm({ blogId = null, blog = null }) {
           name="image"
           render={({ field: { onChange, value, ...field } }) => (
             <FormItem>
-              <FormLabel className="text-[14px] font-bold text-black">صورة المقال</FormLabel>
+              <FormLabel className="text-sm font-bold text-black">صورة المقال</FormLabel>
               <FormControl>
                 <div className="flex items-center gap-4">
-                  <label className="flex items-center justify-center gap-2 h-[52px] px-6 rounded-[14px] border border-dashed border-[#D4D4D4] bg-[#FAFAFA] cursor-pointer hover:bg-[#F5F5F5] transition-all">
-                    <ImageUp className="size-5 text-[#A3A3A3]" />
-                    <span className="text-[13px] font-medium text-[#616161]">اختر صورة</span>
+                  <label className="flex items-center justify-center gap-2 h-13 px-6 rounded-14 border border-dashed border-[#D4D4D4] bg-neutral-50 cursor-pointer hover:bg-neutral-100 transition-all">
+                    <ImageUp className="size-5 text-ink-placeholder" />
+                    <span className="text-13 font-medium text-[#616161]">اختر صورة</span>
                     <input
                       type="file"
                       accept="image/*"
@@ -278,7 +283,7 @@ export default function BlogForm({ blogId = null, blog = null }) {
                     />
                   </label>
                   {preview && (
-                    <div className="relative size-16 rounded-xl overflow-hidden border border-[#EEEEEE]">
+                    <div className="relative size-16 rounded-xl overflow-hidden border border-surface-border">
                       <Image src={preview} alt="preview" fill className="object-cover" />
                     </div>
                   )}
@@ -293,10 +298,10 @@ export default function BlogForm({ blogId = null, blog = null }) {
           control={form.control}
           name="is_active"
           render={({ field }) => (
-            <FormItem className="flex items-center justify-between rounded-[16px] border border-[#EEEEEE] bg-[#FAFAFA] p-4">
+            <FormItem className="flex items-center justify-between rounded-2xl border border-surface-border bg-neutral-50 p-4">
               <div className="space-y-1">
-                <FormLabel className="text-[14px] font-bold text-black">نشط</FormLabel>
-                <p className="text-[12px] text-[#A3A3A3]">تحديد ما إذا كان المقال نشطاً في المدونة</p>
+                <FormLabel className="text-sm font-bold text-black">نشط</FormLabel>
+                <p className="text-xs text-ink-placeholder">تحديد ما إذا كان المقال نشطاً في المدونة</p>
               </div>
               <FormControl>
                 <Switch
@@ -310,8 +315,8 @@ export default function BlogForm({ blogId = null, blog = null }) {
           )}
         />
 
-        <div className="bg-[#FAFAFA] rounded-[20px] border border-[#EEEEEE] p-5 space-y-4">
-          <p className="text-[14px] font-bold text-black">خيارات النشر</p>
+        <div className="bg-neutral-50 rounded-20 border border-surface-border p-5 space-y-4">
+          <p className="text-sm font-bold text-black">خيارات النشر</p>
 
           <FormField
             control={form.control}
@@ -327,10 +332,10 @@ export default function BlogForm({ blogId = null, blog = null }) {
                     ].map((option) => (
                       <label
                         key={option.value}
-                        className={`flex flex-col gap-1 p-4 rounded-[16px] border-2 cursor-pointer transition-all ${
+                        className={`flex flex-col gap-1 p-4 rounded-2xl border-2 cursor-pointer transition-all ${
                           field.value === option.value
                             ? "border-brand-main bg-brand-main/5"
-                            : "border-[#EEEEEE] bg-white hover:border-[#DDD]"
+                            : "border-surface-border bg-white hover:border-[#DDD]"
                         }`}
                       >
                         <input
@@ -340,8 +345,8 @@ export default function BlogForm({ blogId = null, blog = null }) {
                           onChange={() => field.onChange(option.value)}
                           className="hidden"
                         />
-                        <span className="text-[14px] font-bold text-black">{option.label}</span>
-                        <span className="text-[12px] text-[#A3A3A3]">{option.desc}</span>
+                        <span className="text-sm font-bold text-black">{option.label}</span>
+                        <span className="text-xs text-ink-placeholder">{option.desc}</span>
                       </label>
                     ))}
                   </div>
@@ -352,7 +357,7 @@ export default function BlogForm({ blogId = null, blog = null }) {
           />
 
           {publishMode === "now" && (
-            <p className="text-[13px] text-[#616161]">
+            <p className="text-13 text-[#616161]">
               سيتم نشر المقال فوراً بتاريخ: <span className="font-bold text-black">{formatDateTime(new Date())}</span>
             </p>
           )}
@@ -363,14 +368,14 @@ export default function BlogForm({ blogId = null, blog = null }) {
               name="publish_at"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-[13px] font-bold text-black">
+                  <FormLabel className="text-13 font-bold text-black">
                     تاريخ ووقت النشر <span className="text-red-500">*</span>
                   </FormLabel>
                   <FormControl>
                     <Input
                       {...field}
                       type="datetime-local"
-                      className="h-[52px] rounded-[14px] border-[#EEEEEE] bg-white"
+                      className="h-13 rounded-14 border-surface-border bg-white"
                     />
                   </FormControl>
                   <FormMessage />
@@ -380,7 +385,7 @@ export default function BlogForm({ blogId = null, blog = null }) {
           )}
 
           {publishMode === "draft" && (
-            <p className="text-[13px] text-[#616161]">سيتم حفظ المقال كمسودة بدون تاريخ نشر.</p>
+            <p className="text-13 text-[#616161]">سيتم حفظ المقال كمسودة بدون تاريخ نشر.</p>
           )}
         </div>
 

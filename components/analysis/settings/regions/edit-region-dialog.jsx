@@ -1,90 +1,69 @@
-"use client"
-import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTrigger
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { axiosInstance } from '@/src/utils/axios';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Edit, Loader2, Plus, X } from 'lucide-react';
-import { useState } from 'react';
-import { toast } from 'sonner';
-export default function EditRegionDialog({region}) {
-  const [open, setOpen] = useState(false);
-  const [regionName, setRegionName] = useState(region?.name_ar);
+"use client";
 
+import { useEffect, useState } from "react";
+import { Input } from "@/components/ui/input";
+import SettingsFormDialog, {
+  SettingsFieldLabel,
+  settingsFieldClass,
+} from "@/components/SystemSettings/SettingsFormDialog";
+import { SETTINGS_EDIT_TRIGGER_CLASS } from "@/components/SystemSettings/shared";
+import { axiosInstance } from "@/src/utils/axios";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+
+export default function EditRegionDialog({ region }) {
+  const [open, setOpen] = useState(false);
+  const [regionName, setRegionName] = useState(region?.name_ar || "");
   const queryClient = useQueryClient();
 
-  function editRegion() {
-    return axiosInstance.post(`/admin/regions/${region?.id}`, {
-      name_ar: regionName,
-    })
-  }
+  useEffect(() => {
+    if (open) setRegionName(region?.name_ar || "");
+  }, [open, region]);
 
-  const {mutate: editRegionMutate, isPending: editRegionPending} = useMutation({
-    mutationFn: editRegion,
+  const { mutate, isPending } = useMutation({
+    mutationFn: () =>
+      axiosInstance.post(`/admin/regions/${region?.id}`, { name_ar: regionName }),
     onSuccess: (res) => {
       toast.success(res?.data?.message || "تم تعديل المنطقة بنجاح");
       setOpen(false);
-      setRegionName("");
       queryClient.invalidateQueries({ queryKey: ["regions"] });
     },
     onError: (error) => {
       toast.error(error?.response?.data?.message || "حدث خطأ أثناء تعديل المنطقة");
-    }
-  })
+    },
+  });
 
   const handleSubmit = () => {
-    editRegionMutate();
-
+    if (!regionName.trim()) {
+      toast.error("يرجى إدخال اسم المنطقة");
+      return;
+    }
+    mutate();
   };
+
   return (
-    <Dialog dir='rtl' open={open} onOpenChange={setOpen}>
-      <DialogTrigger>
-        <Button variant="outline" size="icon">
-          <Edit  />
-        </Button>
-      </DialogTrigger>
-      <DialogContent closeButton={false} className="max-w-3xl">
-        <DialogHeader>
-          <div className='flex items-center justify-between  border-b pb-6'>
-            {/* header and close button */}
-            <h2 className='text-xl font-bold'>تعديل المنطقة</h2>
-            <Button variant="ghost" onClick={() => setOpen(false)}>
-              <X className='w-4 h-4' />
-            </Button>
-          </div>
-          <div dir='rtl' className='space-y-4 text-right'>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium">
-                اسم المنطقة <span className="text-red-500">*</span>
-              </label>
-              <Input
-                placeholder="اكتب هنا ..."
-                value={regionName}
-                onChange={(e) => setRegionName(e.target.value)}
-                className='h-12'
-              />
-            </div>
-
-
-
-            {/* زر الإضافة */}
-            <Button
-              disabled={editRegionPending}
-              onClick={handleSubmit}
-              className="mx-auto block  h-12 bg-brand-hover"
-            >
-              {editRegionPending ? <Loader2 className='animate-spin'/> : "تعديل"}
-            </Button>
-          </div>
-
-        </DialogHeader>
-      </DialogContent>
-    </Dialog>
-  )
+    <SettingsFormDialog
+      open={open}
+      onOpenChange={setOpen}
+      trigger={
+        <button type="button" className={SETTINGS_EDIT_TRIGGER_CLASS}>
+          تعديل
+        </button>
+      }
+      title="تعديل العنصر"
+      onSubmit={handleSubmit}
+      submitLabel="حفظ"
+      isPending={isPending}
+    >
+      <label className="flex flex-col gap-1.5">
+        <SettingsFieldLabel required>الاسم</SettingsFieldLabel>
+        <Input
+          placeholder="مثال: الرياض"
+          value={regionName}
+          onChange={(e) => setRegionName(e.target.value)}
+          className={settingsFieldClass}
+        />
+      </label>
+    </SettingsFormDialog>
+  );
 }

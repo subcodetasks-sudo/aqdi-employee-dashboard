@@ -1,12 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -15,10 +9,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import SettingsFormDialog, {
+  SettingsFieldLabel,
+  settingsFieldClass,
+} from "@/components/SystemSettings/SettingsFormDialog";
+import { SETTINGS_EDIT_TRIGGER_CLASS } from "@/components/SystemSettings/shared";
 import { axiosInstance } from "@/src/utils/axios";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Loader2, X } from "lucide-react";
-import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 export default function EditPaymentTypeDialog({ paymentType }) {
@@ -52,67 +49,59 @@ export default function EditPaymentTypeDialog({ paymentType }) {
     },
   });
 
+  const handleSubmit = () => {
+    if (!nameAr.trim() || !nameEn.trim()) {
+      toast.error("يرجى ملء جميع الحقول المطلوبة");
+      return;
+    }
+    mutate();
+  };
+
   return (
-    <Dialog dir="rtl" open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button className="bg-brand-hover/20 text-brand-hover text-xs">تعديل</Button>
-      </DialogTrigger>
-      <DialogContent closeButton={false} className="max-w-3xl">
-        <DialogHeader>
-          <div className="flex items-center justify-between border-b pb-6">
-            <h2 className="text-xl font-bold">تعديل طريقة الدفع</h2>
-            <Button variant="ghost" onClick={() => setOpen(false)}>
-              <X className="w-4 h-4" />
-            </Button>
-          </div>
+    <SettingsFormDialog
+      open={open}
+      onOpenChange={setOpen}
+      trigger={
+        <button type="button" className={SETTINGS_EDIT_TRIGGER_CLASS}>
+          تعديل
+        </button>
+      }
+      title="تعديل العنصر"
+      onSubmit={handleSubmit}
+      submitLabel="حفظ"
+      isPending={isPending}
+    >
+      <label className="flex flex-col gap-1.5">
+        <SettingsFieldLabel required>الاسم بالعربية</SettingsFieldLabel>
+        <Input
+          value={nameAr}
+          onChange={(e) => setNameAr(e.target.value)}
+          className={settingsFieldClass}
+        />
+      </label>
 
-          <div className="space-y-4 text-right">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">
-                الاسم بالعربية <span className="text-red-500">*</span>
-              </label>
-              <Input
-                value={nameAr}
-                onChange={(e) => setNameAr(e.target.value)}
-                className="h-12"
-              />
-            </div>
+      <label className="flex flex-col gap-1.5">
+        <SettingsFieldLabel required>الاسم بالإنجليزية</SettingsFieldLabel>
+        <Input
+          value={nameEn}
+          onChange={(e) => setNameEn(e.target.value)}
+          className={settingsFieldClass}
+          dir="ltr"
+        />
+      </label>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium">
-                الاسم بالإنجليزية <span className="text-red-500">*</span>
-              </label>
-              <Input
-                value={nameEn}
-                onChange={(e) => setNameEn(e.target.value)}
-                className="h-12"
-                dir="ltr"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium">نوع العقد</label>
-              <Select value={contractType} onValueChange={setContractType}>
-                <SelectTrigger className="h-12">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="housing">سكني</SelectItem>
-                  <SelectItem value="commercial">تجاري</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <Button
-              disabled={isPending || !nameAr.trim() || !nameEn.trim()}
-              onClick={() => mutate()}
-              className="mx-auto block h-12 bg-brand-hover"
-            >
-              {isPending ? <Loader2 className="animate-spin" /> : "تعديل"}
-            </Button>
-          </div>
-        </DialogHeader>
-      </DialogContent>
-    </Dialog>
+      <label className="flex flex-col gap-1.5">
+        <SettingsFieldLabel>نوع العقد</SettingsFieldLabel>
+        <Select dir="rtl" value={contractType} onValueChange={setContractType}>
+          <SelectTrigger className={settingsFieldClass}>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent dir="rtl">
+            <SelectItem value="housing">سكني</SelectItem>
+            <SelectItem value="commercial">تجاري</SelectItem>
+          </SelectContent>
+        </Select>
+      </label>
+    </SettingsFormDialog>
   );
 }

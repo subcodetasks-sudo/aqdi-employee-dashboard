@@ -9,23 +9,64 @@ import {
 import { Edit, Plus, X } from 'lucide-react';
 import { useState } from 'react';
 import AddEmployeeForm from './add-employee-form';
-export default function AddNewEmployeeDialog({ isEdit = false, employee, table = false }) {
+export default function AddNewEmployeeDialog({
+  isEdit = false,
+  employee,
+  table = false,
+  triggerVariant = "primary",
+}) {
   const [open, setOpen] = useState(false);
+
+  const renderTrigger = () => {
+    if (isEdit) {
+      if (triggerVariant === "outline-edit") {
+        return (
+          <button
+            type="button"
+            className="inline-flex items-center justify-center h-8 px-3 rounded-lg border border-[#93C5FD] bg-white text-[#2563EB] text-xs font-semibold hover:bg-[#EFF6FF] transition-colors"
+          >
+            تعديل
+          </button>
+        );
+      }
+
+      return (
+        <Button
+          className={`rounded-full flex items-center justify-center shadow-none border-0 ${
+            table
+              ? "w-9 h-9 bg-[#E6FFE6] text-brand-accent hover:bg-brand-accent hover:text-white p-0"
+              : "text-white"
+          }`}
+          size={table ? "icon" : "default"}
+        >
+          <Edit className="size-4" />
+          {!table && "تعديل"}
+        </Button>
+      );
+    }
+
+    if (triggerVariant === "outline-add") {
+      return (
+        <button
+          type="button"
+          className="inline-flex items-center gap-1.5 h-10 px-5 rounded-lg border border-[#D1D5DB] bg-white text-gray-700 text-13 font-semibold hover:bg-[#F9FAFB] transition-colors whitespace-nowrap"
+        >
+          + إضافة موظف
+        </button>
+      );
+    }
+
+    return (
+      <Button className="bg-brand-hover hover:bg-brand-hover/90 text-white h-12 rounded-full font-bold px-6 gap-2 whitespace-nowrap">
+        + إضافة موظف
+        <Plus className="w-4 h-4" />
+      </Button>
+    );
+  };
+
   return (
-    <Dialog dir='rtl' open={open} onOpenChange={setOpen}>
-      <DialogTrigger>
-        {isEdit ? (
-          <Button className={`rounded-full flex items-center justify-center shadow-none border-0 ${table ? "w-9 h-9 bg-[#E6FFE6] text-[#10B981] hover:bg-[#10B981] hover:text-white p-0" : "text-white"}`} size={table ? "icon" : "default"}>
-            <Edit className='size-4' />
-            {!table && 'تعديل'}
-          </Button>
-        ) : (
-          <Button className="bg-brand-hover hover:bg-brand-hover/90 text-white h-12 rounded-full font-bold px-6 gap-2 whitespace-nowrap">
-            + إضافة موظف
-            <Plus className="w-4 h-4" />
-          </Button>
-        )}
-      </DialogTrigger>
+    <Dialog dir="rtl" open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>{renderTrigger()}</DialogTrigger>
       <DialogContent closeButton={false} className="max-w-3xl h-[95vh] overflow-y-auto no-scrollbar">
         <DialogHeader>
           <div dir='rtl' className='flex items-center justify-between  border-b pb-4'>

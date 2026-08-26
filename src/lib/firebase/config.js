@@ -12,6 +12,10 @@ export function getFirebaseConfig() {
     config.measurementId = process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID;
   }
 
+  if (process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL) {
+    config.databaseURL = process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL;
+  }
+
   return config;
 }
 
@@ -24,4 +28,9 @@ export function isFirebaseConfigured() {
       config.appId &&
       process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY
   );
+}
+
+export function isRealtimeDbConfigured() {
+  const config = getFirebaseConfig();
+  return Boolean(config.apiKey && config.projectId && config.appId && config.databaseURL);
 }

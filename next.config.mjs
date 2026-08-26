@@ -5,6 +5,12 @@ const nextConfig = {
     "192.168.1.4",
     "localhost",
   ],
+  compiler: {
+    removeConsole: process.env.NODE_ENV === "production" ? { exclude: ["error", "warn"] } : false,
+  },
+  experimental: {
+    optimizePackageImports: ["lucide-react", "react-icons"],
+  },
   async rewrites() {
     const apiTarget =
       process.env.API_PROXY_TARGET || "https://aqid.subcodeco.com/api";
@@ -16,12 +22,27 @@ const nextConfig = {
       },
     ];
   },
+  async headers() {
+    return [
+      {
+        source: "/firebase-messaging-sw.js",
+        headers: [
+          { key: "Cache-Control", value: "no-cache, no-store, must-revalidate" },
+          { key: "Service-Worker-Allowed", value: "/" },
+        ],
+      },
+    ];
+  },
   images: {
-    domains: ["aqid.subcodeco.com"],
     remotePatterns: [
       {
         protocol: "https",
         hostname: "aqid.subcodeco.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "b3app.co",
         pathname: "/**",
       },
     ],

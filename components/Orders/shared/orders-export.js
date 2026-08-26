@@ -1,5 +1,5 @@
-import * as XLSX from "xlsx";
 import { axiosInstance } from "@/src/utils/axios";
+import { writeExcelFile } from "@/src/lib/xlsx-export";
 import {
   getOrderAdminApprovalStatus,
   isAdminRefundApproved,
@@ -40,18 +40,6 @@ function formatCustomerRefunded(value) {
 
 function formatAdminApproval(value) {
   return isAdminRefundApproved(value) ? "تم الموافقة" : "لم تتم الموافقة";
-}
-
-function writeExcelFile(rows, { filename = "orders", sheetName = "الطلبات" } = {}) {
-  if (!rows?.length) return false;
-
-  const worksheet = XLSX.utils.json_to_sheet(rows);
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
-
-  const dateStamp = new Date().toISOString().slice(0, 10);
-  XLSX.writeFile(workbook, `${filename}-${dateStamp}.xlsx`);
-  return true;
 }
 
 function withPerPage(url, perPage) {
@@ -192,20 +180,20 @@ export function mapRefundContractToExportRow(item) {
   };
 }
 
-export function exportOrdersToExcel(orders, { filename = "orders", showStatusColumn = true } = {}) {
+export async function exportOrdersToExcel(orders, { filename = "orders", showStatusColumn = true } = {}) {
   if (!orders?.length) return false;
 
   const rows = orders.map((order) => mapOrderToExportRow(order, { showStatusColumn }));
   return writeExcelFile(rows, { filename, sheetName: "الطلبات" });
 }
 
-export function exportReturnOrdersToExcel(orders, { filename = "الطلبات-المسترجعة" } = {}) {
+export async function exportReturnOrdersToExcel(orders, { filename = "الطلبات-المسترجعة" } = {}) {
   if (!orders?.length) return false;
   const rows = orders.map(mapReturnOrderToExportRow);
   return writeExcelFile(rows, { filename, sheetName: "الطلبات المسترجعة" });
 }
 
-export function exportWhatsappCompletedToExcel(
+export async function exportWhatsappCompletedToExcel(
   orders,
   { filename = "واتساب-مكتملة" } = {}
 ) {
@@ -214,7 +202,7 @@ export function exportWhatsappCompletedToExcel(
   return writeExcelFile(rows, { filename, sheetName: "واتساب مكتملة" });
 }
 
-export function exportWhatsappIncompletedToExcel(
+export async function exportWhatsappIncompletedToExcel(
   orders,
   { filename = "واتساب-غير-مكتملة" } = {}
 ) {
@@ -223,7 +211,7 @@ export function exportWhatsappIncompletedToExcel(
   return writeExcelFile(rows, { filename, sheetName: "واتساب غير مكتملة" });
 }
 
-export function exportRefundContractsToExcel(
+export async function exportRefundContractsToExcel(
   items,
   { filename = "تحليل-المسترجع" } = {}
 ) {
