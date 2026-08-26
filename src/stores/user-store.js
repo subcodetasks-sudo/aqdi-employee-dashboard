@@ -26,6 +26,7 @@ export const useUserStore = create(
     (set) => ({
       user: null,
       token: null,
+      refreshToken: null,
       isAuthenticated: false,
       _hasHydrated: false,
 
@@ -38,22 +39,36 @@ export const useUserStore = create(
           clearAllAuthStorage('token');
         }
       },
+      setRefreshToken: (refreshToken) => {
+        set({ refreshToken });
+        if (refreshToken) {
+          getActiveStorage()?.setItem('refreshToken', refreshToken);
+        } else {
+          clearAllAuthStorage('refreshToken');
+        }
+      },
 
-      setAuth: (user, token, remember = true) => {
+      setAuth: (user, token, remember = true, refreshToken = null) => {
         if (typeof window !== 'undefined') {
           localStorage.setItem(REMEMBER_KEY, remember ? 'true' : 'false');
         }
-        set({ user, token, isAuthenticated: !!(user && token) });
+        set({ user, token, refreshToken, isAuthenticated: !!(user && token) });
         if (token) {
           getActiveStorage()?.setItem('token', token);
         } else {
           clearAllAuthStorage('token');
         }
+        if (refreshToken) {
+          getActiveStorage()?.setItem('refreshToken', refreshToken);
+        } else {
+          clearAllAuthStorage('refreshToken');
+        }
       },
 
       logout: async () => {
-        set({ user: null, token: null, isAuthenticated: false });
+        set({ user: null, token: null, refreshToken: null, isAuthenticated: false });
         clearAllAuthStorage('token');
+        clearAllAuthStorage('refreshToken');
         clearAllAuthStorage('user-storage');
         localStorage.removeItem(REMEMBER_KEY);
         await removeAuthCookie();
@@ -65,16 +80,22 @@ export const useUserStore = create(
       partialize: (state) => ({
         user: state.user,
         token: state.token,
+        refreshToken: state.refreshToken,
         isAuthenticated: state.isAuthenticated,
       }),
       skipHydration: true,
       onRehydrateStorage: () => (state, error) => {
         if (!error && typeof window !== 'undefined') {
           const storedToken = getActiveStorage()?.getItem('token');
+          const storedRefreshToken = getActiveStorage()?.getItem('refreshToken');
           // Restore token only when we also have a user — never mark authenticated
           // with a bare token (RoutePermissionGuard treats !user as logged out).
           if (storedToken && !state?.token && state?.user) {
-            useUserStore.setState({ token: storedToken, isAuthenticated: true });
+            useUserStore.setState({
+              token: storedToken,
+              refreshToken: storedRefreshToken || null,
+              isAuthenticated: true,
+            });
           }
         }
 

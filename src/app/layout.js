@@ -1,10 +1,18 @@
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import './globals.css';
 import { Toaster } from 'sonner';
+import { Tajawal } from 'next/font/google';
 import ReactQueryProvider from '../utils/providers/ReactQueryProvider';
 import StoreHydrator from '@/components/auth/StoreHydrator';
 import FirebaseMessagingProvider from '@/components/firebase/FirebaseMessagingProvider';
 import ThemeProvider from '@/components/theme/theme-provider';
+
+const tajawal = Tajawal({
+  subsets: ['arabic'],
+  weight: ['300', '400', '500', '700', '800'],
+  variable: '--font-tajawal',
+  display: 'swap',
+});
 
 export const viewport = {
   width: 'device-width',
@@ -43,7 +51,7 @@ export async function generateMetadata() {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="ar" dir="rtl" suppressHydrationWarning>
+    <html lang="ar" dir="rtl" className={tajawal.variable} suppressHydrationWarning>
       <body suppressHydrationWarning={true}>
         <ThemeProvider>
           <ReactQueryProvider>
@@ -58,7 +66,7 @@ export default function RootLayout({ children }) {
               expand
               visibleToasts={4}
               toastOptions={{
-                className: "font-[Alexandria]",
+                className: "font-[family-name:var(--font-tajawal)]",
               }}
             />
           </ReactQueryProvider>

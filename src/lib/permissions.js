@@ -12,6 +12,7 @@ export const PERMISSION_SECTIONS = {
   employees: 'employees',
   employee_salaries: 'employee_salaries',
   settings: 'settings',
+  seo_crawl: 'seo_crawl',
 };
 
 export const PERMISSION_ACTIONS = ['view', 'create', 'edit', 'delete', 'retrieve'];
