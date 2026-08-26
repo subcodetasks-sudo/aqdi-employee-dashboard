@@ -1,14 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
-import { cn } from "@/lib/utils";
 import SectionCard from "../shared/SectionCard";
 import { StatCardRow } from "../shared/StatCard";
-import { SourceBadge, TrendBadge } from "../shared/Badges";
+import { SourceBadge, TrendBadge, RoasChip, PosChip } from "../shared/Badges";
 import GroupedBarChart from "../shared/GroupedBarChart";
 import FunnelBars from "../shared/FunnelBars";
-import { TH, TD } from "../shared/table";
 import {
   OVERVIEW_ROAS,
   OVERVIEW_STATS,
@@ -22,171 +19,157 @@ import {
   WORST_CAMPAIGN,
 } from "../shared/mock-data";
 
+function formatRoas(value) {
+  const raw = String(value).replace(/^x/i, "").replace(/×$/, "");
+  return `${raw}×`;
+}
+
+function formatProfit(profit) {
+  const neg = String(profit).includes("-");
+  const num = String(profit).replace(/[^\d,]/g, "");
+  return `${neg ? "" : "+"}${num} ﷼`;
+}
+
 export default function OverviewTab() {
   return (
-    <div className="flex flex-col gap-5">
-      <div className="rounded-xl bg-brand-dark px-6 py-5 flex flex-wrap items-center justify-between gap-6">
-        <div className="flex items-center gap-6 flex-wrap">
-          <StatMini label="إجمالي الصرف" value={`${OVERVIEW_ROAS.totalSpend} ريال`} />
-          <StatMini label="إيراد مُسنَد" value={`${OVERVIEW_ROAS.attributedRevenue} ريال`} />
-          <StatMini label="ربح صافي" value={`${OVERVIEW_ROAS.netProfit}ريال`} />
+    <div>
+      <div className="mkt-hero">
+        <div className="mkt-hero-l">
+          <div className="mkt-hero-lbl">العائد على الإنفاق الإعلاني (ROAS)</div>
+          <div className="mkt-hero-big">{OVERVIEW_ROAS.value}</div>
+          <div className="mkt-hero-cap">
+            لكل <b>{OVERVIEW_ROAS.hintParts.spend}</b> صُرف على الإعلانات، رجع{" "}
+            <b>{OVERVIEW_ROAS.hintParts.return}</b> إيرادًا مُسنَدًا
+          </div>
         </div>
-        <div className="text-right">
-          <p className="text-13 text-white/70 font-semibold">العائد على الإنفاق الإعلاني (ROAS)</p>
-          <p className="text-[38px] font-extrabold text-white leading-none mt-1">{OVERVIEW_ROAS.value}</p>
-          <p className="text-xs text-white/60 mt-2 max-w-xs">{OVERVIEW_ROAS.hint}</p>
+        <div className="mkt-hero-r">
+          <div className="mkt-hero-kpi">
+            <span>{OVERVIEW_ROAS.totalSpend}</span>
+            <small>إجمالي الصرف</small>
+          </div>
+          <div className="mkt-hero-kpi">
+            <span>{OVERVIEW_ROAS.attributedRevenue}</span>
+            <small>إيراد مُسنَد</small>
+          </div>
+          <div className="mkt-hero-kpi pos">
+            <span>{OVERVIEW_ROAS.netProfit}</span>
+            <small>ربح صافٍ</small>
+          </div>
         </div>
       </div>
 
-      <StatCardRow items={OVERVIEW_STATS} className="lg:grid-cols-6" />
+      <StatCardRow items={OVERVIEW_STATS} />
 
-      <SectionCard title="الصرف مقابل الإيراد حسب القناة">
-        <GroupedBarChart items={CHANNEL_SPEND_REVENUE} />
-      </SectionCard>
+      <div className="cpf-grid">
+        <SectionCard title="الصرف مقابل الإيراد — حسب القناة">
+          <GroupedBarChart items={CHANNEL_SPEND_REVENUE} />
+        </SectionCard>
+        <SectionCard title="القمع التسويقي الكامل">
+          <FunnelBars steps={MARKETING_FUNNEL} />
+        </SectionCard>
+      </div>
 
-      <SectionCard title="القمع التسويقي الكامل">
-        <FunnelBars steps={MARKETING_FUNNEL} />
-      </SectionCard>
-
-      <SectionCard title="أداء القنوات المدفوعة (ROI)">
-        <div className="overflow-x-auto -mx-1">
-          <table className="w-full min-w-[720px] border-collapse">
+      <SectionCard title="أداء القنوات المدفوعة (ROI)" className="mt-[14px]">
+        <div className="tblwrap">
+          <table className="mkt-tbl">
             <thead>
               <tr>
-                <th className={TH}>القناة</th>
-                <th className={TH}>الصرف</th>
-                <th className={TH}>الإيراد</th>
-                <th className={TH}>ROAS</th>
-                <th className={TH}>تحويلات</th>
-                <th className={TH}>CAC</th>
-                <th className={TH}>الربح</th>
+                <th>القناة</th>
+                <th>الصرف</th>
+                <th>الإيراد</th>
+                <th>ROAS</th>
+                <th>تحويلات</th>
+                <th>CAC</th>
+                <th>الربح</th>
               </tr>
             </thead>
             <tbody>
-              {CHANNEL_ROI.map((row) => (
-                <tr key={row.source}>
-                  <td className={TD}>
-                    <SourceBadge source={row.source} />
-                  </td>
-                  <td className={cn(TD, "tabular-nums")}>{row.spend.toLocaleString("en-US")} ريال</td>
-                  <td className={cn(TD, "tabular-nums")}>{row.revenue.toLocaleString("en-US")} ريال</td>
-                  <td className={cn(TD, "font-bold text-green-700 tabular-nums")}>{row.roas}</td>
-                  <td className={cn(TD, "tabular-nums")}>{row.conversions}</td>
-                  <td className={cn(TD, "tabular-nums")}>{row.cac} ريال</td>
-                  <td
-                    className={cn(
-                      TD,
-                      "font-bold tabular-nums",
-                      row.profit.includes("-") ? "text-red-600" : "text-green-700"
-                    )}
-                  >
-                    {row.profit}
-                  </td>
-                </tr>
-              ))}
+              {CHANNEL_ROI.map((row) => {
+                const profitNeg = String(row.profit).includes("-");
+                return (
+                  <tr key={row.source}>
+                    <td>
+                      <SourceBadge source={row.source} />
+                    </td>
+                    <td>{row.spend.toLocaleString("en-US")} ﷼</td>
+                    <td>{row.revenue.toLocaleString("en-US")} ﷼</td>
+                    <td>
+                      <RoasChip value={formatRoas(row.roas)} numeric={parseFloat(String(row.roas).replace(/[^\d.]/g, ""))} />
+                    </td>
+                    <td>{row.conversions}</td>
+                    <td>{row.cac} ﷼</td>
+                    <td className={profitNeg ? "mk-neg" : "mk-pos"}>{formatProfit(row.profit)}</td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
       </SectionCard>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <SectionCard title="أهم الكلمات في Google">
-          <ul className="flex flex-col gap-3">
-            {TOP_GOOGLE_KEYWORDS.map((item, index) => (
-              <li key={`${item.label}-${index}`} className="flex items-center justify-between gap-3">
-                <span className="flex items-center gap-2 min-w-0">
-                  <span className="size-5 rounded-full bg-status-neutral-bg text-gray-700 text-11 font-bold flex items-center justify-center shrink-0">
-                    {item.rank}
-                  </span>
-                  <span className="text-13 text-gray-700 truncate">{item.label}</span>
+      <div className="mkt-top3">
+        <SectionCard title="أكثر الحملات تحقيقًا للطلبات">
+          <div className="mkt-toplist">
+            {TOP_CAMPAIGNS_BY_LEADS.map((item) => (
+              <div key={item.label} className="mkt-toprow">
+                <span className="mkt-topn">
+                  {item.label} <SourceBadge source={item.source} />
                 </span>
-                <TrendBadge trend={item.trend} className="shrink-0" />
-              </li>
+                <b>{item.leads} طلب</b>
+              </div>
             ))}
-          </ul>
+          </div>
         </SectionCard>
 
         <SectionCard title="أكثر الصفحات والمقالات زيارة">
-          <ul className="flex flex-col gap-3">
+          <div className="mkt-toplist">
             {TOP_PAGES_VISITED.map((item) => (
-              <li key={item.label} className="flex items-center justify-between gap-3">
-                <span className="flex items-center gap-2 min-w-0">
-                  <span className="text-10 font-bold text-status-neutral bg-status-neutral-bg rounded px-1.5 py-0.5 shrink-0">
-                    {item.type}
-                  </span>
-                  <span className="text-13 text-gray-700 truncate">{item.label}</span>
+              <div key={item.label} className="mkt-toprow">
+                <span className="mkt-topn">
+                  {item.label} <span className="mkt-cat">{item.type}</span>
                 </span>
-                <span className="text-13 font-bold text-gray-900 tabular-nums shrink-0">
-                  {item.visits.toLocaleString("en-US")}
-                </span>
-              </li>
+                <b>{item.visits.toLocaleString("en-US")}</b>
+              </div>
             ))}
-          </ul>
+          </div>
         </SectionCard>
 
-        <SectionCard title="أكثر الحملات تحقيقًا للطلبات">
-          <ul className="flex flex-col gap-3">
-            {TOP_CAMPAIGNS_BY_LEADS.map((item) => (
-              <li key={item.label} className="flex items-center justify-between gap-3">
-                <span className="flex items-center gap-2 min-w-0">
-                  <SourceBadge source={item.source} />
-                  <span className="text-13 text-gray-700 truncate">{item.label}</span>
+        <SectionCard title="أهم الكلمات في Google">
+          <div className="mkt-toplist">
+            {TOP_GOOGLE_KEYWORDS.map((item, index) => (
+              <div key={`${item.label}-${index}`} className="mkt-toprow">
+                <span className="mkt-topn">
+                  <PosChip pos={item.rank} /> {item.label}
                 </span>
-                <span className="text-13 font-bold text-gray-900 tabular-nums shrink-0">
-                  {item.leads} طلب
-                </span>
-              </li>
+                <TrendBadge trend={item.trend} />
+              </div>
             ))}
-          </ul>
+          </div>
         </SectionCard>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <HighlightCampaignCard tone="best" title="أفضل حملة (ROAS)" campaign={BEST_CAMPAIGN} />
-        <HighlightCampaignCard tone="worst" title="أضعف حملة (ROAS)" campaign={WORST_CAMPAIGN} />
-      </div>
-    </div>
-  );
-}
-
-function StatMini({ label, value }) {
-  return (
-    <div className="text-right">
-      <p className="text-base font-bold text-white leading-tight">{value}</p>
-      <p className="text-11 text-white/60 mt-0.5">{label}</p>
-    </div>
-  );
-}
-
-function HighlightCampaignCard({ tone, title, campaign }) {
-  const isBest = tone === "best";
-  return (
-    <div
-      className={cn(
-        "rounded-xl p-5 flex items-center justify-between gap-4",
-        isBest ? "bg-[#ECFDF5] border border-[#A7F3D0]" : "bg-[#FEF2F2] border border-[#FECACA]"
-      )}
-    >
-      <div className="min-w-0">
-        <p className={cn("text-xs font-bold mb-1", isBest ? "text-green-700" : "text-red-600")}>{title}</p>
-        <div className="flex items-center gap-2 mb-1.5">
-          <SourceBadge source={campaign.source} />
-          <span className="text-sm font-bold text-gray-900 truncate">{campaign.title}</span>
+      <div className="cpf-grid" style={{ marginTop: 14 }}>
+        <div className="cpf-sec mk-callout good">
+          <div className="mk-co-t">أفضل حملة (ROAS)</div>
+          <div className="mk-co-n">{BEST_CAMPAIGN.title}</div>
+          <div className="mk-co-v">
+            {formatRoas(BEST_CAMPAIGN.roas)} · {BEST_CAMPAIGN.profitLabel}
+          </div>
+          <Link href="?tab=campaigns" className="mk-co-b">
+            التفاصيل →
+          </Link>
         </div>
-        <p className="text-xs text-status-neutral">
-          {campaign.roas} · {campaign.profitLabel}
-        </p>
+        <div className="cpf-sec mk-callout bad">
+          <div className="mk-co-t">أضعف حملة (ROAS)</div>
+          <div className="mk-co-n">{WORST_CAMPAIGN.title}</div>
+          <div className="mk-co-v">
+            {formatRoas(WORST_CAMPAIGN.roas)} · {WORST_CAMPAIGN.profitLabel}
+          </div>
+          <Link href="?tab=campaigns" className="mk-co-b">
+            التفاصيل →
+          </Link>
+        </div>
       </div>
-      <Link
-        href="?tab=campaigns"
-        className={cn(
-          "inline-flex items-center gap-1 text-xs font-bold shrink-0",
-          isBest ? "text-green-700" : "text-red-600"
-        )}
-      >
-        التفاصيل
-        <ArrowLeft className="size-3.5" />
-      </Link>
     </div>
   );
 }

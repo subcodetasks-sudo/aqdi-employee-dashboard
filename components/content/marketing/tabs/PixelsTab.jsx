@@ -1,13 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Copy } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { Switch } from "@/components/ui/switch";
 import SectionCard from "../shared/SectionCard";
 import { StatCardRow } from "../shared/StatCard";
-import { TH, TD } from "../shared/table";
 import { PIXELS_STATS, AD_PIXELS, ANALYTICS_SOURCES, TRACKED_EVENTS, UTM_DEFAULTS } from "../shared/mock-data";
 
 export default function PixelsTab() {
@@ -30,11 +27,11 @@ export default function PixelsTab() {
   };
 
   return (
-    <div className="flex flex-col gap-5">
-      <StatCardRow items={PIXELS_STATS} className="lg:grid-cols-4" />
+    <div>
+      <StatCardRow items={PIXELS_STATS} />
 
-      <SectionCard title="بكسلات الإعلانات وتتبع التحويلات">
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
+      <SectionCard title="بكسلات الإعلانات وتتبع التحويلات" className="mt-[14px]">
+        <div className="mkt-pixgrid">
           {AD_PIXELS.map((pixel) => (
             <IntegrationCard
               key={pixel.name}
@@ -46,8 +43,8 @@ export default function PixelsTab() {
         </div>
       </SectionCard>
 
-      <SectionCard title="التحليلات ومصادر البيانات">
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
+      <SectionCard title="التحليلات ومصادر البيانات" className="mt-[14px]">
+        <div className="mkt-pixgrid">
           {ANALYTICS_SOURCES.map((source) => (
             <IntegrationCard
               key={source.name}
@@ -59,38 +56,45 @@ export default function PixelsTab() {
         </div>
       </SectionCard>
 
-      <SectionCard title="الأحداث المتتبَّعة وقيمتها">
-        <div className="overflow-x-auto -mx-1">
-          <table className="w-full min-w-[640px] border-collapse">
+      <SectionCard title="الأحداث المتتبَّعة وقيمتها" className="mt-[14px]">
+        <div className="tblwrap">
+          <table className="mkt-tbl">
             <thead>
               <tr>
-                <th className={TH}>الحدث</th>
-                <th className={TH}>المعنى</th>
-                <th className={TH}>القيمة المُسنَدة</th>
-                <th className={TH}>المنصات</th>
+                <th>الحدث</th>
+                <th>المعنى</th>
+                <th>القيمة المُسنَدة</th>
+                <th>المنصات</th>
               </tr>
             </thead>
             <tbody>
               {TRACKED_EVENTS.map((row) => (
-                <tr key={row.event} className={cn(row.highlight && "bg-[#F0FDF4]")}>
-                  <td className={cn(TD, "font-mono font-semibold text-gray-900")}>{row.event}</td>
-                  <td className={TD}>{row.meaning}</td>
-                  <td className={cn(TD, row.highlight ? "font-bold text-green-700" : "text-gray-400")}>
-                    {row.value}
+                <tr key={row.event} style={row.highlight ? { background: "#f0fbf6" } : undefined}>
+                  <td className="mkt-kw" style={{ direction: "ltr", textAlign: "center" }}>
+                    {row.event}
                   </td>
-                  <td className={TD}>{row.platforms}</td>
+                  <td>{row.meaning}</td>
+                  <td className={row.highlight ? "mk-pos" : ""}>{row.value}</td>
+                  <td>{row.platforms}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-        <p className="text-11 text-gray-400">
+        <p className="mkt-synchint" style={{ marginTop: 10 }}>
           حدث Purchase يحمل قيمة العقد (الرسوم) — وهو ما يُغذي الإيراد المُسنَد وROAS في بقية التبويبات.
         </p>
       </SectionCard>
 
-      <SectionCard title="مولّد روابط UTM – لوسم روابط الحملات">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+      <SectionCard title="مولّد روابط UTM – لوسم روابط الحملات" className="mt-[14px]">
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
+            gap: 10,
+            marginBottom: 12,
+          }}
+        >
           <UtmField label="الرابط" value={utm.url} onChange={(v) => setUtm((prev) => ({ ...prev, url: v }))} />
           <UtmField
             label="المصدر (source)"
@@ -115,18 +119,28 @@ export default function PixelsTab() {
           <UtmField label="الكلمة (term)" value={utm.term} onChange={(v) => setUtm((prev) => ({ ...prev, term: v }))} />
         </div>
 
-        <button
-          type="button"
-          onClick={copyLink}
-          className="h-9 px-4 rounded-lg border border-surface-border-soft bg-white text-xs font-bold text-gray-700 hover:bg-[#F9FAFB] transition-colors flex items-center gap-1.5 w-fit"
-        >
-          <Copy className="size-4 text-status-neutral" />
+        <button type="button" className="mk-mini" onClick={copyLink} style={{ marginBottom: 12 }}>
           نسخ الرابط
         </button>
 
         <div>
-          <p className="text-xs font-bold text-gray-900 mb-1.5">الرابط الموسوم</p>
-          <div className="rounded-lg border border-surface-border-soft bg-[#F9FAFB] px-3 py-2.5 text-xs text-gray-700 break-all">
+          <div className="cpf-sec-t" style={{ marginBottom: 6 }}>
+            الرابط الموسوم
+          </div>
+          <div
+            style={{
+              border: "1px solid #e5eee9",
+              borderRadius: 10,
+              background: "#f7fbf9",
+              padding: "10px 12px",
+              fontSize: 12,
+              fontWeight: 600,
+              color: "#2c3a34",
+              direction: "ltr",
+              textAlign: "left",
+              wordBreak: "break-all",
+            }}
+          >
             {taggedUrl}
           </div>
         </div>
@@ -148,56 +162,74 @@ function buildUtmUrl(utm) {
 
 function UtmField({ label, value, onChange }) {
   return (
-    <label className="flex flex-col gap-1.5">
-      <span className="text-xs font-semibold text-gray-700">{label}</span>
+    <label style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+      <span style={{ fontSize: 12, fontWeight: 700, color: "#4a5b54" }}>{label}</span>
       <input
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="h-9 rounded-lg border border-surface-border-soft px-3 text-13 text-gray-900 focus:outline-none focus:border-brand-dark"
+        style={{
+          height: 36,
+          borderRadius: 9,
+          border: "1.5px solid #dce8e3",
+          padding: "0 12px",
+          fontSize: 13,
+          fontWeight: 600,
+          color: "#1f2a28",
+          fontFamily: "inherit",
+        }}
       />
     </label>
   );
 }
 
 function IntegrationCard({ item, checked, onToggle }) {
+  const switchId = `mkt-pix-${item.name.replace(/\s+/g, "-")}`;
+
   return (
-    <div className="rounded-lg border border-surface-border-soft p-3.5 flex flex-col gap-2.5 min-w-0">
-      <div className="flex items-start justify-between gap-2">
-        <p className="text-13 font-bold text-gray-900 min-w-0">{item.name}</p>
-        <Switch checked={checked} onCheckedChange={onToggle} className="shrink-0" />
+    <div className={cn("mkt-pixcard", !checked && "off")}>
+      <div className="mkt-pixtop">
+        <div className="mkt-pixname">
+          <i className={cn("mkt-pixdot", checked && "on")} />
+          {item.name}
+        </div>
+        <label className="mkt-switch" htmlFor={switchId} title={checked ? "مفعّل" : "متوقف"}>
+          <input
+            id={switchId}
+            type="checkbox"
+            checked={checked}
+            onChange={(e) => onToggle(e.target.checked)}
+            aria-label={item.name}
+          />
+          <span />
+        </label>
       </div>
 
-      {item.id ? (
-        <p className="text-11 text-gray-400">المعرّف: {item.id}</p>
-      ) : (
-        <p className="text-11 text-red-600 font-semibold">غير مربوط</p>
-      )}
+      <div className="mkt-pixid">{item.id ? `ID: ${item.id}` : "غير مربوط"}</div>
 
       {item.badge ? (
-        <span className="text-10 font-bold text-green-700 bg-[#DCFCE7] rounded px-1.5 py-0.5 w-fit">
+        <span className="mkt-cat" style={{ background: "#dcf5e8", color: "#0b7a4c", marginBottom: 8 }}>
           {item.badge}
         </span>
       ) : null}
 
-      {item.note ? <p className="text-11 text-status-neutral">{item.note}</p> : null}
+      {item.note ? <p className="mkt-pixlast" style={{ marginBottom: 8 }}>{item.note}</p> : null}
 
       {item.events?.length ? (
-        <div className="flex flex-wrap gap-1">
+        <div className="mkt-pixev">
           {item.events.map((event) => (
-            <span key={event} className="text-10 font-mono font-semibold text-gray-700 bg-status-neutral-bg rounded px-1.5 py-0.5">
-              {event}
-            </span>
+            <span key={event}>{event}</span>
           ))}
         </div>
       ) : null}
 
-      {item.connected ? <p className="text-11 text-gray-400">{item.lastEvent}</p> : null}
+      {checked && item.lastEvent ? <div className="mkt-pixlast">{item.lastEvent}</div> : null}
 
       <button
         type="button"
+        className="mk-mini"
+        style={{ marginTop: 10, width: "100%" }}
         onClick={() => toast.success("فتح الإعداد والكود (واجهة تجريبية)")}
-        className="h-8 rounded-lg border border-surface-border-soft bg-white text-11 font-bold text-gray-700 hover:bg-[#F9FAFB] transition-colors mt-auto"
       >
         الإعداد والكود
       </button>

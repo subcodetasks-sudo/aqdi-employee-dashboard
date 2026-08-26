@@ -2,15 +2,17 @@
 
 import { cn } from "@/lib/utils";
 
-export default function SectionCard({ title, subtitle, action, children, className }) {
+export default function SectionCard({ title, subtitle, action, children, className, bodyClassName }) {
   return (
-    <div className={cn("rounded-xl border border-surface-border-soft bg-white p-5 flex flex-col gap-4 min-w-0 dark:bg-[#0F1C16] dark:border-white/[0.08]", className)}>
+    <div className={cn("cpf-sec", className)}>
       {(title || action) && (
         <div className="flex items-start justify-between gap-3">
           {title ? (
             <div className="min-w-0">
-              <h3 className="text-sm font-bold text-gray-900 dark:text-white">{title}</h3>
-              {subtitle ? <p className="text-11 text-gray-400 mt-0.5 dark:text-white/45">{subtitle}</p> : null}
+              <div className="cpf-sec-t" style={{ marginBottom: subtitle ? 0 : undefined }}>
+                {title}
+              </div>
+              {subtitle ? <p className="cpf-sec-sub">{subtitle}</p> : null}
             </div>
           ) : (
             <span />
@@ -18,7 +20,7 @@ export default function SectionCard({ title, subtitle, action, children, classNa
           {action}
         </div>
       )}
-      {children}
+      <div className={bodyClassName}>{children}</div>
     </div>
   );
 }

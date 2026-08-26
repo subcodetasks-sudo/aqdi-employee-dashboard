@@ -1,13 +1,11 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import SectionCard from "../shared/SectionCard";
 import { StatCardRow } from "../shared/StatCard";
 import { StatusPill } from "../shared/Badges";
-import { TH, TD } from "../shared/table";
 import {
   SERVICE_PAGE_STATS,
   SERVICE_PAGES,
@@ -18,43 +16,29 @@ import {
 } from "../shared/mock-data";
 
 const VIEWS = [
-  { value: "pages", label: "صفحات الخدمات" },
   { value: "articles", label: "المقالات" },
+  { value: "services", label: "صفحات الخدمات" },
 ];
 
 export default function ContentTab() {
-  const [view, setView] = useState("pages");
+  const [view, setView] = useState("articles");
 
   return (
-    <div className="flex flex-col gap-5">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <button
-          type="button"
-          onClick={() => toast.success(view === "pages" ? "إنشاء صفحة خدمة جديدة (واجهة تجريبية)" : "إنشاء مقال جديد (واجهة تجريبية)")}
-          className="h-9 px-4 rounded-lg bg-brand-dark text-white text-13 font-bold flex items-center gap-1.5 hover:bg-[#0F6B57] transition-colors"
-        >
-          <Plus className="size-4" />
-          {view === "pages" ? "صفحة خدمة جديدة" : "مقال جديد"}
-        </button>
-
-        <div className="inline-flex rounded-full border border-surface-border-soft bg-white p-1 gap-1">
-          {VIEWS.map((item) => (
-            <button
-              key={item.value}
-              type="button"
-              onClick={() => setView(item.value)}
-              className={cn(
-                "h-8 px-4 rounded-full text-xs font-bold transition-all",
-                view === item.value ? "bg-brand-dark text-white" : "text-status-neutral hover:bg-[#F9FAFB]"
-              )}
-            >
-              {item.label}
-            </button>
-          ))}
-        </div>
+    <div>
+      <div className="mkt-subtabs">
+        {VIEWS.map((item) => (
+          <button
+            key={item.value}
+            type="button"
+            onClick={() => setView(item.value)}
+            className={cn("mkt-subtab", view === item.value && "on")}
+          >
+            {item.label}
+          </button>
+        ))}
       </div>
 
-      {view === "pages" ? <ServicePagesView /> : <ArticlesView />}
+      {view === "services" ? <ServicePagesView /> : <ArticlesView />}
     </div>
   );
 }
@@ -62,32 +46,36 @@ export default function ContentTab() {
 function ServicePagesView() {
   return (
     <>
-      <StatCardRow items={SERVICE_PAGE_STATS} className="lg:grid-cols-3" />
+      <StatCardRow items={SERVICE_PAGE_STATS} />
 
-      <SectionCard title="صفحات الخدمات والصفحات الثابتة للموقع">
-        <div className="overflow-x-auto -mx-1">
-          <table className="w-full min-w-[640px] border-collapse">
+      <SectionCard title="صفحات الخدمات والصفحات الثابتة للموقع" className="mt-3">
+        <div className="tblwrap">
+          <table className="mkt-tbl">
             <thead>
               <tr>
-                <th className={TH}>العنوان</th>
-                <th className={TH}>الرابط</th>
-                <th className={TH}>الكلمة المستهدفة</th>
-                <th className={TH}>الحالة</th>
-                <th className={TH}>التاريخ</th>
-                <th className={TH}></th>
+                <th>العنوان</th>
+                <th>الرابط</th>
+                <th>الكلمة المستهدفة</th>
+                <th>الحالة</th>
+                <th>التاريخ</th>
+                <th />
               </tr>
             </thead>
             <tbody>
               {SERVICE_PAGES.map((row) => (
                 <tr key={row.title}>
-                  <td className={cn(TD, "font-semibold text-gray-900")}>{row.title}</td>
-                  <td className={cn(TD, "text-[#2563EB]")}>{row.link}</td>
-                  <td className={TD}>{row.keyword}</td>
-                  <td className={TD}>
+                  <td className="mkt-title">{row.title}</td>
+                  <td>
+                    <span className="mkt-url" style={{ display: "inline", margin: 0 }}>
+                      {row.link}
+                    </span>
+                  </td>
+                  <td>{row.keyword}</td>
+                  <td>
                     <StatusPill status={row.status} />
                   </td>
-                  <td className={cn(TD, "tabular-nums")}>{row.date}</td>
-                  <td className={TD}>
+                  <td>{row.date}</td>
+                  <td>
                     <EditButton />
                   </td>
                 </tr>
@@ -110,91 +98,87 @@ function ArticlesView() {
 
   return (
     <>
-      <StatCardRow items={ARTICLE_STATS} className="lg:grid-cols-6" />
+      <StatCardRow items={ARTICLE_STATS} />
 
-      <div className="flex flex-wrap gap-2">
-        {ARTICLE_CATEGORIES.map((label) => (
-          <button
-            key={label}
-            type="button"
-            onClick={() => setCategory(label)}
-            className={cn(
-              "h-8 px-3.5 rounded-full text-xs font-bold transition-all",
-              category === label
-                ? "bg-brand-dark text-white"
-                : "bg-white text-gray-700 border border-surface-border-soft hover:bg-[#F9FAFB]"
-            )}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
-
-      <SectionCard>
-        <div className="overflow-x-auto -mx-1">
-          <table className="w-full min-w-[920px] border-collapse">
-            <thead>
-              <tr>
-                <th className={TH}>العنوان</th>
-                <th className={TH}>التصنيف</th>
-                <th className={TH}>الكاتب</th>
-                <th className={TH}>الحالة</th>
-                <th className={TH}>التاريخ</th>
-                <th className={TH}>كلمات</th>
-                <th className={TH}>مشاهدات</th>
-                <th className={TH}>Leads</th>
-                <th className={TH}>إيراد</th>
-                <th className={TH}></th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((row) => (
-                <tr key={row.title}>
-                  <td className={cn(TD, "font-semibold text-gray-900 whitespace-normal max-w-[280px]")}>{row.title}</td>
-                  <td className={TD}>
-                    <span className="text-11 font-semibold text-gray-700 bg-status-neutral-bg rounded px-2 py-1">
-                      {row.category}
-                    </span>
-                  </td>
-                  <td className={TD}>{row.author}</td>
-                  <td className={TD}>
-                    <StatusPill status={row.status} />
-                  </td>
-                  <td className={cn(TD, "tabular-nums")}>{row.date}</td>
-                  <td className={cn(TD, "tabular-nums")}>{row.words.toLocaleString("en-US")}</td>
-                  <td className={cn(TD, "tabular-nums")}>{row.views.toLocaleString("en-US")}</td>
-                  <td className={cn(TD, "tabular-nums")}>{row.leads}</td>
-                  <td className={cn(TD, "font-semibold text-gray-900 tabular-nums")}>{row.revenue}</td>
-                  <td className={TD}>
-                    <EditButton />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </SectionCard>
-
-      <SectionCard title="التقويم التحريري – قيد الإعداد">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {EDITORIAL_QUEUE.map((item) => (
-            <div key={item.title} className="rounded-lg border border-surface-border-soft p-3.5 flex flex-col gap-2">
-              <p
-                className={cn(
-                  "text-11 font-bold w-fit rounded-full px-2 py-0.5",
-                  item.status === "مجدول" ? "bg-[#FEF3C7] text-[#B45309]" : "bg-status-neutral-bg text-status-neutral"
-                )}
-              >
-                {item.date}
-              </p>
-              <p className="text-13 font-semibold text-gray-900">{item.title}</p>
-              <span className="text-11 font-semibold text-gray-700 bg-status-neutral-bg rounded px-2 py-1 w-fit">
-                {item.tag}
-              </span>
-            </div>
+      <div className="mkt-blogbar">
+        <div className="mkt-cats">
+          {ARTICLE_CATEGORIES.map((label) => (
+            <button
+              key={label}
+              type="button"
+              onClick={() => setCategory(label)}
+              className={cn("mkt-catb", category === label && "on")}
+            >
+              {label}
+            </button>
           ))}
         </div>
-      </SectionCard>
+        <button
+          type="button"
+          className="xbtn"
+          onClick={() => toast.success("إنشاء مقال جديد (واجهة تجريبية)")}
+        >
+          + مقال جديد
+        </button>
+      </div>
+
+      <div className="tblwrap">
+        <table className="mkt-tbl">
+          <thead>
+            <tr>
+              <th>العنوان</th>
+              <th>التصنيف</th>
+              <th>الكاتب</th>
+              <th>الحالة</th>
+              <th>التاريخ</th>
+              <th>كلمات</th>
+              <th>مشاهدات</th>
+              <th>Leads</th>
+              <th>إيراد</th>
+              <th />
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row) => (
+              <tr key={row.title}>
+                <td className="mkt-title">{row.title}</td>
+                <td>
+                  <span className="mkt-cat">{row.category}</span>
+                </td>
+                <td>{row.author}</td>
+                <td>
+                  <StatusPill status={row.status} />
+                </td>
+                <td>{row.date}</td>
+                <td>{row.words.toLocaleString("en-US")}</td>
+                <td>{row.views.toLocaleString("en-US")}</td>
+                <td>{row.leads}</td>
+                <td>{row.revenue.replace("ريال", "﷼")}</td>
+                <td>
+                  <EditButton />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {EDITORIAL_QUEUE.length > 0 ? (
+        <SectionCard title="التقويم التحريري — قيد الإعداد" className="mt-[14px]">
+          <div className="mkt-cal">
+            {EDITORIAL_QUEUE.map((item) => (
+              <div key={item.title} className="mkt-calcard">
+                <div className="mkt-caldate">{item.date}</div>
+                <div className="mkt-caltitle">{item.title}</div>
+                <div>
+                  {item.status ? <StatusPill status={item.status} /> : <StatusPill status="غير مجدول" />}{" "}
+                  <span className="mkt-cat">{item.tag}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </SectionCard>
+      ) : null}
     </>
   );
 }
@@ -203,8 +187,8 @@ function EditButton() {
   return (
     <button
       type="button"
+      className="mk-mini"
       onClick={() => toast.success("فتح المحرر (واجهة تجريبية)")}
-      className="h-8 px-3 rounded-lg border border-surface-border-soft bg-white text-xs font-bold text-gray-700 hover:bg-[#F9FAFB] transition-colors"
     >
       تحرير
     </button>

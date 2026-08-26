@@ -1,14 +1,23 @@
 "use client";
 
 import { useState } from "react";
-import { RefreshCw, ChevronLeft, ExternalLink, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import SectionCard from "../shared/SectionCard";
 import { StatCardRow } from "../shared/StatCard";
-import { SourceBadge, StatusDot } from "../shared/Badges";
-import { TH, TD } from "../shared/table";
+import { SourceBadge, StatusDot, RoasChip } from "../shared/Badges";
 import { SYNC_PLATFORMS, CAMPAIGN_STATS, CAMPAIGNS } from "../shared/mock-data";
+
+function formatRoas(value) {
+  const raw = String(value).replace(/^x/i, "").replace(/×$/, "");
+  return `${raw}×`;
+}
+
+function formatProfit(profit) {
+  const neg = String(profit).includes("-");
+  const num = String(profit).replace(/[^\d,]/g, "");
+  return `${neg ? "" : "+"}${num} ﷼`;
+}
 
 export default function CampaignsTab() {
   const [syncing, setSyncing] = useState(false);
@@ -19,106 +28,85 @@ export default function CampaignsTab() {
     setTimeout(() => setSyncing(false), 900);
   };
 
+  const sorted = [...CAMPAIGNS].sort((a, b) => {
+    const ra = parseFloat(String(a.roas).replace(/[^\d.]/g, "")) || 0;
+    const rb = parseFloat(String(b.roas).replace(/[^\d.]/g, "")) || 0;
+    return rb - ra;
+  });
+
   return (
-    <div className="flex flex-col gap-5">
-      <div className="flex flex-col gap-1.5">
-        <div className="flex flex-wrap items-center gap-3">
-          <button
-            type="button"
-            onClick={handleSync}
-            className="h-10 px-4 rounded-lg bg-brand-dark text-white text-13 font-bold flex items-center gap-2 hover:bg-[#0F6B57] transition-colors shrink-0"
-          >
-            <RefreshCw className={cn("size-4", syncing && "animate-spin")} />
-            مزامنة الآن
-          </button>
-
-          <div className="flex flex-wrap items-center gap-2 text-xs text-status-neutral">
-            <span>تُزامن تلقائيًا من:</span>
-            {[...SYNC_PLATFORMS].reverse().map((platform) => (
-              <span
-                key={platform.label}
-                className="inline-flex items-center gap-1.5 rounded-full border border-surface-border-soft bg-white px-2.5 py-1 text-xs font-semibold text-gray-700"
-              >
-                <span
-                  className={cn("size-[7px] rounded-full", platform.connected ? "bg-[#16A34A]" : "bg-[#D1D5DB]")}
-                />
-                {platform.label}
-              </span>
-            ))}
-          </div>
+    <div>
+      <div className="mkt-syncbar">
+        <div className="mkt-srcs">
+          <span className="mkt-src-lbl">تُزامَن تلقائيًا من:</span>
+          {SYNC_PLATFORMS.map((platform) => (
+            <span key={platform.label} className={cn("mkt-srcchip", !platform.connected && "off")}>
+              <i className={cn("mkt-srcdot", platform.connected && "on")} />
+              {platform.label}
+            </span>
+          ))}
         </div>
-        <p className="text-11 text-gray-400 italic">
-          الأرقام تُسحب آليًا من حسابات الإعلانات — لإدارة الربط والمعرّفات افتح تبويب «الربط والبكسلات».
-        </p>
+        <div className="mkt-syncright">
+          <span className="mkt-synctime">آخر مزامنة: 2026-07-24 11:32</span>
+          <button type="button" className="mkt-syncb" onClick={handleSync} disabled={syncing}>
+            {syncing ? "⟳ جارٍ المزامنة..." : "⟳ مزامنة الآن"}
+          </button>
+        </div>
       </div>
+      <p className="mkt-synchint">
+        الأرقام تُسحب آليًا من حسابات الإعلانات — لإدارة الربط والمعرّفات افتح تبويب «الربط والبكسلات».
+      </p>
 
-      <StatCardRow items={CAMPAIGN_STATS} className="lg:grid-cols-5" />
+      <StatCardRow items={CAMPAIGN_STATS} />
 
-      <SectionCard title="كل الحملات" subtitle="مُزامَنة من الحسابات المربوطة · مرتبة حسب ROAS">
-        <div className="overflow-x-auto -mx-1">
-          <table className="w-full min-w-[920px] border-collapse">
+      <SectionCard
+        title="كل الحملات — مُزامَنة من الحسابات المربوطة · مرتبة حسب ROAS"
+        className="mt-3"
+      >
+        <div className="tblwrap">
+          <table className="mkt-tbl">
             <thead>
               <tr>
-                <th className={TH}></th>
-                <th className={TH}>المصدر/الحملة</th>
-                <th className={TH}>الحالة</th>
-                <th className={TH}>الصرف</th>
-                <th className={TH}>الإيراد</th>
-                <th className={TH}>ROAS</th>
-                <th className={TH}>Leads</th>
-                <th className={TH}>تحويلات</th>
-                <th className={TH}>CAC</th>
-                <th className={TH}>الربح</th>
+                <th>الحملة / المصدر</th>
+                <th>الحالة</th>
+                <th>الصرف</th>
+                <th>الإيراد</th>
+                <th>ROAS</th>
+                <th>Leads</th>
+                <th>تحويلات</th>
+                <th>CAC</th>
+                <th>الربح</th>
+                <th />
               </tr>
             </thead>
             <tbody>
-              {CAMPAIGNS.map((row) => (
+              {sorted.map((row) => (
                 <tr key={row.name}>
-                  <td className={TD}>
-                    <ChevronLeft className="size-4 text-gray-400" />
+                  <td className="mkt-title">
+                    {row.name} <SourceBadge source={row.source} />
+                    <span className={cn("mkt-srcline", !row.linked && "warn")}>
+                      {row.linked ? `⟳ ${row.account} · مزامنة تلقائية` : `⚠ ${row.account} · غير مربوط`}
+                    </span>
                   </td>
-                  <td className={TD}>
-                    <div className="flex items-center gap-2 mb-1">
-                      <SourceBadge source={row.source} />
-                      <span className="font-semibold text-gray-900">{row.name}</span>
-                    </div>
-                    <p
-                      className={cn(
-                        "text-11 flex items-center gap-1",
-                        row.linked ? "text-gray-400" : "text-red-600"
-                      )}
-                    >
-                      {row.linked ? (
-                        <>
-                          مزامنة تلقائية · {row.account}
-                          <ExternalLink className="size-3" />
-                        </>
-                      ) : (
-                        <>
-                          {row.account}
-                          <AlertTriangle className="size-3" />
-                          غير مربوط
-                        </>
-                      )}
-                    </p>
-                  </td>
-                  <td className={TD}>
+                  <td>
                     <StatusDot status={row.status} />
                   </td>
-                  <td className={cn(TD, "tabular-nums")}>{row.spend.toLocaleString("en-US")}ريال</td>
-                  <td className={cn(TD, "tabular-nums")}>{row.revenue.toLocaleString("en-US")}ريال</td>
-                  <td className={cn(TD, "font-bold text-green-700 tabular-nums")}>{row.roas}</td>
-                  <td className={cn(TD, "tabular-nums")}>{row.leads}</td>
-                  <td className={cn(TD, "tabular-nums")}>{row.conversions}</td>
-                  <td className={cn(TD, "tabular-nums")}>{row.cac}ريال</td>
-                  <td
-                    className={cn(
-                      TD,
-                      "font-bold tabular-nums",
-                      row.profit.includes("-") ? "text-red-600" : "text-green-700"
-                    )}
-                  >
-                    {row.profit}
+                  <td>{row.spend.toLocaleString("en-US")} ﷼</td>
+                  <td>{row.revenue.toLocaleString("en-US")} ﷼</td>
+                  <td>
+                    <RoasChip
+                      value={formatRoas(row.roas)}
+                      numeric={parseFloat(String(row.roas).replace(/[^\d.]/g, ""))}
+                    />
+                  </td>
+                  <td>{row.leads}</td>
+                  <td>{row.conversions}</td>
+                  <td>{row.cac} ﷼</td>
+                  <td className={row.profit.includes("-") ? "mk-neg" : "mk-pos"}>
+                    {formatProfit(row.profit)}
+                  </td>
+                  <td>
+                    <span className="mk-arrow">←</span>
                   </td>
                 </tr>
               ))}

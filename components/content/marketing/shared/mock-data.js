@@ -8,25 +8,25 @@ export const MARKETING_TABS = [
 ];
 
 export const DATE_RANGE_LABEL = "آخر 30 يومًا · حتى 24/07";
-export const SCOPE_BREADCRUMB = "الحملات · المدونة · SEO · ROI";
+export const SCOPE_BREADCRUMB = "ROI · الحملات · SEO · المدونة · التقارير · البكسلات";
 
 /* ---------------- Overview ---------------- */
 
 export const OVERVIEW_ROAS = {
-  value: "x2.28",
-  hint: "لكل 1 ريال صرف على الإعلانات، رجع 2.28 ريال إيرادًا مُسنَدًا",
-  netProfit: "89,300+",
-  attributedRevenue: "158,800",
-  totalSpend: "69,500",
+  value: "2.28×",
+  hintParts: { spend: "1 ﷼", return: "2.28 ﷼" },
+  netProfit: "+89,300 ﷼",
+  attributedRevenue: "158,800 ﷼",
+  totalSpend: "69,500 ﷼",
 };
 
 export const OVERVIEW_STATS = [
-  { value: "125 ريال", label: "تكلفة العميل CAC" },
-  { value: "1.4%", label: "معدل التحويل زائر←عميل" },
-  { value: "868", label: "عملاء دفعوا" },
-  { value: "868", label: "طلبات من التسويق" },
-  { value: "18,600", label: "زيارات التطبيق", trend: { direction: "up", value: "15%" } },
-  { value: "42,800", label: "زيارات الموقع", trend: { direction: "up", value: "9%" } },
+  { value: "42,800", label: "زيارات الموقع", tone: "b", trend: { direction: "up", value: "9%" } },
+  { value: "18,600", label: "زيارات التطبيق", tone: "b", trend: { direction: "up", value: "15%" } },
+  { value: "868", label: "طلبات من التسويق", tone: "e" },
+  { value: "868", label: "عملاء دفعوا", tone: "g" },
+  { value: "1.4%", label: "معدل التحويل زائر→عميل" },
+  { value: "125 ﷼", label: "تكلفة العميل CAC", tone: "y" },
 ];
 
 export const CHANNEL_SPEND_REVENUE = [
@@ -80,14 +80,14 @@ export const BEST_CAMPAIGN = {
   title: "قوقل – إعادة الاستهداف",
   source: "قوقل",
   roas: "x3.7",
-  profitLabel: "ربح 16,500 ريال",
+  profitLabel: "ربح 16,500 ﷼",
 };
 
 export const WORST_CAMPAIGN = {
   title: "إكس (تويتر) – ترويج",
   source: "إكس",
   roas: "x0.84",
-  profitLabel: "خسارة 900 ريال",
+  profitLabel: "خسارة 900 ﷼",
 };
 
 /* ---------------- Campaigns ---------------- */
@@ -101,11 +101,11 @@ export const SYNC_PLATFORMS = [
 ];
 
 export const CAMPAIGN_STATS = [
-  { value: "89,300+ريال", label: "ربح صافي" },
-  { value: "x2.28", label: "ROAS عام" },
-  { value: "158,800 ريال", label: "الإيراد" },
-  { value: "69,500 ريال", label: "الصرف" },
-  { value: "4", label: "حملات نشطة" },
+  { value: "4", label: "حملات نشطة", tone: "g" },
+  { value: "69,500 ﷼", label: "الصرف", tone: "y" },
+  { value: "158,800 ﷼", label: "الإيراد", tone: "e" },
+  { value: "2.28×", label: "ROAS عام", tone: "b" },
+  { value: "+89,300 ﷼", label: "ربح صافٍ", tone: "g" },
 ];
 
 export const CAMPAIGNS = [
@@ -212,12 +212,12 @@ export const CAMPAIGNS = [
 /* ---------------- SEO ---------------- */
 
 export const SEO_KEYWORD_STATS = [
-  { value: "90,850 ريال", label: "إيراد عضوي" },
-  { value: "13,840", label: "زيارات عضوية" },
-  { value: "2", label: "انخفضت", tone: "red" },
-  { value: "6", label: "ارتفعت", tone: "green" },
-  { value: "4.8", label: "متوسط الترتيب" },
-  { value: "10", label: "كلمات مستهدفة" },
+  { value: "10", label: "كلمات مستهدفة", tone: "b" },
+  { value: "4.8", label: "متوسط الترتيب", tone: "g" },
+  { value: "6", label: "ارتفعت", tone: "e" },
+  { value: "2", label: "انخفضت", tone: "r" },
+  { value: "13,840", label: "نقرات عضوية" },
+  { value: "90,850 ﷼", label: "إيراد عضوي", tone: "g" },
 ];
 
 export const SEO_KEYWORDS = [
@@ -238,10 +238,10 @@ export const SEO_CRAWL_META = {
 };
 
 export const SEO_CRAWL_STATS = [
-  { value: "33", label: "مشاكل On-page" },
-  { value: "11", label: "صفحات/روابط معطلة" },
-  { value: "121", label: "صفحات سليمة" },
-  { value: "148", label: "صفحات مفهرسة" },
+  { value: "148", label: "صفحات مفحوصة", tone: "b" },
+  { value: "121", label: "صفحات سليمة", tone: "g" },
+  { value: "11", label: "روابط/صفحات معطلة", tone: "r" },
+  { value: "33", label: "مشاكل On-page", tone: "y" },
 ];
 
 export const SEO_CRAWL_DETAILS = [
@@ -274,9 +274,9 @@ export const SEO_PAGE_ISSUES = [
 /* ---------------- Content management ---------------- */
 
 export const SERVICE_PAGE_STATS = [
-  { value: "1", label: "مسودات", tone: "amber" },
-  { value: "2", label: "منشورة", tone: "green" },
-  { value: "3", label: "إجمالي الصفحات" },
+  { value: "3", label: "إجمالي الصفحات", tone: "b" },
+  { value: "2", label: "منشورة", tone: "g" },
+  { value: "1", label: "مسودات", tone: "y" },
 ];
 
 export const SERVICE_PAGES = [
@@ -286,12 +286,12 @@ export const SERVICE_PAGES = [
 ];
 
 export const ARTICLE_STATS = [
-  { value: "57,200 ريال", label: "إيراد مُسند" },
-  { value: "14,430", label: "مشاهدات" },
+  { value: "6", label: "إجمالي المقالات", tone: "b" },
+  { value: "4", label: "منشورة", tone: "g" },
+  { value: "1", label: "مجدولة", tone: "y" },
   { value: "0", label: "مؤرشفة" },
-  { value: "1", label: "مجدولة", tone: "amber" },
-  { value: "4", label: "منشورة", tone: "green" },
-  { value: "6", label: "إجمالي المقالات" },
+  { value: "14,430", label: "مشاهدات" },
+  { value: "57,200 ﷼", label: "إيراد مُسنَد", tone: "g" },
 ];
 
 export const ARTICLE_CATEGORIES = [
@@ -405,11 +405,11 @@ export const PERIOD_COMPARISON = {
 };
 
 export const REPORT_STATS = [
-  { value: "x3.59", label: "إيراد لكل ريال تسويق" },
-  { value: "249,650ريال", label: "إجمالي الإيراد" },
-  { value: "69,500ريال", label: "تكلفة التسويق" },
-  { value: "203", label: "عملاء عائدون", trend: { direction: "up", value: "19%" } },
-  { value: "612", label: "عملاء جدد", trend: { direction: "up", value: "12%" } },
+  { value: "612", label: "عملاء جدد", tone: "e", trend: { direction: "up", value: "12%" } },
+  { value: "203", label: "عملاء عائدون", tone: "b", trend: { direction: "up", value: "19%" } },
+  { value: "69,500 ﷼", label: "تكلفة التسويق", tone: "y" },
+  { value: "249,650 ﷼", label: "إجمالي الإيراد", tone: "g" },
+  { value: "3.59×", label: "إيراد لكل ريال تسويق", tone: "g" },
 ];
 
 export const REPORT_PERIODS = [
@@ -435,10 +435,10 @@ export const REPORT_CHANNEL_TABLE = {
 /* ---------------- Linking & pixels ---------------- */
 
 export const PIXELS_STATS = [
-  { value: "5/4", label: "حسابات إعلانية" },
-  { value: "5", label: "تتبع تحويلات" },
-  { value: "96,770", label: "أحداث متتبعة" },
-  { value: "8/7", label: "مصادر مربوطة" },
+  { value: "7 / 8", label: "مصادر مربوطة", tone: "g" },
+  { value: "96,770", label: "أحداث متتبعة", tone: "b" },
+  { value: "5", label: "تتبّع تحويلات", tone: "e" },
+  { value: "4 / 5", label: "حسابات إعلانية", tone: "y" },
 ];
 
 export const AD_PIXELS = [
