@@ -1,0 +1,172 @@
+import { axiosInstance } from "@/src/utils/axios";
+import { postOrderStatus, postReturnContractStatusForOrder } from "@/src/lib/order-status-api";
+import { RETURN_CONTRACT_STATUS_ID } from "./status";
+import { getOrderUuid, getRefundItemActionKey } from "./ids";
+import { findRefundItemForOrder, resolveRefundIdForAction } from "./lookup";
+
+export const REFUNDS_CONTRACTS_API = "/admin/analytics/refunds/contracts";
+
+export function extractRefundItemsFromApi(root) {
+  if (!root) return [];
+  if (Array.isArray(root)) return root;
+  const payload = root?.data ?? root;
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload?.contracts)) return payload.contracts;
+  if (Array.isArray(payload?.items)) return payload.items;
+  if (Array.isArray(root?.contracts)) return root.contracts;
+  if (Array.isArray(root?.items)) return root.items;
+  return [];
+}
+
+/** Summary + pagination from GET /admin/analytics/refunds/contracts. */
+export function extractRefundsContractsPayload(root) {
+  const payload = root?.data ?? root ?? {};
+  const summary = payload?.summary ?? {};
+  const managementApproval = summary?.management_approval ?? payload?.management_approval ?? null;
+  const contractStatuses = summary?.contract_statuses ?? payload?.contract_statuses ?? [];
+
+  return {
+    period: payload?.period ?? null,
+    labelAr: payload?.label_ar ?? null,
+    contracts: extractRefundItemsFromApi(root),
+    pagination: payload?.pagination ?? root?.pagination ?? null,
+    summary,
+    managementApproval,
+    contractStatuses,
+  };
+}
+
+export async function ensureReturnContractStatus(orderId, returnStatusId = RETURN_CONTRACT_STATUS_ID) {
+  if (!orderId) {
+    throw new Error("تعذر تحديد الطلب لتغيير الحالة");
+  }
+
+  const response = await postOrderStatus(orderId, { statusId: returnStatusId });
+
+  if (response?.data?.success === false) {
+    throw new Error(response?.data?.message || "تعذر تغيير حالة العقد إلى استرجاع");
+  }
+
+  return response;
+}
+
+/**
+ * Force contract status = 2 (استرجاع) on every known order identifier.
+ * Backend refundable-contracts validates that status.
+ */
+export async function ensureReturnContractStatusForOrder(
+  order,
+  orderId,
+  returnStatusId = RETURN_CONTRACT_STATUS_ID
+) {
+  const candidates = [
+    order?.uuid,
+    orderId,
+    order?.id,
+    order?.contract_id,
+    order?.contract_summary?.uuid,
+    order?.contract_summary?.id,
+  ].filter((value, index, arr) => {
+    if (value == null || value === "") return false;
+    return arr.findIndex((item) => String(item) === String(value)) === index;
+  });
+
+  if (!candidates.length) {
+    throw new Error("تعذر تحديد الطلب لتغيير الحالة");
+  }
+
+  let lastError = null;
+
+  for (const candidate of candidates) {
+    try {
+      await ensureReturnContractStatus(candidate, returnStatusId);
+      return candidate;
+    } catch (error) {
+      lastError = error;
+    }
+  }
+
+  throw lastError || new Error("تعذر تغيير حالة العقد إلى استرجاع");
+}
+
+export async function fetchAllRefundContracts() {
+  let page = 1;
+  let allItems = [];
+  let lastPage = 1;
+
+  try {
+    do {
+      // Analytics refunds can 401 for roles that may view return-orders but not
+      // analytics — never wipe the session for this enrichment lookup.
+      const res = await axiosInstance.get(`${REFUNDS_CONTRACTS_API}?created_at=all&page=${page}`, {
+        skipAuthLogout: true,
+      });
+      const { contracts, pagination } = extractRefundsContractsPayload(res.data);
+      allItems = allItems.concat(contracts);
+      lastPage = pagination?.last_page ?? page;
+      page += 1;
+    } while (page <= lastPage && page <= 50);
+  } catch {
+    return allItems;
+  }
+
+  return allItems;
+}
+
+export async function fetchRefundContractIdForOrder(order, refundsLookup, options = {}) {
+  const { allRefunds = [] } = options;
+
+  const syncKey = resolveRefundIdForAction(order, null, refundsLookup);
+  if (syncKey) return syncKey;
+
+  if (allRefunds.length > 0) {
+    const found = findRefundItemForOrder(order, allRefunds);
+    const key = getRefundItemActionKey(found);
+    if (key) return String(key);
+  }
+
+  const orderUuid = getOrderUuid(order);
+  return orderUuid ? String(orderUuid) : null;
+}
+
+export async function resolveRefundIdForActionAsync(order, refund, refundsLookup, options = {}) {
+  const syncId = resolveRefundIdForAction(order, refund, refundsLookup);
+  if (syncId) return syncId;
+  return fetchRefundContractIdForOrder(order, refundsLookup, options);
+}
+
+export async function updateRefundContract(refundKey, body, orderContext = {}) {
+  const response = await axiosInstance.post(
+    `/admin/analytics/refunds/contracts/${refundKey}`,
+    {
+      admin_confirmed: body.admin_confirmed,
+      refund_amount: body.refund_amount,
+      notes: body.notes ?? null,
+    },
+    // Same 401-for-permission-reasons case as fetchAllRefundContracts above —
+    // never wipe the session for this endpoint.
+    { skipAuthLogout: true }
+  );
+
+  if (response?.data?.success === false) {
+    return response;
+  }
+
+  if (body?.admin_confirmed === true) {
+    const order = {
+      ...(orderContext.refund ?? {}),
+      ...(orderContext.order ?? {}),
+    };
+    const orderId =
+      orderContext.orderId ??
+      order?.id ??
+      order?.uuid ??
+      order?.contract_id ??
+      order?.contractId ??
+      order?.orderId ??
+      order?.order_id;
+    await postReturnContractStatusForOrder(order, orderId, true);
+  }
+
+  return response;
+}
