@@ -2,9 +2,13 @@
 
 import Loader from "@/components/home/loader";
 
-import { useUnwrapPageProps } from "@/src/hooks/use-unwrap-page-props";
+import {
+  useUnwrapPageProps
+} from "@/src/hooks/use-unwrap-page-props";
 import ContentPageForm from "@/components/analysis/settings/terms/content-page-form";
-import { SettingsContentCard, SettingsListHeader } from "@/components/SystemSettings/shared";
+import { SettingsContentCard, SettingsListHeader,
+  SettingsPageShell,
+} from "@/components/SystemSettings/shared";
 import { axiosInstance } from "@/src/utils/axios";
 import { useQuery } from "@tanstack/react-query";
 
@@ -19,7 +23,7 @@ export default function PrivacyPage(props) {
   const privacy = responseData?.data;
 
   return (
-    <div className="flex flex-col gap-5 min-h-full" dir="rtl">
+    <SettingsPageShell>
       <SettingsListHeader title="سياسة الخصوصية" subtitle="تحرير وتحديث محتوى سياسة الخصوصية" />
 
       {isLoading ? (
@@ -37,6 +41,6 @@ export default function PrivacyPage(props) {
           />
         </SettingsContentCard>
       )}
-    </div>
+    </SettingsPageShell>
   );
 }

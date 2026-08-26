@@ -28,6 +28,7 @@ import { LuLogOut } from "react-icons/lu";
 import { useSidebarStore } from "@/src/stores/sidebar-store";
 import { useUserStore } from "@/src/stores/user-store";
 import { useUnreceivedOrdersWatcher } from "@/src/hooks/use-unreceived-orders-watcher";
+import { getWorkPeriodLabel } from "@/components/roles-and-employees/shared";
 import { useIsDark, useToggleTheme } from "@/src/hooks/useThemeMode";
 import { toast } from "sonner";
 
@@ -115,7 +116,12 @@ export default function SideData() {
   const panelWidth = EXPANDED_WIDTH;
 
   const userName = user?.name || 'مستخدم';
-  const userRole = user?.role_relation?.name || user?.role?.name || '—';
+  const userRole =
+    user?.role_title ||
+    user?.role_relation?.name ||
+    user?.role?.name ||
+    '—';
+  const userWorkPeriod = user?.work_period ? getWorkPeriodLabel(user.work_period) : null;
   const userInitial = userName.trim().charAt(0) || 'م';
 
   const openProfile = () => {
@@ -252,46 +258,56 @@ export default function SideData() {
                   </button>
                 </div>
               ) : (
-                <div className="rounded-2xl bg-white/[0.08] p-2.5 ring-1 ring-white/10">
-                  <div className="flex items-center gap-2.5">
-                    <button
-                      type="button"
-                      onClick={openProfile}
-                      className="flex min-w-0 flex-1 items-center gap-2.5 text-start rounded-xl p-1 -m-1 transition-colors hover:bg-white/[0.06]"
-                    >
-                      <span className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-brand-accent/20 text-sm font-bold text-brand-accent ring-2 ring-brand-accent/25">
-                        <Image
-                          src={user?.profile_image || defaultUser}
-                          alt=""
-                          width={44}
-                          height={44}
-                          className="h-full w-full object-cover"
-                        />
-                      </span>
-                      <span className="min-w-0">
-                        <span className="block truncate text-13 font-semibold text-sidebar-foreground">
+                <div className="relative rounded-2xl bg-white/[0.08] p-2.5 pe-11 ring-1 ring-white/10">
+                  <button
+                    type="button"
+                    onClick={openProfile}
+                    className="flex w-full min-w-0 items-center gap-2.5 rounded-xl p-1 -m-1 text-start transition-colors hover:bg-white/[0.06]"
+                  >
+                    <span className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-brand-accent/20 text-sm font-bold text-brand-accent ring-2 ring-brand-accent/25">
+                      <Image
+                        src={user?.profile_image || defaultUser}
+                        alt=""
+                        width={44}
+                        height={44}
+                        className="h-full w-full object-cover"
+                      />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="flex min-w-0 items-center gap-1.5">
+                        <span className="truncate text-13 font-semibold text-sidebar-foreground">
                           {userName}
                         </span>
-                        <span className="mt-0.5 block truncate text-11 text-sidebar-foreground/55">
-                          صلاحية: {userRole}
-                        </span>
+                        {userRole && userRole !== '—' ? (
+                          <span
+                            title={userRole}
+                            className="shrink-0 rounded bg-brand-accent/20 px-1 py-px text-[8px] font-bold leading-tight text-brand-accent ring-1 ring-brand-accent/25"
+                          >
+                            {userRole}
+                          </span>
+                        ) : null}
                       </span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => logout()}
-                      disabled={logoutLoading}
-                      title="تسجيل الخروج"
-                      aria-label="تسجيل الخروج"
-                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-sidebar-foreground/70 transition-colors hover:bg-white/10 hover:text-sidebar-foreground disabled:opacity-60"
-                    >
-                      {logoutLoading ? (
-                        <Loader2 className="size-4 animate-spin" />
-                      ) : (
-                        <LuLogOut className="size-4 shrink-0" />
-                      )}
-                    </button>
-                  </div>
+                      {userWorkPeriod ? (
+                        <span className="mt-0.5 block truncate text-11 leading-snug text-sidebar-foreground/55">
+                          {userWorkPeriod}
+                        </span>
+                      ) : null}
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => logout()}
+                    disabled={logoutLoading}
+                    title="تسجيل الخروج"
+                    aria-label="تسجيل الخروج"
+                    className="absolute end-2.5 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-lg text-sidebar-foreground/70 transition-colors hover:bg-white/10 hover:text-sidebar-foreground disabled:opacity-60"
+                  >
+                    {logoutLoading ? (
+                      <Loader2 className="size-4 animate-spin" />
+                    ) : (
+                      <LuLogOut className="size-4 shrink-0" />
+                    )}
+                  </button>
                 </div>
               )}
             </div>

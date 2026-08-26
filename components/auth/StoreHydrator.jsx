@@ -2,24 +2,24 @@
 
 import { useEffect } from 'react';
 import { useUserStore } from '@/src/stores/user-store';
+import { bootstrapAuthSession } from '@/src/utils/axios';
 
 export default function StoreHydrator() {
   useEffect(() => {
-    const finishHydration = () => {
-      useUserStore.setState({ _hasHydrated: true });
-    };
+    let cancelled = false;
 
-    const unsubFinish = useUserStore.persist.onFinishHydration(finishHydration);
-
-    if (useUserStore.persist.hasHydrated()) {
-      finishHydration();
-      return unsubFinish;
-    }
-
-    void Promise.resolve(useUserStore.persist.rehydrate()).finally(finishHydration);
+    (async () => {
+      useUserStore.getState().hydrate();
+      await bootstrapAuthSession();
+      // Re-read: bootstrap may have refreshed (or invalidated) the session.
+      if (!cancelled) {
+        useUserStore.getState().hydrate();
+        useUserStore.setState({ _hasHydrated: true });
+      }
+    })();
 
     return () => {
-      unsubFinish();
+      cancelled = true;
     };
   }, []);
 

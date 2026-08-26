@@ -28,6 +28,35 @@ export function getInitials(name) {
   return trimmed[0].toUpperCase();
 }
 
+export const WORK_PERIOD_LABELS = {
+  morning: "وردية الصباح",
+  evening: "وردية المساء",
+};
+
+export function getWorkPeriodLabel(workPeriod) {
+  return WORK_PERIOD_LABELS[workPeriod] || "غير محدد";
+}
+
+export function WorkPeriodBadge({ workPeriod, className }) {
+  const isEvening = workPeriod === "evening";
+  const colors = isEvening
+    ? { bg: "bg-[#EDE9FE]", text: "text-[#6D28D9]" }
+    : { bg: "bg-[#FEF3C7]", text: "text-[#B45309]" };
+
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap",
+        colors.bg,
+        colors.text,
+        className
+      )}
+    >
+      {getWorkPeriodLabel(workPeriod)}
+    </span>
+  );
+}
+
 export function RoleBadge({ role, colorIndex = 0, className }) {
   const colors = getRoleBadgeColor(colorIndex);
   return (

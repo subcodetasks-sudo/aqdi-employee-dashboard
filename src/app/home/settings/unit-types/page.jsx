@@ -3,11 +3,15 @@
 import { useUnwrapPageProps } from "@/src/hooks/use-unwrap-page-props";
 import AddNewTypeDialog from "@/components/analysis/settings/unit-types/add-new-type-dialog";
 import EditTypeUnitDialog from "@/components/analysis/settings/unit-types/edit-type-unit-dialog";
+import PermissionGate from "@/components/auth/PermissionGate";
+import { PERMISSION_SECTIONS } from "@/src/lib/permissions";
 import {
   SETTINGS_DELETE_TRIGGER_CLASS,
+  SettingsActions,
   SettingsEmptyRow,
   SettingsLoadingRows,
   SettingsListHeader,
+  SettingsPageShell,
   SettingsTable,
   SettingsTableRow,
   SettingsTd,
@@ -21,11 +25,7 @@ import { axiosInstance } from "@/src/utils/axios";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-const HEADERS = [
-  "الاسم",
-  { label: "تصنيف الوحدة", className: "text-center" },
-  { label: "الإجراءات", className: "text-left" },
-];
+const HEADERS = ["الاسم", "تصنيف الوحدة", "الإجراءات"];
 
 export default function UnitTypesPage(props) {
   useUnwrapPageProps(props?.params, props?.searchParams);
@@ -49,8 +49,16 @@ export default function UnitTypesPage(props) {
   });
 
   return (
-    <div className="flex flex-col gap-5 min-h-full" dir="rtl">
-      <SettingsListHeader title="أنواع الوحدات" action={<AddNewTypeDialog />} />
+    <SettingsPageShell>
+      <SettingsListHeader
+        title="أنواع الوحدات"
+        subtitle="قائمة بقيم"
+        action={
+          <PermissionGate section={PERMISSION_SECTIONS.property_reference} action="create">
+            <AddNewTypeDialog />
+          </PermissionGate>
+        }
+      />
 
       <SettingsTable headers={HEADERS} minWidth="640px">
         {isLoading ? (
@@ -61,26 +69,28 @@ export default function UnitTypesPage(props) {
           data.map((item) => (
             <SettingsTableRow key={item.id}>
               <SettingsTd>{item.name_ar}</SettingsTd>
-              <SettingsTd className="text-center">
-                {contractTypeLabel(item.contract_type)}
-              </SettingsTd>
+              <SettingsTd>{contractTypeLabel(item.contract_type)}</SettingsTd>
               <SettingsTd>
-                <div className="flex items-center justify-end gap-2">
-                  <EditTypeUnitDialog unit={item} />
-                  <button
-                    type="button"
-                    disabled={isPending}
-                    onClick={() => deleteItem(item.id)}
-                    className={SETTINGS_DELETE_TRIGGER_CLASS}
-                  >
-                    حذف
-                  </button>
-                </div>
+                <SettingsActions>
+                  <PermissionGate section={PERMISSION_SECTIONS.property_reference} action="edit">
+                    <EditTypeUnitDialog unit={item} />
+                  </PermissionGate>
+                  <PermissionGate section={PERMISSION_SECTIONS.property_reference} action="delete">
+                    <button
+                      type="button"
+                      disabled={isPending}
+                      onClick={() => deleteItem(item.id)}
+                      className={SETTINGS_DELETE_TRIGGER_CLASS}
+                    >
+                      حذف
+                    </button>
+                  </PermissionGate>
+                </SettingsActions>
               </SettingsTd>
             </SettingsTableRow>
           ))
         )}
       </SettingsTable>
-    </div>
+    </SettingsPageShell>
   );
 }

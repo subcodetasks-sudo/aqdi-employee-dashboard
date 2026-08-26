@@ -1,9 +1,13 @@
 "use client";
 
-import { useUnwrapPageProps } from "@/src/hooks/use-unwrap-page-props";
+import {
+  useUnwrapPageProps
+} from "@/src/hooks/use-unwrap-page-props";
 import { useEffect, useState } from "react";
 import TenantRoleFormDialog from "@/components/analysis/settings/tenant-roles/tenant-role-form-dialog";
 import DeleteTenantRoleDialog from "@/components/analysis/settings/tenant-roles/delete-tenant-role-dialog";
+import PermissionGate from "@/components/auth/PermissionGate";
+import { PERMISSION_SECTIONS } from "@/src/lib/permissions";
 import {
   SettingsEmptyRow,
   SettingsLoadingRows,
@@ -12,6 +16,7 @@ import {
   SettingsTable,
   SettingsTableRow,
   SettingsTd,
+  SettingsPageShell,
 } from "@/components/SystemSettings/shared";
 import { Input } from "@/components/ui/input";
 import { useAdminTenantRoles } from "@/src/hooks/use-admin-tenant-roles";
@@ -49,8 +54,15 @@ export default function TenantRolesPage(props) {
   });
 
   return (
-    <div className="flex flex-col gap-5 min-h-full" dir="rtl">
-      <SettingsListHeader title="صلاحيات المستأجر" action={<TenantRoleFormDialog />} />
+    <SettingsPageShell>
+      <SettingsListHeader
+        title="صلاحيات المستأجر"
+        action={
+          <PermissionGate section={PERMISSION_SECTIONS.tenant_roles} action="create">
+            <TenantRoleFormDialog />
+          </PermissionGate>
+        }
+      />
 
       <div className="relative max-w-md">
         <Search className="absolute right-3 top-1/2 size-4 -translate-y-1/2 text-ink-placeholder" />
@@ -106,8 +118,12 @@ export default function TenantRolesPage(props) {
               </SettingsTd>
               <SettingsTd>
                 <div className="flex items-center justify-end gap-2">
-                  <TenantRoleFormDialog role={role} />
-                  <DeleteTenantRoleDialog role={role} />
+                  <PermissionGate section={PERMISSION_SECTIONS.tenant_roles} action="edit">
+                    <TenantRoleFormDialog role={role} />
+                  </PermissionGate>
+                  <PermissionGate section={PERMISSION_SECTIONS.tenant_roles} action="delete">
+                    <DeleteTenantRoleDialog role={role} />
+                  </PermissionGate>
                 </div>
               </SettingsTd>
             </SettingsTableRow>
@@ -120,6 +136,6 @@ export default function TenantRolesPage(props) {
         lastPage={pagination?.last_page}
         onPageChange={setCurrentPage}
       />
-    </div>
+    </SettingsPageShell>
   );
 }

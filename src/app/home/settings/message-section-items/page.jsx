@@ -1,7 +1,11 @@
 "use client";
 
-import { useUnwrapPageProps } from "@/src/hooks/use-unwrap-page-props";
+import {
+  useUnwrapPageProps
+} from "@/src/hooks/use-unwrap-page-props";
 import AddNewSectionItemDialog from "@/components/analysis/settings/message-section-items/add-section-item-dialog";
+import PermissionGate from "@/components/auth/PermissionGate";
+import { PERMISSION_SECTIONS } from "@/src/lib/permissions";
 import {
   SETTINGS_DELETE_TRIGGER_CLASS,
   SettingsEmptyRow,
@@ -10,6 +14,7 @@ import {
   SettingsTable,
   SettingsTableRow,
   SettingsTd,
+  SettingsPageShell,
 } from "@/components/SystemSettings/shared";
 import {
   audienceLabel,
@@ -62,8 +67,15 @@ export default function MessageSectionItemsPage(props) {
   });
 
   return (
-    <div className="flex flex-col gap-5 min-h-full" dir="rtl">
-      <SettingsListHeader title="بنود أقسام الرسائل" action={<AddNewSectionItemDialog isEdit={false} />} />
+    <SettingsPageShell>
+      <SettingsListHeader
+        title="بنود أقسام الرسائل"
+        action={
+          <PermissionGate section={PERMISSION_SECTIONS.message_alerts} action="create">
+            <AddNewSectionItemDialog isEdit={false} />
+          </PermissionGate>
+        }
+      />
 
       <SettingsTable headers={HEADERS} minWidth="720px">
         {isLoading ? (
@@ -80,21 +92,25 @@ export default function MessageSectionItemsPage(props) {
               </SettingsTd>
               <SettingsTd>
                 <div className="flex items-center justify-end gap-2">
-                  <AddNewSectionItemDialog isEdit item={item} defaultType={item.type} />
-                  <button
-                    type="button"
-                    disabled={deleteMutation.isPending}
-                    onClick={() => deleteMutation.mutate(item.id)}
-                    className={SETTINGS_DELETE_TRIGGER_CLASS}
-                  >
-                    حذف
-                  </button>
+                  <PermissionGate section={PERMISSION_SECTIONS.message_alerts} action="edit">
+                    <AddNewSectionItemDialog isEdit item={item} defaultType={item.type} />
+                  </PermissionGate>
+                  <PermissionGate section={PERMISSION_SECTIONS.message_alerts} action="delete">
+                    <button
+                      type="button"
+                      disabled={deleteMutation.isPending}
+                      onClick={() => deleteMutation.mutate(item.id)}
+                      className={SETTINGS_DELETE_TRIGGER_CLASS}
+                    >
+                      حذف
+                    </button>
+                  </PermissionGate>
                 </div>
               </SettingsTd>
             </SettingsTableRow>
           ))
         )}
       </SettingsTable>
-    </div>
+    </SettingsPageShell>
   );
 }

@@ -1,8 +1,12 @@
 "use client";
 
-import { useUnwrapPageProps } from "@/src/hooks/use-unwrap-page-props";
+import {
+  useUnwrapPageProps
+} from "@/src/hooks/use-unwrap-page-props";
 import AddPaymentTypeDialog from "@/components/analysis/settings/payment-types/add-payment-type-dialog";
 import EditPaymentTypeDialog from "@/components/analysis/settings/payment-types/edit-payment-type-dialog";
+import PermissionGate from "@/components/auth/PermissionGate";
+import { PERMISSION_SECTIONS } from "@/src/lib/permissions";
 import {
   SettingsEmptyRow,
   SettingsLoadingRows,
@@ -10,6 +14,7 @@ import {
   SettingsTable,
   SettingsTableRow,
   SettingsTd,
+  SettingsPageShell,
 } from "@/components/SystemSettings/shared";
 import {
   contractTypeLabel,
@@ -33,8 +38,15 @@ export default function PaymentTypesPage(props) {
   });
 
   return (
-    <div className="flex flex-col gap-5 min-h-full" dir="rtl">
-      <SettingsListHeader title="طرق الدفع" action={<AddPaymentTypeDialog />} />
+    <SettingsPageShell>
+      <SettingsListHeader
+        title="طرق الدفع"
+        action={
+          <PermissionGate section={PERMISSION_SECTIONS.app_content} action="create">
+            <AddPaymentTypeDialog />
+          </PermissionGate>
+        }
+      />
 
       <SettingsTable headers={HEADERS} minWidth="640px">
         {isLoading ? (
@@ -59,13 +71,15 @@ export default function PaymentTypesPage(props) {
               </SettingsTd>
               <SettingsTd>
                 <div className="flex items-center justify-end gap-2">
-                  <EditPaymentTypeDialog paymentType={item} />
+                  <PermissionGate section={PERMISSION_SECTIONS.app_content} action="edit">
+                    <EditPaymentTypeDialog paymentType={item} />
+                  </PermissionGate>
                 </div>
               </SettingsTd>
             </SettingsTableRow>
           ))
         )}
       </SettingsTable>
-    </div>
+    </SettingsPageShell>
   );
 }

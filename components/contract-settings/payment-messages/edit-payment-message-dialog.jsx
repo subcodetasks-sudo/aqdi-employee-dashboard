@@ -6,6 +6,7 @@ import {
   Dialog,
   DialogContent,
   DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import { axiosInstance } from "@/src/utils/axios";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -22,7 +23,11 @@ import {
 } from "@/src/lib/payment-messages";
 import PaymentMessageFormFields from "./payment-message-form-fields";
 
-export default function EditPaymentMessageDialog({ item, type, triggerVariant = "edit" }) {
+export default function EditPaymentMessageDialog({
+  item,
+  type,
+  triggerVariant = "edit",
+}) {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState(emptyPaymentMessageForm);
   const queryClient = useQueryClient();
@@ -52,7 +57,9 @@ export default function EditPaymentMessageDialog({ item, type, triggerVariant = 
       queryClient.invalidateQueries({ queryKey: [PAYMENT_MESSAGES_QUERY_KEY] });
     },
     onError: (error) => {
-      toast.error(error?.response?.data?.message || "حدث خطأ أثناء حفظ رسالة الدفع");
+      toast.error(
+        error?.response?.data?.message || "حدث خطأ أثناء حفظ رسالة الدفع"
+      );
     },
   });
 
@@ -72,8 +79,8 @@ export default function EditPaymentMessageDialog({ item, type, triggerVariant = 
         onClick={() => setOpen(true)}
         className={
           triggerVariant === "add"
-            ? "h-11 rounded-full border-dashed border-[#C4C4C4] bg-white px-5 font-bold text-[#616161] hover:border-brand-main hover:text-brand-main"
-            : "h-10 rounded-full border-0 bg-white/90 px-4 font-bold text-[#212121] shadow-sm hover:bg-white"
+            ? "h-10 rounded-xl border border-dashed border-[#C4C4C4] bg-white px-4 text-[13px] font-bold text-[#616161] hover:border-[#054D44] hover:text-[#054D44]"
+            : "h-9 rounded-xl border border-[#E6EBE9] bg-white px-3.5 text-[12px] font-bold text-[#054D44] shadow-none hover:bg-[#E8F5F1]"
         }
       >
         {triggerVariant === "add" ? (
@@ -89,37 +96,61 @@ export default function EditPaymentMessageDialog({ item, type, triggerVariant = 
         )}
       </Button>
 
-      <DialogContent closeButton={false} className="max-w-3xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <div className="flex items-center justify-between border-b border-[#F0F0F0] pb-5">
-            <div className="text-right">
-              <h2 className="text-xl font-black text-black">
+      <DialogContent
+        closeButton={false}
+        className="max-w-lg max-h-[90vh] gap-0 overflow-x-hidden overflow-y-auto rounded-2xl border-[#E6EBE9] p-0 shadow-[0_12px_40px_rgba(11,83,69,0.12)] sm:max-w-lg"
+      >
+        <DialogHeader className="space-y-0 border-b border-[#EEF1F0] px-5 py-4 text-right">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0 text-right">
+              <DialogTitle className="text-base font-black text-[#111827]">
                 {isEdit ? "تعديل" : "إضافة"} {meta?.label}
-              </h2>
-              <p className="mt-1 text-sm text-neutral-500">{meta?.description}</p>
+              </DialogTitle>
+              {meta?.description ? (
+                <p className="mt-1 text-[12px] font-medium text-[#6B7280]">
+                  {meta.description}
+                </p>
+              ) : null}
             </div>
-            <Button variant="ghost" type="button" onClick={() => setOpen(false)}>
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              className="shrink-0 rounded-full p-1.5 text-neutral-500 hover:bg-neutral-100"
+              aria-label="إغلاق"
+            >
               <X className="size-4" />
-            </Button>
+            </button>
           </div>
+        </DialogHeader>
 
+        <div className="min-w-0 max-w-full overflow-hidden px-5 py-4">
           <PaymentMessageFormFields form={form} onChange={setForm} />
+        </div>
 
+        <div className="flex items-center justify-end gap-2 border-t border-[#EEF1F0] px-5 py-3">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setOpen(false)}
+            className="h-10 rounded-xl border-[#054D44]/30 px-4 text-[13px] font-bold text-[#054D44] hover:bg-[#E8F5F1]"
+          >
+            إلغاء
+          </Button>
           <Button
             type="button"
             disabled={isPending}
             onClick={handleSubmit}
-            className="mx-auto mt-6 block h-12 min-w-[160px] rounded-2xl bg-brand-hover font-bold"
+            className="h-10 min-w-[96px] rounded-xl bg-[#054D44] px-5 text-[13px] font-bold text-white hover:bg-[#043F38]"
           >
             {isPending ? (
-              <Loader2 className="animate-spin" />
+              <Loader2 className="size-4 animate-spin" />
             ) : isEdit ? (
-              "حفظ التعديل"
+              "حفظ"
             ) : (
-              "إضافة الرسالة"
+              "إضافة"
             )}
           </Button>
-        </DialogHeader>
+        </div>
       </DialogContent>
     </Dialog>
   );

@@ -10,6 +10,9 @@ import AddNewEmployeeDialog from "./add-employee-dialog";
 import BlockEmployeeDialog from "./block-employee-dialog";
 import DeleteEmployeeDialog from "./delete-employee-dialog";
 import SendOrderSmsButton from "@/components/Orders/shared/send-order-sms-button";
+import { WorkPeriodBadge } from "@/components/roles-and-employees/shared";
+import PermissionGate from "@/components/auth/PermissionGate";
+import { PERMISSION_SECTIONS } from "@/src/lib/permissions";
 
 export default function EmployeeDetailsCard({ employee, readOnly = false }) {
   const formatDate = (dateString) => {
@@ -49,6 +52,9 @@ export default function EmployeeDetailsCard({ employee, readOnly = false }) {
           <p className="text-sm text-muted-foreground">
             {employee?.role || "موظف"}
           </p>
+          <div className="mt-2">
+            <WorkPeriodBadge workPeriod={employee?.work_period} />
+          </div>
 
           {employee?.phone && (
             <a
@@ -75,9 +81,15 @@ export default function EmployeeDetailsCard({ employee, readOnly = false }) {
           {/* Top Actions */}
           {!readOnly && (
             <div className="flex justify-end items-center gap-3">
-              <AddNewEmployeeDialog isEdit={true} employee={employee} />
-              <AddNoteDialog employee={employee} />
-              <AddSalaryDialog employee={employee} />
+              <PermissionGate section={PERMISSION_SECTIONS.employees} action="edit">
+                <AddNewEmployeeDialog isEdit={true} employee={employee} />
+              </PermissionGate>
+              <PermissionGate section={PERMISSION_SECTIONS.employees} action="edit">
+                <AddNoteDialog employee={employee} />
+              </PermissionGate>
+              <PermissionGate section={PERMISSION_SECTIONS.employee_salaries} action="create">
+                <AddSalaryDialog employee={employee} />
+              </PermissionGate>
             </div>
           )}
 
@@ -138,8 +150,12 @@ export default function EmployeeDetailsCard({ employee, readOnly = false }) {
 
           {!readOnly && (
             <div className="flex gap-3 mt-4 justify-end ">
-              <BlockEmployeeDialog employee={employee} />
-              <DeleteEmployeeDialog isSingle={true} employee={employee} />
+              <PermissionGate section={PERMISSION_SECTIONS.employees} action="edit">
+                <BlockEmployeeDialog employee={employee} />
+              </PermissionGate>
+              <PermissionGate section={PERMISSION_SECTIONS.employees} action="delete">
+                <DeleteEmployeeDialog isSingle={true} employee={employee} />
+              </PermissionGate>
             </div>
           )}
         </div>

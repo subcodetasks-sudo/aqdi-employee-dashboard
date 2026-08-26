@@ -73,7 +73,7 @@ export function mapContractPaidToExportRow(row) {
   };
 }
 
-export function exportContractPaidToExcel(rows, { filename = "contract-paid" } = {}) {
+export async function exportContractPaidToExcel(rows, { filename = "contract-paid" } = {}) {
   const data = rows?.map(mapContractPaidToExportRow);
   return writeExcelFile(data, { filename, sheetName: "العقود المدفوعة" });
 }

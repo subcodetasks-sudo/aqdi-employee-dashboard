@@ -1,12 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -15,13 +9,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import SettingsFormDialog, {
+  SettingsFieldLabel,
+  settingsFieldClass,
+} from "@/components/SystemSettings/SettingsFormDialog";
+import { SettingsAddTrigger } from "@/components/SystemSettings/shared";
 import { getContractTypeLabel } from "@/src/lib/contract-period-utils";
 import { getInstrumentTypeOptions } from "@/src/lib/instrument-types";
 import { axiosInstance } from "@/src/utils/axios";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Loader2, X } from "lucide-react";
-import { SettingsAddTrigger } from "@/components/SystemSettings/shared";
-import { useState } from "react";
 import { toast } from "sonner";
 
 export default function AddNewDurationDialog({ activeTab = "housing" }) {
@@ -32,6 +28,10 @@ export default function AddNewDurationDialog({ activeTab = "housing" }) {
   const [contractType, setContractType] = useState(activeTab);
   const queryClient = useQueryClient();
   const contractLabel = getContractTypeLabel(contractType);
+
+  useEffect(() => {
+    if (open) setContractType(activeTab);
+  }, [open, activeTab]);
 
   const { mutate, isPending } = useMutation({
     mutationFn: () =>
@@ -56,95 +56,78 @@ export default function AddNewDurationDialog({ activeTab = "housing" }) {
     },
   });
 
-  const canSubmit =
-    durationName.trim() && price.trim() && instrumentType && Number.isFinite(Number(price));
+  const handleSubmit = () => {
+    if (!durationName.trim() || !price.trim() || !instrumentType) {
+      toast.error("يرجى ملء جميع الحقول المطلوبة");
+      return;
+    }
+    if (!Number.isFinite(Number(price))) {
+      toast.error("يرجى إدخال سعر صحيح");
+      return;
+    }
+    mutate();
+  };
 
   return (
-    <Dialog dir="rtl" open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <SettingsAddTrigger>إضافة</SettingsAddTrigger>
-      </DialogTrigger>
-      <DialogContent closeButton={false} className="max-w-3xl">
-        <DialogHeader>
-          <div className="flex items-center justify-between border-b pb-6">
-            <h2 className="text-xl font-bold">إضافة مدة جديدة - عقد {contractLabel}</h2>
-            <Button variant="ghost" onClick={() => setOpen(false)}>
-              <X className="w-4 h-4" />
-            </Button>
-          </div>
+    <SettingsFormDialog
+      open={open}
+      onOpenChange={setOpen}
+      trigger={<SettingsAddTrigger />}
+      title={`مدة جديدة — ${contractLabel}`}
+      onSubmit={handleSubmit}
+      submitLabel="حفظ"
+      isPending={isPending}
+    >
+      <label className="flex flex-col gap-1.5">
+        <SettingsFieldLabel required>مدة العقد</SettingsFieldLabel>
+        <Input
+          placeholder="أدخل مدة العقد هنا ..."
+          value={durationName}
+          onChange={(e) => setDurationName(e.target.value)}
+          className={settingsFieldClass}
+        />
+      </label>
 
-          <div className="space-y-4">
-            <div dir="rtl" className="flex gap-4 items-center text-right">
-              <div className="space-y-2 grow">
-                <label className="text-sm font-medium">
-                  مدة العقد <span className="text-red-500">*</span>
-                </label>
-                <Input
-                  placeholder="أدخل مدة العقد هنا ..."
-                  value={durationName}
-                  onChange={(e) => setDurationName(e.target.value)}
-                  className="h-12"
-                />
-              </div>
+      <label className="flex flex-col gap-1.5">
+        <SettingsFieldLabel required>السعر</SettingsFieldLabel>
+        <Input
+          type="number"
+          min="0"
+          placeholder="أدخل السعر هنا ..."
+          value={price}
+          onChange={(e) => setPrice(e.target.value)}
+          className={settingsFieldClass}
+        />
+      </label>
 
-              <div className="space-y-2 grow">
-                <label className="text-sm font-medium">
-                  السعر <span className="text-red-500">*</span>
-                </label>
-                <Input
-                  type="number"
-                  min="0"
-                  placeholder="أدخل السعر هنا ..."
-                  value={price}
-                  onChange={(e) => setPrice(e.target.value)}
-                  className="h-12"
-                />
-              </div>
-            </div>
+      <label className="flex flex-col gap-1.5">
+        <SettingsFieldLabel required>نوع العقد</SettingsFieldLabel>
+        <Select dir="rtl" value={contractType} onValueChange={setContractType}>
+          <SelectTrigger className={settingsFieldClass}>
+            <SelectValue placeholder="اختر نوع العقد" />
+          </SelectTrigger>
+          <SelectContent dir="rtl">
+            <SelectItem value="housing">سكني</SelectItem>
+            <SelectItem value="commercial">تجاري</SelectItem>
+          </SelectContent>
+        </Select>
+      </label>
 
-            <div className="space-y-2 text-right">
-              <label className="text-sm font-medium">
-                نوع العقد <span className="text-red-500">*</span>
-              </label>
-              <Select dir="rtl" value={contractType} onValueChange={setContractType}>
-                <SelectTrigger className="h-12">
-                  <SelectValue placeholder="اختر نوع العقد" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="housing">سكني</SelectItem>
-                  <SelectItem value="commercial">تجاري</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2 text-right">
-              <label className="text-sm font-medium">
-                تصنيف وثيقة الملكية <span className="text-red-500">*</span>
-              </label>
-              <Select dir="rtl" value={instrumentType} onValueChange={setInstrumentType}>
-                <SelectTrigger className="h-12">
-                  <SelectValue placeholder="إختر تصنيف وثيقة الملكية هنا ..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {getInstrumentTypeOptions().map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <Button
-              disabled={isPending || !canSubmit}
-              onClick={() => mutate()}
-              className="mx-auto block h-12 bg-brand-hover"
-            >
-              {isPending ? <Loader2 className="animate-spin" /> : "إضافة"}
-            </Button>
-          </div>
-        </DialogHeader>
-      </DialogContent>
-    </Dialog>
+      <label className="flex flex-col gap-1.5">
+        <SettingsFieldLabel required>تصنيف وثيقة الملكية</SettingsFieldLabel>
+        <Select dir="rtl" value={instrumentType || undefined} onValueChange={setInstrumentType}>
+          <SelectTrigger className={settingsFieldClass}>
+            <SelectValue placeholder="إختر تصنيف وثيقة الملكية" />
+          </SelectTrigger>
+          <SelectContent dir="rtl">
+            {getInstrumentTypeOptions().map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </label>
+    </SettingsFormDialog>
   );
 }

@@ -12,7 +12,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { ArrowUpRight, Eye, EyeOff, Moon, Sun } from 'lucide-react';
 import { useMutation } from '@tanstack/react-query';
-import { axiosInstance } from '@/src/utils/axios';
+import { axiosInstance, AUTH_ENDPOINTS } from '@/src/utils/axios';
 import { useUserStore } from '@/src/stores/user-store';
 import { useRouter } from 'next/navigation';
 import { setAuthCookie } from '@/src/app/actions/auth';
@@ -47,9 +47,10 @@ export default function LoginPage() {
       const payload = {
         email: data.email,
         password: data.password,
+        remember_me: !!data.remember,
       };
 
-      const res = await axiosInstance.post('/admin/employees/login', payload)
+      const res = await axiosInstance.post(AUTH_ENDPOINTS.login, payload)
       return res.data
     },
     // Only auto-retry genuine connection failures (no response received) -

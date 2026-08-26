@@ -4,10 +4,14 @@ import { useUnwrapPageProps } from "@/src/hooks/use-unwrap-page-props";
 import AddNewRegionDialog from "@/components/analysis/settings/regions/add-new-region-dialog";
 import DeleteRegionDialog from "@/components/analysis/settings/regions/delete-region-dialog";
 import EditRegionDialog from "@/components/analysis/settings/regions/edit-region-dialog";
+import PermissionGate from "@/components/auth/PermissionGate";
+import { PERMISSION_SECTIONS } from "@/src/lib/permissions";
 import {
+  SettingsActions,
   SettingsEmptyRow,
   SettingsLoadingRows,
   SettingsListHeader,
+  SettingsPageShell,
   SettingsTable,
   SettingsTableRow,
   SettingsTd,
@@ -15,7 +19,7 @@ import {
 import { axiosInstance } from "@/src/utils/axios";
 import { useQuery } from "@tanstack/react-query";
 
-const HEADERS = ["الاسم", { label: "الإجراءات", className: "text-left" }];
+const HEADERS = ["الاسم", "الإجراءات"];
 
 export default function RegionsPage(props) {
   useUnwrapPageProps(props?.params, props?.searchParams);
@@ -28,10 +32,18 @@ export default function RegionsPage(props) {
   const data = regions?.data?.data?.items ?? [];
 
   return (
-    <div className="flex flex-col gap-5 min-h-full" dir="rtl">
-      <SettingsListHeader title="المناطق" action={<AddNewRegionDialog />} />
+    <SettingsPageShell>
+      <SettingsListHeader
+        title="المناطق"
+        subtitle="قائمة"
+        action={
+          <PermissionGate section={PERMISSION_SECTIONS.regions} action="create">
+            <AddNewRegionDialog />
+          </PermissionGate>
+        }
+      />
 
-      <SettingsTable headers={HEADERS} minWidth="520px">
+      <SettingsTable headers={HEADERS} minWidth="480px">
         {isLoading ? (
           <SettingsLoadingRows colSpan={2} />
         ) : data.length === 0 ? (
@@ -41,15 +53,19 @@ export default function RegionsPage(props) {
             <SettingsTableRow key={row.id}>
               <SettingsTd>{row?.name_ar}</SettingsTd>
               <SettingsTd>
-                <div className="flex items-center justify-end gap-2">
-                  <EditRegionDialog region={row} />
-                  <DeleteRegionDialog region={row} />
-                </div>
+                <SettingsActions>
+                  <PermissionGate section={PERMISSION_SECTIONS.regions} action="edit">
+                    <EditRegionDialog region={row} />
+                  </PermissionGate>
+                  <PermissionGate section={PERMISSION_SECTIONS.regions} action="delete">
+                    <DeleteRegionDialog region={row} />
+                  </PermissionGate>
+                </SettingsActions>
               </SettingsTd>
             </SettingsTableRow>
           ))
         )}
       </SettingsTable>
-    </div>
+    </SettingsPageShell>
   );
 }

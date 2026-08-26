@@ -96,11 +96,7 @@ export async function fetchAllRefundContracts() {
 
   try {
     do {
-      // Analytics refunds can 401 for roles that may view return-orders but not
-      // analytics — never wipe the session for this enrichment lookup.
-      const res = await axiosInstance.get(`${REFUNDS_CONTRACTS_API}?created_at=all&page=${page}`, {
-        skipAuthLogout: true,
-      });
+      const res = await axiosInstance.get(`${REFUNDS_CONTRACTS_API}?created_at=all&page=${page}`);
       const { contracts, pagination } = extractRefundsContractsPayload(res.data);
       allItems = allItems.concat(contracts);
       lastPage = pagination?.last_page ?? page;
@@ -136,17 +132,11 @@ export async function resolveRefundIdForActionAsync(order, refund, refundsLookup
 }
 
 export async function updateRefundContract(refundKey, body, orderContext = {}) {
-  const response = await axiosInstance.post(
-    `/admin/analytics/refunds/contracts/${refundKey}`,
-    {
-      admin_confirmed: body.admin_confirmed,
-      refund_amount: body.refund_amount,
-      notes: body.notes ?? null,
-    },
-    // Same 401-for-permission-reasons case as fetchAllRefundContracts above —
-    // never wipe the session for this endpoint.
-    { skipAuthLogout: true }
-  );
+  const response = await axiosInstance.post(`/admin/analytics/refunds/contracts/${refundKey}`, {
+    admin_confirmed: body.admin_confirmed,
+    refund_amount: body.refund_amount,
+    notes: body.notes ?? null,
+  });
 
   if (response?.data?.success === false) {
     return response;

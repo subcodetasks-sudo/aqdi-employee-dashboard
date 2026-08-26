@@ -16,13 +16,18 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import TextEditor from "@/components/analysis/settings/terms/TextEditor";
+import dynamic from "next/dynamic";
 import { axiosInstance } from "@/src/utils/axios";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ImageUp, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+
+const TextEditor = dynamic(
+  () => import("@/components/analysis/settings/terms/TextEditor"),
+  { ssr: false }
+);
 
 const blogSchema = z.object({
   title: z.string().min(2, "عنوان المقال مطلوب"),

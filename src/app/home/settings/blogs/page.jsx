@@ -1,6 +1,8 @@
 "use client";
 
-import { useUnwrapPageProps } from "@/src/hooks/use-unwrap-page-props";
+import {
+  useUnwrapPageProps
+} from "@/src/hooks/use-unwrap-page-props";
 import { useState } from "react";
 import Link from "next/link";
 import {
@@ -14,7 +16,10 @@ import {
   SettingsTable,
   SettingsTableRow,
   SettingsTd,
+  SettingsPageShell,
 } from "@/components/SystemSettings/shared";
+import PermissionGate from "@/components/auth/PermissionGate";
+import { PERMISSION_SECTIONS } from "@/src/lib/permissions";
 import { axiosInstance } from "@/src/utils/axios";
 import { useQuery } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
@@ -64,14 +69,16 @@ export default function BlogsPage(props) {
   const pagination = responseData?.data?.pagination;
 
   return (
-    <div className="flex flex-col gap-5 min-h-full" dir="rtl">
+    <SettingsPageShell>
       <SettingsListHeader
         title="المدونة"
         action={
-          <Link href="/home/settings/blogs/create" className={SETTINGS_ADD_TRIGGER_CLASS}>
-            <Plus className="size-4" />
-            إضافة
-          </Link>
+          <PermissionGate section={PERMISSION_SECTIONS.blogs} action="create">
+            <Link href="/home/settings/blogs/create" className={SETTINGS_ADD_TRIGGER_CLASS}>
+              <Plus className="size-4" />
+              إضافة
+            </Link>
+          </PermissionGate>
         }
       />
 
@@ -121,12 +128,16 @@ export default function BlogsPage(props) {
               </SettingsTd>
               <SettingsTd>
                 <div className="flex items-center justify-end gap-2">
-                  <Link href={`/home/settings/blogs/${blog.id}`} className={SETTINGS_VIEW_TRIGGER_CLASS}>
-                    عرض
-                  </Link>
-                  <Link href={`/home/settings/blogs/${blog.id}/edit`} className={SETTINGS_EDIT_TRIGGER_CLASS}>
-                    تعديل
-                  </Link>
+                  <PermissionGate section={PERMISSION_SECTIONS.blogs} action="view">
+                    <Link href={`/home/settings/blogs/${blog.id}`} className={SETTINGS_VIEW_TRIGGER_CLASS}>
+                      عرض
+                    </Link>
+                  </PermissionGate>
+                  <PermissionGate section={PERMISSION_SECTIONS.blogs} action="edit">
+                    <Link href={`/home/settings/blogs/${blog.id}/edit`} className={SETTINGS_EDIT_TRIGGER_CLASS}>
+                      تعديل
+                    </Link>
+                  </PermissionGate>
                 </div>
               </SettingsTd>
             </SettingsTableRow>
@@ -139,6 +150,6 @@ export default function BlogsPage(props) {
         lastPage={pagination?.last_page}
         onPageChange={setCurrentPage}
       />
-    </div>
+    </SettingsPageShell>
   );
 }

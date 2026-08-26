@@ -109,7 +109,7 @@ export default function ManageContractStatusesDialog({
                 {formOpen ? (editing ? "تعديل حالة العقد" : "إضافة حالة العقد") : "حالات العقود"}
               </DialogTitle>
               {!formOpen && canCreate ? (
-                <PermissionGate section={PERMISSION_SECTIONS.request_classification} action="create">
+                <PermissionGate section={PERMISSION_SECTIONS.contract_statuses} action="create">
                   <button
                     type="button"
                     onClick={openCreate}
@@ -176,7 +176,7 @@ export default function ManageContractStatusesDialog({
                       </p>
                     </div>
                     {canEdit ? (
-                      <PermissionGate section={PERMISSION_SECTIONS.request_classification} action="edit">
+                      <PermissionGate section={PERMISSION_SECTIONS.contract_statuses} action="edit">
                         <button
                           type="button"
                           onClick={() => openEdit(status)}

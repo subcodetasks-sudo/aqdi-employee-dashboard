@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { RotateCw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -8,6 +10,7 @@ import { usePermissions } from "@/src/hooks/usePermissions";
 import { PERMISSION_SECTIONS } from "@/src/lib/permissions";
 import {
   isCrawlInProgress,
+  SEO_CRAWL_QUERY_KEY,
   useSeoCrawlDashboard,
   useSeoCrawlIssues,
   useSeoCrawlRealtime,
@@ -17,7 +20,7 @@ import {
 import AllOrdersPagination from "@/components/Orders/all-orders-pagination";
 import SectionCard from "../shared/SectionCard";
 import { StatCardRow } from "../shared/StatCard";
-import SeoIssueDetailsDialog from "../shared/SeoIssueDetailsDialog";
+import { decodeUriText } from "../shared/decode-uri-text";
 import {
   TrendBadge,
   SeverityBadge,
@@ -99,6 +102,17 @@ export default function SeoTab() {
 }
 
 function KeywordsView() {
+  const { can } = usePermissions();
+  const canView = can(PERMISSION_SECTIONS.seo_crawl, "view");
+
+  if (!canView) {
+    return (
+      <SectionCard title="الكلمات المفتاحية">
+        <EmptyText>ليس لديك صلاحية للوصول إلى هذا القسم.</EmptyText>
+      </SectionCard>
+    );
+  }
+
   return (
     <>
       <StatCardRow items={SEO_KEYWORD_STATS} />
@@ -151,6 +165,8 @@ function KeywordsView() {
 }
 
 function CrawlView() {
+  const router = useRouter();
+  const queryClient = useQueryClient();
   const { can } = usePermissions();
   const canView = can(PERMISSION_SECTIONS.seo_crawl, "view");
   const canCreate = can(PERMISSION_SECTIONS.seo_crawl, "create");
@@ -159,7 +175,6 @@ function CrawlView() {
   const [searchInput, setSearchInput] = useState("");
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(20);
-  const [detailsIssueId, setDetailsIssueId] = useState(null);
 
   const { dashboard, isLoading, error, refetch, setPollFallback } = useSeoCrawlDashboard({
     enabled: canView,
@@ -167,18 +182,23 @@ function CrawlView() {
 
   const neverRun = !dashboard || dashboard.id == null;
   const realtimeEnabled = Boolean(dashboard?.realtime?.enabled) && canView;
-  const { liveStatus, realtimeError } = useSeoCrawlRealtime(dashboard?.realtime?.path, {
+  const { liveStatus } = useSeoCrawlRealtime(dashboard?.realtime?.path, {
     enabled: realtimeEnabled,
   });
 
-  const effectiveStatus = liveStatus?.status ?? dashboard?.status ?? "never_run";
+  // The REST dashboard is the source of truth for `status` — Firebase only supplies
+  // supplementary live fields (percent/current_url) below. Trusting liveStatus.status
+  // here let a stale/never-updated Firebase node hold the UI on "running" forever
+  // even after the backend had already finished.
+  const effectiveStatus = dashboard?.status ?? "never_run";
   const inProgress = isCrawlInProgress(effectiveStatus);
+  const isFailedState = effectiveStatus === "failed" && !inProgress;
 
-  // Only poll the REST dashboard while a crawl is running and Realtime DB isn't
-  // giving us live updates (not configured, or the listener errored). Set directly
-  // during render (not an effect) — `setPollFallback` just updates a ref that the
-  // dashboard query reads lazily, it doesn't trigger a re-render itself.
-  setPollFallback(inProgress && (!realtimeEnabled || realtimeError));
+  // Always poll the REST dashboard every 2-3s while a crawl is in progress, regardless
+  // of Realtime DB — Firebase is a nice-to-have for smoother progress, not a substitute
+  // for the poll. Set directly during render (not an effect) — `setPollFallback` just
+  // updates a ref that the dashboard query reads lazily, it doesn't trigger a re-render.
+  setPollFallback(inProgress);
 
   const {
     items: issues,
@@ -192,14 +212,15 @@ function CrawlView() {
     search: issueFilters.search,
     page,
     perPage,
-    enabled: canView && !neverRun,
+    enabled: canView && !neverRun && !isFailedState,
   });
 
   const startMutation = useStartSeoCrawl();
   const stopMutation = useStopSeoCrawl();
 
-  // Firebase pushes the terminal status first; once it does, the REST payload
-  // (KPIs/categories/issues) is the source of truth again.
+  // Nice-to-have: if Firebase signals a terminal status, refetch immediately instead
+  // of waiting for the next poll tick. Not relied upon — `effectiveStatus` above only
+  // ever reads from the REST dashboard, so a missed/stale Firebase write can't hang the UI.
   useEffect(() => {
     if (!liveStatus) return;
     if (["completed", "stopped", "failed"].includes(liveStatus.status)) {
@@ -246,6 +267,18 @@ function CrawlView() {
     startMutation.mutate(undefined, {
       onSuccess: (res) => {
         toast.success(res?.data?.message || "بدأ فحص الموقع");
+        const started = res?.data?.data;
+        if (started?.id != null) {
+          // Reflect the new run as queued immediately instead of waiting for the
+          // next GET — the dashboard still shows the previous (possibly failed)
+          // run's data until this lands.
+          queryClient.setQueryData([SEO_CRAWL_QUERY_KEY, null], (old) => ({
+            ...(old || {}),
+            id: started.id,
+            status: started.status || "queued",
+            error_message: null,
+          }));
+        }
         refetch();
       },
       onError: (err) => {
@@ -286,7 +319,12 @@ function CrawlView() {
     tone: SUMMARY_TONE[key],
   }));
 
-  const failedMessage = effectiveStatus === "failed" && (dashboard?.error_message || liveStatus?.error_message);
+  const openWebsiteDetails = (row) => {
+    const params = new URLSearchParams();
+    params.set("page", row.page || "");
+    params.set("issueId", String(row.id));
+    router.push(`/home/marketing-and-content/website-details?${params.toString()}`);
+  };
 
   return (
     <>
@@ -315,7 +353,13 @@ function CrawlView() {
               disabled={!canCreate || startMutation.isPending}
               title={!canCreate ? "ليس لديك صلاحية بدء الفحص" : undefined}
             >
-              {startMutation.isPending ? "⟳ جارٍ البدء..." : "⟲ بدء فحص الموقع"}
+              {startMutation.isPending
+                ? isFailedState
+                  ? "⟳ جارٍ إعادة الفحص..."
+                  : "⟳ جارٍ البدء..."
+                : isFailedState
+                  ? "↻ إعادة الفحص"
+                  : "⟲ بدء فحص الموقع"}
             </button>
           )}
         </div>
@@ -336,18 +380,38 @@ function CrawlView() {
               <>
                 جاري الزحف… {liveStatus?.progress_current ?? dashboard?.pages_crawled ?? 0}/
                 {liveStatus?.progress_max ?? "?"}
-                {liveStatus?.current_url ? ` — ${liveStatus.current_url}` : ""}
+                {liveStatus?.current_url ? ` — ${decodeUriText(liveStatus.current_url)}` : ""}
               </>
             )}
           </div>
         </div>
       )}
 
-      {failedMessage ? (
-        <p className="text-13 text-red-600 dark:text-red-300 mt-2">{failedMessage}</p>
-      ) : null}
-
-      {error ? (
+      {isFailedState ? (
+        <SectionCard title="ملخص الفحص" className="mt-[14px]">
+          <div className="mk-callout bad">
+            <p className="text-13 font-bold text-[#c0392b]">
+              فشل فحص الموقع. اضغط «إعادة الفحص».
+            </p>
+            {(() => {
+              const techDetail = dashboard?.error_message || liveStatus?.error_message;
+              return techDetail ? (
+                <details className="mt-2">
+                  <summary className="text-xs font-bold text-[#c0392b] cursor-pointer select-none">
+                    تفاصيل تقنية
+                  </summary>
+                  <pre
+                    className="mt-2 text-11 whitespace-pre-wrap break-all text-[#7a2b1f] dark:text-red-200/80"
+                    dir="ltr"
+                  >
+                    {techDetail}
+                  </pre>
+                </details>
+              ) : null;
+            })()}
+          </div>
+        </SectionCard>
+      ) : error ? (
         <SectionCard title="ملخص الفحص" className="mt-[14px]">
           <ErrorNote
             message={error?.response?.data?.message || "تعذر تحميل بيانات فحص الموقع."}
@@ -398,7 +462,7 @@ function CrawlView() {
         title="قائمة المشاكل حسب الصفحة"
         className="mt-[14px]"
         action={
-          neverRun ? null : (
+          neverRun || isFailedState ? null : (
             <div className="flex items-center gap-2 flex-wrap">
               {issueFilters.type ? (
                 <button
@@ -432,7 +496,9 @@ function CrawlView() {
           )
         }
       >
-        {neverRun ? (
+        {isFailedState ? (
+          <EmptyText>لا توجد نتائج بسبب فشل الفحص السابق. اضغط «إعادة الفحص» لبدء فحص جديد.</EmptyText>
+        ) : neverRun ? (
           <EmptyText>لم يتم إجراء أي فحص للموقع بعد. اضغط «بدء فحص الموقع» لعرض النتائج هنا.</EmptyText>
         ) : issuesError ? (
           <ErrorNote
@@ -461,12 +527,12 @@ function CrawlView() {
                     <tr
                       key={row.id}
                       className="cursor-pointer"
-                      onClick={() => setDetailsIssueId(row.id)}
+                      onClick={() => openWebsiteDetails(row)}
                     >
                       <td className="mkt-kw" style={{ direction: "ltr", textAlign: "center" }}>
-                        {row.page}
+                        {decodeUriText(row.page)}
                       </td>
-                      <td>{row.problem_ar || row.problem || row.problem_en}</td>
+                      <td>{decodeUriText(row.problem_ar || row.problem || row.problem_en)}</td>
                       <td>{categoryLabelByType[row.type] || row.type}</td>
                       <td>
                         <SeverityBadge severity={row.severity} />
@@ -477,7 +543,7 @@ function CrawlView() {
                           className="mk-mini"
                           onClick={(e) => {
                             e.stopPropagation();
-                            setDetailsIssueId(row.id);
+                            openWebsiteDetails(row);
                           }}
                         >
                           عرض التفاصيل
@@ -504,14 +570,6 @@ function CrawlView() {
           </>
         )}
       </SectionCard>
-
-      <SeoIssueDetailsDialog
-        issueId={detailsIssueId}
-        open={detailsIssueId != null}
-        onOpenChange={(next) => {
-          if (!next) setDetailsIssueId(null);
-        }}
-      />
     </>
   );
 }

@@ -5,13 +5,6 @@ import {
   buildPaperworkFormData,
   extractPaperwork,
 } from "@/components/analysis/settings/paperworks/paperwork-form-data";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -20,10 +13,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import SettingsFormDialog, {
+  SettingsFieldLabel,
+  settingsFieldClass,
+} from "@/components/SystemSettings/SettingsFormDialog";
+import { SETTINGS_EDIT_TRIGGER_CLASS } from "@/components/SystemSettings/shared";
 import { axiosInstance } from "@/src/utils/axios";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2, X } from "lucide-react";
-import { SETTINGS_EDIT_TRIGGER_CLASS } from "@/components/SystemSettings/shared";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -74,7 +70,7 @@ export default function EditPaperworkDialog({ paperwork }) {
         }),
         {
           headers: { "Content-Type": "multipart/form-data" },
-        },
+        }
       ),
     onSuccess: (res) => {
       toast.success(res?.data?.message || "تم حذف الأيقونة بنجاح");
@@ -99,7 +95,7 @@ export default function EditPaperworkDialog({ paperwork }) {
         }),
         {
           headers: { "Content-Type": "multipart/form-data" },
-        },
+        }
       ),
     onSuccess: (res) => {
       toast.success(res?.data?.message || "تم تعديل ورقة العمل بنجاح");
@@ -123,81 +119,71 @@ export default function EditPaperworkDialog({ paperwork }) {
     }
   };
 
+  const handleSubmit = () => {
+    if (!nameAr.trim() || !nameEn.trim()) {
+      toast.error("يرجى ملء جميع الحقول المطلوبة");
+      return;
+    }
+    mutate();
+  };
+
   return (
-    <Dialog dir="rtl" open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
+    <SettingsFormDialog
+      open={open}
+      onOpenChange={setOpen}
+      trigger={
         <button type="button" className={SETTINGS_EDIT_TRIGGER_CLASS}>
           تعديل
         </button>
-      </DialogTrigger>
-      <DialogContent closeButton={false} className="max-w-3xl">
-        <DialogHeader>
-          <div className="flex items-center justify-between border-b pb-6">
-            <h2 className="text-xl font-bold">تعديل ورقة العمل</h2>
-            <Button variant="ghost" onClick={() => setOpen(false)}>
-              <X className="w-4 h-4" />
-            </Button>
-          </div>
+      }
+      title="تعديل العنصر"
+      onSubmit={handleSubmit}
+      submitLabel="حفظ"
+      isPending={isPending || isLoadingDetails}
+    >
+      {isLoadingDetails ? (
+        <p className="text-[12px] font-medium text-[#6B7280]">جاري تحميل البيانات...</p>
+      ) : null}
 
-          <div className="space-y-4 text-right">
-            {isLoadingDetails ? (
-              <p className="text-sm text-ink-placeholder py-2">جاري تحميل البيانات...</p>
-            ) : null}
+      <label className="flex flex-col gap-1.5">
+        <SettingsFieldLabel required>الاسم بالعربية</SettingsFieldLabel>
+        <Input
+          value={nameAr}
+          onChange={(e) => setNameAr(e.target.value)}
+          className={settingsFieldClass}
+        />
+      </label>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium">
-                الاسم بالعربية <span className="text-red-500">*</span>
-              </label>
-              <Input
-                value={nameAr}
-                onChange={(e) => setNameAr(e.target.value)}
-                className="h-12"
-              />
-            </div>
+      <label className="flex flex-col gap-1.5">
+        <SettingsFieldLabel required>الاسم بالإنجليزية</SettingsFieldLabel>
+        <Input
+          value={nameEn}
+          onChange={(e) => setNameEn(e.target.value)}
+          className={settingsFieldClass}
+          dir="ltr"
+        />
+      </label>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium">
-                الاسم بالإنجليزية <span className="text-red-500">*</span>
-              </label>
-              <Input
-                value={nameEn}
-                onChange={(e) => setNameEn(e.target.value)}
-                className="h-12"
-                dir="ltr"
-              />
-            </div>
+      <PaperworkIconField
+        iconUrl={iconUrl}
+        file={iconFile}
+        onFileChange={setIconFile}
+        onRemove={handleRemoveIcon}
+        isRemoving={isDeletingIcon}
+      />
 
-            <PaperworkIconField
-              iconUrl={iconUrl}
-              file={iconFile}
-              onFileChange={setIconFile}
-              onRemove={handleRemoveIcon}
-              isRemoving={isDeletingIcon}
-            />
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium">نوع العقد</label>
-              <Select value={contractType} onValueChange={setContractType}>
-                <SelectTrigger className="h-12">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="housing">سكني</SelectItem>
-                  <SelectItem value="commercial">تجاري</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <Button
-              disabled={isPending || isLoadingDetails || !nameAr.trim() || !nameEn.trim()}
-              onClick={() => mutate()}
-              className="mx-auto block h-12 bg-brand-hover"
-            >
-              {isPending ? <Loader2 className="animate-spin" /> : "تعديل"}
-            </Button>
-          </div>
-        </DialogHeader>
-      </DialogContent>
-    </Dialog>
+      <label className="flex flex-col gap-1.5">
+        <SettingsFieldLabel>نوع العقد</SettingsFieldLabel>
+        <Select dir="rtl" value={contractType} onValueChange={setContractType}>
+          <SelectTrigger className={settingsFieldClass}>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent dir="rtl">
+            <SelectItem value="housing">سكني</SelectItem>
+            <SelectItem value="commercial">تجاري</SelectItem>
+          </SelectContent>
+        </Select>
+      </label>
+    </SettingsFormDialog>
   );
 }

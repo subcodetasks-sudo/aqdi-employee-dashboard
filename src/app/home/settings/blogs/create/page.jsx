@@ -2,13 +2,17 @@
 
 import { useUnwrapPageProps } from "@/src/hooks/use-unwrap-page-props";
 import CreateBlogForm from "@/components/analysis/settings/blogs/create-blog-form";
-import { SettingsContentCard, SettingsListHeader } from "@/components/SystemSettings/shared";
+import {
+  SettingsContentCard,
+  SettingsListHeader,
+  SettingsPageShell,
+} from "@/components/SystemSettings/shared";
 
 export default function CreateBlogPage(props) {
   useUnwrapPageProps(props?.params, props?.searchParams);
 
   return (
-    <div className="flex flex-col gap-5 min-h-full" dir="rtl">
+    <SettingsPageShell>
       <SettingsListHeader
         title="إضافة مقال جديد"
         subtitle="أنشئ مقالاً جديداً وحدد وقت النشر أو احفظه كمسودة"
@@ -17,6 +21,6 @@ export default function CreateBlogPage(props) {
       <SettingsContentCard>
         <CreateBlogForm />
       </SettingsContentCard>
-    </div>
+    </SettingsPageShell>
   );
 }

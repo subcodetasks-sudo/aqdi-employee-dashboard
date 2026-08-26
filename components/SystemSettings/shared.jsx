@@ -1,21 +1,32 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { ChevronLeft, ChevronRight, PanelLeft, Plus } from "lucide-react";
+import { ChevronLeft, ChevronRight, PanelLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSidebarStore } from "@/src/stores/sidebar-store";
+import "./settings-design.css";
 
-export const SETTINGS_ADD_TRIGGER_CLASS =
-  "h-10 px-4 rounded-xl border border-surface-border-soft bg-white text-13 font-bold text-gray-900 hover:border-[#054D44]/40 hover:text-[#054D44] shadow-sm inline-flex items-center gap-1.5 transition-colors dark:bg-card dark:border-white/10 dark:text-white dark:hover:border-emerald-500/40 dark:hover:text-emerald-300";
+export const SETTINGS_ADD_TRIGGER_CLASS = "xbtn";
 
-export const SETTINGS_EDIT_TRIGGER_CLASS =
-  "h-8 px-3.5 rounded-lg border border-[#E5E7EB] bg-white text-xs font-bold text-[#059669] hover:bg-[#ECFDF5] shadow-none inline-flex items-center justify-center transition-colors";
+export const SETTINGS_EDIT_TRIGGER_CLASS = "mk-mini";
 
-export const SETTINGS_DELETE_TRIGGER_CLASS =
-  "h-8 px-3.5 rounded-lg border border-[#FECACA] bg-[#FEF2F2] text-xs font-bold text-red-600 hover:bg-[#FEE2E2] shadow-none inline-flex items-center justify-center transition-colors";
+export const SETTINGS_DELETE_TRIGGER_CLASS = "mk-mini hr-del";
 
-export const SETTINGS_VIEW_TRIGGER_CLASS =
-  "h-8 px-3.5 rounded-lg border border-[#E5E7EB] bg-status-neutral-bg text-xs font-bold text-gray-700 hover:bg-[#E5E7EB] shadow-none inline-flex items-center justify-center transition-colors";
+export const SETTINGS_VIEW_TRIGGER_CLASS = "mk-mini";
+
+export function SettingsPageShell({ children, className }) {
+  return (
+    <div
+      className={cn(
+        "set-page flex flex-col gap-4 min-h-full -m-[45px] p-[45px] max-[1700px]:-m-[30px] max-[1700px]:p-[30px] bg-[#F4F6F5] dark:bg-[#0B1411]",
+        className
+      )}
+      dir="rtl"
+    >
+      {children}
+    </div>
+  );
+}
 
 export function SettingsListHeader({
   title,
@@ -27,52 +38,53 @@ export function SettingsListHeader({
   const { isSidebarOpen, toggleSidebar } = useSidebarStore();
 
   return (
-    <div className="flex flex-wrap items-start justify-between gap-4">
-      <div className="flex items-start gap-3 min-w-0">
-        <button
-          type="button"
-          onClick={toggleSidebar}
-          aria-label={isSidebarOpen ? "طي القائمة الجانبية" : "توسيع القائمة الجانبية"}
-          aria-expanded={isSidebarOpen}
-          className={cn(
-            "inline-flex items-center justify-center size-[42px] rounded-full border shrink-0 transition-colors",
-            "border-[#E4EBE8] bg-white text-[#4B5563] hover:bg-[#E8F5F1] hover:text-[#054D44]",
-            "dark:border-white/10 dark:bg-[#0F1C16] dark:text-white/70 dark:hover:bg-emerald-500/15 dark:hover:text-emerald-300"
-          )}
-        >
-          <PanelLeft className="size-[18px]" />
-        </button>
+    <div className="radm-head">
+      <button
+        type="button"
+        onClick={toggleSidebar}
+        aria-label={isSidebarOpen ? "طي القائمة الجانبية" : "توسيع القائمة الجانبية"}
+        aria-expanded={isSidebarOpen}
+        className={cn(
+          "inline-flex items-center justify-center size-[42px] rounded-2xl border shrink-0 transition-colors",
+          "border-[#E4EBE8] bg-white text-[#4B5563] hover:bg-[#E8F5F1] hover:text-brand-dark",
+          "dark:border-white/10 dark:bg-[#0F1C16] dark:text-white/70 dark:hover:bg-emerald-500/15 dark:hover:text-emerald-300"
+        )}
+      >
+        <PanelLeft className="size-[18px]" />
+      </button>
 
-        <div className="min-w-0">
-          <button
-            type="button"
-            onClick={() => router.push(backHref)}
-            className="inline-flex items-center gap-1.5 text-13 font-semibold text-status-neutral hover:text-[#054D44] transition-colors mb-1.5 dark:text-white/50 dark:hover:text-emerald-300"
-          >
-            <ChevronLeft className="size-4" />
-            رجوع
-          </button>
-          <h1 className="text-[24px] font-bold text-gray-900 dark:text-white leading-tight">
-            {title}
-          </h1>
-          <p className="mt-1 text-13 font-medium text-gray-400 dark:text-white/45">{subtitle}</p>
-        </div>
+      <button type="button" className="mkt-back" onClick={() => router.push(backHref)}>
+        <svg
+          width="12"
+          height="12"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden
+        >
+          <path d="m15 6-6 6 6 6" />
+        </svg>
+        رجوع
+      </button>
+
+      <div className="radm-ttl">
+        <b>{title}</b>
+        {subtitle ? <small>{subtitle}</small> : null}
       </div>
 
-      {action}
+      <div className="radm-kpis">{action}</div>
     </div>
   );
 }
 
-export function SettingsAddTrigger({ children = "إضافة", className, ...props }) {
+export function SettingsAddTrigger({ children = "+ إضافة", className, ...props }) {
+  const label = children === "إضافة" ? "+ إضافة" : children;
   return (
-    <button
-      type="button"
-      className={cn(SETTINGS_ADD_TRIGGER_CLASS, className)}
-      {...props}
-    >
-      <Plus className="size-4" />
-      {children}
+    <button type="button" className={cn(SETTINGS_ADD_TRIGGER_CLASS, className)} {...props}>
+      {label}
     </button>
   );
 }
@@ -82,9 +94,7 @@ export function StatusBadge({ active }) {
     <span
       className={cn(
         "inline-flex items-center rounded-full px-3 py-1 text-xs font-bold whitespace-nowrap",
-        active
-          ? "bg-[#E6F7EF] text-green-700"
-          : "bg-status-neutral-bg text-status-neutral"
+        active ? "bg-[#dcf5e8] text-[#0B7A4C]" : "bg-[#eef0ef] text-[#6b7c76]"
       )}
     >
       {active ? "مفعل" : "غير مفعل"}
@@ -96,9 +106,11 @@ export function SectionHeading({ title, description, action }) {
   return (
     <div className="flex flex-wrap items-start justify-between gap-3">
       <div className="min-w-0">
-        <h2 className="text-base font-bold text-[#054D44] dark:text-emerald-300">{title}</h2>
+        <div className="cpf-sec-t" style={{ marginBottom: description ? 4 : 0 }}>
+          {title}
+        </div>
         {description ? (
-          <p className="mt-1 text-13 font-medium text-gray-400 dark:text-white/45">{description}</p>
+          <p className="text-[12px] font-medium text-[#8a978f]">{description}</p>
         ) : null}
       </div>
       {action}
@@ -106,77 +118,59 @@ export function SectionHeading({ title, description, action }) {
   );
 }
 
-export function SettingsTable({ headers, children, minWidth = "860px" }) {
+export function SettingsTable({ headers, children, minWidth = "640px" }) {
   return (
-    <div className="overflow-x-auto rounded-2xl border border-surface-border-soft bg-white shadow-[0_4px_12px_rgba(11,83,69,0.04)] dark:bg-card dark:border-white/10">
-      <table className="w-full border-collapse" style={{ minWidth }}>
-        <thead>
-          <tr className="bg-[#F4F6F5] dark:bg-white/[0.04]">
-            {headers.map((header) => {
-              const label = typeof header === "string" ? header : header.label;
-              const className = typeof header === "string" ? "" : header.className;
-              return (
-                <th
-                  key={label}
-                  className={cn(
-                    "whitespace-nowrap px-5 py-3.5 text-right text-13 font-bold text-[#4B5563] dark:text-white/55",
-                    className
-                  )}
-                >
-                  {label}
-                </th>
-              );
-            })}
-          </tr>
-        </thead>
-        <tbody>{children}</tbody>
-      </table>
+    <div className="cpf-sec" style={{ padding: 0, overflow: "hidden" }}>
+      <div className="tblwrap" style={{ border: 0, borderRadius: 16, boxShadow: "none" }}>
+        <table className="mkt-tbl" style={{ minWidth }}>
+          <thead>
+            <tr>
+              {headers.map((header) => {
+                const label = typeof header === "string" ? header : header.label;
+                const className = typeof header === "string" ? "" : header.className;
+                return (
+                  <th key={label} className={className}>
+                    {label}
+                  </th>
+                );
+              })}
+            </tr>
+          </thead>
+          <tbody>{children}</tbody>
+        </table>
+      </div>
     </div>
   );
 }
 
 export function SettingsTableRow({ children }) {
-  return (
-    <tr className="border-b border-status-neutral-bg last:border-0 hover:bg-[#FAFBFA] dark:border-white/[0.06] dark:hover:bg-white/[0.03] transition-colors">
-      {children}
-    </tr>
-  );
+  return <tr>{children}</tr>;
 }
 
 export function SettingsTd({ children, className, ...props }) {
   return (
-    <td
-      className={cn(
-        "px-5 py-3.5 text-13 font-medium text-gray-900 dark:text-white align-middle",
-        className
-      )}
-      {...props}
-    >
+    <td className={cn(className)} {...props}>
       {children}
     </td>
   );
 }
 
 export function SettingsContentCard({ children, className }) {
-  return (
-    <div
-      className={cn(
-        "rounded-2xl border border-surface-border-soft bg-white p-6 shadow-[0_4px_12px_rgba(11,83,69,0.04)]",
-        "dark:bg-card dark:border-white/10",
-        className
-      )}
-    >
-      {children}
-    </div>
-  );
+  return <div className={cn("cpf-sec", className)}>{children}</div>;
 }
 
-export function SettingsEmptyRow({ colSpan, message = "لا توجد بيانات" }) {
+export function SettingsEmptyRow({ colSpan, message = "لا عناصر بعد — أضف عنصرًا." }) {
   return (
     <tr>
       <td
         colSpan={colSpan}
-        className="px-5 py-16 text-center text-13 font-medium text-gray-400 dark:text-white/35"
+        style={{
+          textAlign: "center",
+          color: "#98A39E",
+          fontSize: 12,
+          fontWeight: 700,
+          padding: "28px 16px",
+        }}
       >
         {message}
       </td>
@@ -184,20 +178,17 @@ export function SettingsEmptyRow({ colSpan, message = "لا توجد بيانا�
   );
 }
 
-/** Skeleton rows for settings list tables while data is fetching. */
 export function SettingsLoadingRows({ colSpan = 3, rows = 6 }) {
   return Array.from({ length: rows }).map((_, rowIndex) => (
     <tr key={`settings-skel-${rowIndex}`}>
       {Array.from({ length: colSpan }).map((__, colIndex) => (
-        <td
-          key={`settings-skel-${rowIndex}-${colIndex}`}
-          className="px-5 py-4 border-b border-[#F0F0ED] dark:border-white/[0.06]"
-        >
+        <td key={`settings-skel-${rowIndex}-${colIndex}`}>
           <div
             className="h-3.5 rounded-md bg-[#EEF1F0] dark:bg-white/[0.06] animate-pulse"
             style={{
               width: `${50 + ((rowIndex + colIndex) % 5) * 8}%`,
               opacity: 1 - rowIndex * 0.08,
+              marginInline: colIndex === 0 ? 0 : "auto",
             }}
           />
         </td>
@@ -230,13 +221,13 @@ export function SettingsPagination({ page, lastPage, onPageChange }) {
         type="button"
         onClick={() => onPageChange(Math.max(1, page - 1))}
         disabled={page === 1}
-        className="size-9 rounded-full border border-surface-border-soft bg-white text-status-neutral hover:bg-[#F4F6F5] disabled:opacity-40"
+        className="mk-mini disabled:opacity-40"
       >
-        <ChevronLeft className="size-4 mx-auto" />
+        <ChevronLeft className="size-3.5" />
       </button>
       {pages.map((item, idx) =>
         item === "..." ? (
-          <span key={`dots-${idx}`} className="px-1 text-gray-400">
+          <span key={`dots-${idx}`} className="px-1 text-[#8a978f]">
             ...
           </span>
         ) : (
@@ -244,12 +235,7 @@ export function SettingsPagination({ page, lastPage, onPageChange }) {
             key={item}
             type="button"
             onClick={() => onPageChange(item)}
-            className={cn(
-              "size-9 rounded-full text-13 font-bold transition-colors",
-              page === item
-                ? "bg-[#054D44] text-white"
-                : "border border-surface-border-soft bg-white text-status-neutral hover:bg-[#F4F6F5]"
-            )}
+            className={cn(page === item ? "xbtn" : "mk-mini")}
           >
             {item}
           </button>
@@ -259,9 +245,9 @@ export function SettingsPagination({ page, lastPage, onPageChange }) {
         type="button"
         onClick={() => onPageChange(Math.min(lastPage, page + 1))}
         disabled={page === lastPage}
-        className="size-9 rounded-full border border-surface-border-soft bg-white text-status-neutral hover:bg-[#F4F6F5] disabled:opacity-40"
+        className="mk-mini disabled:opacity-40"
       >
-        <ChevronRight className="size-4 mx-auto" />
+        <ChevronRight className="size-3.5" />
       </button>
     </div>
   );
@@ -269,22 +255,12 @@ export function SettingsPagination({ page, lastPage, onPageChange }) {
 
 export function OutlineButton({ tone = "brand", children, className, ...props }) {
   const tones = {
-    brand:
-      "border-[#054D44]/30 text-[#054D44] hover:bg-[#E8F5F1]",
-    danger:
-      "border-[#FECACA] text-red-600 hover:bg-[#FFF0F0]",
+    brand: "mk-mini",
+    danger: "mk-mini hr-del",
   };
 
   return (
-    <button
-      type="button"
-      className={cn(
-        "h-8 px-3 rounded-lg border text-xs font-bold transition-colors whitespace-nowrap",
-        tones[tone],
-        className
-      )}
-      {...props}
-    >
+    <button type="button" className={cn(tones[tone], className)} {...props}>
       {children}
     </button>
   );
@@ -292,14 +268,7 @@ export function OutlineButton({ tone = "brand", children, className, ...props })
 
 export function PrimaryButton({ children, className, ...props }) {
   return (
-    <button
-      type="button"
-      className={cn(
-        "h-10 px-5 rounded-xl bg-[#054D44] text-white text-13 font-bold hover:bg-[#043F38] transition-colors",
-        className
-      )}
-      {...props}
-    >
+    <button type="button" className={cn("xbtn", className)} {...props}>
       {children}
     </button>
   );
@@ -307,15 +276,12 @@ export function PrimaryButton({ children, className, ...props }) {
 
 export function GhostAddButton({ children, className, ...props }) {
   return (
-    <button
-      type="button"
-      className={cn(
-        "h-9 px-4 rounded-xl border border-surface-border-soft bg-white text-13 font-bold text-gray-900 hover:border-[#054D44]/40 hover:text-[#054D44] transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-surface-border-soft disabled:hover:text-gray-900",
-        className
-      )}
-      {...props}
-    >
+    <button type="button" className={cn("mk-mini", className)} {...props}>
       {children}
     </button>
   );
+}
+
+export function SettingsActions({ children }) {
+  return <span className="hr-acts">{children}</span>;
 }

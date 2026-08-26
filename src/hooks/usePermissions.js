@@ -6,6 +6,7 @@ import { axiosInstance } from '@/src/utils/axios';
 import { useUserStore } from '@/src/stores/user-store';
 import {
   canAccess,
+  canAccessAny,
   canAccessRoute,
   extractPermissionsFromRole,
   getFirstAllowedHref,
@@ -22,7 +23,7 @@ export function usePermissions() {
   const storedPermissions = useMemo(() => normalizeUserPermissions(user), [user]);
 
   const shouldFetchRole =
-    !!user?.role_id && storedPermissions.length === 0 && !isSuperAdmin(user, storedPermissions);
+    !!user?.role_id && storedPermissions.length === 0 && !isSuperAdmin(user);
 
   const {
     data: rolePermissionsData,
@@ -71,12 +72,17 @@ export function usePermissions() {
     [permissions, user]
   );
 
+  const canAny = useCallback(
+    (section, actions = []) => canAccessAny(permissions, user, section, actions),
+    [permissions, user]
+  );
+
   const canRoute = useCallback(
     (pathname) => canAccessRoute(pathname, permissions, user),
     [permissions, user]
   );
 
-  const isAdmin = useMemo(() => isSuperAdmin(user, permissions), [user, permissions]);
+  const isAdmin = useMemo(() => isSuperAdmin(user), [user]);
 
   return {
     user,
@@ -86,6 +92,7 @@ export function usePermissions() {
     isReady,
     isPermissionsLoading,
     can,
+    canAny,
     canRoute,
     getSectionForPath,
     firstAllowedHref: getFirstAllowedHref(permissions, user),

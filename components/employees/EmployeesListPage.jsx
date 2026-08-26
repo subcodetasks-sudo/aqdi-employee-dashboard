@@ -11,6 +11,7 @@ import { Search } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import PermissionGate from "@/components/auth/PermissionGate";
+import { usePermissions } from "@/src/hooks/usePermissions";
 import { PERMISSION_SECTIONS } from "@/src/lib/permissions";
 import {
   EmployeeAvatar,
@@ -19,6 +20,7 @@ import {
   TABLE_TH,
   TABLE_WRAPPER,
   TablePagination,
+  WorkPeriodBadge,
   formatSalary,
 } from "@/components/roles-and-employees/shared";
 
@@ -27,6 +29,8 @@ export default function EmployeesListPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const queryClient = useQueryClient();
+  const { canAny } = usePermissions();
+  const showActionsColumn = canAny(PERMISSION_SECTIONS.employees, ["view", "edit", "delete"]);
 
   useEffect(() => {
     const handler = setTimeout(() => setDebouncedSearchQuery(searchQuery), 500);
@@ -95,11 +99,12 @@ export default function EmployeesListPage() {
             <tr>
               <th className={TABLE_TH}>الاسم</th>
               <th className={TABLE_TH}>المسمى الوظيفي</th>
+              <th className={TABLE_TH}>فترة العمل</th>
               <th className={TABLE_TH}>الراتب الأساسي</th>
               <th className={TABLE_TH}>رقم الجوال</th>
               <th className={TABLE_TH}>البريد الإلكتروني</th>
               <th className={TABLE_TH}>الحالة</th>
-              <th className={TABLE_TH}>الإجراءات</th>
+              {showActionsColumn && <th className={TABLE_TH}>الإجراءات</th>}
             </tr>
           </thead>
           <tbody>
@@ -121,6 +126,9 @@ export default function EmployeesListPage() {
                     <RoleBadge role={employee.role} colorIndex={index} />
                   </td>
                   <td className="px-4 py-3.5">
+                    <WorkPeriodBadge workPeriod={employee.work_period} />
+                  </td>
+                  <td className="px-4 py-3.5">
                     {formatSalary(employee.base_salary) ? (
                       <span className="text-13 font-semibold text-gray-900 tabular-nums dark:text-white">
                         {formatSalary(employee.base_salary)} ريال
@@ -138,38 +146,46 @@ export default function EmployeesListPage() {
                     <span className="text-13 text-gray-700 dark:text-white/70">{employee.email || "---"}</span>
                   </td>
                   <td className="px-4 py-3.5">
-                    <Switch
-                      dir="ltr"
-                      checked={employee.is_active}
-                      disabled={isPendingChangeStatus}
-                      onCheckedChange={() => changeStatus(employee.id)}
-                    />
+                    <PermissionGate
+                      section={PERMISSION_SECTIONS.employees}
+                      action="edit"
+                      fallback={<Switch dir="ltr" checked={employee.is_active} disabled />}
+                    >
+                      <Switch
+                        dir="ltr"
+                        checked={employee.is_active}
+                        disabled={isPendingChangeStatus}
+                        onCheckedChange={() => changeStatus(employee.id)}
+                      />
+                    </PermissionGate>
                   </td>
-                  <td className="px-4 py-3.5">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <PermissionGate section={PERMISSION_SECTIONS.employees} action="view">
-                        <Link href={`/home/roles-and-employees/employees/${employee.id}`}>
-                          <OutlineActionButton variant="view">عرض</OutlineActionButton>
-                        </Link>
-                      </PermissionGate>
-                      <PermissionGate section={PERMISSION_SECTIONS.employees} action="edit">
-                        <AddNewEmployeeDialog
-                          isEdit
-                          employee={employee}
-                          table
-                          triggerVariant="outline-edit"
-                        />
-                      </PermissionGate>
-                      <PermissionGate section={PERMISSION_SECTIONS.employees} action="delete">
-                        <DeleteEmployeeDialog employee={employee} triggerVariant="outline-delete" />
-                      </PermissionGate>
-                    </div>
-                  </td>
+                  {showActionsColumn && (
+                    <td className="px-4 py-3.5">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <PermissionGate section={PERMISSION_SECTIONS.employees} action="view">
+                          <Link href={`/home/roles-and-employees/employees/${employee.id}`}>
+                            <OutlineActionButton variant="view">عرض</OutlineActionButton>
+                          </Link>
+                        </PermissionGate>
+                        <PermissionGate section={PERMISSION_SECTIONS.employees} action="edit">
+                          <AddNewEmployeeDialog
+                            isEdit
+                            employee={employee}
+                            table
+                            triggerVariant="outline-edit"
+                          />
+                        </PermissionGate>
+                        <PermissionGate section={PERMISSION_SECTIONS.employees} action="delete">
+                          <DeleteEmployeeDialog employee={employee} triggerVariant="outline-delete" />
+                        </PermissionGate>
+                      </div>
+                    </td>
+                  )}
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan={7} className="text-center p-10 text-gray-400 text-sm">
+                <td colSpan={8} className="text-center p-10 text-gray-400 text-sm">
                   لا يوجد موظفين حالياً.
                 </td>
               </tr>

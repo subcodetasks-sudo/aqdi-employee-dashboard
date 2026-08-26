@@ -1,18 +1,31 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTrigger } from "@/components/ui/dialog";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import SettingsFormDialog, {
+  SettingsFieldLabel,
+  settingsFieldClass,
+} from "@/components/SystemSettings/SettingsFormDialog";
+import { SETTINGS_EDIT_TRIGGER_CLASS, SettingsAddTrigger } from "@/components/SystemSettings/shared";
 import { axiosInstance } from "@/src/utils/axios";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Loader2, X } from "lucide-react";
-import { SETTINGS_EDIT_TRIGGER_CLASS, SettingsAddTrigger } from "@/components/SystemSettings/shared";
 import { toast } from "sonner";
 
 const couponSchema = z.object({
@@ -44,10 +57,10 @@ export default function AddCouponDialog({ isEdit = false, coupon }) {
     },
   });
 
-  // Pre-populate when opening in edit mode, mapping API keys to fields
   useEffect(() => {
     if (isEdit && coupon && open) {
-      const typeVal = coupon.type_coupon === "ratio" || coupon.type === "percentage" ? "percentage" : "fixed";
+      const typeVal =
+        coupon.type_coupon === "ratio" || coupon.type === "percentage" ? "percentage" : "fixed";
       form.reset({
         name: coupon.name || "",
         code: coupon.code_coupon || coupon.code || "",
@@ -63,7 +76,6 @@ export default function AddCouponDialog({ isEdit = false, coupon }) {
 
   const { mutate: saveCoupon, isPending } = useMutation({
     mutationFn: (data) => {
-      // Map frontend fields back to API requirements exactly
       const apiPayload = {
         name: data.name,
         code_coupon: data.code,
@@ -87,189 +99,164 @@ export default function AddCouponDialog({ isEdit = false, coupon }) {
     },
     onError: (err) => {
       toast.error(err?.response?.data?.message || "حدث خطأ أثناء حفظ الخصم");
-    }
+    },
   });
 
-  const onSubmit = (data) => {
-    saveCoupon(data);
-  };
-
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {isEdit ? (
+    <SettingsFormDialog
+      open={open}
+      onOpenChange={setOpen}
+      trigger={
+        isEdit ? (
           <button type="button" className={SETTINGS_EDIT_TRIGGER_CLASS}>
             تعديل
           </button>
         ) : (
-          <SettingsAddTrigger>إضافة</SettingsAddTrigger>
-        )}
-      </DialogTrigger>
-
-      <DialogContent closeButton={false} className="max-w-2xl p-0 overflow-hidden rounded-32 border-0 shadow-2xl" dir="rtl">
-        <DialogHeader>
-          <div className="flex items-center justify-between border-b border-[#F0F0F0] px-8 py-6 bg-neutral-50">
-            <h2 className="text-xl font-black text-black">
-              {isEdit ? "تعديل الخصم" : "إضافة خصم"}
-            </h2>
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={() => setOpen(false)} 
-              className="rounded-full w-8 h-8 hover:bg-gray-200/50"
-            >
-              <X className="size-4 text-gray-500" />
-            </Button>
-          </div>
-        </DialogHeader>
-
-        <div className="p-8">
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              {/* Row 1: Coupon Name & Code */}
-              <div className="grid grid-cols-2 gap-4 text-right">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-13 font-bold text-black">اسم الخصم</FormLabel>
-                      <FormControl>
-                        <Input className="h-12 rounded-xl focus:border-brand-main" placeholder="اكتب هنا ..." {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="code"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-13 font-bold text-black">كود الخصم</FormLabel>
-                      <FormControl>
-                        <Input className="h-12 rounded-xl focus:border-brand-main uppercase tracking-wider font-mono" placeholder="NATIONAL93" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              {/* Row 2: Discount Type & Value */}
-              <div className="grid grid-cols-2 gap-4 text-right">
-                <FormField
-                  control={form.control}
-                  name="type"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-13 font-bold text-black">نوع الخصم</FormLabel>
-                      <FormControl>
-                        <Select value={field.value} onValueChange={field.onChange} dir="rtl">
-                          <SelectTrigger className="h-12 rounded-xl">
-                            <SelectValue placeholder="اختر نوع الخصم" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="fixed">مبلغ ثابت (ريال)</SelectItem>
-                            <SelectItem value="percentage">نسبة مئوية (%)</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="value"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-13 font-bold text-black">قيمة الخصم</FormLabel>
-                      <FormControl>
-                        <Input type="number" step="0.01" className="h-12 rounded-xl focus:border-brand-main" placeholder="أدخل القيمة" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              {/* Row 3: Start Date & End Date */}
-              <div className="grid grid-cols-2 gap-4 text-right">
-                <FormField
-                  control={form.control}
-                  name="start_date"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-13 font-bold text-black">تاريخ بداية الخصم</FormLabel>
-                      <FormControl>
-                        <Input type="date" className="h-12 rounded-xl focus:border-brand-main" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="end_date"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-13 font-bold text-black">تاريخ نهاية الخصم</FormLabel>
-                      <FormControl>
-                        <Input type="date" className="h-12 rounded-xl focus:border-brand-main" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              {/* Row 4: Usage Limit & User Usage Limit */}
-              <div className="grid grid-cols-2 gap-4 text-right">
-                <FormField
-                  control={form.control}
-                  name="use_limit"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-13 font-bold text-black">عدد مرات استخدام الخصم</FormLabel>
-                      <FormControl>
-                        <Input type="number" className="h-12 rounded-xl focus:border-brand-main" placeholder="مثال: 100" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="user_use_limit"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-13 font-bold text-black">عدد مرات استخدام الخصم لكل مستخدم</FormLabel>
-                      <FormControl>
-                        <Input type="number" className="h-12 rounded-xl focus:border-brand-main" placeholder="مثال: 1" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              {/* Submit Button */}
-              <Button 
-                disabled={isPending} 
-                type="submit" 
-                className="w-full h-14 bg-brand-hover text-white rounded-2xl font-black text-base flex items-center justify-center gap-2 hover:bg-brand-hover/90 transition-all shadow-lg shadow-brand-main/20 mt-4"
-              >
-                {isPending ? (
-                  <Loader2 className="animate-spin" />
-                ) : (
-                  <span>إضــافــة</span>
-                )}
-              </Button>
-            </form>
-          </Form>
+          <SettingsAddTrigger />
+        )
+      }
+      title={isEdit ? "تعديل العنصر" : "عنصر جديد"}
+      onSubmit={form.handleSubmit((data) => saveCoupon(data))}
+      submitLabel="حفظ"
+      isPending={isPending}
+      maxWidthClass="sm:max-w-[560px]"
+    >
+      <Form {...form}>
+        <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <FormItem className="space-y-1.5">
+                <SettingsFieldLabel required>اسم الخصم</SettingsFieldLabel>
+                <FormControl>
+                  <Input className={settingsFieldClass} placeholder="اكتب هنا ..." {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="code"
+            render={({ field }) => (
+              <FormItem className="space-y-1.5">
+                <SettingsFieldLabel required>كود الخصم</SettingsFieldLabel>
+                <FormControl>
+                  <Input
+                    className={`${settingsFieldClass} uppercase tracking-wider font-mono`}
+                    placeholder="NATIONAL93"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="type"
+            render={({ field }) => (
+              <FormItem className="space-y-1.5">
+                <SettingsFieldLabel required>نوع الخصم</SettingsFieldLabel>
+                <FormControl>
+                  <Select dir="rtl" value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger className={settingsFieldClass}>
+                      <SelectValue placeholder="اختر نوع الخصم" />
+                    </SelectTrigger>
+                    <SelectContent dir="rtl">
+                      <SelectItem value="fixed">مبلغ ثابت (ريال)</SelectItem>
+                      <SelectItem value="percentage">نسبة مئوية (%)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="value"
+            render={({ field }) => (
+              <FormItem className="space-y-1.5">
+                <SettingsFieldLabel required>قيمة الخصم</SettingsFieldLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    className={settingsFieldClass}
+                    placeholder="أدخل القيمة"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="start_date"
+            render={({ field }) => (
+              <FormItem className="space-y-1.5">
+                <SettingsFieldLabel required>تاريخ البداية</SettingsFieldLabel>
+                <FormControl>
+                  <Input type="date" className={settingsFieldClass} {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="end_date"
+            render={({ field }) => (
+              <FormItem className="space-y-1.5">
+                <SettingsFieldLabel required>تاريخ النهاية</SettingsFieldLabel>
+                <FormControl>
+                  <Input type="date" className={settingsFieldClass} {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="use_limit"
+            render={({ field }) => (
+              <FormItem className="space-y-1.5">
+                <SettingsFieldLabel required>مرات الاستخدام</SettingsFieldLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    className={settingsFieldClass}
+                    placeholder="مثال: 100"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="user_use_limit"
+            render={({ field }) => (
+              <FormItem className="space-y-1.5">
+                <SettingsFieldLabel required>مرات الاستخدام للمستخدم</SettingsFieldLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    className={settingsFieldClass}
+                    placeholder="مثال: 1"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </div>
-      </DialogContent>
-    </Dialog>
+      </Form>
+    </SettingsFormDialog>
   );
 }

@@ -3,6 +3,9 @@
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { usePermissions } from "@/src/hooks/usePermissions";
+import { PERMISSION_SECTIONS } from "@/src/lib/permissions";
+import PermissionGate from "@/components/auth/PermissionGate";
 import SectionCard from "../shared/SectionCard";
 import { StatCardRow } from "../shared/StatCard";
 import { StatusPill } from "../shared/Badges";
@@ -16,29 +19,37 @@ import {
 } from "../shared/mock-data";
 
 const VIEWS = [
-  { value: "articles", label: "المقالات" },
-  { value: "services", label: "صفحات الخدمات" },
+  { value: "articles", label: "المقالات", section: PERMISSION_SECTIONS.blogs },
+  { value: "services", label: "صفحات الخدمات", section: null },
 ];
 
 export default function ContentTab() {
+  const { can, isReady } = usePermissions();
+  const visibleViews = useMemo(
+    () => VIEWS.filter((item) => !isReady || !item.section || can(item.section, "view")),
+    [can, isReady]
+  );
   const [view, setView] = useState("articles");
+  const currentView = visibleViews.some((item) => item.value === view)
+    ? view
+    : visibleViews[0]?.value;
 
   return (
     <div>
       <div className="mkt-subtabs">
-        {VIEWS.map((item) => (
+        {visibleViews.map((item) => (
           <button
             key={item.value}
             type="button"
             onClick={() => setView(item.value)}
-            className={cn("mkt-subtab", view === item.value && "on")}
+            className={cn("mkt-subtab", currentView === item.value && "on")}
           >
             {item.label}
           </button>
         ))}
       </div>
 
-      {view === "services" ? <ServicePagesView /> : <ArticlesView />}
+      {currentView === "services" ? <ServicePagesView /> : currentView === "articles" ? <ArticlesView /> : null}
     </div>
   );
 }
@@ -113,13 +124,15 @@ function ArticlesView() {
             </button>
           ))}
         </div>
-        <button
-          type="button"
-          className="xbtn"
-          onClick={() => toast.success("إنشاء مقال جديد (واجهة تجريبية)")}
-        >
-          + مقال جديد
-        </button>
+        <PermissionGate section={PERMISSION_SECTIONS.blogs} action="create">
+          <button
+            type="button"
+            className="xbtn"
+            onClick={() => toast.success("إنشاء مقال جديد (واجهة تجريبية)")}
+          >
+            + مقال جديد
+          </button>
+        </PermissionGate>
       </div>
 
       <div className="tblwrap">
@@ -155,7 +168,9 @@ function ArticlesView() {
                 <td>{row.leads}</td>
                 <td>{row.revenue.replace("ريال", "﷼")}</td>
                 <td>
-                  <EditButton />
+                  <PermissionGate section={PERMISSION_SECTIONS.blogs} action="edit">
+                    <EditButton />
+                  </PermissionGate>
                 </td>
               </tr>
             ))}

@@ -1,7 +1,9 @@
 "use client";
 
+import { useMemo } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { usePermissions } from "@/src/hooks/usePermissions";
 import { MARKETING_TABS, DATE_RANGE_LABEL, SCOPE_BREADCRUMB } from "./shared/mock-data";
 import OverviewTab from "./tabs/OverviewTab";
 import CampaignsTab from "./tabs/CampaignsTab";
@@ -20,16 +22,21 @@ const TAB_COMPONENTS = {
   pixels: PixelsTab,
 };
 
-function resolveTab(raw) {
-  return TAB_COMPONENTS[raw] ? raw : "overview";
-}
-
 export default function MarketingContentWrapper() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const { can, isReady } = usePermissions();
 
-  const activeTab = resolveTab(searchParams.get("tab"));
+  const visibleTabs = useMemo(
+    () => MARKETING_TABS.filter((tab) => !isReady || can(tab.section, "view")),
+    [can, isReady]
+  );
+
+  const requestedTab = searchParams.get("tab");
+  const activeTab = visibleTabs.some((tab) => tab.value === requestedTab)
+    ? requestedTab
+    : visibleTabs[0]?.value;
 
   const setActiveTab = (value) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -63,7 +70,7 @@ export default function MarketingContentWrapper() {
       </div>
 
       <div className="mkt-tabs" role="tablist">
-        {MARKETING_TABS.map((tab) => (
+        {visibleTabs.map((tab) => (
           <button
             key={tab.value}
             type="button"
@@ -78,7 +85,7 @@ export default function MarketingContentWrapper() {
       </div>
 
       <div className="mkt-body">
-        <ActivePanel />
+        {ActivePanel ? <ActivePanel /> : null}
       </div>
     </div>
   );

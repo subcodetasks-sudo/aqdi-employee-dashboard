@@ -1,13 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -17,6 +10,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import SettingsFormDialog, {
+  SettingsFieldLabel,
+  settingsFieldClass,
+} from "@/components/SystemSettings/SettingsFormDialog";
+import { SETTINGS_EDIT_TRIGGER_CLASS, SettingsAddTrigger } from "@/components/SystemSettings/shared";
 import { axiosInstance } from "@/src/utils/axios";
 import {
   ADMIN_TENANT_ROLES_API,
@@ -25,10 +23,13 @@ import {
 } from "@/src/hooks/use-admin-tenant-roles";
 import { TENANT_ROLES_QUERY_KEY } from "@/src/hooks/use-tenant-roles";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Loader2, X } from "lucide-react";
-import { SETTINGS_EDIT_TRIGGER_CLASS, SettingsAddTrigger } from "@/components/SystemSettings/shared";
 import { toast } from "sonner";
-import TextEditor from "@/components/analysis/settings/terms/TextEditor";
+import dynamic from "next/dynamic";
+
+const TextEditor = dynamic(
+  () => import("@/components/analysis/settings/terms/TextEditor"),
+  { ssr: false }
+);
 
 const EMPTY_FORM = {
   text_of_reason: "",
@@ -41,9 +42,7 @@ const EMPTY_FORM = {
 function roleToForm(role) {
   if (!role) return { ...EMPTY_FORM };
   const hasUserInput = Boolean(
-    role.has_user_input ||
-      role.input_field_label ||
-      role.input_field_type
+    role.has_user_input || role.input_field_label || role.input_field_type
   );
   return {
     text_of_reason: role.text_of_reason || role.name || "",
@@ -76,17 +75,13 @@ export default function TenantRoleFormDialog({ role = null }) {
     mutationFn: () => {
       const payload = buildTenantRolePayload(form);
       if (isEdit) {
-        return axiosInstance.post(
-          `${ADMIN_TENANT_ROLES_API}/${role.id}`,
-          payload
-        );
+        return axiosInstance.post(`${ADMIN_TENANT_ROLES_API}/${role.id}`, payload);
       }
       return axiosInstance.post(ADMIN_TENANT_ROLES_API, payload);
     },
     onSuccess: (res) => {
       toast.success(
-        res?.data?.message ||
-          (isEdit ? "تم تحديث الصلاحية بنجاح" : "تم إضافة الصلاحية بنجاح")
+        res?.data?.message || (isEdit ? "تم تحديث الصلاحية بنجاح" : "تم إضافة الصلاحية بنجاح")
       );
       setOpen(false);
       queryClient.invalidateQueries({ queryKey: [ADMIN_TENANT_ROLES_QUERY_KEY] });
@@ -125,123 +120,93 @@ export default function TenantRoleFormDialog({ role = null }) {
   };
 
   return (
-    <Dialog dir="rtl" open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {isEdit ? (
+    <SettingsFormDialog
+      open={open}
+      onOpenChange={setOpen}
+      trigger={
+        isEdit ? (
           <button type="button" className={SETTINGS_EDIT_TRIGGER_CLASS}>
             تعديل
           </button>
         ) : (
-          <SettingsAddTrigger>إضافة</SettingsAddTrigger>
-        )}
-      </DialogTrigger>
+          <SettingsAddTrigger />
+        )
+      }
+      title={isEdit ? "تعديل العنصر" : "عنصر جديد"}
+      onSubmit={handleSubmit}
+      submitLabel="حفظ"
+      isPending={isPending}
+      maxWidthClass="sm:max-w-[640px]"
+    >
+      <label className="flex flex-col gap-1.5">
+        <SettingsFieldLabel required>عنوان الصلاحية</SettingsFieldLabel>
+        <Input
+          placeholder="مثال: غرامة يومية لتأخير الإخلاء"
+          value={form.text_of_reason}
+          onChange={(e) => setField("text_of_reason", e.target.value)}
+          className={settingsFieldClass}
+        />
+      </label>
 
-      <DialogContent closeButton={false} className="max-w-3xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <div className="flex items-center justify-between border-b pb-5">
-            <h2 className="text-xl font-bold">
-              {isEdit ? "تعديل صلاحية المستأجر" : "إضافة صلاحية مستأجر"}
-            </h2>
-            <Button variant="ghost" type="button" onClick={() => setOpen(false)}>
-              <X className="size-4" />
-            </Button>
+      <div className="flex flex-col gap-1.5">
+        <SettingsFieldLabel>تعريف الخدمة</SettingsFieldLabel>
+        <div className="min-h-[220px]">
+          <TextEditor
+            key={editorKey}
+            initialContent={form.service_definition || ""}
+            placeholder="نص يظهر داخل المودال عند اختيار الصلاحية..."
+            onChange={(value) => setField("service_definition", value?.html || "")}
+          />
+        </div>
+      </div>
+
+      <div className="rounded-xl border border-[#E6EBE9] bg-[#F8FAF9] p-3.5">
+        <div className="flex items-center justify-between gap-3">
+          <div className="text-right">
+            <p className="text-[13px] font-bold text-[#111827]">حقل من المستخدم؟</p>
+            <p className="text-[11px] font-medium text-[#6B7280]">
+              يطلب إدخال قيمة (نص أو رقم) داخل المودال في التطبيق
+            </p>
           </div>
+          <Switch
+            dir="ltr"
+            checked={form.hasUserInput}
+            onCheckedChange={(checked) => setField("hasUserInput", checked)}
+            className="data-[state=checked]:bg-[#0E5F4E]"
+          />
+        </div>
+      </div>
 
-          <div className="space-y-5 text-right pt-2" dir="rtl">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">
-                عنوان الصلاحية <span className="text-red-500">*</span>
-              </label>
-              <Input
-                placeholder="مثال: غرامة يومية لتأخير الإخلاء"
-                value={form.text_of_reason}
-                onChange={(e) => setField("text_of_reason", e.target.value)}
-                className="h-12"
-              />
-            </div>
+      {form.hasUserInput ? (
+        <div className="flex flex-col gap-3.5 rounded-xl border border-[#0E5F4E]/15 bg-[#0E5F4E]/[0.04] p-3.5">
+          <label className="flex flex-col gap-1.5">
+            <SettingsFieldLabel required>اسم حقل الإدخال</SettingsFieldLabel>
+            <Input
+              placeholder="أدخل مبلغ الغرامة اليومية"
+              value={form.input_field_label}
+              onChange={(e) => setField("input_field_label", e.target.value)}
+              className={settingsFieldClass}
+            />
+          </label>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium">تعريف الخدمة</label>
-              <div className="min-h-[220px]">
-                <TextEditor
-                  key={editorKey}
-                  initialContent={form.service_definition || ""}
-                  placeholder="نص يظهر داخل المودال عند اختيار الصلاحية..."
-                  onChange={(value) =>
-                    setField("service_definition", value?.html || "")
-                  }
-                />
-              </div>
-            </div>
-
-            <div className="rounded-2xl border border-surface-border bg-neutral-50 p-4">
-              <div className="flex items-center justify-between gap-3">
-                <div className="text-right">
-                  <p className="text-sm font-bold">حقل من المستخدم؟</p>
-                  <p className="text-11 text-ink-placeholder">
-                    يطلب إدخال قيمة (نص أو رقم) داخل المودال في التطبيق
-                  </p>
-                </div>
-                <Switch
-                  dir="ltr"
-                  checked={form.hasUserInput}
-                  onCheckedChange={(checked) => setField("hasUserInput", checked)}
-                  className="data-[state=checked]:bg-brand-main"
-                />
-              </div>
-            </div>
-
-            {form.hasUserInput ? (
-              <div className="space-y-4 rounded-2xl border border-brand-hover/20 bg-brand-hover/5 p-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">
-                    اسم حقل الإدخال <span className="text-red-500">*</span>
-                  </label>
-                  <Input
-                    placeholder="أدخل مبلغ الغرامة اليومية"
-                    value={form.input_field_label}
-                    onChange={(e) => setField("input_field_label", e.target.value)}
-                    className="h-12"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">
-                    نوع الحقل <span className="text-red-500">*</span>
-                  </label>
-                  <Select
-                    value={form.input_field_type || "text"}
-                    onValueChange={(value) => setField("input_field_type", value)}
-                  >
-                    <SelectTrigger className="h-12">
-                      <SelectValue placeholder="اختر النوع" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="text">نص (text)</SelectItem>
-                      <SelectItem value="number">رقم (number)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            ) : null}
-
-            <Button
-              type="button"
-              disabled={isPending}
-              onClick={handleSubmit}
-              className="mx-auto block h-12 bg-brand-hover min-w-[160px]"
+          <label className="flex flex-col gap-1.5">
+            <SettingsFieldLabel required>نوع الحقل</SettingsFieldLabel>
+            <Select
+              dir="rtl"
+              value={form.input_field_type || "text"}
+              onValueChange={(value) => setField("input_field_type", value)}
             >
-              {isPending ? (
-                <Loader2 className="animate-spin" />
-              ) : isEdit ? (
-                "حفظ التعديلات"
-              ) : (
-                "إضافة"
-              )}
-            </Button>
-          </div>
-        </DialogHeader>
-      </DialogContent>
-    </Dialog>
+              <SelectTrigger className={settingsFieldClass}>
+                <SelectValue placeholder="اختر النوع" />
+              </SelectTrigger>
+              <SelectContent dir="rtl">
+                <SelectItem value="text">نص (text)</SelectItem>
+                <SelectItem value="number">رقم (number)</SelectItem>
+              </SelectContent>
+            </Select>
+          </label>
+        </div>
+      ) : null}
+    </SettingsFormDialog>
   );
 }

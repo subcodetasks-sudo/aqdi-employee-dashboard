@@ -2,11 +2,14 @@
 
 import AddNewMessageForClientDialog from "@/components/analysis/settings/message-for-clients/add-message-for-client";
 import DisplayMessageForClientDialog from "@/components/analysis/settings/message-for-clients/display-message-for-client";
+import PermissionGate from "@/components/auth/PermissionGate";
+import { PERMISSION_SECTIONS } from "@/src/lib/permissions";
 import {
   SETTINGS_DELETE_TRIGGER_CLASS,
   SettingsEmptyRow,
   SettingsLoadingRows,
   SettingsListHeader,
+  SettingsPageShell,
   SettingsTable,
   SettingsTableRow,
   SettingsTd,
@@ -39,10 +42,14 @@ export default function CustomerAppMessagesPage() {
   });
 
   return (
-    <div className="flex flex-col gap-5 min-h-full" dir="rtl">
+    <SettingsPageShell>
       <SettingsListHeader
         title="الرسائل التطبيقية للعميل"
-        action={<AddNewMessageForClientDialog />}
+        action={
+          <PermissionGate section={PERMISSION_SECTIONS.app_content} action="create">
+            <AddNewMessageForClientDialog />
+          </PermissionGate>
+        }
       />
 
       <SettingsTable headers={HEADERS} minWidth="720px">
@@ -62,21 +69,25 @@ export default function CustomerAppMessagesPage() {
               <SettingsTd>
                 <div className="flex items-center justify-end gap-2">
                   <DisplayMessageForClientDialog messageAlert={item} />
-                  <AddNewMessageForClientDialog isEdit messageAlert={item} />
-                  <button
-                    type="button"
-                    disabled={deleteMutation.isPending}
-                    onClick={() => deleteMutation.mutate(item.id)}
-                    className={SETTINGS_DELETE_TRIGGER_CLASS}
-                  >
-                    حذف
-                  </button>
+                  <PermissionGate section={PERMISSION_SECTIONS.app_content} action="edit">
+                    <AddNewMessageForClientDialog isEdit messageAlert={item} />
+                  </PermissionGate>
+                  <PermissionGate section={PERMISSION_SECTIONS.app_content} action="delete">
+                    <button
+                      type="button"
+                      disabled={deleteMutation.isPending}
+                      onClick={() => deleteMutation.mutate(item.id)}
+                      className={SETTINGS_DELETE_TRIGGER_CLASS}
+                    >
+                      حذف
+                    </button>
+                  </PermissionGate>
                 </div>
               </SettingsTd>
             </SettingsTableRow>
           ))
         )}
       </SettingsTable>
-    </div>
+    </SettingsPageShell>
   );
 }

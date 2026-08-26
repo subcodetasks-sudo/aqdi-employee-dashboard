@@ -40,6 +40,9 @@ const employeeSchema = (isEdit) => z.object({
   base_salary: z.string().min(1, "الراتب الأساسي مطلوب"),
   role_id: z.string().min(1, "الدور الوظيفي مطلوب"),
   is_active: z.string().optional().default("1"),
+  work_period: z.enum(["morning", "evening"], {
+    required_error: "فترة العمل مطلوبة",
+  }),
   image: isEdit 
     ? z.any().optional() 
     : z.any().refine((files) => files?.length > 0, "الرجاء اختيار صورة"),
@@ -70,6 +73,7 @@ export default function AddEmployeeForm({ isEdit = false, employee, onSuccess })
       base_salary: isEdit ? String(parseFloat(employee?.base_salary || 0)) : "",
       role_id: isEdit ? String(employee?.role_id || "") : "",
       is_active: isEdit ? (employee?.is_active ? "1" : "0") : "1",
+      work_period: isEdit ? (employee?.work_period || "morning") : "morning",
       image: null,
     },
   });
@@ -121,6 +125,7 @@ export default function AddEmployeeForm({ isEdit = false, employee, onSuccess })
     formDataPayload.append("base_salary", String(data.base_salary));
     formDataPayload.append("role_id", String(data.role_id));
     formDataPayload.append("is_active", String(data.is_active));
+    formDataPayload.append("work_period", data.work_period);
 
     if (data.image && data.image[0]) {
       formDataPayload.append("profile_image", data.image[0]);
@@ -294,6 +299,33 @@ export default function AddEmployeeForm({ isEdit = false, employee, onSuccess })
             )}
           />
         </div>
+
+        {/* Work Period */}
+        <FormField
+          control={form.control}
+          name="work_period"
+          render={({ field }) => (
+            <FormItem dir='rtl' className="text-right">
+              <FormLabel>فترة العمل</FormLabel>
+              <FormControl>
+                <Select
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  dir='rtl'
+                >
+                  <SelectTrigger className="h-12">
+                    <SelectValue placeholder="اختر فترة العمل" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="morning">وردية الصباح</SelectItem>
+                    <SelectItem value="evening">وردية المساء</SelectItem>
+                  </SelectContent>
+                </Select>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         {/* Active Status */}
         <FormField

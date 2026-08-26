@@ -10,6 +10,7 @@ import {
   CONTRACT_SUB_TABS,
   PRIMARY_TABS,
 } from "./mock-data";
+import "./settings-design.css";
 
 function resolveTab(raw) {
   return PRIMARY_TABS.some((tab) => tab.id === raw) ? raw : "general";
@@ -40,21 +41,24 @@ export default function SystemSettingsWrapper() {
   };
 
   return (
-    <div className="flex flex-col gap-6 min-h-full" dir="rtl">
+    <div
+      className="set-page flex flex-col gap-4 min-h-full -m-[45px] p-[45px] max-[1700px]:-m-[30px] max-[1700px]:p-[30px] bg-[#F4F6F5] dark:bg-[#0B1411]"
+      dir="rtl"
+    >
       <SystemSettingsHeader activeTab={activeTab} />
 
-      <div className="flex flex-wrap gap-2">
+      <div className="mkt-subtabs">
         {PRIMARY_TABS.map((tab) => (
           <button
             key={tab.id}
             type="button"
-            onClick={() => updateParams({ tab: tab.id, sub: tab.id === "contracts" ? contractSub : null })}
-            className={cn(
-              "h-11 px-6 rounded-xl text-sm font-bold transition-all shrink-0",
-              activeTab === tab.id
-                ? "bg-[#054D44] text-white shadow-sm"
-                : "bg-white text-gray-900 border border-surface-border-soft hover:border-[#054D44]/30 dark:bg-card dark:text-white dark:border-white/10"
-            )}
+            onClick={() =>
+              updateParams({
+                tab: tab.id,
+                sub: tab.id === "contracts" ? contractSub : null,
+              })
+            }
+            className={cn("mkt-subtab", activeTab === tab.id && "on")}
           >
             {tab.label}
           </button>

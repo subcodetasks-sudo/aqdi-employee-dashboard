@@ -1,7 +1,8 @@
 
 import { useUserStore } from "../stores/user-store";
 import { useRouter } from "next/navigation";
-import { axiosInstance } from "@/src/utils/axios";
+import { axiosInstance, AUTH_ENDPOINTS, cancelQueuedRefreshes } from "@/src/utils/axios";
+import { getRefreshToken } from "@/src/lib/auth-session";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 export const useLogout = () => {
@@ -11,7 +12,10 @@ export const useLogout = () => {
 
   const { mutate: logout, isPending: logoutLoading } = useMutation({
     mutationFn: async () => {
-      await axiosInstance.post("/admin/employees/logout");
+      // Unblock anything queued behind an in-flight silent refresh before we
+      // tear the session down out from under it.
+      cancelQueuedRefreshes(new Error('User logged out'));
+      await axiosInstance.post(AUTH_ENDPOINTS.logout, { refresh_token: getRefreshToken() });
     },
     onMutate: () => {
       toast.loading("جاري تسجيل الخروج...");

@@ -1,8 +1,12 @@
 "use client";
 
-import { useUnwrapPageProps } from "@/src/hooks/use-unwrap-page-props";
+import {
+  useUnwrapPageProps
+} from "@/src/hooks/use-unwrap-page-props";
 import AddNewMessageForEmployeeDialog from "@/components/analysis/settings/message-for-employees/add-message-for-employee";
 import DisplayMessageForEmployeeDialog from "@/components/analysis/settings/message-for-employees/display-message-for-employee";
+import PermissionGate from "@/components/auth/PermissionGate";
+import { PERMISSION_SECTIONS } from "@/src/lib/permissions";
 import {
   SETTINGS_DELETE_TRIGGER_CLASS,
   SettingsEmptyRow,
@@ -11,6 +15,7 @@ import {
   SettingsTable,
   SettingsTableRow,
   SettingsTd,
+  SettingsPageShell,
 } from "@/components/SystemSettings/shared";
 import { axiosInstance } from "@/src/utils/axios";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -47,10 +52,14 @@ export default function EmployeeTermsPage(props) {
   });
 
   return (
-    <div className="flex flex-col gap-5 min-h-full" dir="rtl">
+    <SettingsPageShell>
       <SettingsListHeader
         title="رسائل توضيحية للموظفين"
-        action={<AddNewMessageForEmployeeDialog isEdit={false} />}
+        action={
+          <PermissionGate section={PERMISSION_SECTIONS.message_alerts} action="create">
+            <AddNewMessageForEmployeeDialog isEdit={false} />
+          </PermissionGate>
+        }
       />
 
       <SettingsTable headers={HEADERS} minWidth="860px">
@@ -69,21 +78,25 @@ export default function EmployeeTermsPage(props) {
               <SettingsTd>
                 <div className="flex items-center justify-end gap-2">
                   <DisplayMessageForEmployeeDialog messageAlert={item} />
-                  <AddNewMessageForEmployeeDialog isEdit messageAlert={item} />
-                  <button
-                    type="button"
-                    disabled={deleteMutation.isPending}
-                    onClick={() => deleteMutation.mutate(item.id)}
-                    className={SETTINGS_DELETE_TRIGGER_CLASS}
-                  >
-                    حذف
-                  </button>
+                  <PermissionGate section={PERMISSION_SECTIONS.message_alerts} action="edit">
+                    <AddNewMessageForEmployeeDialog isEdit messageAlert={item} />
+                  </PermissionGate>
+                  <PermissionGate section={PERMISSION_SECTIONS.message_alerts} action="delete">
+                    <button
+                      type="button"
+                      disabled={deleteMutation.isPending}
+                      onClick={() => deleteMutation.mutate(item.id)}
+                      className={SETTINGS_DELETE_TRIGGER_CLASS}
+                    >
+                      حذف
+                    </button>
+                  </PermissionGate>
                 </div>
               </SettingsTd>
             </SettingsTableRow>
           ))
         )}
       </SettingsTable>
-    </div>
+    </SettingsPageShell>
   );
 }

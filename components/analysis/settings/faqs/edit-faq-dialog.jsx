@@ -1,20 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import SettingsFormDialog, {
+  SettingsFieldLabel,
+  settingsFieldClass,
+} from "@/components/SystemSettings/SettingsFormDialog";
+import { SETTINGS_EDIT_TRIGGER_CLASS } from "@/components/SystemSettings/shared";
 import { axiosInstance } from "@/src/utils/axios";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Loader2, X } from "lucide-react";
-import { SETTINGS_EDIT_TRIGGER_CLASS } from "@/components/SystemSettings/shared";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 export default function EditFaqDialog({ faq }) {
   const [open, setOpen] = useState(false);
@@ -54,55 +51,39 @@ export default function EditFaqDialog({ faq }) {
   };
 
   return (
-    <Dialog dir="rtl" open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
+    <SettingsFormDialog
+      open={open}
+      onOpenChange={setOpen}
+      trigger={
         <button type="button" className={SETTINGS_EDIT_TRIGGER_CLASS}>
           تعديل
         </button>
-      </DialogTrigger>
-      <DialogContent closeButton={false} className="max-w-2xl">
-        <DialogHeader>
-          <div className="flex items-center justify-between border-b pb-6">
-            <h2 className="text-xl font-bold">تعديل السؤال</h2>
-            <Button variant="ghost" type="button" onClick={() => setOpen(false)}>
-              <X className="size-4" />
-            </Button>
-          </div>
-          <div dir="rtl" className="space-y-4 text-right pt-2">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">
-                السؤال <span className="text-red-500">*</span>
-              </label>
-              <Input
-                placeholder="اكتب السؤال هنا ..."
-                value={titleAr}
-                onChange={(e) => setTitleAr(e.target.value)}
-                className="h-12"
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">
-                الجواب <span className="text-red-500">*</span>
-              </label>
-              <Textarea
-                placeholder="اكتب الجواب هنا ..."
-                value={answerAr}
-                onChange={(e) => setAnswerAr(e.target.value)}
-                rows={5}
-                className="resize-none"
-              />
-            </div>
-            <Button
-              type="button"
-              disabled={isPending}
-              onClick={handleSubmit}
-              className="mx-auto block h-12 bg-brand-hover min-w-[140px]"
-            >
-              {isPending ? <Loader2 className="animate-spin" /> : "حفظ التعديل"}
-            </Button>
-          </div>
-        </DialogHeader>
-      </DialogContent>
-    </Dialog>
+      }
+      title="تعديل العنصر"
+      onSubmit={handleSubmit}
+      submitLabel="حفظ"
+      isPending={isPending}
+    >
+      <label className="flex flex-col gap-1.5">
+        <SettingsFieldLabel required>السؤال</SettingsFieldLabel>
+        <Input
+          placeholder="اكتب السؤال هنا ..."
+          value={titleAr}
+          onChange={(e) => setTitleAr(e.target.value)}
+          className={settingsFieldClass}
+        />
+      </label>
+
+      <label className="flex flex-col gap-1.5">
+        <SettingsFieldLabel required>الجواب</SettingsFieldLabel>
+        <Textarea
+          placeholder="اكتب الجواب هنا ..."
+          value={answerAr}
+          onChange={(e) => setAnswerAr(e.target.value)}
+          rows={5}
+          className={cn(settingsFieldClass, "h-auto min-h-[120px] resize-none py-2.5")}
+        />
+      </label>
+    </SettingsFormDialog>
   );
 }

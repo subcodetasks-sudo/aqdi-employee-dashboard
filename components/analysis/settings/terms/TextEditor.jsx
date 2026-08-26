@@ -13,6 +13,30 @@ import Image from '@tiptap/extension-image';
 import Placeholder from '@tiptap/extension-placeholder';
 import CharacterCount from '@tiptap/extension-character-count';
 import { useCallback, useState } from 'react';
+import {
+  AlignCenter,
+  AlignJustify,
+  AlignLeft,
+  AlignRight,
+  Bold,
+  Code,
+  Code2,
+  Eraser,
+  Highlighter,
+  ImageIcon,
+  Italic,
+  Link2,
+  Link2Off,
+  List,
+  ListOrdered,
+  Minus,
+  Quote,
+  Redo2,
+  Strikethrough,
+  Underline as UnderlineIcon,
+  Undo2,
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 const FontSize = Extension.create({
   name: 'fontSize',
@@ -30,8 +54,8 @@ const FontSize = Extension.create({
         attributes: {
           fontSize: {
             default: null,
-            parseHTML: element => element.style.fontSize,
-            renderHTML: attributes => {
+            parseHTML: (element) => element.style.fontSize,
+            renderHTML: (attributes) => {
               if (!attributes.fontSize) return {};
               return {
                 style: `font-size: ${attributes.fontSize}`,
@@ -46,37 +70,84 @@ const FontSize = Extension.create({
   addCommands() {
     return {
       setFontSize:
-        size =>
-          ({ chain }) =>
-            chain().setMark('textStyle', { fontSize: size }).run(),
+        (size) =>
+        ({ chain }) =>
+          chain().setMark('textStyle', { fontSize: size }).run(),
 
       unsetFontSize:
         () =>
-          ({ chain }) =>
-            chain().setMark('textStyle', { fontSize: null }).run(),
+        ({ chain }) =>
+          chain().setMark('textStyle', { fontSize: null }).run(),
     };
   },
 });
 
-const ToolbarButton = ({ onClick, isActive, disabled, title, children }) => (
+const ToolbarButton = ({ onClick, isActive, disabled, title, children, compact }) => (
   <button
     type="button"
     title={title}
     disabled={disabled}
     onClick={onClick}
-    className={`min-w-[36px] h-9 px-2 rounded text-sm font-medium transition-colors ${
-      isActive ? 'bg-brand-main text-white' : 'hover:bg-gray-200 text-gray-700'
-    } ${disabled ? 'opacity-40 cursor-not-allowed hover:bg-transparent' : ''}`}
+    className={cn(
+      'inline-flex shrink-0 items-center justify-center rounded-md transition-colors',
+      compact ? 'size-7' : 'size-8',
+      isActive
+        ? 'bg-[#054D44] text-white'
+        : 'text-[#4B5563] hover:bg-[#E8F5F1] hover:text-[#054D44]',
+      disabled && 'cursor-not-allowed opacity-35 hover:bg-transparent hover:text-[#4B5563]'
+    )}
   >
     {children}
   </button>
 );
 
-const ToolbarDivider = () => <div className="w-px h-8 bg-gray-300 mx-1" />;
+const ToolbarDivider = ({ compact }) => (
+  <div
+    className={cn(
+      'mx-0.5 w-px shrink-0 bg-[#E5E7EB]',
+      compact ? 'h-5' : 'h-6'
+    )}
+  />
+);
 
-function Toolbar({ editor }) {
-  const [color, setColor] = useState('#000000');
+const ToolbarSelect = ({ compact, className, ...props }) => (
+  <select
+    {...props}
+    className={cn(
+      'shrink-0 appearance-none rounded-md border border-[#E6EBE9] bg-white text-[#374151] outline-none transition-colors',
+      'focus:border-[#054D44] focus:ring-1 focus:ring-[#054D44]/20',
+      'dark:bg-[#0F1C16] dark:border-white/10 dark:text-white dark:[color-scheme:dark]',
+      compact ? 'h-7 px-2 text-[11px]' : 'h-8 px-2.5 text-xs',
+      className
+    )}
+  />
+);
+
+const ColorSwatch = ({ title, value, onChange, compact }) => (
+  <label
+    title={title}
+    className={cn(
+      'relative inline-flex shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-md border border-[#E6EBE9] bg-white',
+      compact ? 'size-7' : 'size-8'
+    )}
+  >
+    <span
+      className="absolute inset-x-1 bottom-1 h-1.5 rounded-sm"
+      style={{ backgroundColor: value }}
+    />
+    <input
+      type="color"
+      value={value}
+      onChange={onChange}
+      className="absolute inset-0 cursor-pointer opacity-0"
+    />
+  </label>
+);
+
+function Toolbar({ editor, compact = false }) {
+  const [color, setColor] = useState('#111827');
   const [highlightColor, setHighlightColor] = useState('#fef08a');
+  const iconSize = compact ? 14 : 15;
 
   const addImage = useCallback(() => {
     const input = document.createElement('input');
@@ -113,26 +184,54 @@ function Toolbar({ editor }) {
 
   if (!editor) return null;
 
+  const btn = { compact };
+  const headingValue = editor.isActive('heading', { level: 1 })
+    ? '1'
+    : editor.isActive('heading', { level: 2 })
+      ? '2'
+      : editor.isActive('heading', { level: 3 })
+        ? '3'
+        : editor.isActive('heading', { level: 4 })
+          ? '4'
+          : editor.isActive('heading', { level: 5 })
+            ? '5'
+            : editor.isActive('heading', { level: 6 })
+              ? '6'
+              : 'paragraph';
+
   return (
-    <div className="flex flex-wrap items-center gap-1 p-3 border-b bg-gray-50">
+    <div
+      className={cn(
+        'flex w-full min-w-0 max-w-full flex-wrap items-center border-b border-[#EEF1F0] bg-[#F8FAF9]',
+        compact ? 'gap-0.5 px-1.5 py-1.5' : 'gap-1 p-2'
+      )}
+      dir="rtl"
+    >
       <ToolbarButton
+        {...btn}
         title="تراجع"
         onClick={() => editor.chain().focus().undo().run()}
         disabled={!editor.can().chain().focus().undo().run()}
       >
-        ↶
+        <Undo2 size={iconSize} />
       </ToolbarButton>
       <ToolbarButton
+        {...btn}
         title="إعادة"
         onClick={() => editor.chain().focus().redo().run()}
         disabled={!editor.can().chain().focus().redo().run()}
       >
-        ↷
+        <Redo2 size={iconSize} />
       </ToolbarButton>
 
-      <ToolbarDivider />
+      <ToolbarDivider compact={compact} />
 
-      <select
+      <ToolbarSelect
+        compact={compact}
+        className={compact ? 'w-[4.75rem] max-w-[30%]' : 'min-w-[104px]'}
+        value={
+          compact && ['4', '5', '6'].includes(headingValue) ? '3' : headingValue
+        }
         onChange={(e) => {
           const value = e.target.value;
           if (value === 'paragraph') {
@@ -141,27 +240,24 @@ function Toolbar({ editor }) {
             editor.chain().focus().toggleHeading({ level: Number(value) }).run();
           }
         }}
-        value={
-          editor.isActive('heading', { level: 1 }) ? '1'
-          : editor.isActive('heading', { level: 2 }) ? '2'
-          : editor.isActive('heading', { level: 3 }) ? '3'
-          : editor.isActive('heading', { level: 4 }) ? '4'
-          : editor.isActive('heading', { level: 5 }) ? '5'
-          : editor.isActive('heading', { level: 6 }) ? '6'
-          : 'paragraph'
-        }
-        className="h-9 border rounded px-2 text-sm bg-white min-w-[120px] dark:bg-[#0F1C16] dark:border-white/10 dark:text-white dark:[color-scheme:dark]"
       >
         <option value="paragraph">فقرة</option>
         <option value="1">عنوان 1</option>
         <option value="2">عنوان 2</option>
         <option value="3">عنوان 3</option>
-        <option value="4">عنوان 4</option>
-        <option value="5">عنوان 5</option>
-        <option value="6">عنوان 6</option>
-      </select>
+        {!compact && (
+          <>
+            <option value="4">عنوان 4</option>
+            <option value="5">عنوان 5</option>
+            <option value="6">عنوان 6</option>
+          </>
+        )}
+      </ToolbarSelect>
 
-      <select
+      <ToolbarSelect
+        compact={compact}
+        className={compact ? 'w-[3.5rem] max-w-[22%]' : 'min-w-[88px]'}
+        defaultValue="default"
         onChange={(e) => {
           const size = e.target.value;
           if (size === 'default') {
@@ -170,97 +266,186 @@ function Toolbar({ editor }) {
             editor.chain().focus().setFontSize(size).run();
           }
         }}
-        className="h-9 border rounded px-2 text-sm bg-white min-w-[100px] dark:bg-[#0F1C16] dark:border-white/10 dark:text-white dark:[color-scheme:dark]"
       >
-        <option value="default">حجم الخط</option>
-        <option value="12px">12px</option>
-        <option value="14px">14px</option>
-        <option value="16px">16px</option>
-        <option value="18px">18px</option>
-        <option value="20px">20px</option>
-        <option value="24px">24px</option>
-        <option value="28px">28px</option>
-        <option value="32px">32px</option>
-      </select>
+        <option value="default">الحجم</option>
+        <option value="12px">12</option>
+        <option value="14px">14</option>
+        <option value="16px">16</option>
+        <option value="18px">18</option>
+        <option value="20px">20</option>
+        <option value="24px">24</option>
+        {!compact && (
+          <>
+            <option value="28px">28</option>
+            <option value="32px">32</option>
+          </>
+        )}
+      </ToolbarSelect>
 
-      <ToolbarDivider />
+      <ToolbarDivider compact={compact} />
 
-      <ToolbarButton title="عريض" isActive={editor.isActive('bold')} onClick={() => editor.chain().focus().toggleBold().run()}>
-        <strong>B</strong>
-      </ToolbarButton>
-      <ToolbarButton title="مائل" isActive={editor.isActive('italic')} onClick={() => editor.chain().focus().toggleItalic().run()}>
-        <em>I</em>
-      </ToolbarButton>
-      <ToolbarButton title="تحته خط" isActive={editor.isActive('underline')} onClick={() => editor.chain().focus().toggleUnderline().run()}>
-        <u>U</u>
-      </ToolbarButton>
-      <ToolbarButton title="يتوسطه خط" isActive={editor.isActive('strike')} onClick={() => editor.chain().focus().toggleStrike().run()}>
-        <s>S</s>
-      </ToolbarButton>
-      <ToolbarButton title="كود" isActive={editor.isActive('code')} onClick={() => editor.chain().focus().toggleCode().run()}>
-        {'</>'}
-      </ToolbarButton>
-
-      <ToolbarDivider />
-
-      <ToolbarButton title="محاذاة لليمين" isActive={editor.isActive({ textAlign: 'right' })} onClick={() => editor.chain().focus().setTextAlign('right').run()}>
-        ≡R
-      </ToolbarButton>
-      <ToolbarButton title="محاذاة للوسط" isActive={editor.isActive({ textAlign: 'center' })} onClick={() => editor.chain().focus().setTextAlign('center').run()}>
-        ≡C
-      </ToolbarButton>
-      <ToolbarButton title="محاذاة لليسار" isActive={editor.isActive({ textAlign: 'left' })} onClick={() => editor.chain().focus().setTextAlign('left').run()}>
-        ≡L
-      </ToolbarButton>
-      <ToolbarButton title="ضبط" isActive={editor.isActive({ textAlign: 'justify' })} onClick={() => editor.chain().focus().setTextAlign('justify').run()}>
-        ≡J
-      </ToolbarButton>
-
-      <ToolbarDivider />
-
-      <ToolbarButton title="قائمة نقطية" isActive={editor.isActive('bulletList')} onClick={() => editor.chain().focus().toggleBulletList().run()}>
-        •≡
-      </ToolbarButton>
-      <ToolbarButton title="قائمة مرقمة" isActive={editor.isActive('orderedList')} onClick={() => editor.chain().focus().toggleOrderedList().run()}>
-        1≡
-      </ToolbarButton>
-      <ToolbarButton title="اقتباس" isActive={editor.isActive('blockquote')} onClick={() => editor.chain().focus().toggleBlockquote().run()}>
-        "
-      </ToolbarButton>
-      <ToolbarButton title="كتلة كود" isActive={editor.isActive('codeBlock')} onClick={() => editor.chain().focus().toggleCodeBlock().run()}>
-        {'{ }'}
-      </ToolbarButton>
-      <ToolbarButton title="خط فاصل" onClick={() => editor.chain().focus().setHorizontalRule().run()}>
-        ―
-      </ToolbarButton>
-
-      <ToolbarDivider />
-
-      <ToolbarButton title="رابط" isActive={editor.isActive('link')} onClick={setLink}>
-        🔗
+      <ToolbarButton
+        {...btn}
+        title="عريض"
+        isActive={editor.isActive('bold')}
+        onClick={() => editor.chain().focus().toggleBold().run()}
+      >
+        <Bold size={iconSize} />
       </ToolbarButton>
       <ToolbarButton
+        {...btn}
+        title="مائل"
+        isActive={editor.isActive('italic')}
+        onClick={() => editor.chain().focus().toggleItalic().run()}
+      >
+        <Italic size={iconSize} />
+      </ToolbarButton>
+      <ToolbarButton
+        {...btn}
+        title="تحته خط"
+        isActive={editor.isActive('underline')}
+        onClick={() => editor.chain().focus().toggleUnderline().run()}
+      >
+        <UnderlineIcon size={iconSize} />
+      </ToolbarButton>
+      <ToolbarButton
+        {...btn}
+        title="يتوسطه خط"
+        isActive={editor.isActive('strike')}
+        onClick={() => editor.chain().focus().toggleStrike().run()}
+      >
+        <Strikethrough size={iconSize} />
+      </ToolbarButton>
+      {!compact && (
+        <ToolbarButton
+          {...btn}
+          title="كود"
+          isActive={editor.isActive('code')}
+          onClick={() => editor.chain().focus().toggleCode().run()}
+        >
+          <Code size={iconSize} />
+        </ToolbarButton>
+      )}
+
+      <ToolbarDivider compact={compact} />
+
+      <ToolbarButton
+        {...btn}
+        title="محاذاة لليمين"
+        isActive={editor.isActive({ textAlign: 'right' })}
+        onClick={() => editor.chain().focus().setTextAlign('right').run()}
+      >
+        <AlignRight size={iconSize} />
+      </ToolbarButton>
+      <ToolbarButton
+        {...btn}
+        title="محاذاة للوسط"
+        isActive={editor.isActive({ textAlign: 'center' })}
+        onClick={() => editor.chain().focus().setTextAlign('center').run()}
+      >
+        <AlignCenter size={iconSize} />
+      </ToolbarButton>
+      <ToolbarButton
+        {...btn}
+        title="محاذاة لليسار"
+        isActive={editor.isActive({ textAlign: 'left' })}
+        onClick={() => editor.chain().focus().setTextAlign('left').run()}
+      >
+        <AlignLeft size={iconSize} />
+      </ToolbarButton>
+      {!compact && (
+        <ToolbarButton
+          {...btn}
+          title="ضبط"
+          isActive={editor.isActive({ textAlign: 'justify' })}
+          onClick={() => editor.chain().focus().setTextAlign('justify').run()}
+        >
+          <AlignJustify size={iconSize} />
+        </ToolbarButton>
+      )}
+
+      <ToolbarDivider compact={compact} />
+
+      <ToolbarButton
+        {...btn}
+        title="قائمة نقطية"
+        isActive={editor.isActive('bulletList')}
+        onClick={() => editor.chain().focus().toggleBulletList().run()}
+      >
+        <List size={iconSize} />
+      </ToolbarButton>
+      <ToolbarButton
+        {...btn}
+        title="قائمة مرقمة"
+        isActive={editor.isActive('orderedList')}
+        onClick={() => editor.chain().focus().toggleOrderedList().run()}
+      >
+        <ListOrdered size={iconSize} />
+      </ToolbarButton>
+      {!compact && (
+        <>
+          <ToolbarButton
+            {...btn}
+            title="اقتباس"
+            isActive={editor.isActive('blockquote')}
+            onClick={() => editor.chain().focus().toggleBlockquote().run()}
+          >
+            <Quote size={iconSize} />
+          </ToolbarButton>
+          <ToolbarButton
+            {...btn}
+            title="كتلة كود"
+            isActive={editor.isActive('codeBlock')}
+            onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+          >
+            <Code2 size={iconSize} />
+          </ToolbarButton>
+          <ToolbarButton
+            {...btn}
+            title="خط فاصل"
+            onClick={() => editor.chain().focus().setHorizontalRule().run()}
+          >
+            <Minus size={iconSize} />
+          </ToolbarButton>
+        </>
+      )}
+
+      <ToolbarDivider compact={compact} />
+
+      <ToolbarButton
+        {...btn}
+        title="رابط"
+        isActive={editor.isActive('link')}
+        onClick={setLink}
+      >
+        <Link2 size={iconSize} />
+      </ToolbarButton>
+      <ToolbarButton
+        {...btn}
         title="إزالة الرابط"
         disabled={!editor.isActive('link')}
         onClick={() => editor.chain().focus().unsetLink().run()}
       >
-        ⛓️✕
+        <Link2Off size={iconSize} />
       </ToolbarButton>
-      <ToolbarButton title="صورة" onClick={addImage}>
-        🖼️
+      <ToolbarButton {...btn} title="صورة" onClick={addImage}>
+        <ImageIcon size={iconSize} />
       </ToolbarButton>
 
-      <ToolbarDivider />
+      <ToolbarDivider compact={compact} />
 
       <ToolbarButton
+        {...btn}
         title="تمييز"
         isActive={editor.isActive('highlight')}
-        onClick={() => editor.chain().focus().toggleHighlight({ color: highlightColor }).run()}
+        onClick={() =>
+          editor.chain().focus().toggleHighlight({ color: highlightColor }).run()
+        }
       >
-        🖍️
+        <Highlighter size={iconSize} />
       </ToolbarButton>
-      <input
-        type="color"
+      <ColorSwatch
+        compact={compact}
         title="لون التمييز"
         value={highlightColor}
         onChange={(e) => {
@@ -269,25 +454,22 @@ function Toolbar({ editor }) {
             editor.chain().focus().toggleHighlight({ color: e.target.value }).run();
           }
         }}
-        className="w-9 h-9 rounded border cursor-pointer bg-white"
       />
-
-      <input
-        type="color"
+      <ColorSwatch
+        compact={compact}
         title="لون النص"
         value={color}
         onChange={(e) => {
           setColor(e.target.value);
           editor.chain().focus().setColor(e.target.value).run();
         }}
-        className="w-9 h-9 rounded border cursor-pointer bg-white"
       />
-
       <ToolbarButton
+        {...btn}
         title="إزالة التنسيق"
         onClick={() => editor.chain().focus().clearNodes().unsetAllMarks().run()}
       >
-        ✕
+        <Eraser size={iconSize} />
       </ToolbarButton>
     </div>
   );
@@ -298,6 +480,8 @@ export default function TextEditor({
   onChange,
   dir = 'rtl',
   placeholder = 'اكتب هنا...',
+  compact = false,
+  className = '',
 }) {
   const editor = useEditor({
     immediatelyRender: false,
@@ -328,7 +512,9 @@ export default function TextEditor({
     editorProps: {
       attributes: {
         dir,
-        class: 'min-h-[300px] p-4 outline-none prose prose-sm max-w-none',
+        class: compact
+          ? 'min-h-[160px] p-3 outline-none prose prose-sm max-w-none'
+          : 'min-h-[300px] p-4 outline-none prose prose-sm max-w-none',
       },
     },
 
@@ -343,10 +529,24 @@ export default function TextEditor({
   if (!editor) return null;
 
   return (
-    <div className="border rounded-lg overflow-hidden bg-white">
-      <Toolbar editor={editor} />
-      <EditorContent editor={editor} />
-      <div className="border-t px-4 py-2 text-xs text-gray-400 text-left" dir="ltr">
+    <div
+      className={cn(
+        'w-full min-w-0 max-w-full overflow-hidden bg-white',
+        compact ? 'rounded-none border-0' : 'rounded-lg border',
+        className
+      )}
+    >
+      <Toolbar editor={editor} compact={compact} />
+      <div className="min-w-0 max-w-full overflow-x-auto">
+        <EditorContent editor={editor} />
+      </div>
+      <div
+        className={cn(
+          'border-t border-[#EEF1F0] text-left text-[11px] text-[#9CA3AF]',
+          compact ? 'px-3 py-1.5' : 'px-4 py-2'
+        )}
+        dir="ltr"
+      >
         {editor.storage.characterCount.characters()} characters
       </div>
     </div>

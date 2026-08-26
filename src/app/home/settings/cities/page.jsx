@@ -1,9 +1,13 @@
 "use client";
 
-import { useUnwrapPageProps } from "@/src/hooks/use-unwrap-page-props";
+import {
+  useUnwrapPageProps
+} from "@/src/hooks/use-unwrap-page-props";
 import AddNewCityDialog from "@/components/analysis/settings/cities/add-new-city-dialog";
 import DeleteCityDialog from "@/components/analysis/settings/cities/delete-city-dialog";
 import EditCityDialog from "@/components/analysis/settings/cities/edit-city-dialog";
+import PermissionGate from "@/components/auth/PermissionGate";
+import { PERMISSION_SECTIONS } from "@/src/lib/permissions";
 import {
   SettingsEmptyRow,
   SettingsLoadingRows,
@@ -11,6 +15,7 @@ import {
   SettingsTable,
   SettingsTableRow,
   SettingsTd,
+  SettingsPageShell,
 } from "@/components/SystemSettings/shared";
 import { axiosInstance } from "@/src/utils/axios";
 import { useQuery } from "@tanstack/react-query";
@@ -32,8 +37,15 @@ export default function CitiesPage(props) {
   const data = cities?.data?.data?.items ?? [];
 
   return (
-    <div className="flex flex-col gap-5 min-h-full" dir="rtl">
-      <SettingsListHeader title="المدن" action={<AddNewCityDialog />} />
+    <SettingsPageShell>
+      <SettingsListHeader
+        title="المدن"
+        action={
+          <PermissionGate section={PERMISSION_SECTIONS.cities} action="create">
+            <AddNewCityDialog />
+          </PermissionGate>
+        }
+      />
 
       <SettingsTable headers={HEADERS} minWidth="640px">
         {isLoading ? (
@@ -49,14 +61,18 @@ export default function CitiesPage(props) {
               </SettingsTd>
               <SettingsTd>
                 <div className="flex items-center justify-end gap-2">
-                  <EditCityDialog city={row} />
-                  <DeleteCityDialog city={row} />
+                  <PermissionGate section={PERMISSION_SECTIONS.cities} action="edit">
+                    <EditCityDialog city={row} />
+                  </PermissionGate>
+                  <PermissionGate section={PERMISSION_SECTIONS.cities} action="delete">
+                    <DeleteCityDialog city={row} />
+                  </PermissionGate>
                 </div>
               </SettingsTd>
             </SettingsTableRow>
           ))
         )}
       </SettingsTable>
-    </div>
+    </SettingsPageShell>
   );
 }

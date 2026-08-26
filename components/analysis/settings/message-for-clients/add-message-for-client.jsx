@@ -1,12 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { useEffect, useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -15,12 +9,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import SettingsFormDialog, {
+  SettingsFieldLabel,
+  settingsFieldClass,
+} from "@/components/SystemSettings/SettingsFormDialog";
+import { SETTINGS_EDIT_TRIGGER_CLASS, SettingsAddTrigger } from "@/components/SystemSettings/shared";
 import { useCustomerMessages } from "@/src/hooks/use-customer-messages";
 import { axiosInstance } from "@/src/utils/axios";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Loader2, X } from "lucide-react";
-import { SETTINGS_EDIT_TRIGGER_CLASS, SettingsAddTrigger } from "@/components/SystemSettings/shared";
-import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 export default function AddNewMessageForClientDialog({ isEdit, messageAlert }) {
@@ -77,106 +73,76 @@ export default function AddNewMessageForClientDialog({ isEdit, messageAlert }) {
   };
 
   return (
-    <Dialog dir="rtl" open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {isEdit ? (
+    <SettingsFormDialog
+      open={open}
+      onOpenChange={setOpen}
+      trigger={
+        isEdit ? (
           <button type="button" className={SETTINGS_EDIT_TRIGGER_CLASS}>
             تعديل
           </button>
         ) : (
-          <SettingsAddTrigger>إضافة</SettingsAddTrigger>
-        )}
-      </DialogTrigger>
-      <DialogContent closeButton={false} className="max-w-3xl">
-        <DialogHeader>
-          <div className="flex items-center justify-between border-b pb-6">
-            <h2 className="text-xl font-bold">
-              {isEdit ? "تعديل رسالة توضيحية" : "إضافة رسالة توضيحية جديدة"}
-            </h2>
-            <Button variant="ghost" onClick={() => setOpen(false)}>
-              <X className="w-4 h-4" />
-            </Button>
-          </div>
+          <SettingsAddTrigger />
+        )
+      }
+      title={isEdit ? "تعديل العنصر" : "عنصر جديد"}
+      onSubmit={handleSubmit}
+      submitLabel="حفظ"
+      isPending={mutation.isPending}
+    >
+      <label className="flex flex-col gap-1.5">
+        <SettingsFieldLabel required>إختر القسم</SettingsFieldLabel>
+        <Select
+          dir="rtl"
+          value={selectedSection || undefined}
+          onValueChange={(value) => {
+            setSelectedSection(value);
+            setSelectedItem("");
+          }}
+        >
+          <SelectTrigger className={settingsFieldClass}>
+            <SelectValue placeholder="إختر هنا..." />
+          </SelectTrigger>
+          <SelectContent dir="rtl">
+            {sections.map((section) => (
+              <SelectItem key={section.id} value={section.id?.toString()}>
+                {section.name_ar || section.name_en}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </label>
 
-          <div className="space-y-4">
-            <div dir="rtl" className="space-y-4 text-right">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">
-                  إختر القسم <span className="text-red-500">*</span>
-                </label>
-                <Select
-                  dir="rtl"
-                  value={selectedSection}
-                  onValueChange={(value) => {
-                    setSelectedSection(value);
-                    setSelectedItem("");
-                  }}
-                >
-                  <SelectTrigger className="h-12">
-                    <SelectValue placeholder="إختر هنا..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {sections.map((section) => (
-                      <SelectItem key={section.id} value={section.id?.toString()}>
-                        {section.name_ar || section.name_en}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+      <label className="flex flex-col gap-1.5">
+        <SettingsFieldLabel required>إختر بند القسم</SettingsFieldLabel>
+        <Select
+          dir="rtl"
+          value={selectedItem || undefined}
+          onValueChange={setSelectedItem}
+          disabled={!selectedSection}
+        >
+          <SelectTrigger className={settingsFieldClass}>
+            <SelectValue placeholder="إختر هنا..." />
+          </SelectTrigger>
+          <SelectContent dir="rtl">
+            {items.map((item) => (
+              <SelectItem key={item.id} value={item.id?.toString()}>
+                {item.name_ar || item.name_en}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </label>
 
-              <div className="space-y-2">
-                <label className="text-sm font-medium">
-                  إختر بند القسم <span className="text-red-500">*</span>
-                </label>
-                <Select
-                  dir="rtl"
-                  value={selectedItem}
-                  onValueChange={setSelectedItem}
-                  disabled={!selectedSection}
-                >
-                  <SelectTrigger className="h-12">
-                    <SelectValue placeholder="إختر هنا..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {items.map((item) => (
-                      <SelectItem key={item.id} value={item.id?.toString()}>
-                        {item.name_ar || item.name_en}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium">
-                  الرسالة التوضيحية <span className="text-red-500">*</span>
-                </label>
-                <Input
-                  placeholder="أكتب هنا..."
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  className="h-12"
-                />
-              </div>
-            </div>
-
-            <Button
-              disabled={mutation.isPending}
-              onClick={handleSubmit}
-              className="mx-auto block h-12 bg-brand-hover"
-            >
-              {mutation.isPending ? (
-                <Loader2 className="animate-spin mx-auto" />
-              ) : isEdit ? (
-                "تعديل"
-              ) : (
-                "إضافة"
-              )}
-            </Button>
-          </div>
-        </DialogHeader>
-      </DialogContent>
-    </Dialog>
+      <label className="flex flex-col gap-1.5">
+        <SettingsFieldLabel required>الرسالة التوضيحية</SettingsFieldLabel>
+        <Input
+          placeholder="أكتب هنا..."
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          className={settingsFieldClass}
+        />
+      </label>
+    </SettingsFormDialog>
   );
 }

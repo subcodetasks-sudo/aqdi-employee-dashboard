@@ -1,9 +1,13 @@
 "use client";
 
-import { useUnwrapPageProps } from "@/src/hooks/use-unwrap-page-props";
+import {
+  useUnwrapPageProps
+} from "@/src/hooks/use-unwrap-page-props";
 import { useState } from "react";
 import AddCouponDialog from "@/components/analysis/settings/coupons/add-coupon-dialog";
 import DeleteCouponDialog from "@/components/analysis/settings/coupons/delete-coupon-dialog";
+import PermissionGate from "@/components/auth/PermissionGate";
+import { PERMISSION_SECTIONS } from "@/src/lib/permissions";
 import {
   SettingsEmptyRow,
   SettingsLoadingRows,
@@ -13,6 +17,7 @@ import {
   SettingsTableRow,
   SettingsTd,
   StatusBadge,
+  SettingsPageShell,
 } from "@/components/SystemSettings/shared";
 import { Switch } from "@/components/ui/switch";
 import { axiosInstance } from "@/src/utils/axios";
@@ -77,8 +82,15 @@ export default function CouponsPage(props) {
   });
 
   return (
-    <div className="flex flex-col gap-5 min-h-full" dir="rtl">
-      <SettingsListHeader title="الخصومات (الكوبونات)" action={<AddCouponDialog />} />
+    <SettingsPageShell>
+      <SettingsListHeader
+        title="الخصومات (الكوبونات)"
+        action={
+          <PermissionGate section={PERMISSION_SECTIONS.coupons} action="create">
+            <AddCouponDialog />
+          </PermissionGate>
+        }
+      />
 
       <SettingsTable headers={HEADERS} minWidth="980px">
         {isLoading ? (
@@ -114,18 +126,28 @@ export default function CouponsPage(props) {
                 <SettingsTd className="text-center">
                   <div className="inline-flex items-center gap-2">
                     <StatusBadge active={isActive} />
-                    <Switch
-                      dir="ltr"
-                      checked={isActive}
-                      disabled={isToggling}
-                      onCheckedChange={(checked) => toggleStatus({ id: coupon.id, checked })}
-                    />
+                    <PermissionGate
+                      section={PERMISSION_SECTIONS.coupons}
+                      action="edit"
+                      fallback={<Switch dir="ltr" checked={isActive} disabled />}
+                    >
+                      <Switch
+                        dir="ltr"
+                        checked={isActive}
+                        disabled={isToggling}
+                        onCheckedChange={(checked) => toggleStatus({ id: coupon.id, checked })}
+                      />
+                    </PermissionGate>
                   </div>
                 </SettingsTd>
                 <SettingsTd>
                   <div className="flex items-center justify-end gap-2">
-                    <AddCouponDialog isEdit coupon={coupon} />
-                    <DeleteCouponDialog coupon={coupon} />
+                    <PermissionGate section={PERMISSION_SECTIONS.coupons} action="edit">
+                      <AddCouponDialog isEdit coupon={coupon} />
+                    </PermissionGate>
+                    <PermissionGate section={PERMISSION_SECTIONS.coupons} action="delete">
+                      <DeleteCouponDialog coupon={coupon} />
+                    </PermissionGate>
                   </div>
                 </SettingsTd>
               </SettingsTableRow>
@@ -139,6 +161,6 @@ export default function CouponsPage(props) {
         lastPage={pagination?.last_page}
         onPageChange={setCurrentPage}
       />
-    </div>
+    </SettingsPageShell>
   );
 }

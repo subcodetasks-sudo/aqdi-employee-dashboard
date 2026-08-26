@@ -1,8 +1,12 @@
 "use client";
 
-import { useUnwrapPageProps } from "@/src/hooks/use-unwrap-page-props";
+import {
+  useUnwrapPageProps
+} from "@/src/hooks/use-unwrap-page-props";
 import AddPaperworkDialog from "@/components/analysis/settings/paperworks/add-paperwork-dialog";
 import EditPaperworkDialog from "@/components/analysis/settings/paperworks/edit-paperwork-dialog";
+import PermissionGate from "@/components/auth/PermissionGate";
+import { PERMISSION_SECTIONS } from "@/src/lib/permissions";
 import {
   SETTINGS_DELETE_TRIGGER_CLASS,
   SettingsEmptyRow,
@@ -11,6 +15,7 @@ import {
   SettingsTable,
   SettingsTableRow,
   SettingsTd,
+  SettingsPageShell,
 } from "@/components/SystemSettings/shared";
 import {
   contractTypeLabel,
@@ -51,8 +56,15 @@ export default function PaperworksPage(props) {
   });
 
   return (
-    <div className="flex flex-col gap-5 min-h-full" dir="rtl">
-      <SettingsListHeader title="أوراق العمل" action={<AddPaperworkDialog />} />
+    <SettingsPageShell>
+      <SettingsListHeader
+        title="أوراق العمل"
+        action={
+          <PermissionGate section={PERMISSION_SECTIONS.paperworks} action="create">
+            <AddPaperworkDialog />
+          </PermissionGate>
+        }
+      />
 
       <SettingsTable headers={HEADERS} minWidth="720px">
         {isLoading ? (
@@ -91,21 +103,25 @@ export default function PaperworksPage(props) {
               </SettingsTd>
               <SettingsTd>
                 <div className="flex items-center justify-end gap-2">
-                  <EditPaperworkDialog paperwork={item} />
-                  <button
-                    type="button"
-                    disabled={deletePending}
-                    onClick={() => deletePaperwork(item.id)}
-                    className={SETTINGS_DELETE_TRIGGER_CLASS}
-                  >
-                    حذف
-                  </button>
+                  <PermissionGate section={PERMISSION_SECTIONS.paperworks} action="edit">
+                    <EditPaperworkDialog paperwork={item} />
+                  </PermissionGate>
+                  <PermissionGate section={PERMISSION_SECTIONS.paperworks} action="delete">
+                    <button
+                      type="button"
+                      disabled={deletePending}
+                      onClick={() => deletePaperwork(item.id)}
+                      className={SETTINGS_DELETE_TRIGGER_CLASS}
+                    >
+                      حذف
+                    </button>
+                  </PermissionGate>
                 </div>
               </SettingsTd>
             </SettingsTableRow>
           ))
         )}
       </SettingsTable>
-    </div>
+    </SettingsPageShell>
   );
 }

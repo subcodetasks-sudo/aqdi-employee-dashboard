@@ -11,7 +11,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { SettingsContentCard, SettingsListHeader } from "@/components/SystemSettings/shared";
+import {
+  SettingsContentCard,
+  SettingsListHeader,
+  SettingsPageShell,
+} from "@/components/SystemSettings/shared";
+import {
+  SettingsFieldLabel,
+  settingsFieldClass,
+} from "@/components/SystemSettings/SettingsFormDialog";
 import { Loader2, Send } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -19,6 +27,9 @@ import {
   useSendNotification,
 } from "@/src/hooks/use-send-notification";
 import RecipientPicker from "./recipient-picker";
+import { cn } from "@/lib/utils";
+import PermissionGate from "@/components/auth/PermissionGate";
+import { PERMISSION_SECTIONS } from "@/src/lib/permissions";
 
 const PAGE_TITLE = "الإشعارات";
 const TARGET_OPTIONS = Object.values(NOTIFICATION_TARGETS);
@@ -83,20 +94,18 @@ export default function SendNotificationPage() {
   };
 
   return (
-    <div className="flex flex-col gap-5 min-h-full" dir="rtl">
+    <SettingsPageShell>
       <SettingsListHeader title={PAGE_TITLE} subtitle="إرسال إشعار للمستخدمين أو الموظفين" />
 
       <SettingsContentCard>
-        <form onSubmit={handleSubmit} className="space-y-5 w-full">
-          <div className="space-y-2">
-            <label className="text-sm font-medium">
-              نوع الإرسال <span className="text-red-500">*</span>
-            </label>
+        <form onSubmit={handleSubmit} className="flex w-full max-w-xl flex-col gap-3.5">
+          <label className="flex flex-col gap-1.5">
+            <SettingsFieldLabel required>نوع الإرسال</SettingsFieldLabel>
             <Select dir="rtl" value={target} onValueChange={handleTargetChange}>
-              <SelectTrigger className="h-12">
+              <SelectTrigger className={settingsFieldClass}>
                 <SelectValue placeholder="اختر نوع الإرسال" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent dir="rtl">
                 {TARGET_OPTIONS.map((option) => (
                   <SelectItem key={option.value} value={option.value}>
                     {option.label}
@@ -104,78 +113,72 @@ export default function SendNotificationPage() {
                 ))}
               </SelectContent>
             </Select>
-          </div>
+          </label>
 
-          {needsUser && (
-            <div className="space-y-2">
-              <label className="text-sm font-medium">
-                المستخدم <span className="text-red-500">*</span>
-              </label>
+          {needsUser ? (
+            <label className="flex flex-col gap-1.5">
+              <SettingsFieldLabel required>المستخدم</SettingsFieldLabel>
               <RecipientPicker
                 type="user"
                 value={form.userId}
                 onChange={(value) => updateField("userId", value)}
                 placeholder="اختر المستخدم..."
               />
-            </div>
-          )}
+            </label>
+          ) : null}
 
-          {needsEmployee && (
-            <div className="space-y-2">
-              <label className="text-sm font-medium">
-                الموظف <span className="text-red-500">*</span>
-              </label>
+          {needsEmployee ? (
+            <label className="flex flex-col gap-1.5">
+              <SettingsFieldLabel required>الموظف</SettingsFieldLabel>
               <RecipientPicker
                 type="employee"
                 value={form.employeeId}
                 onChange={(value) => updateField("employeeId", value)}
                 placeholder="اختر الموظف..."
               />
-            </div>
-          )}
-
-          <div className="space-y-2">
-            <label className="text-sm font-medium">
-              العنوان <span className="text-red-500">*</span>
             </label>
+          ) : null}
+
+          <label className="flex flex-col gap-1.5">
+            <SettingsFieldLabel required>العنوان</SettingsFieldLabel>
             <Input
-              className="h-12"
+              className={settingsFieldClass}
               placeholder="عنوان الإشعار"
               value={form.title}
               onChange={(e) => updateField("title", e.target.value)}
               required
             />
-          </div>
+          </label>
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium">
-              نص الرسالة <span className="text-red-500">*</span>
-            </label>
+          <label className="flex flex-col gap-1.5">
+            <SettingsFieldLabel required>نص الرسالة</SettingsFieldLabel>
             <Textarea
-              className="min-h-[120px]"
+              className={cn(settingsFieldClass, "h-auto min-h-[120px] resize-none py-2.5")}
               placeholder="اكتب محتوى الإشعار هنا..."
               value={form.body}
               onChange={(e) => updateField("body", e.target.value)}
               required
             />
-          </div>
+          </label>
 
-          <Button
-            type="submit"
-            disabled={mutation.isPending}
-            className="h-12 bg-brand-hover text-white min-w-[160px]"
-          >
-            {mutation.isPending ? (
-              <Loader2 className="h-5 w-5 animate-spin" />
-            ) : (
-              <>
-                إرسال الإشعار
-                <Send className="h-4 w-4 ms-1" />
-              </>
-            )}
-          </Button>
+          <PermissionGate section={PERMISSION_SECTIONS.notifications} action="create">
+            <Button
+              type="submit"
+              disabled={mutation.isPending}
+              className="mt-1 h-11 w-fit min-w-[160px] rounded-[10px] bg-[#0E5F4E] text-[13px] font-extrabold text-white hover:bg-[#0B7A4C]"
+            >
+              {mutation.isPending ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <>
+                  إرسال الإشعار
+                  <Send className="ms-1 size-4" />
+                </>
+              )}
+            </Button>
+          </PermissionGate>
         </form>
       </SettingsContentCard>
-    </div>
+    </SettingsPageShell>
   );
 }

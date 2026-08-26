@@ -1,9 +1,13 @@
 "use client";
 
-import { useUnwrapPageProps } from "@/src/hooks/use-unwrap-page-props";
+import {
+  useUnwrapPageProps
+} from "@/src/hooks/use-unwrap-page-props";
 import AddNewDurationDialog from "@/components/analysis/settings/order-duration/add-new-duration-dialog";
 import EditDurationDialog from "@/components/analysis/settings/order-duration/edit-duration-dialog";
 import ViewDurationDialog from "@/components/analysis/settings/order-duration/view-duration-dialog";
+import PermissionGate from "@/components/auth/PermissionGate";
+import { PERMISSION_SECTIONS } from "@/src/lib/permissions";
 import {
   SettingsEmptyRow,
   SettingsLoadingRows,
@@ -11,6 +15,7 @@ import {
   SettingsTable,
   SettingsTableRow,
   SettingsTd,
+  SettingsPageShell,
 } from "@/components/SystemSettings/shared";
 import { fetchBothContractTypes } from "@/components/SystemSettings/settings-list/fetch-contract-type-lists";
 import {
@@ -42,8 +47,15 @@ export default function OrderDurationPage(props) {
   });
 
   return (
-    <div className="flex flex-col gap-5 min-h-full" dir="rtl">
-      <SettingsListHeader title="مدة الطلب" action={<AddNewDurationDialog />} />
+    <SettingsPageShell>
+      <SettingsListHeader
+        title="مدة الطلب"
+        action={
+          <PermissionGate section={PERMISSION_SECTIONS.contract_periods} action="create">
+            <AddNewDurationDialog />
+          </PermissionGate>
+        }
+      />
 
       <SettingsTable headers={HEADERS} minWidth="860px">
         {isLoading ? (
@@ -66,13 +78,15 @@ export default function OrderDurationPage(props) {
               <SettingsTd>
                 <div className="flex items-center justify-end gap-2">
                   <ViewDurationDialog duration={item} />
-                  <EditDurationDialog duration={item} />
+                  <PermissionGate section={PERMISSION_SECTIONS.contract_periods} action="edit">
+                    <EditDurationDialog duration={item} />
+                  </PermissionGate>
                 </div>
               </SettingsTd>
             </SettingsTableRow>
           ))
         )}
       </SettingsTable>
-    </div>
+    </SettingsPageShell>
   );
 }

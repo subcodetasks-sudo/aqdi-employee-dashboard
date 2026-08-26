@@ -30,20 +30,30 @@ function InfoRow({ label, required, value, children }) {
     );
 }
 
-function getRolePermissionIdsFromSections(sections, roleId) {
-    const ids = new Set();
-    const numericRoleId = Number(roleId);
+function buildPermissionMatrix(selectedPermissionNames) {
+    const matrix = {};
 
-    sections.forEach((section) => {
-        section.permissions.forEach((perm) => {
-            const hasRole = perm.roles?.some((role) => role.id === numericRoleId);
-            if (hasRole) {
-                ids.add(perm.id);
-            }
-        });
+    selectedPermissionNames.forEach((name) => {
+        const dotIndex = name.lastIndexOf('.');
+        if (dotIndex === -1) return;
+        const section = name.slice(0, dotIndex);
+        const action = name.slice(dotIndex + 1);
+        if (!matrix[section]) matrix[section] = [];
+        matrix[section].push(action);
     });
 
-    return ids;
+    return matrix;
+}
+
+function permissionNamesFromMatrix(matrix) {
+    if (!matrix || typeof matrix !== 'object') return new Set();
+
+    const names = new Set();
+    Object.entries(matrix).forEach(([section, actions]) => {
+        if (!Array.isArray(actions)) return;
+        actions.forEach((action) => names.add(`${section}.${action}`));
+    });
+    return names;
 }
 
 export default function EditRole() {
@@ -54,12 +64,13 @@ export default function EditRole() {
 
     const [formData, setFormData] = useState({
         title_ar: '',
+        title_en: '',
         is_active: true,
         employee_id: '',
     });
 
     const [activateAllPermissions, setActivateAllPermissions] = useState(false);
-    const [selectedPermissionIds, setSelectedPermissionIds] = useState(new Set());
+    const [selectedPermissionNames, setSelectedPermissionNames] = useState(new Set());
     const [formInitialized, setFormInitialized] = useState(false);
 
     const { data: roleRes, isLoading: roleLoading, isError: roleError } = useQuery({
@@ -68,10 +79,9 @@ export default function EditRole() {
         enabled: !!roleId,
     });
 
-    const { data: permissionsRes, isLoading: permissionsLoading, isError: permissionsError } = useQuery({
-        queryKey: ['permissions-by-section'],
-        queryFn: () =>
-            axiosInstance.get('/admin/permissions/by-section').then((res) => res?.data),
+    const { data: createRes, isLoading: modulesLoading, isError: modulesError } = useQuery({
+        queryKey: ['roles-create'],
+        queryFn: () => axiosInstance.get('/admin/roles/create').then((res) => res?.data),
         enabled: !!roleId,
     });
 
@@ -83,71 +93,77 @@ export default function EditRole() {
     });
 
     const role = roleRes?.data ?? roleRes;
-    const sections = useMemo(() => permissionsRes?.data ?? [], [permissionsRes?.data]);
+    const modules = useMemo(() => createRes?.data?.permission_modules ?? [], [createRes?.data?.permission_modules]);
     const employees = employeesRes?.data?.items ?? employeesRes?.items ?? [];
 
-    const allPermissionIds = useMemo(
-        () => sections.flatMap((section) => section.permissions.map((perm) => perm.id)),
-        [sections]
+    const allPermissionNames = useMemo(
+        () => modules.flatMap((module) => module.actions.map((action) => action.permission_name)),
+        [modules]
     );
 
     useEffect(() => {
-        if (!roleId || !role || !sections.length || formInitialized) return;
+        if (!roleId || !role || !modules.length || formInitialized) return;
 
-        const fromRole = role.permission_ids ?? role.permissions?.map((p) => p.id);
-        const permissionIds = fromRole?.length
-            ? new Set(fromRole)
-            : getRolePermissionIdsFromSections(sections, roleId);
+        const permissionNames = permissionNamesFromMatrix(role.permission_matrix);
 
-        setSelectedPermissionIds(permissionIds);
+        setSelectedPermissionNames(permissionNames);
         setActivateAllPermissions(
-            allPermissionIds.length > 0 &&
-            allPermissionIds.every((id) => permissionIds.has(id))
+            role.is_full_access === true ||
+            (allPermissionNames.length > 0 &&
+                allPermissionNames.every((name) => permissionNames.has(name)))
         );
         setFormData({
             title_ar: role.title_ar || role.title_trans || '',
+            title_en: role.title_en || '',
             is_active: role.is_active ?? true,
             employee_id: role.employee_id ? String(role.employee_id) : '',
         });
         setFormInitialized(true);
-    }, [role, sections, roleId, allPermissionIds, formInitialized]);
+    }, [role, modules, roleId, allPermissionNames, formInitialized]);
 
     const handleActivateAll = (checked) => {
         setActivateAllPermissions(checked);
         if (checked) {
-            setSelectedPermissionIds(new Set(allPermissionIds));
+            setSelectedPermissionNames(new Set(allPermissionNames));
             return;
         }
-        setSelectedPermissionIds(new Set());
+        setSelectedPermissionNames(new Set());
     };
 
-    const handlePermissionChange = (permissionId) => {
+    const handlePermissionChange = (permissionName) => {
         setActivateAllPermissions(false);
-        setSelectedPermissionIds((prev) => {
+        setSelectedPermissionNames((prev) => {
             const next = new Set(prev);
-            if (next.has(permissionId)) {
-                next.delete(permissionId);
+            if (next.has(permissionName)) {
+                next.delete(permissionName);
             } else {
-                next.add(permissionId);
+                next.add(permissionName);
             }
             return next;
         });
     };
 
     const { mutate: updateRole, isPending } = useMutation({
-        mutationFn: () =>
-            axiosInstance.post(`/admin/roles/${roleId}`, {
+        mutationFn: () => {
+            const permission_matrix = activateAllPermissions
+                ? buildPermissionMatrix(allPermissionNames)
+                : buildPermissionMatrix(selectedPermissionNames);
+
+            return axiosInstance.post(`/admin/roles/${roleId}`, {
                 title_ar: formData.title_ar.trim(),
+                title_en: formData.title_en.trim() || null,
                 is_active: formData.is_active,
                 employee_id: formData.employee_id ? Number(formData.employee_id) : null,
-                permission_ids: Array.from(selectedPermissionIds),
-            }),
+                activate_all_permissions: activateAllPermissions,
+                permission_matrix,
+            });
+        },
         onSuccess: (res) => {
             toast.success(res?.data?.message || 'تم تعديل الدور بنجاح');
             queryClient.invalidateQueries({ queryKey: ['roles'] });
             queryClient.invalidateQueries({ queryKey: ['roles-list'] });
             queryClient.invalidateQueries({ queryKey: ['role', roleId] });
-            queryClient.invalidateQueries({ queryKey: ['permissions-by-section'] });
+            queryClient.invalidateQueries({ queryKey: ['roles-create'] });
             router.push('/home/roles-and-employees?tab=roles');
         },
         onError: (error) => {
@@ -164,7 +180,7 @@ export default function EditRole() {
             return;
         }
 
-        if (selectedPermissionIds.size === 0) {
+        if (!activateAllPermissions && selectedPermissionNames.size === 0) {
             toast.error('يرجى تحديد صلاحية واحدة على الأقل');
             return;
         }
@@ -172,25 +188,25 @@ export default function EditRole() {
         updateRole();
     };
 
-    const PermissionSection = ({ section }) => (
+    const PermissionModule = ({ module }) => (
         <div className="bg-neutral-50 border border-[#F0F0F0] rounded-3xl p-6 hover:shadow-md transition-all">
             <h3 className="text-base font-black text-black mb-5 pb-3 border-b border-surface-border">
-                {section.section_label?.ar ?? section.section_key}
+                {module.section_label_ar ?? module.section_key}
             </h3>
             <div className="flex flex-col gap-4">
-                {section.permissions.map((perm) => (
+                {module.actions.map((action) => (
                     <label
-                        key={perm.id}
+                        key={action.permission_name}
                         className="flex items-center justify-between group cursor-pointer"
                     >
                         <span className="text-sm font-bold text-neutral-500 group-hover:text-black transition-all">
-                            {perm.action_label?.ar ?? perm.action}
+                            {action.action_label_ar ?? action.action}
                         </span>
                         <div className="relative flex items-center">
                             <input
                                 type="checkbox"
-                                checked={selectedPermissionIds.has(perm.id)}
-                                onChange={() => handlePermissionChange(perm.id)}
+                                checked={selectedPermissionNames.has(action.permission_name)}
+                                onChange={() => handlePermissionChange(action.permission_name)}
                                 disabled={isPending}
                                 className="peer appearance-none w-6 h-6 border-2 border-neutral-200 rounded-[6px] checked:bg-brand-main checked:border-brand-main transition-all cursor-pointer disabled:opacity-50"
                             />
@@ -217,11 +233,11 @@ export default function EditRole() {
         );
     }
 
-    if (roleLoading || permissionsLoading || !formInitialized) {
+    if (roleLoading || modulesLoading || !formInitialized) {
         return <Loader />;
     }
 
-    if (roleError || permissionsError) {
+    if (roleError || modulesError) {
         return (
             <div className="p-6 text-center text-status-danger" dir="rtl">
                 تعذر تحميل بيانات الدور.
@@ -290,6 +306,11 @@ export default function EditRole() {
                             >
                                 {formData.is_active ? 'نشط' : 'غير نشط'}
                             </span>
+                            {role?.is_full_access && (
+                                <span className="inline-flex items-center rounded-full px-3.5 py-1.5 text-xs font-bold bg-[#DBEAFE] text-blue-700">
+                                    صلاحية كاملة
+                                </span>
+                            )}
                             <button
                                 type="button"
                                 onClick={() => setFormData(prev => ({ ...prev, is_active: !prev.is_active }))}
@@ -331,6 +352,18 @@ export default function EditRole() {
                                 />
                             </InfoRow>
 
+                            <InfoRow label="اللقب (بالإنجليزية)">
+                                <input
+                                    type="text"
+                                    placeholder="—"
+                                    value={formData.title_en}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, title_en: e.target.value }))}
+                                    disabled={isPending}
+                                    dir="ltr"
+                                    className="w-full bg-transparent text-15 font-bold text-black focus:outline-none disabled:opacity-60 placeholder:text-[#C7C7C7] placeholder:font-medium"
+                                />
+                            </InfoRow>
+
                             <InfoRow label="الاسم (مفتاح النظام)" value={role?.name || '—'} />
 
                             <InfoRow label="الموظف المرتبط">
@@ -367,8 +400,8 @@ export default function EditRole() {
                     <div>
                         <h3 className="text-base font-black text-black mb-4">نظرة عامة:</h3>
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-10 gap-y-1 max-w-[1000px]">
-                            <InfoRow label="عدد الصلاحيات المفعّلة" value={selectedPermissionIds.size} />
-                            <InfoRow label="عدد الأقسام" value={sections.length} />
+                            <InfoRow label="عدد الصلاحيات المفعّلة" value={selectedPermissionNames.size} />
+                            <InfoRow label="عدد الأقسام" value={modules.length} />
                             <InfoRow label="آخر تحديث" value={formatDateShort(role?.updated_at) || '—'} />
                         </div>
                     </div>
@@ -383,25 +416,25 @@ export default function EditRole() {
                                 <Switch
                                     checked={activateAllPermissions}
                                     onCheckedChange={handleActivateAll}
-                                    disabled={sections.length === 0 || isPending}
+                                    disabled={modules.length === 0 || isPending}
                                     dir="ltr"
                                 />
                                 <span className="text-13 font-bold text-black whitespace-nowrap">تحديد الكل</span>
                             </div>
                         </div>
                     </div>
-                    {permissionsError ? (
+                    {modulesError ? (
                         <p className="text-center text-status-danger text-sm py-8">
                             تعذر تحميل الصلاحيات. يرجى المحاولة مرة أخرى.
                         </p>
-                    ) : sections.length === 0 ? (
+                    ) : modules.length === 0 ? (
                         <p className="text-center text-ink-placeholder text-sm py-8">
                             لا توجد صلاحيات متاحة حالياً.
                         </p>
                     ) : (
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5">
-                            {sections.map((section) => (
-                                <PermissionSection key={section.section_key} section={section} />
+                            {modules.map((module) => (
+                                <PermissionModule key={module.section_key} module={module} />
                             ))}
                         </div>
                     )}

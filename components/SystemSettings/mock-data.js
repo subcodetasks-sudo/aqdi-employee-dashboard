@@ -3,12 +3,14 @@ export const PRIMARY_TABS = [
   { id: "contracts", label: "إعدادات العقود" },
 ];
 
+// `section` is null for meter-fees — no dedicated catalog key yet, stays behind the umbrella
+// settings.view gate (see docs/backend-permission-sections-request.md).
 export const CONTRACT_SUB_TABS = [
-  { id: "popup-contracts", label: "محتوى إرشادي للعقود" },
-  { id: "instrument-types", label: "أنواع الصكوك" },
-  { id: "sms-settings", label: "إعدادات رسائل SMS" },
-  { id: "meter-fees", label: "رسوم العدادات" },
-  { id: "payment-messages", label: "إعدادات رسائل الدفع" },
+  { id: "popup-contracts", label: "محتوى إرشادي للعقود", section: "popup_contracts" },
+  { id: "instrument-types", label: "أنواع الصكوك", section: "instrument_settings" },
+  { id: "sms-settings", label: "إعدادات رسائل SMS", section: "sms" },
+  { id: "meter-fees", label: "رسوم العدادات", section: null },
+  { id: "payment-messages", label: "إعدادات رسائل الدفع", section: "payment_messages" },
 ];
 
 /** Legacy `?sub=` values from the pre-wiring mock tabs. */
@@ -17,29 +19,31 @@ export const CONTRACT_SUB_TAB_ALIASES = {
   sms: "sms-settings",
 };
 
+// `section` matches a PERMISSION_SECTIONS key — see config/permissions.php (backend) → screens /
+// duplicate_screens for the authoritative mapping.
 export const SYSTEM_CATEGORIES = [
-  { id: "unit-types", label: "أنواع الوحدات", subtitle: "قائمة بـ 10 عناصر", href: "/home/settings/unit-types" },
-  { id: "unit-usage", label: "استخدام الوحدة", subtitle: "قائمة بـ 5 عناصر", href: "/home/settings/unit-usage" },
-  { id: "regions", label: "المناطق", subtitle: "قائمة بـ 8 عناصر", href: "/home/settings/regions" },
-  { id: "cities", label: "المدن", subtitle: "قائمة بـ 10 عناصر", href: "/home/settings/cities" },
-  { id: "property-types", label: "أنواع العقار", subtitle: "قائمة بـ 10 عناصر", href: "/home/settings/property-types" },
-  { id: "property-usage", label: "استخدام العقار", subtitle: "قائمة بـ 5 عناصر", href: "/home/settings/property-usage" },
-  { id: "order-duration", label: "مدة الطلب", subtitle: "سجلات 4 عناصر", href: "/home/settings/order-duration" },
-  { id: "message-sections", label: "أقسام الرسائل", subtitle: "سجلات 5 عناصر", href: "/home/settings/message-sections" },
-  { id: "message-section-items", label: "بنود أقسام الرسائل", subtitle: "قائمة بـ 3 عناصر", href: "/home/settings/message-section-items" },
-  { id: "customer-app-messages", label: "الرسائل التطبيقية للعميل", subtitle: "رسائل موجهة 2 عنصر", href: "/home/settings/customer-app-messages" },
-  { id: "message-for-employee", label: "رسائل توضيحية للموظفين", subtitle: "رسائل موجهة 1 عنصر", href: "/home/settings/message-for-employee" },
-  { id: "message-for-property", label: "رسائل توضيحية للعقار", subtitle: "رسائل موجهة 1 عنصر", href: "/home/settings/message-for-property" },
-  { id: "coupons", label: "الخصومات (الكوبونات)", subtitle: "كوبونات 5 عناصر", href: "/home/settings/coupons" },
-  { id: "blogs", label: "المدونة", subtitle: "رابط", href: "/home/settings/blogs" },
-  { id: "faqs", label: "الأسئلة الشائعة", subtitle: "أسئلة وأجوبة 2 عنصر", href: "/home/settings/faqs" },
-  { id: "terms", label: "الشروط والأحكام", subtitle: "محتوى نصي", href: "/home/settings/terms" },
-  { id: "privacy", label: "سياسة الخصوصية", subtitle: "محتوى نصي", href: "/home/settings/privacy" },
-  { id: "notifications", label: "الإشعارات", subtitle: "نموذج إرسال", href: "/home/settings/notifications" },
-  { id: "payments", label: "المدفوعات", subtitle: "سجل العمليات", href: "/home/settings/payments" },
-  { id: "payment-types", label: "طرق الدفع", subtitle: "سجلات 5 عناصر", href: "/home/settings/payment-types" },
-  { id: "tenant-roles", label: "صلاحيات المستأجر", subtitle: "سجلات 3 عناصر", href: "/home/settings/tenant-roles" },
-  { id: "paperworks", label: "أوراق العمل", subtitle: "سجلات 4 عناصر", href: "/home/settings/paperworks" },
+  { id: "unit-types", label: "أنواع الوحدات", subtitle: "قائمة بقيم · 10 عنصر", href: "/home/settings/unit-types", section: "property_reference" },
+  { id: "unit-usage", label: "استخدام الوحدة", subtitle: "قائمة بقيم · 5 عنصر", href: "/home/settings/unit-usage", section: "property_reference" },
+  { id: "regions", label: "المناطق", subtitle: "قائمة · 8 عنصر", href: "/home/settings/regions", section: "regions" },
+  { id: "cities", label: "المدن", subtitle: "قائمة بقيم · 10 عنصر", href: "/home/settings/cities", section: "cities" },
+  { id: "property-types", label: "أنواع العقار", subtitle: "قائمة بقيم · 10 عنصر", href: "/home/settings/property-types", section: "property_reference" },
+  { id: "property-usage", label: "استخدام العقار", subtitle: "قائمة بقيم · 5 عنصر", href: "/home/settings/property-usage", section: "property_reference" },
+  { id: "order-duration", label: "مدة الطلب", subtitle: "سجلات · 4 عنصر", href: "/home/settings/order-duration", section: "contract_periods" },
+  { id: "message-sections", label: "أقسام الرسائل", subtitle: "سجلات · 5 عنصر", href: "/home/settings/message-sections", section: "message_alerts" },
+  { id: "message-section-items", label: "بنود أقسام الرسائل", subtitle: "قائمة بقيم · 3 عنصر", href: "/home/settings/message-section-items", section: "message_alerts" },
+  { id: "customer-app-messages", label: "الرسائل التطبيقية للعميل", subtitle: "رسائل موجّهة · 2 عنصر", href: "/home/settings/customer-app-messages", section: "app_content" },
+  { id: "message-for-employee", label: "رسائل توضيحية للموظفين", subtitle: "رسائل موجّهة · 1 عنصر", href: "/home/settings/message-for-employee", section: "message_alerts" },
+  { id: "message-for-property", label: "رسائل توضيحية للعقار", subtitle: "رسائل موجّهة · 1 عنصر", href: "/home/settings/message-for-property", section: "message_alerts" },
+  { id: "coupons", label: "الخصومات (الكوبونات)", subtitle: "كوبونات · 5 عنصر", href: "/home/settings/coupons", section: "coupons" },
+  { id: "blogs", label: "المدونة", subtitle: "رابط", href: "/home/settings/blogs", section: "blogs" },
+  { id: "faqs", label: "الأسئلة الشائعة", subtitle: "أسئلة وأجوبة · 2 عنصر", href: "/home/settings/faqs", section: "faqs" },
+  { id: "terms", label: "الشروط والأحكام", subtitle: "محتوى نصّي", href: "/home/settings/terms", section: "app_content" },
+  { id: "privacy", label: "سياسة الخصوصية", subtitle: "محتوى نصّي", href: "/home/settings/privacy", section: "app_content" },
+  { id: "notifications", label: "الإشعارات", subtitle: "إرسال إشعار", href: "/home/settings/notifications", section: "notifications" },
+  { id: "payments", label: "المدفوعات", subtitle: "سجل المدفوعات", href: "/home/settings/payments", section: "payments" },
+  { id: "payment-types", label: "طرق الدفع", subtitle: "سجلات · 5 عنصر", href: "/home/settings/payment-types", section: "app_content" },
+  { id: "tenant-roles", label: "صلاحيات المستأجر", subtitle: "سجلات · 3 عنصر", href: "/home/settings/tenant-roles", section: "tenant_roles" },
+  { id: "paperworks", label: "أوراق العمل", subtitle: "سجلات · 4 عنصر", href: "/home/settings/paperworks", section: "paperworks" },
 ];
 
 export const DOCUMENT_TYPES = [

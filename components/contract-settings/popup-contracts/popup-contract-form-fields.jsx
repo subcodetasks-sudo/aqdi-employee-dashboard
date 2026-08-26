@@ -1,6 +1,6 @@
 "use client";
 
-import TextEditor from "@/components/analysis/settings/terms/TextEditor";
+import dynamic from "next/dynamic";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -11,6 +11,11 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { getPopupInstrumentTypeOptions } from "@/src/lib/popup-contracts";
+
+const TextEditor = dynamic(
+  () => import("@/components/analysis/settings/terms/TextEditor"),
+  { ssr: false }
+);
 
 export default function PopupContractFormFields({
   instrumentType,
@@ -32,18 +37,18 @@ export default function PopupContractFormFields({
   const options = instrumentOptions ?? getPopupInstrumentTypeOptions();
 
   return (
-    <div dir="rtl" className="space-y-4 text-right">
-      <div className="space-y-2">
-        <label className="text-sm font-medium">
+    <div dir="rtl" className="flex min-w-0 max-w-full flex-col gap-4 text-right">
+      <label className="flex flex-col gap-1.5">
+        <span className="text-[13px] font-bold text-[#111827]">
           نوع الوثيقة <span className="text-red-500">*</span>
-        </label>
+        </span>
         <Select
           dir="rtl"
           value={instrumentType}
           onValueChange={onInstrumentTypeChange}
           disabled={instrumentTypeDisabled || options.length === 0}
         >
-          <SelectTrigger className="h-12 rounded-2xl">
+          <SelectTrigger className="h-11 rounded-xl border-[#E6EBE9] bg-white px-3 text-[13px] focus:border-[#054D44] focus:ring-0">
             <SelectValue
               placeholder={
                 options.length === 0
@@ -60,35 +65,37 @@ export default function PopupContractFormFields({
             ))}
           </SelectContent>
         </Select>
-      </div>
+      </label>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="flex items-center justify-between rounded-2xl border border-surface-border bg-neutral-50 px-4 py-3">
-          <label className="text-sm font-medium">حالة بوب أب العقد</label>
+      <div className="grid grid-cols-2 gap-3">
+        <label className="flex items-center justify-between rounded-xl border border-[#E6EBE9] bg-white px-3 py-2.5">
+          <span className="text-[13px] font-bold text-[#111827]">بوب أب العقد</span>
           <Switch
             dir="ltr"
             checked={popupStatusContract}
             onCheckedChange={onPopupStatusContractChange}
+            className="data-[state=checked]:bg-[#054D44]"
           />
-        </div>
-
-        <div className="flex items-center justify-between rounded-2xl border border-surface-border bg-neutral-50 px-4 py-3">
-          <label className="text-sm font-medium">حالة بوب أب العقار</label>
+        </label>
+        <label className="flex items-center justify-between rounded-xl border border-[#E6EBE9] bg-white px-3 py-2.5">
+          <span className="text-[13px] font-bold text-[#111827]">بوب أب العقار</span>
           <Switch
             dir="ltr"
             checked={popupStatusRealestate}
             onCheckedChange={onPopupStatusRealestateChange}
+            className="data-[state=checked]:bg-[#054D44]"
           />
-        </div>
+        </label>
       </div>
 
-      <div className="space-y-2">
-        <label className="text-sm font-medium">
+      <div className="flex min-w-0 max-w-full flex-col gap-1.5">
+        <span className="text-[13px] font-bold text-[#111827]">
           محتوى البوب أب <span className="text-red-500">*</span>
-        </label>
-        <div className="min-h-[280px]">
+        </span>
+        <div className="min-w-0 max-w-full overflow-hidden rounded-xl border border-[#E6EBE9]">
           <TextEditor
             key={contentEditorKey}
+            compact
             initialContent={contentPopup}
             placeholder="اكتب محتوى البوب أب هنا ..."
             onChange={(value) => onContentPopupChange(value?.html || "")}
@@ -96,26 +103,26 @@ export default function PopupContractFormFields({
         </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="space-y-2">
-          <label className="text-sm font-medium">نص الزر الإضافي</label>
+      <div className="grid grid-cols-2 gap-3">
+        <label className="flex flex-col gap-1.5">
+          <span className="text-[13px] font-bold text-[#111827]">نص الزر</span>
           <Input
             placeholder="مثال: ابدأ الآن"
             value={buttonText}
             onChange={(e) => onButtonTextChange(e.target.value)}
-            className="h-12"
+            className="h-11 rounded-xl border-[#E6EBE9] text-[13px] focus-visible:border-[#054D44] focus-visible:ring-0"
           />
-        </div>
-
-        <div className="space-y-2">
-          <label className="text-sm font-medium">رابط الزر الإضافي</label>
+        </label>
+        <label className="flex flex-col gap-1.5">
+          <span className="text-[13px] font-bold text-[#111827]">رابط الزر</span>
           <Input
-            placeholder="https://example.com/start"
+            dir="ltr"
+            placeholder="https://example.com"
             value={buttonLink}
             onChange={(e) => onButtonLinkChange(e.target.value)}
-            className="h-12"
+            className="h-11 rounded-xl border-[#E6EBE9] text-[13px] focus-visible:border-[#054D44] focus-visible:ring-0"
           />
-        </div>
+        </label>
       </div>
     </div>
   );

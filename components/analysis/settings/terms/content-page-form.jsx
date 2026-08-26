@@ -1,12 +1,19 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import TextEditor from "@/components/analysis/settings/terms/TextEditor";
+import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/button";
 import { axiosInstance } from "@/src/utils/axios";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import PermissionGate from "@/components/auth/PermissionGate";
+import { PERMISSION_SECTIONS } from "@/src/lib/permissions";
+
+const TextEditor = dynamic(
+  () => import("@/components/analysis/settings/terms/TextEditor"),
+  { ssr: false }
+);
 
 const formatDate = (dateString) => {
   if (!dateString) return null;
@@ -71,21 +78,23 @@ export default function ContentPageForm({ content, saveEndpoint, queryKey }) {
       </div>
 
       <div className="flex items-center justify-end pt-4 border-t border-[#F0F0F0]">
-        <Button
-          type="button"
-          onClick={handleSave}
-          disabled={isPending}
-          className="bg-brand-main hover:bg-brand-hover text-white h-12 px-8 rounded-full font-bold min-w-[160px]"
-        >
-          {isPending ? (
-            <span className="flex items-center gap-2">
-              <Loader2 className="size-4 animate-spin" />
-              جاري الحفظ...
-            </span>
-          ) : (
-            "حفظ المحتوى"
-          )}
-        </Button>
+        <PermissionGate section={PERMISSION_SECTIONS.app_content} action="edit">
+          <Button
+            type="button"
+            onClick={handleSave}
+            disabled={isPending}
+            className="bg-brand-main hover:bg-brand-hover text-white h-12 px-8 rounded-full font-bold min-w-[160px]"
+          >
+            {isPending ? (
+              <span className="flex items-center gap-2">
+                <Loader2 className="size-4 animate-spin" />
+                جاري الحفظ...
+              </span>
+            ) : (
+              "حفظ المحتوى"
+            )}
+          </Button>
+        </PermissionGate>
       </div>
     </div>
   );

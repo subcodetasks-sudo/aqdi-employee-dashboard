@@ -23,6 +23,8 @@ import {
   invalidateDraftOrdersCaches,
   invalidateOrdersCaches,
 } from "@/src/lib/invalidate-orders-caches";
+import PermissionGate from "@/components/auth/PermissionGate";
+import { PERMISSION_SECTIONS } from "@/src/lib/permissions";
 
 export default function ChangeDraftStatusDialog({ orderId, queryKey }) {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -122,14 +124,16 @@ export default function ChangeDraftStatusDialog({ orderId, queryKey }) {
             </div>
           ))}
 
-          <DropdownMenuItem
-            onClick={() => setIsAddModalOpen(true)}
-            className="cursor-pointer hover:bg-surface-input rounded-lg p-2"
-          >
-            <Plus />
-            <span className="font-medium text-13">أخـرى</span>
-            <i className="fa-solid fa-chevron-left mr-auto text-ink-placeholder text-10" />
-          </DropdownMenuItem>
+          <PermissionGate section={PERMISSION_SECTIONS.draft_contract_statuses} action="create">
+            <DropdownMenuItem
+              onClick={() => setIsAddModalOpen(true)}
+              className="cursor-pointer hover:bg-surface-input rounded-lg p-2"
+            >
+              <Plus />
+              <span className="font-medium text-13">أخـرى</span>
+              <i className="fa-solid fa-chevron-left mr-auto text-ink-placeholder text-10" />
+            </DropdownMenuItem>
+          </PermissionGate>
           <DropdownMenuSeparator className="bg-neutral-100 my-1" />
 
           <DropdownMenuItem

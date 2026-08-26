@@ -2,9 +2,13 @@
 
 import Loader from "@/components/home/loader";
 
-import { useUnwrapPageProps } from "@/src/hooks/use-unwrap-page-props";
+import {
+  useUnwrapPageProps
+} from "@/src/hooks/use-unwrap-page-props";
 import ContentPageForm from "@/components/analysis/settings/terms/content-page-form";
-import { SettingsContentCard, SettingsListHeader } from "@/components/SystemSettings/shared";
+import { SettingsContentCard, SettingsListHeader,
+  SettingsPageShell,
+} from "@/components/SystemSettings/shared";
 import { axiosInstance } from "@/src/utils/axios";
 import { useQuery } from "@tanstack/react-query";
 
@@ -20,7 +24,7 @@ export default function TermsPage(props) {
   const terms = responseData?.data;
 
   return (
-    <div className="flex flex-col gap-5 min-h-full" dir="rtl">
+    <SettingsPageShell>
       <SettingsListHeader title="الشروط والأحكام" subtitle="تحرير وتحديث محتوى الشروط والأحكام" />
 
       {isLoading ? (
@@ -38,6 +42,6 @@ export default function TermsPage(props) {
           />
         </SettingsContentCard>
       )}
-    </div>
+    </SettingsPageShell>
   );
 }

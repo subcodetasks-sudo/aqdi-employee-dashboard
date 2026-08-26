@@ -66,9 +66,9 @@ export function useAllOrdersWrapper({
     can(PERMISSION_SECTIONS.request_classification, "edit") ||
     can(PERMISSION_SECTIONS.all_requests, "edit");
   const canAddStatus =
-    isAdmin || can(PERMISSION_SECTIONS.request_classification, "create");
+    isAdmin || can(PERMISSION_SECTIONS.contract_statuses, "create");
   const canEditStatus =
-    isAdmin || can(PERMISSION_SECTIONS.request_classification, "edit");
+    isAdmin || can(PERMISSION_SECTIONS.contract_statuses, "edit");
   const canManageStatuses = canAddStatus || canEditStatus;
   const canExport =
     isAdmin ||

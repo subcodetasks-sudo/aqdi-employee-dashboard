@@ -10,13 +10,13 @@ import { PERMISSION_SECTIONS } from "@/src/lib/permissions";
 import EmployeesListPage from "@/components/employees/EmployeesListPage";
 import Roles from "@/components/Roles/Roles";
 import Salaries from "@/components/salaries/Salaries";
-import PerformanceTab from "./PerformanceTab";
+import EmployeeKpisBoard from "./EmployeeKpisBoard";
 
 const TABS = [
   { value: "roles", label: "الأدوار", section: PERMISSION_SECTIONS.roles, Component: Roles },
   { value: "employees", label: "الموظفون", section: PERMISSION_SECTIONS.employees, Component: EmployeesListPage },
   { value: "salaries", label: "رواتب الموظفين", section: PERMISSION_SECTIONS.employee_salaries, Component: Salaries },
-  { value: "performance", label: "الأداء", section: null, Component: PerformanceTab },
+  { value: "performance", label: "مؤشرات الموظفين", section: PERMISSION_SECTIONS.employee_kpis, Component: EmployeeKpisBoard },
 ];
 
 export default function RolesAndEmployeesWrapper() {

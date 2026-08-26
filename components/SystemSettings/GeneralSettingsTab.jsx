@@ -1,10 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { AlignJustify, ChevronLeft, Loader2 } from "lucide-react";
+import { AlignJustify, Loader2 } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Switch } from "@/components/ui/switch";
 import Loader from "@/components/home/loader";
 import { cn } from "@/lib/utils";
 import { axiosInstance } from "@/src/utils/axios";
@@ -15,10 +14,28 @@ import {
   GENERAL_SETTINGS_QUERY_KEY,
   patchGeneralSettingsCache,
 } from "@/src/lib/general-settings";
+import { usePermissions } from "@/src/hooks/usePermissions";
+import { PERMISSION_SECTIONS } from "@/src/lib/permissions";
 import { SYSTEM_CATEGORIES } from "./mock-data";
+import "./settings-design.css";
+
+function SiteSwitch({ checked, disabled, onCheckedChange }) {
+  return (
+    <label className="mkt-switch" style={{ marginInline: "auto" }}>
+      <input
+        type="checkbox"
+        checked={checked}
+        disabled={disabled}
+        onChange={(e) => onCheckedChange?.(e.target.checked)}
+      />
+      <span />
+    </label>
+  );
+}
 
 export default function GeneralSettingsTab() {
   const queryClient = useQueryClient();
+  const { can, isReady } = usePermissions();
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: [GENERAL_SETTINGS_QUERY_KEY],
@@ -26,6 +43,10 @@ export default function GeneralSettingsTab() {
   });
 
   const toggles = extractGeneralSettings(data);
+
+  const visibleCategories = SYSTEM_CATEGORIES.filter(
+    (category) => !isReady || can(category.section ?? PERMISSION_SECTIONS.settings, "view")
+  );
 
   const { mutate, isPending, variables } = useMutation({
     mutationFn: ({ key, value }) =>
@@ -66,9 +87,9 @@ export default function GeneralSettingsTab() {
 
   if (isError) {
     return (
-      <div className="rounded-3xl border border-[#FECACA] bg-[#FFF5F5] p-8 text-center">
-        <p className="text-15 font-bold text-[#B91C1C]">تعذر تحميل الإعدادات العامة</p>
-        <p className="mt-2 text-13 text-[#991B1B]">
+      <div className="rounded-2xl border border-[#FECACA] bg-[#FFF5F5] p-8 text-center">
+        <p className="text-[15px] font-bold text-[#B91C1C]">تعذر تحميل الإعدادات العامة</p>
+        <p className="mt-2 text-[13px] text-[#991B1B]">
           {error?.response?.data?.message || error?.message || "تأكد من توفر الـ API ثم أعد المحاولة"}
         </p>
       </div>
@@ -76,49 +97,27 @@ export default function GeneralSettingsTab() {
   }
 
   return (
-    <div className="flex flex-col gap-8">
-      <section className="flex flex-col gap-4">
-        <h2 className="text-sm font-bold text-[#054D44] dark:text-emerald-300">إعدادات الموقع والتطبيق</h2>
-
-        <div className="grid grid-cols-5 gap-3 max-[1200px]:grid-cols-3 max-[768px]:grid-cols-2 max-[480px]:grid-cols-1">
+    <div className="set-page flex flex-col gap-6">
+      <section>
+        <div className="cpf-sec-t">إعدادات الموقع والتطبيق</div>
+        <div className="set-sitegrid">
           {GENERAL_SETTINGS_FIELDS.map((item) => {
             const enabled = toggles[item.key];
             const isSaving = isPending && variables?.key === item.key;
             return (
-              <div
-                key={item.key}
-                className="flex flex-col items-center gap-3 rounded-2xl border border-surface-border-soft bg-white px-4 py-5 shadow-[0_4px_12px_rgba(11,83,69,0.04)] dark:bg-card dark:border-white/10"
-              >
-                <span
-                  className={cn(
-                    "size-2.5 rounded-full",
-                    enabled ? "bg-[#054D44]" : "bg-[#D1D5DB]"
-                  )}
-                />
-                <div className="text-center">
-                  <p className="text-sm font-bold text-gray-900 dark:text-white">
-                    {item.label}
-                  </p>
-                  <p
-                    className={cn(
-                      "mt-1 text-xs font-bold",
-                      enabled ? "text-[#054D44]" : "text-red-600"
-                    )}
-                  >
-                    {enabled ? "مفعل" : "معطل"}
-                  </p>
+              <div key={item.key} className="set-sitecard">
+                <span className={cn("set-sitedot", enabled && "on")} />
+                <div className="set-sitename">{item.label}</div>
+                <div className={cn("set-sitestat", !enabled && "off")}>
+                  {enabled ? "مُفعّل" : "مُعطّل"}
                 </div>
                 {isSaving ? (
-                  <Loader2 className="size-4 animate-spin text-[#054D44]" />
+                  <Loader2 className="mx-auto size-4 animate-spin text-[#0B7A4C]" />
                 ) : (
-                  <Switch
-                    dir="ltr"
+                  <SiteSwitch
                     checked={enabled}
                     disabled={isPending}
-                    onCheckedChange={(checked) =>
-                      mutate({ key: item.key, value: checked })
-                    }
-                    className="data-[state=checked]:bg-[#054D44]"
+                    onCheckedChange={(checked) => mutate({ key: item.key, value: checked })}
                   />
                 )}
               </div>
@@ -127,30 +126,21 @@ export default function GeneralSettingsTab() {
         </div>
       </section>
 
-      <section className="flex flex-col gap-4">
-        <h2 className="text-sm font-bold text-[#054D44] dark:text-emerald-300">
-          إعدادات النظام ({SYSTEM_CATEGORIES.length} فئة)
-        </h2>
-
-        <div className="grid grid-cols-4 gap-3 max-[1400px]:grid-cols-4 max-[1100px]:grid-cols-3 max-[768px]:grid-cols-2 max-[480px]:grid-cols-1">
-          {SYSTEM_CATEGORIES.map((category) => (
-            <Link
-              key={category.id}
-              href={category.href}
-              className="group flex items-center gap-3 rounded-2xl border border-surface-border-soft bg-white px-3 py-3.5 shadow-[0_4px_12px_rgba(11,83,69,0.04)] transition-all hover:border-[#054D44]/30 hover:shadow-md dark:bg-card dark:border-white/10"
-            >
-              <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-lg bg-[#E8F5F1] text-[#054D44] dark:bg-emerald-500/15 dark:text-emerald-300">
+      <section>
+        <div className="cpf-sec-t">
+          إعدادات النظام <span className="asg">({visibleCategories.length} فئة)</span>
+        </div>
+        <div className="set-catgrid">
+          {visibleCategories.map((category) => (
+            <Link key={category.id} href={category.href} className="set-catcard">
+              <span className="set-caticon">
                 <AlignJustify className="size-4" />
               </span>
-              <span className="min-w-0 flex-1">
-                <span className="block truncate text-13 font-bold text-gray-900 dark:text-white">
-                  {category.label}
-                </span>
-                <span className="mt-0.5 block truncate text-11 font-medium text-gray-400 dark:text-white/45">
-                  {category.subtitle}
-                </span>
+              <span className="set-cattext">
+                <b>{category.label}</b>
+                <small>{category.subtitle}</small>
               </span>
-              <ChevronLeft className="size-4 shrink-0 text-[#D1D5DB] transition-colors group-hover:text-[#054D44] dark:text-white/25 dark:group-hover:text-emerald-300" />
+              <span className="set-catarrow">←</span>
             </Link>
           ))}
         </div>

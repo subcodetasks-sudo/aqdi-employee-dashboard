@@ -9,6 +9,7 @@ import { axiosInstance } from "@/src/utils/axios";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import PermissionGate from "@/components/auth/PermissionGate";
+import { usePermissions } from "@/src/hooks/usePermissions";
 import { PERMISSION_SECTIONS } from "@/src/lib/permissions";
 import {
   OutlineActionButton,
@@ -24,6 +25,8 @@ export default function Roles() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [categoryToDelete, setCategoryToDelete] = useState(null);
   const queryClient = useQueryClient();
+  const { canAny } = usePermissions();
+  const showActionsColumn = canAny(PERMISSION_SECTIONS.roles, ["edit", "delete"]);
 
   function getRoles(page = 1) {
     return axiosInstance
@@ -93,7 +96,7 @@ export default function Roles() {
               <th className={TABLE_TH}>الموظفون المشتركون</th>
               <th className={TABLE_TH}>عدد الصلاحيات</th>
               <th className={TABLE_TH}>تاريخ التحديث</th>
-              <th className={cnActionTh()}>الإجراءات</th>
+              {showActionsColumn && <th className={cnActionTh()}>الإجراءات</th>}
             </tr>
           </thead>
           <tbody>
@@ -130,20 +133,22 @@ export default function Roles() {
                         {role.created_at_label || formatDateShort(role.updated_at)}
                       </span>
                     </td>
-                    <td className="px-4 py-3.5">
-                      <div className="flex items-center gap-2">
-                        <PermissionGate section={PERMISSION_SECTIONS.roles} action="edit">
-                          <Link href={`/home/roles-and-employees/roles/edit?id=${role.id}`}>
-                            <OutlineActionButton variant="edit">تعديل</OutlineActionButton>
-                          </Link>
-                        </PermissionGate>
-                        <PermissionGate section={PERMISSION_SECTIONS.roles} action="delete">
-                          <OutlineActionButton variant="delete" onClick={() => handleDelete(role)}>
-                            حذف
-                          </OutlineActionButton>
-                        </PermissionGate>
-                      </div>
-                    </td>
+                    {showActionsColumn && (
+                      <td className="px-4 py-3.5">
+                        <div className="flex items-center gap-2">
+                          <PermissionGate section={PERMISSION_SECTIONS.roles} action="edit">
+                            <Link href={`/home/roles-and-employees/roles/edit?id=${role.id}`}>
+                              <OutlineActionButton variant="edit">تعديل</OutlineActionButton>
+                            </Link>
+                          </PermissionGate>
+                          <PermissionGate section={PERMISSION_SECTIONS.roles} action="delete">
+                            <OutlineActionButton variant="delete" onClick={() => handleDelete(role)}>
+                              حذف
+                            </OutlineActionButton>
+                          </PermissionGate>
+                        </div>
+                      </td>
+                    )}
                   </tr>
                 );
               })

@@ -180,20 +180,20 @@ export function mapRefundContractToExportRow(item) {
   };
 }
 
-export function exportOrdersToExcel(orders, { filename = "orders", showStatusColumn = true } = {}) {
+export async function exportOrdersToExcel(orders, { filename = "orders", showStatusColumn = true } = {}) {
   if (!orders?.length) return false;
 
   const rows = orders.map((order) => mapOrderToExportRow(order, { showStatusColumn }));
   return writeExcelFile(rows, { filename, sheetName: "الطلبات" });
 }
 
-export function exportReturnOrdersToExcel(orders, { filename = "الطلبات-المسترجعة" } = {}) {
+export async function exportReturnOrdersToExcel(orders, { filename = "الطلبات-المسترجعة" } = {}) {
   if (!orders?.length) return false;
   const rows = orders.map(mapReturnOrderToExportRow);
   return writeExcelFile(rows, { filename, sheetName: "الطلبات المسترجعة" });
 }
 
-export function exportWhatsappCompletedToExcel(
+export async function exportWhatsappCompletedToExcel(
   orders,
   { filename = "واتساب-مكتملة" } = {}
 ) {
@@ -202,7 +202,7 @@ export function exportWhatsappCompletedToExcel(
   return writeExcelFile(rows, { filename, sheetName: "واتساب مكتملة" });
 }
 
-export function exportWhatsappIncompletedToExcel(
+export async function exportWhatsappIncompletedToExcel(
   orders,
   { filename = "واتساب-غير-مكتملة" } = {}
 ) {
@@ -211,7 +211,7 @@ export function exportWhatsappIncompletedToExcel(
   return writeExcelFile(rows, { filename, sheetName: "واتساب غير مكتملة" });
 }
 
-export function exportRefundContractsToExcel(
+export async function exportRefundContractsToExcel(
   items,
   { filename = "تحليل-المسترجع" } = {}
 ) {

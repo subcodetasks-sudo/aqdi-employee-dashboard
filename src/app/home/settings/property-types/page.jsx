@@ -1,8 +1,12 @@
 "use client";
 
-import { useUnwrapPageProps } from "@/src/hooks/use-unwrap-page-props";
+import {
+  useUnwrapPageProps
+} from "@/src/hooks/use-unwrap-page-props";
 import AddNewPropertyTypeDialog from "@/components/analysis/settings/property-types/add-new-property-type-dialog";
 import EditTypePropertyDialog from "@/components/analysis/settings/property-types/edit-type-property-dialog";
+import PermissionGate from "@/components/auth/PermissionGate";
+import { PERMISSION_SECTIONS } from "@/src/lib/permissions";
 import {
   SETTINGS_DELETE_TRIGGER_CLASS,
   SettingsEmptyRow,
@@ -11,6 +15,7 @@ import {
   SettingsTable,
   SettingsTableRow,
   SettingsTd,
+  SettingsPageShell,
 } from "@/components/SystemSettings/shared";
 import {
   contractTypeLabel,
@@ -51,8 +56,15 @@ export default function PropertyTypesPage(props) {
   });
 
   return (
-    <div className="flex flex-col gap-5 min-h-full" dir="rtl">
-      <SettingsListHeader title="أنواع العقار" action={<AddNewPropertyTypeDialog />} />
+    <SettingsPageShell>
+      <SettingsListHeader
+        title="أنواع العقار"
+        action={
+          <PermissionGate section={PERMISSION_SECTIONS.property_reference} action="create">
+            <AddNewPropertyTypeDialog />
+          </PermissionGate>
+        }
+      />
 
       <SettingsTable headers={HEADERS} minWidth="640px">
         {isLoading ? (
@@ -68,21 +80,25 @@ export default function PropertyTypesPage(props) {
               </SettingsTd>
               <SettingsTd>
                 <div className="flex items-center justify-end gap-2">
-                  <EditTypePropertyDialog unit={item} />
-                  <button
-                    type="button"
-                    disabled={isPending}
-                    onClick={() => deleteItem(item.id)}
-                    className={SETTINGS_DELETE_TRIGGER_CLASS}
-                  >
-                    حذف
-                  </button>
+                  <PermissionGate section={PERMISSION_SECTIONS.property_reference} action="edit">
+                    <EditTypePropertyDialog unit={item} />
+                  </PermissionGate>
+                  <PermissionGate section={PERMISSION_SECTIONS.property_reference} action="delete">
+                    <button
+                      type="button"
+                      disabled={isPending}
+                      onClick={() => deleteItem(item.id)}
+                      className={SETTINGS_DELETE_TRIGGER_CLASS}
+                    >
+                      حذف
+                    </button>
+                  </PermissionGate>
                 </div>
               </SettingsTd>
             </SettingsTableRow>
           ))
         )}
       </SettingsTable>
-    </div>
+    </SettingsPageShell>
   );
 }

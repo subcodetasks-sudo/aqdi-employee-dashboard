@@ -9,17 +9,16 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import Loader from '@/components/home/loader'
 import { Loader2 } from 'lucide-react'
 
-function buildPermissionMatrix(sections, selectedPermissionIds) {
+function buildPermissionMatrix(selectedPermissionNames) {
     const matrix = {};
 
-    sections.forEach((section) => {
-        const actions = section.permissions
-            .filter((perm) => selectedPermissionIds.has(perm.id))
-            .map((perm) => perm.action);
-
-        if (actions.length > 0) {
-            matrix[section.section_key] = actions;
-        }
+    selectedPermissionNames.forEach((name) => {
+        const dotIndex = name.lastIndexOf('.');
+        if (dotIndex === -1) return;
+        const section = name.slice(0, dotIndex);
+        const action = name.slice(dotIndex + 1);
+        if (!matrix[section]) matrix[section] = [];
+        matrix[section].push(action);
     });
 
     return matrix;
@@ -32,42 +31,43 @@ export default function AddRole() {
     const [formData, setFormData] = useState({
         name: '',
         title_ar: '',
+        title_en: '',
         description: '',
     });
 
     const [activateAllPermissions, setActivateAllPermissions] = useState(false);
-    const [selectedPermissionIds, setSelectedPermissionIds] = useState(new Set());
+    const [selectedPermissionNames, setSelectedPermissionNames] = useState(new Set());
 
     const { data, isLoading, isError } = useQuery({
-        queryKey: ['permissions-by-section'],
+        queryKey: ['roles-create'],
         queryFn: () =>
-            axiosInstance.get('/admin/permissions/by-section').then((res) => res?.data),
+            axiosInstance.get('/admin/roles/create').then((res) => res?.data),
     });
 
-    const sections = useMemo(() => data?.data ?? [], [data?.data]);
+    const modules = useMemo(() => data?.data?.permission_modules ?? [], [data?.data?.permission_modules]);
 
-    const allPermissionIds = useMemo(
-        () => sections.flatMap((section) => section.permissions.map((perm) => perm.id)),
-        [sections]
+    const allPermissionNames = useMemo(
+        () => modules.flatMap((module) => module.actions.map((action) => action.permission_name)),
+        [modules]
     );
 
     const handleActivateAll = (checked) => {
         setActivateAllPermissions(checked);
         if (checked) {
-            setSelectedPermissionIds(new Set(allPermissionIds));
+            setSelectedPermissionNames(new Set(allPermissionNames));
             return;
         }
-        setSelectedPermissionIds(new Set());
+        setSelectedPermissionNames(new Set());
     };
 
-    const handlePermissionChange = (permissionId) => {
+    const handlePermissionChange = (permissionName) => {
         setActivateAllPermissions(false);
-        setSelectedPermissionIds((prev) => {
+        setSelectedPermissionNames((prev) => {
             const next = new Set(prev);
-            if (next.has(permissionId)) {
-                next.delete(permissionId);
+            if (next.has(permissionName)) {
+                next.delete(permissionName);
             } else {
-                next.add(permissionId);
+                next.add(permissionName);
             }
             return next;
         });
@@ -76,12 +76,13 @@ export default function AddRole() {
     const { mutate: saveRole, isPending } = useMutation({
         mutationFn: () => {
             const permission_matrix = activateAllPermissions
-                ? buildPermissionMatrix(sections, new Set(allPermissionIds))
-                : buildPermissionMatrix(sections, selectedPermissionIds);
+                ? buildPermissionMatrix(allPermissionNames)
+                : buildPermissionMatrix(selectedPermissionNames);
 
             return axiosInstance.post('/admin/roles', {
                 name: formData.name.trim(),
                 title_ar: formData.title_ar.trim(),
+                title_en: formData.title_en.trim() || null,
                 description: formData.description.trim() || null,
                 is_active: true,
                 employee_id: null,
@@ -93,7 +94,7 @@ export default function AddRole() {
             toast.success(res?.data?.message || 'تم إضافة الدور بنجاح');
             queryClient.invalidateQueries({ queryKey: ['roles'] });
             queryClient.invalidateQueries({ queryKey: ['roles-list'] });
-            queryClient.invalidateQueries({ queryKey: ['permissions-by-section'] });
+            queryClient.invalidateQueries({ queryKey: ['roles-create'] });
             router.push('/home/roles-and-employees?tab=roles');
         },
         onError: (error) => {
@@ -110,7 +111,7 @@ export default function AddRole() {
             return;
         }
 
-        if (!activateAllPermissions && selectedPermissionIds.size === 0) {
+        if (!activateAllPermissions && selectedPermissionNames.size === 0) {
             toast.error('يرجى تحديد صلاحية واحدة على الأقل');
             return;
         }
@@ -118,25 +119,25 @@ export default function AddRole() {
         saveRole();
     };
 
-    const PermissionSection = ({ section }) => (
+    const PermissionModule = ({ module }) => (
         <div className="bg-neutral-50 border border-[#F0F0F0] rounded-3xl p-6 hover:shadow-md transition-all">
             <h3 className="text-base font-black text-black mb-5 pb-3 border-b border-surface-border">
-                {section.section_label?.ar ?? section.section_key}
+                {module.section_label_ar ?? module.section_key}
             </h3>
             <div className="flex flex-col gap-4">
-                {section.permissions.map((perm) => (
+                {module.actions.map((action) => (
                     <label
-                        key={perm.id}
+                        key={action.permission_name}
                         className="flex items-center justify-between group cursor-pointer"
                     >
                         <span className="text-sm font-bold text-neutral-500 group-hover:text-black transition-all">
-                            {perm.action_label?.ar ?? perm.action}
+                            {action.action_label_ar ?? action.action}
                         </span>
                         <div className="relative flex items-center">
                             <input
                                 type="checkbox"
-                                checked={selectedPermissionIds.has(perm.id)}
-                                onChange={() => handlePermissionChange(perm.id)}
+                                checked={selectedPermissionNames.has(action.permission_name)}
+                                onChange={() => handlePermissionChange(action.permission_name)}
                                 disabled={isPending}
                                 className="peer appearance-none w-6 h-6 border-2 border-neutral-200 rounded-[6px] checked:bg-brand-main checked:border-brand-main transition-all cursor-pointer disabled:opacity-50"
                             />
@@ -177,7 +178,7 @@ export default function AddRole() {
                                     <Switch
                                         checked={activateAllPermissions}
                                         onCheckedChange={handleActivateAll}
-                                        disabled={sections.length === 0 || isPending}
+                                        disabled={modules.length === 0 || isPending}
                                         dir="ltr"
                                     />
                                     <span className="text-13 font-bold text-black whitespace-nowrap">تحديد الكل</span>
@@ -221,6 +222,23 @@ export default function AddRole() {
 
                         <div className="flex flex-col gap-3">
                             <label className="text-13 font-bold text-black px-1">
+                                اللقب (بالإنجليزية)
+                            </label>
+                            <div className="relative">
+                                <input
+                                    type="text"
+                                    placeholder="Customer Service"
+                                    value={formData.title_en}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, title_en: e.target.value }))}
+                                    disabled={isPending}
+                                    className="w-full h-13.5 bg-surface-input border border-surface-border rounded-2xl px-5 text-15 focus:outline-none focus:border-brand-main focus:bg-white transition-all font-medium disabled:opacity-60"
+                                    dir="ltr"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="flex flex-col gap-3">
+                            <label className="text-13 font-bold text-black px-1">
                                 الاسم (مفتاح النظام) <span className="text-status-danger mr-1">*</span>
                             </label>
                             <div className="relative">
@@ -233,7 +251,6 @@ export default function AddRole() {
                                     className="w-full h-13.5 bg-surface-input border border-surface-border rounded-2xl px-2 text-15 focus:outline-none focus:border-brand-main focus:bg-white transition-all font-medium disabled:opacity-60"
                                     dir="ltr"
                                 />
-                                {/* <i className="fa-solid fa-user absolute left-5 top-1/2 -translate-y-1/2 text-ink-placeholder"></i> */}
                             </div>
                         </div>
 
@@ -259,14 +276,14 @@ export default function AddRole() {
                         <p className="text-center text-status-danger text-sm py-8">
                             تعذر تحميل الصلاحيات. يرجى المحاولة مرة أخرى.
                         </p>
-                    ) : sections.length === 0 ? (
+                    ) : modules.length === 0 ? (
                         <p className="text-center text-ink-placeholder text-sm py-8">
                             لا توجد صلاحيات متاحة حالياً.
                         </p>
                     ) : (
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5">
-                            {sections.map((section) => (
-                                <PermissionSection key={section.section_key} section={section} />
+                            {modules.map((module) => (
+                                <PermissionModule key={module.section_key} module={module} />
                             ))}
                         </div>
                     )}

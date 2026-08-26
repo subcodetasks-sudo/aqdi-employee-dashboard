@@ -1,3 +1,5 @@
+> **Status: fulfilled by backend, frontend wired up.** Kept for history/reference.
+
 # Backend request: refresh-token endpoint + correct 401/403 semantics
 
 ## Why

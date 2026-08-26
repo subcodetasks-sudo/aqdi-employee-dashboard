@@ -4,7 +4,11 @@ import Loader from "@/components/home/loader";
 
 import { useUnwrapPageProps } from "@/src/hooks/use-unwrap-page-props";
 import BlogForm from "@/components/analysis/settings/blogs/blog-form";
-import { SettingsContentCard, SettingsListHeader } from "@/components/SystemSettings/shared";
+import {
+  SettingsContentCard,
+  SettingsListHeader,
+  SettingsPageShell,
+} from "@/components/SystemSettings/shared";
 import { axiosInstance } from "@/src/utils/axios";
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
@@ -24,7 +28,7 @@ export default function EditBlogPage(props) {
   const blog = responseData?.data;
 
   return (
-    <div className="flex flex-col gap-5 min-h-full" dir="rtl">
+    <SettingsPageShell>
       <SettingsListHeader
         title="تعديل المقال"
         subtitle="تحديث بيانات المقال وخيارات النشر"
@@ -42,6 +46,6 @@ export default function EditBlogPage(props) {
           <BlogForm blogId={blogId} blog={blog} />
         </SettingsContentCard>
       )}
-    </div>
+    </SettingsPageShell>
   );
 }

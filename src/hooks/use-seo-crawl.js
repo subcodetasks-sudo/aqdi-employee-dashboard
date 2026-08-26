@@ -10,7 +10,7 @@ export const SEO_CRAWL_ISSUES_QUERY_KEY = "seo-crawl-issues";
 export const SEO_CRAWL_ISSUE_DETAILS_QUERY_KEY = "seo-crawl-issue-details";
 
 const IN_PROGRESS_STATUSES = ["queued", "running"];
-const POLL_INTERVAL = 4000;
+const POLL_INTERVAL = 3000;
 
 export function isCrawlInProgress(status) {
   return IN_PROGRESS_STATUSES.includes(status);

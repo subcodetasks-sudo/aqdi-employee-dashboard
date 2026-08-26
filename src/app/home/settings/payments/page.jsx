@@ -1,6 +1,8 @@
 "use client";
 
-import { useUnwrapPageProps } from "@/src/hooks/use-unwrap-page-props";
+import {
+  useUnwrapPageProps
+} from "@/src/hooks/use-unwrap-page-props";
 import { useEffect, useState } from "react";
 import {
   SettingsEmptyRow,
@@ -10,6 +12,7 @@ import {
   SettingsTable,
   SettingsTableRow,
   SettingsTd,
+  SettingsPageShell,
 } from "@/components/SystemSettings/shared";
 import { axiosInstance } from "@/src/utils/axios";
 import { useQuery } from "@tanstack/react-query";
@@ -99,7 +102,7 @@ export default function PaymentsPage(props) {
   const pagination = responseData?.data?.pagination;
 
   return (
-    <div className="flex flex-col gap-5 min-h-full" dir="rtl">
+    <SettingsPageShell>
       <SettingsListHeader
         title="المدفوعات"
         subtitle={
@@ -168,6 +171,6 @@ export default function PaymentsPage(props) {
         lastPage={pagination?.last_page}
         onPageChange={setCurrentPage}
       />
-    </div>
+    </SettingsPageShell>
   );
 }
