@@ -9,13 +9,13 @@ import ReportSectionCard, { ReportLineList } from "../shared/ReportSectionCard";
 import ReportError from "../shared/ReportError";
 
 export default function ProfitsReportTab({ period, dateFrom, dateTo }) {
-  const { data, isLoading, isError, error } = useProfitsReport(period, dateFrom, dateTo);
+  const { data, isLoading, isError, error, refetch } = useProfitsReport(period, dateFrom, dateTo);
   const { data: settingsData } = useProfitSettings();
   const { mutate: updateSettings } = useUpdateProfitSettings();
   const [settings, setSettings] = useState(null);
   const currentSettings = settings ?? settingsData ?? {};
   if (isLoading) return <Loader />;
-  if (isError) return <ReportError title="الأرباح والتكاليف" error={error} fallback="تعذّر تحميل تقرير الأرباح." />;
+  if (isError) return <ReportError title="الأرباح والتكاليف" error={error} fallback="تعذّر تحميل تقرير الأرباح." onRetry={refetch} />;
   const k = data?.kpis ?? {};
   const kpis = [["customer_income", "دخل العملاء", "wallet"], ["gross_profit", "إجمالي الربح", "wallet"], ["net_profit", "صافي الربح", "wallet", "danger"], ["margin_percent", "هامش الربح", "percent"], ["profit_per_order", "ربح لكل طلب", "wallet"], ["ad_spend", "مصاريف الإعلانات", "wallet", "danger"]].map(([key, label, icon, tone]) => ({ key, label, value: key === "margin_percent" ? `${k[key] ?? 0}%` : k[key] ?? 0, icon, tone, isText: key === "margin_percent" }));
   const pnl = (data?.pnl ?? []).map((row) => ({ label: row.label, value: `${Number(row.value ?? 0).toLocaleString("en-US")} ريال`, tone: row.value < 0 ? "red" : "green", bold: row.is_total || row.is_subtotal, separator: row.is_subtotal }));

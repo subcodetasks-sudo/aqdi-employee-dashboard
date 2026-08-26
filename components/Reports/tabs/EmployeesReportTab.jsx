@@ -7,6 +7,7 @@ import { useAllEmployeesKpis } from "@/src/hooks/use-employee-kpis";
 import { ReportKpiGrid } from "../shared/ReportKpiCard";
 import HorizontalBarChart from "../shared/HorizontalBarChart";
 import ReportSectionCard from "../shared/ReportSectionCard";
+import ReportError from "../shared/ReportError";
 
 const TH =
   "px-3 py-3 text-xs font-semibold text-gray-400 border-b border-[#EEF1F0] whitespace-nowrap text-right dark:text-white/50 dark:border-white/10";
@@ -44,7 +45,7 @@ function formatRevenue(value) {
 }
 
 export default function EmployeesReportTab({ period, dateFrom, dateTo }) {
-  const { data, isLoading, isError } = useAllEmployeesKpis(period, dateFrom, dateTo);
+  const { data, isLoading, isError, error, refetch } = useAllEmployeesKpis(period, dateFrom, dateTo);
   const items = useMemo(() => data?.items ?? [], [data]);
 
   const kpis = useMemo(() => {
@@ -103,11 +104,12 @@ export default function EmployeesReportTab({ period, dateFrom, dateTo }) {
 
   if (isError) {
     return (
-      <ReportSectionCard title="الموظفون">
-        <p className="text-13 text-red-600">
-          تعذّر تحميل بيانات أداء الموظفين من الخادم. حاول تحديث الصفحة.
-        </p>
-      </ReportSectionCard>
+      <ReportError
+        title="الموظفون"
+        error={error}
+        fallback="تعذّر تحميل بيانات أداء الموظفين من الخادم."
+        onRetry={refetch}
+      />
     );
   }
 

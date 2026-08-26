@@ -10,9 +10,9 @@ import { useOrdersReport } from "@/src/hooks/use-reports";
 const KPI_FIELDS = [["total", "إجمالي الطلبات", "file"], ["new", "طلبات جديدة", "filePlus", "danger"], ["paid", "مدفوعة", "creditCard"], ["draft", "مسودة عقد", "fileEdit", "warning"], ["incomplete", "غير مكتمل", "xCircle", "warning"], ["canceled", "ملغية", "xCircle", "danger"], ["returned", "مسترجعة", "undo", "muted"]];
 
 export default function OrdersReportTab({ period, dateFrom, dateTo, contractType, employee }) {
-  const { data, isLoading, isError, error } = useOrdersReport(period, dateFrom, dateTo, contractType, employee);
+  const { data, isLoading, isError, error, refetch } = useOrdersReport(period, dateFrom, dateTo, contractType, employee);
   if (isLoading) return <Loader />;
-  if (isError) return <ReportError title="الطلبات" error={error} fallback="تعذّر تحميل تقرير الطلبات." />;
+  if (isError) return <ReportError title="الطلبات" error={error} fallback="تعذّر تحميل تقرير الطلبات." onRetry={refetch} />;
   const kpis = KPI_FIELDS.map(([key, label, icon, tone]) => ({ key, label, value: data?.kpis?.[key] ?? 0, icon, tone }));
   const minutes = data?.kpis?.avg_completion_minutes ?? 0;
   kpis.push({ key: "avgTime", label: "متوسط مدة الإنجاز", value: `${Math.floor(minutes / 60)} س و ${minutes % 60} د`, icon: "clock", isText: true });

@@ -14,7 +14,7 @@ import FinancialSettingsCard from "./performance/FinancialSettingsCard";
 import { usePerformanceReportViewModel } from "./performance/usePerformanceReportViewModel";
 
 export default function PerformanceReportTab({ period, dateFrom, dateTo, contractType, employee }) {
-  const { data, isLoading, isError, error } = usePerformanceReport(
+  const { data, isLoading, isError, error, refetch } = usePerformanceReport(
     period,
     dateFrom,
     dateTo,
@@ -25,7 +25,7 @@ export default function PerformanceReportTab({ period, dateFrom, dateTo, contrac
   const vm = usePerformanceReportViewModel(data, period);
 
   if (isLoading) return <Loader />;
-  if (isError) return <ReportError title="لوحة الأداء" error={error} fallback="تعذّر تحميل لوحة الأداء." />;
+  if (isError) return <ReportError title="لوحة الأداء" error={error} fallback="تعذّر تحميل لوحة الأداء." onRetry={refetch} />;
 
   return (
     <div className="flex flex-col gap-5" dir="rtl">

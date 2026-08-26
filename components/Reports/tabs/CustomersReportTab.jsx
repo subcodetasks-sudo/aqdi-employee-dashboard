@@ -12,9 +12,9 @@ const TH =
 const TD = "px-3 py-3 text-13 text-gray-700 border-b border-status-neutral-bg whitespace-nowrap dark:text-white/70 dark:border-white/10";
 
 export default function CustomersReportTab({ period, dateFrom, dateTo, contractType, employee }) {
-  const { data, isLoading, isError, error } = useCustomersReport(period, dateFrom, dateTo, contractType, employee);
+  const { data, isLoading, isError, error, refetch } = useCustomersReport(period, dateFrom, dateTo, contractType, employee);
   if (isLoading) return <Loader />;
-  if (isError) return <ReportError title="العملاء" error={error} fallback="تعذّر تحميل تقرير العملاء." />;
+  if (isError) return <ReportError title="العملاء" error={error} fallback="تعذّر تحميل تقرير العملاء." onRetry={refetch} />;
   const k = data?.kpis ?? {};
   const kpis = [["total", "إجمالي العملاء", k.total, "users"], ["new", "عملاء جدد", k.new, "userPlus"], ["returning", "عملاء عائدون", k.returning, "userCheck"], ["avg", "متوسط العقود لكل عميل", k.avg_contracts_per_customer, "file"], ["incomplete", "لم يكملوا الطلب", k.incomplete, "xCircle"]].map(([key, label, value, icon]) => ({ key, label, value: value ?? 0, icon, isText: key === "avg" }));
   return (

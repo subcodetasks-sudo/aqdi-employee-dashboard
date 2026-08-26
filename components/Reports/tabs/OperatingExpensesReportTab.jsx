@@ -30,6 +30,7 @@ import { usePermissions } from "@/src/hooks/usePermissions";
 import { PERMISSION_SECTIONS } from "@/src/lib/permissions";
 import { ReportKpiGrid } from "../shared/ReportKpiCard";
 import ReportSectionCard from "../shared/ReportSectionCard";
+import ReportError from "../shared/ReportError";
 import OperatingExpenseDialog from "../OperatingExpenseDialog";
 
 const TH =
@@ -64,7 +65,7 @@ export default function OperatingExpensesReportTab() {
   const [editingExpense, setEditingExpense] = useState(null);
   const [deletingExpense, setDeletingExpense] = useState(null);
 
-  const { data, isLoading, isError } = useOperatingExpenses({ search, createdAt, page, perPage: 20 });
+  const { data, isLoading, isError, error, refetch } = useOperatingExpenses({ search, createdAt, page, perPage: 20 });
   const { mutate: deleteExpense, isPending: isDeleting } = useDeleteOperatingExpense();
   const { can } = usePermissions();
   const canCreate = can(PERMISSION_SECTIONS.analytics, "create");
@@ -114,11 +115,12 @@ export default function OperatingExpensesReportTab() {
 
   if (isError) {
     return (
-      <ReportSectionCard title="المصروفات التشغيلية">
-        <p className="text-13 text-red-600 dark:text-red-300">
-          تعذّر تحميل المصروفات التشغيلية من الخادم. حاول تحديث الصفحة.
-        </p>
-      </ReportSectionCard>
+      <ReportError
+        title="المصروفات التشغيلية"
+        error={error}
+        fallback="تعذّر تحميل المصروفات التشغيلية من الخادم."
+        onRetry={refetch}
+      />
     );
   }
 

@@ -8,9 +8,9 @@ import { useSalesReport } from "@/src/hooks/use-reports";
 import ReportError from "../shared/ReportError";
 
 export default function SalesReportTab({ period, dateFrom, dateTo, contractType, employee }) {
-  const { data, isLoading, isError, error } = useSalesReport(period, dateFrom, dateTo, contractType, employee);
+  const { data, isLoading, isError, error, refetch } = useSalesReport(period, dateFrom, dateTo, contractType, employee);
   if (isLoading) return <Loader />;
-  if (isError) return <ReportError title="المبيعات والإيرادات" error={error} fallback="تعذّر تحميل تقرير المبيعات." />;
+  if (isError) return <ReportError title="المبيعات والإيرادات" error={error} fallback="تعذّر تحميل تقرير المبيعات." onRetry={refetch} />;
   const kpis = [
     ["total_sales", "إجمالي المبيعات (ريال)", "wallet"], ["payments_count", "عدد عمليات الدفع", "receipt"],
     ["avg_order_value", "متوسط قيمة الطلب", "creditCard"], ["discounts_used", "الخصومات المستخدمة", "tag"],
