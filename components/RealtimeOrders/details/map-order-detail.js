@@ -1,6 +1,7 @@
 import { getInstrumentTypeLabel } from "@/src/lib/instrument-types";
 import { getContractTypeLabel } from "@/src/lib/contract-period-utils";
 import { getOrderClientPhone } from "@/components/Orders/messages/order-section-message-utils";
+import { fileNameFromUrl, resolveImageUrl, resolveNationalAddress } from "./national-address-utils";
 
 function pick(...values) {
   for (const value of values) {
@@ -18,26 +19,6 @@ function tenantEntityLabel(value) {
   if (value === "person") return "فرد";
   if (value === "institution") return "مؤسسة أو شركة";
   return value || "مستأجر";
-}
-
-function resolveImageUrl(value) {
-  if (!value) return null;
-  if (typeof value === "string") return value.trim() || null;
-  if (typeof value === "object") {
-    return value.url || value.path || value.full_url || value.src || null;
-  }
-  return null;
-}
-
-function fileNameFromUrl(url) {
-  if (!url) return null;
-  try {
-    const path = String(url).split("?")[0];
-    const name = path.split("/").pop();
-    return name || null;
-  } catch {
-    return null;
-  }
 }
 
 function durationLabel(step4 = {}) {
@@ -130,17 +111,7 @@ export function mapOrderDetailView(orderData = {}) {
       file_url: deedUrl,
       file_name: fileNameFromUrl(deedUrl),
     },
-    national_address: {
-      source: pick(step1.address_source, "العنوان الوطني"),
-      city: pick(
-        summary.relation_labels?.property_city,
-        step1.city_name,
-        step1.property_city_name
-      ),
-      district: pick(summary.neighborhood, step1.neighborhood),
-      building: pick(summary.building_number, step1.building_number),
-      street: pick(summary.street, step1.street),
-    },
+    national_address: resolveNationalAddress(orderData),
     tenant: {
       type_label: tenantEntityLabel(pick(step3.tenant_entity, orderData.tenant_entity)),
       phone: pick(step3.tenant_mobile, orderData.tenant_mobile),

@@ -4,18 +4,15 @@ import { useState } from "react";
 import Image from "next/image";
 import { toast } from "sonner";
 import {
-  Check,
   Copy,
   Loader2,
   MoreVertical,
-  Plus,
   Printer,
 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -23,44 +20,12 @@ import waIcon from "@/public/images/waIcon.svg";
 import { cn } from "@/lib/utils";
 import { axiosInstance } from "@/src/utils/axios";
 import { printOrderContract } from "@/components/Orders/single-order/print-contract";
-import AddContractStatusDialog from "./AddContractStatusDialog";
-import { openDialogAfterMenuClose } from "@/src/lib/open-dialog-after-menu-close";
-
-function toMenuStatus(status) {
-  if (!status) return null;
-  return {
-    id: status.id,
-    label: status.label ?? status.name,
-    name: status.name ?? status.label,
-    color: status.color,
-    color_text: status.color_text,
-    status_case: status.status_case ?? null,
-  };
-}
 
 export default function OrderActionsMenu({
   order,
-  onStatusChange,
-  statuses,
-  isStatusPending = false,
-  canChangeStatus = true,
-  canAddStatus = false,
   triggerClassName,
 }) {
   const [isPrinting, setIsPrinting] = useState(false);
-  const [isAddOpen, setIsAddOpen] = useState(false);
-  const statusItems = (Array.isArray(statuses) ? statuses : [])
-    .map(toMenuStatus)
-    .filter(Boolean);
-  const currentLabel =
-    order?.status_name ||
-    order?.status?.name ||
-    order?.contract_status_name;
-  const currentId =
-    order?.status_id ??
-    order?.status?.id ??
-    order?.contract_status_id ??
-    statusItems.find((s) => s.label === currentLabel)?.id;
 
   const copyUuid = () => {
     navigator.clipboard.writeText(String(order?.uuid ?? ""));
@@ -95,7 +60,6 @@ export default function OrderActionsMenu({
   };
 
   return (
-    <>
     <DropdownMenu dir="rtl" modal={false}>
       <DropdownMenuTrigger asChild>
         <button
@@ -108,11 +72,7 @@ export default function OrderActionsMenu({
             triggerClassName
           )}
         >
-          {isStatusPending ? (
-            <Loader2 className="size-4 animate-spin" />
-          ) : (
-            <MoreVertical className="size-4" />
-          )}
+          <MoreVertical className="size-4" />
         </button>
       </DropdownMenuTrigger>
 
@@ -124,75 +84,6 @@ export default function OrderActionsMenu({
           "border-[#E8EEEC] bg-white dark:border-white/10 dark:bg-card"
         )}
       >
-        <div className="px-3.5 pt-3 pb-1.5">
-          <DropdownMenuLabel className="p-0 text-xs font-bold text-gray-400 dark:text-white/45">
-            تغيير حالة الطلب
-          </DropdownMenuLabel>
-        </div>
-
-        <div className="px-1.5 pb-1.5 max-h-[280px] overflow-y-auto">
-          {!canChangeStatus ? (
-            <p className="px-3 py-2 text-xs text-gray-400">
-              ليست لديك صلاحية تغيير الحالة
-            </p>
-          ) : statusItems.length === 0 ? (
-            <p className="px-3 py-2 text-xs text-gray-400">لا توجد حالات</p>
-          ) : (
-            statusItems.map((status) => {
-              const active =
-                (currentId != null && String(status.id) === String(currentId)) ||
-                status.label === currentLabel;
-              return (
-                <DropdownMenuItem
-                  key={status.id}
-                  disabled={isStatusPending}
-                  onSelect={() => {
-                    if (active || isStatusPending) return;
-                    onStatusChange?.(order, status);
-                  }}
-                  className={cn(
-                    "rounded-xl px-3 py-2.5 cursor-pointer gap-2.5",
-                    "focus:bg-[#F3F9F6] dark:focus:bg-white/[0.06]",
-                    active && "bg-[#F8FAF9] dark:bg-white/[0.04]"
-                  )}
-                >
-                  <span
-                    className="size-2.5 rounded-full shrink-0"
-                    style={{ backgroundColor: status.color }}
-                  />
-                  <span className="flex-1 text-13 font-bold text-gray-900 dark:text-white/90 text-right">
-                    {status.label}
-                  </span>
-                  {active ? (
-                    <Check className="size-3.5 text-brand-dark dark:text-[#6EE7B7] shrink-0" />
-                  ) : null}
-                </DropdownMenuItem>
-              );
-            })
-          )}
-        </div>
-
-        {canAddStatus ? (
-          <>
-            <DropdownMenuSeparator className="bg-surface-border dark:bg-white/10 my-0" />
-            <div className="px-1.5 py-1.5">
-              <DropdownMenuItem
-                onSelect={() => {
-                  openDialogAfterMenuClose(() => setIsAddOpen(true));
-                }}
-                className="rounded-xl px-3 py-2.5 cursor-pointer gap-2.5 focus:bg-[#F3F9F6] dark:focus:bg-white/[0.06]"
-              >
-                <Plus className="size-4 text-brand-dark dark:text-[#6EE7B7] shrink-0" />
-                <span className="flex-1 text-13 font-bold text-gray-900 dark:text-white/90 text-right">
-                  إضافة حالة جديدة
-                </span>
-              </DropdownMenuItem>
-            </div>
-          </>
-        ) : null}
-
-        <DropdownMenuSeparator className="bg-surface-border dark:bg-white/10 my-0" />
-
         <div className="p-1.5">
           <DropdownMenuItem
             onSelect={copyUuid}
@@ -234,12 +125,5 @@ export default function OrderActionsMenu({
         </div>
       </DropdownMenuContent>
     </DropdownMenu>
-
-    <AddContractStatusDialog
-      open={isAddOpen}
-      onOpenChange={setIsAddOpen}
-      onCreated={(status) => onStatusChange?.(order, status)}
-    />
-    </>
   );
 }

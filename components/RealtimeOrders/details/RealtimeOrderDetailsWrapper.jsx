@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import Loader from "@/components/home/loader";
 import {
@@ -16,6 +16,7 @@ import { useOrderDetailsDialogs } from "@/src/hooks/use-order-details-dialogs";
 import OrderDetailsHeader from "./OrderDetailsHeader";
 import OrderGroupsLayout from "./OrderGroupsLayout";
 import OrderDetailsDialogs from "./OrderDetailsDialogs";
+import ContractExpandedViewDialog from "./ContractExpandedViewDialog";
 import { mapOrderDetailView } from "./map-order-detail";
 
 function resolveBackLink(from) {
@@ -52,6 +53,7 @@ function OrderDetailsBody() {
     can(PERMISSION_SECTIONS.returned_request, "edit");
 
   const dialogs = useOrderDetailsDialogs({ orderData, id, canReturn, refetch });
+  const [expandedViewOpen, setExpandedViewOpen] = useState(false);
 
   useEffect(() => {
     setOrderId(id);
@@ -104,6 +106,7 @@ function OrderDetailsBody() {
         onMissingAttachment={() => dialogs.setCorrectionRequestOpen(true)}
         onEjarDocumentation={() => dialogs.setEjarDocumentationOpen(true)}
         onSendSectionError={dialogs.setSectionErrorContext}
+        onViewExpanded={() => setExpandedViewOpen(true)}
         statuses={statuses}
         canChangeStatus={canChangeStatus}
         canAddStatus={canAddStatus}
@@ -117,6 +120,12 @@ function OrderDetailsBody() {
       )}
 
       <OrderDetailsDialogs id={id} orderData={orderData} view={view} dialogs={dialogs} />
+
+      <ContractExpandedViewDialog
+        open={expandedViewOpen}
+        onOpenChange={setExpandedViewOpen}
+        order={view}
+      />
     </div>
   );
 }

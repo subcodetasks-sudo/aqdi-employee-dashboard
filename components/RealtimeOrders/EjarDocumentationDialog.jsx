@@ -1,14 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { BadgeCheck, Loader2 } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import OrderActionDialogHeader from "@/components/shared/OrderActionDialogHeader";
 import { useUpdateOrder } from "@/src/hooks/use-update-order";
+import { useDialogFormSession } from "@/src/hooks/use-dialog-form-session";
 
 function Tile({ label, value, className = "" }) {
   return (
@@ -28,11 +25,12 @@ export default function EjarDocumentationDialog({
   const [ejarNumber, setEjarNumber] = useState("");
   const [notes, setNotes] = useState("");
 
-  useEffect(() => {
-    if (!open) return;
+  const resetForm = useCallback(() => {
     setEjarNumber(orderData?.ejar_contract_number ?? "");
     setNotes("");
-  }, [open, orderData]);
+  }, [orderData]);
+
+  const session = useDialogFormSession(open, resetForm);
 
   const { mutate: submit, isPending } = useUpdateOrder({
     queryKey,
@@ -53,34 +51,27 @@ export default function EjarDocumentationDialog({
     });
   };
 
+  const handleClose = () => {
+    if (isPending) return;
+    onOpenChange(false);
+  };
+
   const employeeName = orderData?.received_contract?.employee?.name ?? orderData?.employee_name;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(next) => !isPending && onOpenChange(next)}>
       <DialogContent
+        key={session}
         className="sm:max-w-[520px] p-8 rounded-32 border-0 gap-0"
         dir="rtl"
         closeButton={false}
       >
-        <button
-          type="button"
-          onClick={() => onOpenChange(false)}
-          className="absolute left-6 top-6 w-9 h-9 flex items-center justify-center rounded-full bg-neutral-100 text-ink-placeholder hover:bg-[#FFEBEB] hover:text-[#E24444] transition-all z-10"
-          aria-label="إغلاق"
-        >
-          <i className="fa-solid fa-xmark text-sm" />
-        </button>
-
-        <DialogHeader className="mb-6 space-y-0">
-          <div className="flex items-center gap-3 border-b border-[#F0F0F0] pb-4 pl-12">
-            <span className="w-10 h-10 rounded-full bg-[#16A34A] text-white flex items-center justify-center shrink-0">
-              <BadgeCheck className="size-[18px]" />
-            </span>
-            <DialogTitle className="text-lg font-bold text-black text-right">
-              توثيق الطلب في إيجار
-            </DialogTitle>
-          </div>
-        </DialogHeader>
+        <OrderActionDialogHeader
+          icon={BadgeCheck}
+          iconClassName="bg-[#16A34A]"
+          title="توثيق الطلب في إيجار"
+          onClose={handleClose}
+        />
 
         <div className="flex flex-col gap-5">
           <div className="grid grid-cols-2 gap-3">
@@ -136,7 +127,7 @@ export default function EjarDocumentationDialog({
             <button
               type="button"
               disabled={isPending}
-              onClick={() => onOpenChange(false)}
+              onClick={handleClose}
               className="h-13 px-6 rounded-2xl border border-surface-border text-ink-subtle font-bold text-15 hover:bg-neutral-100 transition-all"
             >
               تراجع

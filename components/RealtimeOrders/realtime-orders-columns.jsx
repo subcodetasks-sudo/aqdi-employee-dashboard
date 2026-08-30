@@ -34,29 +34,12 @@ function getReceivedUrgency(dateString) {
   return "ok";
 }
 
-// Fallback badge colors when the API doesn't supply status.color — mirrors
-// design.html's .schip status-dot palette (.s-received/.s-draftrev/.s-raised/...)
-function statusBadgeStyle(name = "", apiColor, apiTextColor) {
-  if (apiColor) {
-    return {
-      backgroundColor: `${apiColor}26`,
-      color: apiTextColor || apiColor,
-    };
-  }
-  const dotColor = name.includes("مستلم")
-    ? RT.statusDot.received
-    : name.includes("مسودة")
-      ? RT.statusDot.draftrev
-      : name.includes("تحديث") || name.includes("مرفوع")
-        ? RT.statusDot.raised
-        : name.includes("ملغ")
-          ? RT.statusDot.cancelled
-          : name.includes("مسترجع") || name.includes("استرجاع")
-            ? RT.statusDot.refunded
-            : name.includes("موثق") || name.includes("مكتمل")
-              ? RT.statusDot.done
-              : "#4B5563";
-  return { backgroundColor: "#F1F3F2", color: dotColor };
+// Status badges are intentionally neutral (light gray / dark gray) regardless
+// of any color the API supplies, to keep the status column calm and legible.
+function statusBadgeStyle(name = "", apiColor, apiTextColor, dark = false) {
+  return dark
+    ? { backgroundColor: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.75)" }
+    : { backgroundColor: "#F3F4F6", color: "#374151" };
 }
 
 /**
@@ -285,7 +268,8 @@ export function buildRealtimeOrderColumns({
         const style = statusBadgeStyle(
           name,
           row?.status_color || row?.status?.color,
-          row?.status_color_text || row?.status?.color_text
+          row?.status_color_text || row?.status?.color_text,
+          dark
         );
         return (
           <span

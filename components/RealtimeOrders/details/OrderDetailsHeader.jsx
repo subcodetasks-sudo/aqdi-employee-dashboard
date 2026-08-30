@@ -125,6 +125,7 @@ export default function OrderDetailsHeader({
   onMissingAttachment,
   onEjarDocumentation,
   onSendSectionError,
+  onViewExpanded,
   statuses = [],
   canChangeStatus = true,
   isStatusPending = false,
@@ -230,7 +231,11 @@ export default function OrderDetailsHeader({
 
   const handlePill = (id) => {
     if (id === "view_file") {
-      handlePrint();
+      if (orderData) {
+        onViewExpanded?.();
+      } else {
+        toast.error("لا توجد بيانات للعرض");
+      }
       return;
     }
     if (id === "pay_link") {
@@ -272,9 +277,19 @@ export default function OrderDetailsHeader({
           {backLabel}
         </Link>
 
-        <span className="text-15 font-black text-brand-dark dark:text-[#6EE7B7]">
-          #{order.uuid}
-        </span>
+        <button
+          type="button"
+          onClick={() => copyText(String(order.uuid ?? ""), "تم نسخ رقم الطلب")}
+          className="inline-flex items-center gap-1.5 group"
+          title="نسخ رقم الطلب"
+        >
+          <span className="text-15 font-black text-brand-dark dark:text-[#6EE7B7] tabular-nums">
+            #{order.uuid}
+          </span>
+          <Copy
+            className="size-3.5 text-gray-400 group-hover:text-brand-dark dark:text-white/35 dark:group-hover:text-[#6EE7B7] transition-colors"
+          />
+        </button>
 
         <span className="conic-border-badge inline-flex items-center gap-1.5 h-7 px-3 rounded-full text-green-700 dark:text-[#6EE7B7] text-[12.5px] font-bold">
           <FileText className="size-3.5" />
@@ -497,7 +512,8 @@ function StatusSelect({ order, statuses = [], onStatusChange, disabled }) {
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="start"
-        className="min-w-[220px] rounded-xl p-1 border-surface-border-soft max-h-[280px] overflow-y-auto"
+        dir="rtl"
+        className="min-w-[220px] rounded-xl p-1 border-surface-border-soft max-h-[280px] overflow-y-auto text-right"
       >
         {statuses.length === 0 ? (
           <p className="px-3 py-2 text-xs text-gray-400">لا توجد حالات</p>
@@ -516,10 +532,10 @@ function StatusSelect({ order, statuses = [], onStatusChange, disabled }) {
                   onStatusChange?.(order, status);
                 }}
                 className={cn(
-                  "rounded-lg px-3 py-2.5 cursor-pointer text-13 font-bold justify-end",
+                  "rounded-lg px-3 py-2.5 cursor-pointer text-13 font-bold text-right",
                   active
                     ? "bg-[#1D63D2] text-white focus:bg-[#1D63D2] focus:text-white"
-                    : "text-gray-700"
+                    : "text-gray-700 dark:text-white/80"
                 )}
               >
                 {label}

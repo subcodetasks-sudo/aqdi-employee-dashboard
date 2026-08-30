@@ -1,17 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { AlertTriangle, CreditCard, FileText, MapPin, UserRound } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import OrderActionDialogHeader from "@/components/shared/OrderActionDialogHeader";
 import waIcon from "@/public/images/waIcon.svg";
 import Image from "next/image";
+import { useDialogFormSession } from "@/src/hooks/use-dialog-form-session";
 
 const ERROR_TYPES = [
   { id: "national_address", label: "العنوان الوطني غير صحيح", icon: MapPin },
@@ -34,9 +31,8 @@ ${selectedLabels.map((label) => `- ${label}`).join("\n")}
 export default function CorrectionRequestDialog({ open, onOpenChange, order }) {
   const [selected, setSelected] = useState([]);
 
-  useEffect(() => {
-    if (!open) setSelected([]);
-  }, [open]);
+  const resetForm = useCallback(() => setSelected([]), []);
+  const session = useDialogFormSession(open, resetForm);
 
   const toggle = (id) => {
     setSelected((prev) =>
@@ -49,32 +45,22 @@ export default function CorrectionRequestDialog({ open, onOpenChange, order }) {
   );
   const message = selectedLabels.length > 0 ? buildCorrectionMessage(order, selectedLabels) : "";
 
+  const handleClose = () => onOpenChange(false);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
+        key={session}
         className="sm:max-w-[540px] p-8 rounded-32 border-0 gap-0 max-h-[90vh] overflow-y-auto no-scrollbar"
         dir="rtl"
         closeButton={false}
       >
-        <button
-          type="button"
-          onClick={() => onOpenChange(false)}
-          className="absolute left-6 top-6 w-9 h-9 flex items-center justify-center rounded-full bg-neutral-100 text-ink-placeholder hover:bg-[#FFEBEB] hover:text-[#E24444] transition-all z-10"
-          aria-label="إغلاق"
-        >
-          <i className="fa-solid fa-xmark text-sm" />
-        </button>
-
-        <DialogHeader className="mb-6 space-y-0">
-          <div className="flex items-center gap-3 border-b border-[#F0F0F0] pb-4 pl-12">
-            <span className="w-10 h-10 rounded-full bg-[#EA580C] text-white flex items-center justify-center shrink-0">
-              <AlertTriangle className="size-[18px]" />
-            </span>
-            <DialogTitle className="text-lg font-bold text-black text-right">
-              طلب تصحيح بيانات من العميل
-            </DialogTitle>
-          </div>
-        </DialogHeader>
+        <OrderActionDialogHeader
+          icon={AlertTriangle}
+          iconClassName="bg-[#EA580C]"
+          title="طلب تصحيح بيانات من العميل"
+          onClose={handleClose}
+        />
 
         <div className="flex flex-col gap-4">
           <p className="text-13 font-bold text-black text-right">
@@ -140,7 +126,7 @@ export default function CorrectionRequestDialog({ open, onOpenChange, order }) {
 
           <button
             type="button"
-            onClick={() => onOpenChange(false)}
+            onClick={handleClose}
             className="w-full h-13 rounded-2xl border border-surface-border text-ink-subtle font-bold text-15 hover:bg-neutral-100 transition-all mt-1"
           >
             إغلاق

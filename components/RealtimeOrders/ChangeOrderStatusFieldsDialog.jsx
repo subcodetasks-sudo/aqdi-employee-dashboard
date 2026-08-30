@@ -1,11 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { Loader2 } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Loader2, X } from "lucide-react";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
@@ -58,18 +57,22 @@ export default function ChangeOrderStatusFieldsDialog({
 }) {
   const fields = useMemo(() => getStatusCaseFields(status), [status]);
   const [values, setValues] = useState({});
+  const [session, setSession] = useState(0);
 
-  useEffect(() => {
-    if (!open) {
-      setValues({});
-      return;
-    }
+  const resetForm = useCallback(() => {
     const next = {};
     fields.forEach((field) => {
       next[field.name] = field.type === "file" ? null : "";
     });
     setValues(next);
-  }, [open, fields]);
+  }, [fields]);
+
+  useEffect(() => {
+    if (open) {
+      setSession((value) => value + 1);
+      resetForm();
+    }
+  }, [open, resetForm]);
 
   const missingRequired = fields.some(
     (field) =>
@@ -83,17 +86,33 @@ export default function ChangeOrderStatusFieldsDialog({
     onSubmit?.(values);
   };
 
+  const handleClose = () => {
+    if (isPending) return;
+    onOpenChange(false);
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(next) => !isPending && onOpenChange(next)}>
       <DialogContent
-        className="sm:max-w-[560px] p-8 rounded-32 border-0 dark:bg-card dark:text-white"
+        key={session}
+        className="sm:max-w-[560px] p-8 rounded-32 border-0 dark:bg-card dark:text-white gap-0"
         dir="rtl"
+        closeButton={false}
       >
-        <DialogHeader className="mb-6">
-          <DialogTitle className="text-22 font-black text-black dark:text-white border-b border-neutral-100 dark:border-white/10 pb-4">
+        <div className="flex items-center justify-between gap-3 border-b border-neutral-100 dark:border-white/10 pb-4 mb-6">
+          <DialogTitle className="text-22 font-black text-black dark:text-white text-right truncate">
             {status?.name || status?.label || "تغيير الحالة"}
           </DialogTitle>
-        </DialogHeader>
+          <button
+            type="button"
+            onClick={handleClose}
+            disabled={isPending}
+            className="flex size-9 shrink-0 items-center justify-center rounded-full bg-neutral-100 text-ink-placeholder transition-colors hover:bg-[#FFEBEB] hover:text-[#E24444] dark:bg-white/10"
+            aria-label="إغلاق"
+          >
+            <X className="size-4" />
+          </button>
+        </div>
 
         <div className="flex flex-col gap-5">
           {fields.map((field) => {
@@ -109,6 +128,7 @@ export default function ChangeOrderStatusFieldsDialog({
                     {required ? <span className="text-status-danger mr-1">*</span> : null}
                   </span>
                   <Select
+                    key={`${field.name}-select-${session}`}
                     dir="rtl"
                     value={values[field.name] || undefined}
                     onValueChange={(value) =>
@@ -138,6 +158,7 @@ export default function ChangeOrderStatusFieldsDialog({
                     {required ? <span className="text-status-danger mr-1">*</span> : null}
                   </span>
                   <input
+                    key={`${field.name}-file-${session}`}
                     type="file"
                     onChange={(e) =>
                       setValues((prev) => ({
@@ -183,6 +204,15 @@ export default function ChangeOrderStatusFieldsDialog({
             className="w-full h-13.5 bg-brand-dark text-white rounded-2xl font-bold text-base hover:brightness-110 transition-all disabled:opacity-60 mt-2"
           >
             {isPending ? <Loader2 className="animate-spin mx-auto" /> : "تأكيد تغيير الحالة"}
+          </button>
+
+          <button
+            type="button"
+            onClick={handleClose}
+            disabled={isPending}
+            className="w-full h-13 rounded-2xl border border-surface-border text-ink-subtle font-bold text-15 hover:bg-neutral-100 transition-all"
+          >
+            إلغاء
           </button>
         </div>
       </DialogContent>

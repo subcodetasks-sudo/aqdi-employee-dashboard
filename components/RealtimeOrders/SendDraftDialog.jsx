@@ -1,14 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { Loader2, Send } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import OrderActionDialogHeader from "@/components/shared/OrderActionDialogHeader";
 import { useUpdateOrder } from "@/src/hooks/use-update-order";
+import { useDialogFormSession } from "@/src/hooks/use-dialog-form-session";
 
 export default function SendDraftDialog({
   open,
@@ -26,12 +23,13 @@ export default function SendDraftDialog({
     orderData?.tenant_mobile ??
     "";
 
-  useEffect(() => {
-    if (!open) return;
+  const resetForm = useCallback(() => {
     setDraftNumber("");
     setContactMode("same");
     setOtherNumber("");
-  }, [open]);
+  }, []);
+
+  const session = useDialogFormSession(open, resetForm);
 
   const { mutate: submit, isPending } = useUpdateOrder({
     queryKey,
@@ -56,32 +54,25 @@ export default function SendDraftDialog({
     });
   };
 
+  const handleClose = () => {
+    if (isPending) return;
+    onOpenChange(false);
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(next) => !isPending && onOpenChange(next)}>
       <DialogContent
+        key={session}
         className="sm:max-w-[520px] p-8 rounded-32 border-0 gap-0"
         dir="rtl"
         closeButton={false}
       >
-        <button
-          type="button"
-          onClick={() => onOpenChange(false)}
-          className="absolute left-6 top-6 w-9 h-9 flex items-center justify-center rounded-full bg-neutral-100 text-ink-placeholder hover:bg-[#FFEBEB] hover:text-[#E24444] transition-all z-10"
-          aria-label="إغلاق"
-        >
-          <i className="fa-solid fa-xmark text-sm" />
-        </button>
-
-        <DialogHeader className="mb-6 space-y-0">
-          <div className="flex items-center gap-3 border-b border-[#F0F0F0] pb-4 pl-12">
-            <span className="w-10 h-10 rounded-full bg-[#B45309] text-white flex items-center justify-center shrink-0">
-              <Send className="size-[18px]" />
-            </span>
-            <DialogTitle className="text-lg font-bold text-black text-right">
-              إرسال مسودة العقد للعميل
-            </DialogTitle>
-          </div>
-        </DialogHeader>
+        <OrderActionDialogHeader
+          icon={Send}
+          iconClassName="bg-[#B45309]"
+          title="إرسال مسودة العقد للعميل"
+          onClose={handleClose}
+        />
 
         <div className="flex flex-col gap-5">
           <div className="flex flex-col gap-2">
@@ -162,7 +153,8 @@ export default function SendDraftDialog({
               />
             ) : (
               <p className="text-[11.5px] text-ink-placeholder leading-relaxed px-1">
-                بعض العملاء يتواصلون برقم مختلف عن رقم الطلب – سجل الرقم الفعلي الذي راسلكم منه ليُقيَّد في السجل.
+                بعض العملاء يتواصلون برقم مختلف عن رقم الطلب – سجل الرقم الفعلي الذي راسلكم منه
+                ليُقيَّد في السجل.
               </p>
             )}
           </div>
@@ -186,7 +178,7 @@ export default function SendDraftDialog({
             <button
               type="button"
               disabled={isPending}
-              onClick={() => onOpenChange(false)}
+              onClick={handleClose}
               className="h-13 px-6 rounded-2xl border border-surface-border text-ink-subtle font-bold text-15 hover:bg-neutral-100 transition-all"
             >
               إلغاء

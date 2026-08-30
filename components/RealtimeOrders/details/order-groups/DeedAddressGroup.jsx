@@ -1,10 +1,16 @@
 "use client";
 
+import { useState } from "react";
 import { Download, Eye, FileText, MapPin } from "lucide-react";
+import MediaPreviewDialog from "@/components/shared/MediaPreviewDialog";
 import { RT } from "../../theme";
 import { AccentCard, Field, GroupTitle } from "./primitives";
+import NationalAddressContent from "./NationalAddressContent";
 
 export default function DeedAddressGroup({ order, onEdit }) {
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const address = order.national_address;
+
   return (
     <section className="rounded-2xl border border-dashed border-[#D7E3DE] dark:border-white/10 bg-[#F7FAF8] dark:bg-white/[0.02] p-3 sm:p-3.5 space-y-3">
       <GroupTitle>المجموعة 1 - الملاك - الصك - العنوان الوطني</GroupTitle>
@@ -35,15 +41,14 @@ export default function DeedAddressGroup({ order, onEdit }) {
           </span>
           {order.deed?.file_url ? (
             <div className="flex items-center gap-3 shrink-0">
-              <a
-                href={order.deed.file_url}
-                target="_blank"
-                rel="noreferrer"
+              <button
+                type="button"
+                onClick={() => setPreviewOpen(true)}
                 className="text-xs font-bold text-brand-dark dark:text-[#6EE7B7] hover:underline inline-flex items-center gap-1"
               >
                 <Eye className="size-3.5" />
                 عرض
-              </a>
+              </button>
               <a
                 href={order.deed.file_url}
                 download
@@ -57,23 +62,22 @@ export default function DeedAddressGroup({ order, onEdit }) {
         </div>
       </AccentCard>
 
+      <MediaPreviewDialog
+        open={previewOpen}
+        onOpenChange={setPreviewOpen}
+        url={order.deed?.file_url}
+        downloadUrl={order.deed?.file_url}
+        title="معاينة الصك"
+        subtitle={order.deed?.file_name}
+      />
+
       <AccentCard
         accent="#3B82F6"
         icon={MapPin}
         title="العنوان الوطني"
         onEdit={() => onEdit?.("address")}
-        badge={
-          <>
-            <MapPin className="size-3" />
-            {order.national_address?.source}
-          </>
-        }
       >
-        <div className="space-y-2">
-          <Field label="المدينة" value={order.national_address?.city} />
-          <Field label="الحي" value={order.national_address?.district} />
-          <Field label="رقم المبنى" value={order.national_address?.building} />
-        </div>
+        <NationalAddressContent address={address} />
       </AccentCard>
     </section>
   );

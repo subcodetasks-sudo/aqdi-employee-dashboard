@@ -172,6 +172,7 @@ export default function RealtimeOrdersToolbar({
   activeSection = null,
   sectionCount = 0,
   onCloseSection,
+  headerKpis = null,
 }) {
   const now = useLiveClock();
   const { day, stamp, timeOnly } = formatDateTime(now);
@@ -208,9 +209,181 @@ export default function RealtimeOrdersToolbar({
       : "border-[#E3E8E6] bg-white text-[#33403B] hover:border-[#CDEBDF] hover:text-[#0B5F4C]"
   );
 
+  const toolbarControls = (
+    <>
+      {!headerKpis
+        ? filterPills.map((pill) => {
+            const active = activeFilters.includes(pill.id);
+            const Icon = pill.Icon;
+            const activeColor = PILL_ACTIVE_COLOR[pill.id] || RT.brand;
+            return (
+              <button
+                key={pill.id}
+                type="button"
+                onClick={() => onToggleFilter?.(pill.id)}
+                title={pill.sectionTitle ?? pill.label}
+                className={cn(
+                  "h-10 px-3 rounded-xl text-[11px] font-extrabold border transition-all flex items-center gap-1.5 whitespace-nowrap",
+                  active
+                    ? "text-white border-transparent shadow-sm"
+                    : dark
+                      ? "border-[#28453A] bg-[#132620] text-[#C4D8D0] hover:bg-[#1A332B]"
+                      : "border-[#E3E8E6] bg-white text-[#33403B] hover:border-[#CFD6D2] hover:bg-[#F7FAF9]"
+                )}
+                style={active ? { backgroundColor: activeColor } : undefined}
+              >
+                <Icon className="size-3.5" strokeWidth={2} />
+                {pill.label}
+              </button>
+            );
+          })
+        : null}
+
+      <div className="relative min-w-[180px] max-w-[320px] flex-1">
+        <Search
+          className={cn(
+            "absolute right-3.5 top-1/2 -translate-y-1/2 size-[14px]",
+            dark ? "text-white/35" : "text-[#8A8A84]"
+          )}
+        />
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => onSearchChange?.(e.target.value)}
+          placeholder={searchPlaceholder}
+          className={cn(
+            "w-full h-10 rounded-xl pr-9 pl-9 text-[11px] font-bold transition-colors focus:outline-none",
+            dark
+              ? "bg-[#132620] border border-[#28453A] text-white placeholder:text-white/30 focus:border-[#34D399]/40"
+              : "bg-white border border-[#E3E8E6] text-[#22302C] placeholder:text-[#8A8A84] focus:border-[#0E5F4E]"
+          )}
+        />
+        {searchQuery ? (
+          <button
+            type="button"
+            onClick={() => onSearchChange?.("")}
+            aria-label="مسح البحث"
+            className={cn(
+              "absolute left-3 top-1/2 -translate-y-1/2 size-5 rounded-full flex items-center justify-center",
+              dark
+                ? "text-white/40 hover:bg-white/10"
+                : "text-gray-400 hover:bg-[#E5E7EB]"
+            )}
+          >
+            <X className="size-3.5" />
+          </button>
+        ) : null}
+      </div>
+
+      <TableSettingsPopover
+        columns={columns}
+        density={density}
+        onDensityChange={onDensityChange}
+        visibleColumns={visibleColumns}
+        onToggleColumn={onToggleColumn}
+        align="end"
+        triggerClassName={roundBtn}
+        TriggerIcon={Settings2}
+      />
+
+      {useInlineFilters ? (
+        <button
+          type="button"
+          onClick={onToggleFilters}
+          aria-label="فلاتر"
+          title="فلاتر"
+          className={cn(
+            roundBtn,
+            filtersOpen && "!bg-[#0E5F4E] !text-white !border-[#0E5F4E]"
+          )}
+        >
+          <Filter className="size-[16px]" />
+          {hasActiveFilters ? (
+            <span className="absolute top-1.5 left-1.5 size-2 rounded-full bg-[#EF4444] border-2 border-white dark:border-[#0B1411]" />
+          ) : null}
+        </button>
+      ) : (
+        <MoreFiltersPopover
+          statuses={extraStatuses}
+          extraStatusId={extraStatusId}
+          onExtraStatusChange={onExtraStatusChange}
+          contractType={contractType}
+          onContractTypeChange={onContractTypeChange}
+          triggerClassName={roundBtn}
+          dark={dark}
+        />
+      )}
+
+      {canManageStatuses ? (
+        <button
+          type="button"
+          onClick={onManageStatuses}
+          aria-label="إدارة الحالات"
+          title="إدارة الحالات"
+          className={roundBtn}
+        >
+          <Tags className="size-[16px]" />
+        </button>
+      ) : null}
+
+      {canExport ? (
+        <button
+          type="button"
+          onClick={onExport}
+          disabled={isExporting}
+          className={cn(
+            "h-10 px-3.5 rounded-xl border font-extrabold text-[11px] flex items-center gap-1.5 transition-all disabled:opacity-60",
+            dark
+              ? "border-[#28453A] bg-[#132620] text-[#C4D8D0] hover:bg-[#1A332B]"
+              : "border-[#E3E8E6] text-[#33403B] bg-white hover:border-[#CDEBDF] hover:text-[#0B5F4C]"
+          )}
+        >
+          {isExporting ? "جاري التصدير..." : "تصدير CSV"}
+        </button>
+      ) : null}
+
+      <button
+        type="button"
+        onClick={openNotifications}
+        aria-label="الإشعارات"
+        title="الإشعارات"
+        className={cn(
+          roundBtn,
+          displayedPart === "notification" &&
+            "!bg-[#0E5F4E] !text-white !border-[#0E5F4E]"
+        )}
+      >
+        <Bell className="size-[16px]" />
+      </button>
+
+      <button
+        type="button"
+        onClick={openPayments}
+        aria-label="إشعارات الدفع"
+        title="إشعارات الدفع"
+        className={cn(
+          roundBtn,
+          displayedPart === "payments" &&
+            "!bg-[#0E5F4E] !text-white !border-[#0E5F4E]"
+        )}
+      >
+        <CreditCard className="size-[16px]" />
+      </button>
+
+      <button
+        type="button"
+        onClick={() => onOpenPaymentLink?.()}
+        aria-label="توليد رابط دفع — طلب واتساب"
+        title="توليد رابط دفع — طلب واتساب"
+        className={roundBtn}
+      >
+        <Link2 className="size-[16px]" />
+      </button>
+    </>
+  );
+
   return (
     <div className="flex flex-col gap-3.5" dir="rtl">
-      {/* Title row — matches design.html .tit / .h1row / .autobadge */}
       <div className="flex items-center justify-between gap-2.5 flex-wrap">
         <div className="flex items-start gap-3 min-w-0">
           <button
@@ -264,174 +437,11 @@ export default function RealtimeOrdersToolbar({
           </div>
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap">
-          {filterPills.map((pill) => {
-            const active = activeFilters.includes(pill.id);
-            const Icon = pill.Icon;
-            const activeColor = PILL_ACTIVE_COLOR[pill.id] || RT.brand;
-            return (
-              <button
-                key={pill.id}
-                type="button"
-                onClick={() => onToggleFilter?.(pill.id)}
-                title={pill.sectionTitle ?? pill.label}
-                className={cn(
-                  "h-10 px-3 rounded-xl text-[11px] font-extrabold border transition-all flex items-center gap-1.5 whitespace-nowrap",
-                  active
-                    ? "text-white border-transparent shadow-sm"
-                    : dark
-                      ? "border-[#28453A] bg-[#132620] text-[#C4D8D0] hover:bg-[#1A332B]"
-                      : "border-[#E3E8E6] bg-white text-[#33403B] hover:border-[#CFD6D2] hover:bg-[#F7FAF9]"
-                )}
-                style={active ? { backgroundColor: activeColor } : undefined}
-              >
-                <Icon className="size-3.5" strokeWidth={2} />
-                {pill.label}
-              </button>
-            );
-          })}
-
-          <div className="relative min-w-[180px] max-w-[320px] flex-1">
-            <Search
-              className={cn(
-                "absolute right-3.5 top-1/2 -translate-y-1/2 size-[14px]",
-                dark ? "text-white/35" : "text-[#8A8A84]"
-              )}
-            />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => onSearchChange?.(e.target.value)}
-              placeholder={searchPlaceholder}
-              className={cn(
-                "w-full h-10 rounded-xl pr-9 pl-9 text-[11px] font-bold transition-colors focus:outline-none",
-                dark
-                  ? "bg-[#132620] border border-[#28453A] text-white placeholder:text-white/30 focus:border-[#34D399]/40"
-                  : "bg-white border border-[#E3E8E6] text-[#22302C] placeholder:text-[#8A8A84] focus:border-[#0E5F4E]"
-              )}
-            />
-            {searchQuery ? (
-              <button
-                type="button"
-                onClick={() => onSearchChange?.("")}
-                aria-label="مسح البحث"
-                className={cn(
-                  "absolute left-3 top-1/2 -translate-y-1/2 size-5 rounded-full flex items-center justify-center",
-                  dark
-                    ? "text-white/40 hover:bg-white/10"
-                    : "text-gray-400 hover:bg-[#E5E7EB]"
-                )}
-              >
-                <X className="size-3.5" />
-              </button>
-            ) : null}
-          </div>
-
-          <TableSettingsPopover
-            columns={columns}
-            density={density}
-            onDensityChange={onDensityChange}
-            visibleColumns={visibleColumns}
-            onToggleColumn={onToggleColumn}
-            align="end"
-            triggerClassName={roundBtn}
-            TriggerIcon={Settings2}
-          />
-
-          {useInlineFilters ? (
-            <button
-              type="button"
-              onClick={onToggleFilters}
-              aria-label="فلاتر"
-              title="فلاتر"
-              className={cn(
-                roundBtn,
-                filtersOpen && "!bg-[#0E5F4E] !text-white !border-[#0E5F4E]"
-              )}
-            >
-              <Filter className="size-[16px]" />
-              {hasActiveFilters ? (
-                <span className="absolute top-1.5 left-1.5 size-2 rounded-full bg-[#EF4444] border-2 border-white dark:border-[#0B1411]" />
-              ) : null}
-            </button>
-          ) : (
-            <MoreFiltersPopover
-              statuses={extraStatuses}
-              extraStatusId={extraStatusId}
-              onExtraStatusChange={onExtraStatusChange}
-              contractType={contractType}
-              onContractTypeChange={onContractTypeChange}
-              triggerClassName={roundBtn}
-              dark={dark}
-            />
-          )}
-
-          {canManageStatuses ? (
-            <button
-              type="button"
-              onClick={onManageStatuses}
-              aria-label="إدارة الحالات"
-              title="إدارة الحالات"
-              className={roundBtn}
-            >
-              <Tags className="size-[16px]" />
-            </button>
-          ) : null}
-
-          {canExport ? (
-            <button
-              type="button"
-              onClick={onExport}
-              disabled={isExporting}
-              className={cn(
-                "h-10 px-3.5 rounded-xl border font-extrabold text-[11px] flex items-center gap-1.5 transition-all disabled:opacity-60",
-                dark
-                  ? "border-[#28453A] bg-[#132620] text-[#C4D8D0] hover:bg-[#1A332B]"
-                  : "border-[#E3E8E6] text-[#33403B] bg-white hover:border-[#CDEBDF] hover:text-[#0B5F4C]"
-              )}
-            >
-              {isExporting ? "جاري التصدير..." : "تصدير CSV"}
-            </button>
-          ) : null}
-
-          <button
-            type="button"
-            onClick={openNotifications}
-            aria-label="الإشعارات"
-            title="الإشعارات"
-            className={cn(
-              roundBtn,
-              displayedPart === "notification" &&
-                "!bg-[#0E5F4E] !text-white !border-[#0E5F4E]"
-            )}
-          >
-            <Bell className="size-[16px]" />
-          </button>
-
-          <button
-            type="button"
-            onClick={openPayments}
-            aria-label="إشعارات الدفع"
-            title="إشعارات الدفع"
-            className={cn(
-              roundBtn,
-              displayedPart === "payments" &&
-                "!bg-[#0E5F4E] !text-white !border-[#0E5F4E]"
-            )}
-          >
-            <CreditCard className="size-[16px]" />
-          </button>
-
-          <button
-            type="button"
-            onClick={() => onOpenPaymentLink?.()}
-            aria-label="توليد رابط دفع — طلب واتساب"
-            title="توليد رابط دفع — طلب واتساب"
-            className={roundBtn}
-          >
-            <Link2 className="size-[16px]" />
-          </button>
-        </div>
+        {headerKpis ? (
+          headerKpis
+        ) : (
+          <div className="flex items-center gap-2 flex-wrap">{toolbarControls}</div>
+        )}
       </div>
 
       <SectionHead
