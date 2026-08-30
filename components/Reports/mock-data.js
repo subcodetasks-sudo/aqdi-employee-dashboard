@@ -19,16 +19,15 @@ export const PERIOD_FILTERS = [
   { id: "custom", label: "مدة محددة" },
 ];
 
+/** @deprecated Use useReportFilterOptions() — kept for backwards compatibility only. */
 export const CONTRACT_TYPES = [
   { id: "all", label: "كل الأنواع" },
   { id: "housing", label: "سكني" },
   { id: "commercial", label: "تجاري" },
 ];
 
+/** @deprecated Use useReportFilterOptions() — was demo placeholder data. */
 export const EMPLOYEE_FILTERS = [
   { id: "all", label: "كل الموظفين" },
-  { id: "rayan", label: "ريان" },
-  { id: "ahmed", label: "أحمد" },
-  { id: "noura", label: "نورة" },
 ];
 

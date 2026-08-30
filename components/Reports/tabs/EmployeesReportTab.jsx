@@ -193,11 +193,6 @@ export default function EmployeesReportTab({ period, dateFrom, dateTo }) {
         )}
       </ReportSectionCard>
 
-      <ReportSectionCard title="أداء الموظفين – تفصيلي">
-        <p className="text-13 text-status-neutral leading-relaxed dark:text-white/60">
-          تشمل هذه البيانات الطلبات المسندة والمسترجعة ومتوسط المعالجة والإيراد المحقق لكل موظف.
-        </p>
-      </ReportSectionCard>
     </div>
   );
 }

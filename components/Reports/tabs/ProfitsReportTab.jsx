@@ -8,8 +8,14 @@ import HorizontalBarChart from "../shared/HorizontalBarChart";
 import ReportSectionCard, { ReportLineList } from "../shared/ReportSectionCard";
 import ReportError from "../shared/ReportError";
 
-export default function ProfitsReportTab({ period, dateFrom, dateTo }) {
-  const { data, isLoading, isError, error, refetch } = useProfitsReport(period, dateFrom, dateTo);
+export default function ProfitsReportTab({ period, dateFrom, dateTo, contractType, employee }) {
+  const { data, isLoading, isError, error, refetch } = useProfitsReport(
+    period,
+    dateFrom,
+    dateTo,
+    contractType,
+    employee
+  );
   const { data: settingsData } = useProfitSettings();
   const { mutate: updateSettings } = useUpdateProfitSettings();
   const [settings, setSettings] = useState(null);

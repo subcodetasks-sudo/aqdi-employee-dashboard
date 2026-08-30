@@ -62,15 +62,15 @@ export default function ReportKpiCard({ label, value, icon = "file", tone, isTex
   const iconStyle = TONE_STYLES[tone] ?? TONE_STYLES.default;
 
   return (
-    <div className="rounded-xl border border-surface-border-soft bg-white p-4 flex flex-col gap-3 min-w-0 dark:border-white/10 dark:bg-card">
+    <div className="rounded-xl border border-surface-border-soft bg-white p-4 flex flex-row items-center gap-3 min-w-0 dark:border-white/10 dark:bg-card">
       <div className={cn("w-9 h-9 rounded-lg flex items-center justify-center shrink-0", iconStyle)}>
         <Icon className="size-[18px]" />
       </div>
-      <div className="min-w-0">
+      <div className="min-w-0 flex-1">
         <p className="text-22 font-bold text-gray-900 leading-tight truncate dark:text-white">
           {formatValue(value, isText)}
         </p>
-        <p className="text-xs text-gray-400 mt-1 leading-snug dark:text-white/50">{label}</p>
+        <p className="text-xs text-gray-400 mt-0.5 leading-snug dark:text-white/50">{label}</p>
       </div>
     </div>
   );

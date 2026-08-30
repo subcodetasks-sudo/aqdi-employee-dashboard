@@ -5,12 +5,12 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useSidebarStore } from "@/src/stores/sidebar-store";
 
-export default function ReportsHeader({ lastUpdated, onPrint, onExportCsv }) {
+export default function ReportsHeader({ lastUpdated, onPrint, onExportPdf, onExportCsv }) {
   const { isSidebarOpen, toggleSidebar } = useSidebarStore();
 
   const actions = [
     { id: "print", label: "طباعة", icon: Printer, onClick: onPrint },
-    { id: "pdf", label: "PDF", icon: FileText, onClick: onPrint },
+    { id: "pdf", label: "PDF", icon: FileText, onClick: onExportPdf },
     { id: "csv", label: "تصدير CSV", icon: FileDown, onClick: onExportCsv },
     {
       id: "email",

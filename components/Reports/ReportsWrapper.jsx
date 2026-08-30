@@ -1,10 +1,18 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { exportPanelTablesToCsv, printReportPanel } from "@/src/lib/report-export";
+import {
+  downloadReportPdf,
+  exportPanelTablesToCsv,
+  printReportPanel,
+} from "@/src/lib/report-export";
+import {
+  resolveReportFilterValue,
+  useReportFilterOptions,
+} from "@/src/hooks/use-report-filter-options";
 import ReportsHeader from "./shared/ReportsHeader";
 import ReportsFilters from "./shared/ReportsFilters";
 import { REPORT_TABS } from "./mock-data";
@@ -64,7 +72,36 @@ export default function ReportsWrapper() {
   const [contractType, setContractType] = useState(searchParams.get("contract_type") ?? "all");
   const [employee, setEmployee] = useState(searchParams.get("employee_id") ?? "all");
 
+  const { contractTypeOptions, employeeOptions, isLoadingEmployees } =
+    useReportFilterOptions();
+
   const lastUpdated = useMemo(() => formatLastUpdated(), []);
+
+  useEffect(() => {
+    if (isLoadingEmployees) return;
+
+    const validContractType = resolveReportFilterValue(contractType, contractTypeOptions);
+    const validEmployee = resolveReportFilterValue(employee, employeeOptions);
+
+    if (validContractType === contractType && validEmployee === employee) return;
+
+    if (validContractType !== contractType) setContractType(validContractType);
+    if (validEmployee !== employee) setEmployee(validEmployee);
+
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("contract_type", validContractType);
+    params.set("employee_id", validEmployee);
+    router.replace(`${pathname}?${params.toString()}`);
+  }, [
+    isLoadingEmployees,
+    contractType,
+    employee,
+    contractTypeOptions,
+    employeeOptions,
+    pathname,
+    router,
+    searchParams,
+  ]);
 
   const setActiveTab = (value) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -101,6 +138,14 @@ export default function ReportsWrapper() {
     }
   };
 
+  const handleExportPdf = async () => {
+    toast.message("جاري تجهيز ملف PDF...");
+    const exported = await downloadReportPdf("reports-print-area", activeTabLabel);
+    if (!exported) {
+      toast.error("تعذر تصدير التقرير كـ PDF");
+    }
+  };
+
   const handleExportCsv = () => {
     const exported = exportPanelTablesToCsv("reports-print-area", activeTabLabel);
     if (!exported) {
@@ -116,6 +161,7 @@ export default function ReportsWrapper() {
       <ReportsHeader
         lastUpdated={lastUpdated}
         onPrint={handlePrint}
+        onExportPdf={handleExportPdf}
         onExportCsv={handleExportCsv}
       />
 

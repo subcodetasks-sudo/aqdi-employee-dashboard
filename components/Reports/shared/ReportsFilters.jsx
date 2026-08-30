@@ -8,11 +8,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { PERIOD_FILTERS } from "../mock-data";
 import {
-  CONTRACT_TYPES,
-  EMPLOYEE_FILTERS,
-  PERIOD_FILTERS,
-} from "../mock-data";
+  resolveReportFilterValue,
+  useReportFilterOptions,
+} from "@/src/hooks/use-report-filter-options";
 
 export default function ReportsFilters({
   period,
@@ -26,6 +26,15 @@ export default function ReportsFilters({
   employee,
   onEmployeeChange,
 }) {
+  const { contractTypeOptions, employeeOptions, isLoadingEmployees } =
+    useReportFilterOptions();
+
+  const resolvedContractType = resolveReportFilterValue(
+    contractType,
+    contractTypeOptions
+  );
+  const resolvedEmployee = resolveReportFilterValue(employee, employeeOptions);
+
   return (
     <div className="flex flex-wrap items-center justify-between gap-4">
       <div className="flex flex-wrap gap-2">
@@ -51,20 +60,39 @@ export default function ReportsFilters({
           <>
             <label className="flex items-center gap-2 text-xs font-semibold text-[#616161] dark:text-white/60">
               من
-              <input type="date" value={dateFrom} onChange={(event) => onDateFromChange(event.target.value)} className="h-9 rounded-lg border border-surface-border-soft bg-white px-2 text-xs dark:bg-card dark:border-white/10 dark:text-white/80" />
+              <input
+                type="date"
+                value={dateFrom}
+                onChange={(event) => onDateFromChange(event.target.value)}
+                className="h-9 rounded-lg border border-surface-border-soft bg-white px-2 text-xs dark:bg-card dark:border-white/10 dark:text-white/80"
+              />
             </label>
             <label className="flex items-center gap-2 text-xs font-semibold text-[#616161] dark:text-white/60">
               إلى
-              <input type="date" value={dateTo} min={dateFrom || undefined} onChange={(event) => onDateToChange(event.target.value)} className="h-9 rounded-lg border border-surface-border-soft bg-white px-2 text-xs dark:bg-card dark:border-white/10 dark:text-white/80" />
+              <input
+                type="date"
+                value={dateTo}
+                min={dateFrom || undefined}
+                onChange={(event) => onDateToChange(event.target.value)}
+                className="h-9 rounded-lg border border-surface-border-soft bg-white px-2 text-xs dark:bg-card dark:border-white/10 dark:text-white/80"
+              />
             </label>
           </>
         )}
-        <Select value={contractType} onValueChange={onContractTypeChange}>
-          <SelectTrigger className="h-9 w-[160px] rounded-lg border-surface-border-soft text-13 font-semibold bg-white dark:bg-card dark:border-white/10 dark:text-white/80">
+
+        <Select
+          dir="rtl"
+          value={resolvedContractType}
+          onValueChange={onContractTypeChange}
+        >
+          <SelectTrigger
+            dir="rtl"
+            className="h-9 w-[160px] rounded-lg border-surface-border-soft text-13 font-semibold bg-white dark:bg-card dark:border-white/10 dark:text-white/80"
+          >
             <SelectValue placeholder="نوع العقد" />
           </SelectTrigger>
           <SelectContent dir="rtl">
-            {CONTRACT_TYPES.map((opt) => (
+            {contractTypeOptions.map((opt) => (
               <SelectItem key={opt.id} value={opt.id}>
                 {opt.label}
               </SelectItem>
@@ -72,12 +100,20 @@ export default function ReportsFilters({
           </SelectContent>
         </Select>
 
-        <Select value={employee} onValueChange={onEmployeeChange}>
-          <SelectTrigger className="h-9 w-[160px] rounded-lg border-surface-border-soft text-13 font-semibold bg-white dark:bg-card dark:border-white/10 dark:text-white/80">
-            <SelectValue placeholder="الموظف" />
+        <Select
+          dir="rtl"
+          value={resolvedEmployee}
+          onValueChange={onEmployeeChange}
+          disabled={isLoadingEmployees}
+        >
+          <SelectTrigger
+            dir="rtl"
+            className="h-9 w-[160px] rounded-lg border-surface-border-soft text-13 font-semibold bg-white dark:bg-card dark:border-white/10 dark:text-white/80 disabled:opacity-60"
+          >
+            <SelectValue placeholder={isLoadingEmployees ? "جاري التحميل..." : "الموظف"} />
           </SelectTrigger>
           <SelectContent dir="rtl">
-            {EMPLOYEE_FILTERS.map((opt) => (
+            {employeeOptions.map((opt) => (
               <SelectItem key={opt.id} value={opt.id}>
                 {opt.label}
               </SelectItem>

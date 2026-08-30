@@ -1,5 +1,57 @@
-/** Prints only the report panel matching `panelId` (see `.reports-printing` rule in globals.css).
- *  "Save as PDF" in the browser's print dialog covers the PDF case without a client-side PDF library. */
+/** Downloads the report panel as a PDF file (client-side render via html2canvas + jsPDF). */
+export async function downloadReportPdf(
+  panelId = "reports-print-area",
+  filenamePrefix = "report"
+) {
+  const panel = document.getElementById(panelId);
+  if (!panel) return false;
+
+  document.body.classList.add("reports-printing");
+
+  try {
+    const [{ default: html2canvas }, { jsPDF }] = await Promise.all([
+      import("html2canvas"),
+      import("jspdf"),
+    ]);
+
+    const canvas = await html2canvas(panel, {
+      scale: 2,
+      useCORS: true,
+      logging: false,
+      backgroundColor: "#F4F6F5",
+      windowWidth: panel.scrollWidth,
+    });
+
+    const imgData = canvas.toDataURL("image/png");
+    const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const imgWidth = pageWidth;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+    let heightLeft = imgHeight;
+    let position = 0;
+
+    pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+    heightLeft -= pageHeight;
+
+    while (heightLeft > 0) {
+      position = heightLeft - imgHeight;
+      pdf.addPage();
+      pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+    }
+
+    pdf.save(`${filenamePrefix}-${new Date().toISOString().slice(0, 10)}.pdf`);
+    return true;
+  } catch {
+    return false;
+  } finally {
+    document.body.classList.remove("reports-printing");
+  }
+}
+
+/** Prints only the report panel matching `panelId` (see `.reports-printing` rule in globals.css). */
 export function printReportPanel(panelId = "reports-print-area") {
   const panel = document.getElementById(panelId);
   if (!panel) return false;
