@@ -29,6 +29,7 @@ import {
   fieldGroupTitleClass,
 } from "./step-editor/field-styles";
 import ContractFormField from "./step-editor/ContractFormField";
+import { useSectionEditorDialog } from "@/components/RealtimeOrders/details/section-editor-context";
 
 export const ContractStepEditor = forwardRef(function ContractStepEditor(
   {
@@ -71,6 +72,8 @@ export const ContractStepEditor = forwardRef(function ContractStepEditor(
   const [fieldErrors, setFieldErrors] = useState({});
   const needsTenantRolesCatalog = fields.some((field) => field.type === "tenant-roles");
   const { items: tenantRolesCatalog } = useTenantRoles(needsTenantRolesCatalog);
+  const sectionEditorDialog = useSectionEditorDialog();
+  const formResetKey = sectionEditorDialog?.resetKey ?? 0;
 
   const resolvedStep = step;
 
@@ -107,13 +110,19 @@ export const ContractStepEditor = forwardRef(function ContractStepEditor(
   }, [orderData, resolvedStep, fields, initialValues, seedFromInitialValuesOnly]);
 
   useEffect(() => {
-    // Re-seeding mid-edit would discard what the user typed or the file they
-    // picked, so wait until the section leaves edit mode.
+    // Dialog form-only: seed once each time the dialog opens (resetKey bumps).
+    if (formOnly) {
+      setForm(syncForm);
+      setInitial(syncForm);
+      setFieldErrors({});
+      return;
+    }
+    // Inline edit: re-seeding mid-edit would discard user input.
     if (editing) return;
     setForm(syncForm);
     setInitial(syncForm);
     setFieldErrors({});
-  }, [syncForm, editing]);
+  }, [formOnly, formOnly ? formResetKey : syncForm, syncForm, editing, formResetKey]);
 
   const handleSave = async () => {
     const editableKeys = new Set(fields.map((f) => f.key));
@@ -206,6 +215,10 @@ export const ContractStepEditor = forwardRef(function ContractStepEditor(
   };
 
   const handleCancel = () => {
+    if (formOnly && sectionEditorDialog?.onClose) {
+      if (!isSaving) sectionEditorDialog.onClose();
+      return;
+    }
     setForm(initial);
     setFieldErrors({});
     setEditing(false);
@@ -275,13 +288,14 @@ export const ContractStepEditor = forwardRef(function ContractStepEditor(
 
   const renderField = (field) => (
     <ContractFormField
-      key={field.key}
+      key={`${field.key}-${formResetKey}`}
       field={field}
       value={form[field.key]}
       formValues={form}
       orderData={orderData}
       error={fieldErrors[field.key]}
       fieldErrors={fieldErrors}
+      formResetKey={formResetKey}
       onPatch={(patch) => setForm((prev) => ({ ...prev, ...patch }))}
       onChange={(val) => handleFieldChange(field, val)}
     />
@@ -338,6 +352,7 @@ export const ContractStepEditor = forwardRef(function ContractStepEditor(
 
       {editing || formOnly ? (
         <div
+          key={formOnly ? `form-${formResetKey}` : undefined}
           className={
             formOnly
               ? "space-y-6"

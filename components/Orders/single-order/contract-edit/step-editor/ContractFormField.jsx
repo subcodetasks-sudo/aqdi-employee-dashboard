@@ -48,6 +48,7 @@ export default function ContractFormField({
   error,
   fieldErrors,
   orderData,
+  formResetKey = 0,
 }) {
   const id = field.key;
   const { options: selectOptions, isLoading: optionsLoading } = useResolvedSelectOptions(
@@ -198,7 +199,13 @@ export default function ContractFormField({
           {field.required ? <span className="text-[#E24444]"> *</span> : null}
           <span className="mr-2 text-11 font-medium text-ink-placeholder">({typeLabel})</span>
         </label>
-        <ContractDatePicker id={id} value={value} calendarType={calendarType} onChange={onChange} />
+        <ContractDatePicker
+          key={`${id}-date-${formResetKey}-${value ?? ""}`}
+          id={id}
+          value={value}
+          calendarType={calendarType}
+          onChange={onChange}
+        />
         {error ? <p className="text-xs text-[#E24444]">{error}</p> : null}
       </div>
     );
@@ -214,6 +221,7 @@ export default function ContractFormField({
           {field.required ? <span className="text-[#E24444]"> *</span> : null}
         </label>
         <input
+          key={`${id}-file-${formResetKey}`}
           id={id}
           type="file"
           accept={field.accept || "image/*,application/pdf"}

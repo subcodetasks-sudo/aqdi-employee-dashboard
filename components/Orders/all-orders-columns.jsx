@@ -87,15 +87,11 @@ export function buildAllOrderColumns({
       cell: (row) => {
         const paid = row?.is_paid === true || row?.is_paid === 1;
         const amount = row?.amount_payment;
+        const showAmount = paid && amount != null && amount !== "";
         return (
           <div className="flex items-center gap-1.5 flex-wrap">
-            {amount != null && amount !== "" ? (
-              <span
-                className={cn(
-                  "inline-flex items-center gap-1 font-bold text-xs tabular-nums",
-                  paid ? "text-[#007C13]" : dark ? "text-white/70" : "text-gray-700"
-                )}
-              >
+            {showAmount ? (
+              <span className="inline-flex items-center gap-1 font-bold text-xs tabular-nums text-[#007C13]">
                 {amount}
                 <Image src={greenRial} alt="rial" width={11} height={11} />
               </span>

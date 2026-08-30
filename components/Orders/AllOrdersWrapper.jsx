@@ -6,14 +6,10 @@ import {
   useTablePreferences,
 } from "@/components/shared/controllable-table";
 import RealtimeOrdersToolbar from "@/components/RealtimeOrders/RealtimeOrdersToolbar";
-import WhatsAppPaymentLinkDialog from "@/components/RealtimeOrders/WhatsAppPaymentLinkDialog";
-import ReturnRequestDialog from "@/components/Orders/return-request-dialog";
-import ChangeOrderStatusFieldsDialog, {
-  getStatusCaseFields,
-} from "@/components/RealtimeOrders/ChangeOrderStatusFieldsDialog";
-import ManageContractStatusesDialog from "@/components/RealtimeOrders/ManageContractStatusesDialog";
 import AllOrdersPagination from "./all-orders-pagination";
+import AllOrdersDialogs from "./AllOrdersDialogs";
 import { buildAllOrderColumns } from "./all-orders-columns";
+import { getStatusCaseFields } from "@/components/RealtimeOrders/ChangeOrderStatusFieldsDialog";
 import { ALL_ORDERS_QUERY_KEY } from "@/src/hooks/use-realtime-new-orders";
 import { useAllOrdersWrapper } from "@/src/hooks/use-all-orders-wrapper";
 import { isDraftOrderRow } from "@/src/lib/draft-contract-statuses";
@@ -21,66 +17,29 @@ import { isDraftOrderRow } from "@/src/lib/draft-contract-statuses";
 const TABLE_STORAGE_KEY = "all-orders-table-prefs";
 
 export default function AllOrdersWrapper() {
-  const {
-    isDark,
-    canChangeStatus,
-    canAddStatus,
-    canEditStatus,
-    canManageStatuses,
-    canExport,
-    visiblePills,
-    searchQuery,
-    setSearchQuery,
-    activeFilters,
-    extraStatusId,
-    contractType,
-    setContractType,
-    currentPage,
-    setCurrentPage,
-    perPage,
-    setPerPage,
-    returnDialogOpen,
-    setReturnDialogOpen,
-    returnOrder,
-    paymentLinkOpen,
-    setPaymentLinkOpen,
-    statusFieldsOpen,
-    setStatusFieldsOpen,
-    pendingStatusChange,
-    setPendingStatusChange,
-    manageStatusesOpen,
-    setManageStatusesOpen,
-    statusItems,
-    extraStatuses,
-    tableOrders,
-    pagination,
-    tableLoading,
-    goToDetails,
-    changeStatus,
-    isChangingStatus,
-    changingStatusId,
-    handleStatusChange,
-    handlePrint,
-    handleToggleFilter,
-    handleExtraStatusChange,
-    handleExport,
-    isExporting,
-  } = useAllOrdersWrapper();
+  const vm = useAllOrdersWrapper();
 
   const columns = useMemo(
     () =>
       buildAllOrderColumns({
-        dark: isDark,
-        onView: goToDetails,
-        onStatusChange: handleStatusChange,
-        onPrint: handlePrint,
-        statuses: statusItems,
-        changingOrderId: isChangingStatus ? changingStatusId?.orderId : null,
-        canChangeStatus,
-        canAddStatus,
+        dark: vm.isDark,
+        onView: vm.goToDetails,
+        onStatusChange: vm.handleStatusChange,
+        onPrint: vm.handlePrint,
+        statuses: vm.statusItems,
+        changingOrderId: vm.isChangingStatus ? vm.changingStatusId?.orderId : null,
+        canChangeStatus: vm.canChangeStatus,
+        canAddStatus: vm.canAddStatus,
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [isDark, statusItems, isChangingStatus, changingStatusId, canChangeStatus, canAddStatus]
+    [
+      vm.isDark,
+      vm.statusItems,
+      vm.isChangingStatus,
+      vm.changingStatusId,
+      vm.canChangeStatus,
+      vm.canAddStatus,
+    ]
   );
 
   const {
@@ -102,88 +61,76 @@ export default function AllOrdersWrapper() {
       <RealtimeOrdersToolbar
         title="جميع الطلبات"
         searchPlaceholder="بحث: رقم الطلب / الجوال / الاسم..."
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        activeFilters={activeFilters}
-        onToggleFilter={handleToggleFilter}
-        filterPills={visiblePills}
-        extraStatuses={extraStatuses}
-        extraStatusId={extraStatusId}
-        onExtraStatusChange={handleExtraStatusChange}
-        contractType={contractType}
-        onContractTypeChange={setContractType}
+        searchQuery={vm.searchQuery}
+        onSearchChange={vm.setSearchQuery}
+        activeFilters={vm.activeFilters}
+        onToggleFilter={vm.handleToggleFilter}
+        filterPills={vm.visiblePills}
+        extraStatuses={vm.extraStatuses}
+        extraStatusId={vm.extraStatusId}
+        onExtraStatusChange={vm.handleExtraStatusChange}
+        contractType={vm.contractType}
+        onContractTypeChange={vm.setContractType}
         columns={columns}
         density={density}
         onDensityChange={setDensity}
         visibleColumns={visibleColumns}
         onToggleColumn={toggleColumn}
-        onExport={handleExport}
-        isExporting={isExporting}
-        canExport={canExport}
-        dark={isDark}
-        onOpenPaymentLink={() => setPaymentLinkOpen(true)}
-        canManageStatuses={canManageStatuses}
-        onManageStatuses={() => setManageStatusesOpen(true)}
+        onExport={vm.handleExport}
+        isExporting={vm.isExporting}
+        canExport={vm.canExport}
+        dark={vm.isDark}
+        onOpenPaymentLink={() => vm.setPaymentLinkOpen(true)}
+        canManageStatuses={vm.canManageStatuses}
+        onManageStatuses={() => vm.setManageStatusesOpen(true)}
       />
 
       <ControllableDataTable
         columns={columns}
-        data={tableOrders}
+        data={vm.tableOrders}
         density={density}
         isColumnVisible={isColumnVisible}
-        isLoading={tableLoading}
+        isLoading={vm.tableLoading}
         emptyMessage="لا توجد طلبات مطابقة للبحث"
-        onRowClick={goToDetails}
+        onRowClick={vm.goToDetails}
         getRowHighlight={isDraftOrderRow}
         defaultSort={{ id: "receivedSince", direction: "asc" }}
       />
 
       <AllOrdersPagination
-        pagination={pagination}
-        currentPage={currentPage}
-        onPageChange={setCurrentPage}
-        perPage={perPage}
-        onPerPageChange={setPerPage}
-        dark={isDark}
+        pagination={vm.pagination}
+        currentPage={vm.currentPage}
+        onPageChange={vm.setCurrentPage}
+        perPage={vm.perPage}
+        onPerPageChange={vm.setPerPage}
+        dark={vm.isDark}
       />
 
-      <ReturnRequestDialog
-        open={returnDialogOpen}
-        onOpenChange={setReturnDialogOpen}
-        order={returnOrder}
-        orderId={returnOrder?.id}
+      <AllOrdersDialogs
         queryKey={[ALL_ORDERS_QUERY_KEY]}
-      />
-
-      <WhatsAppPaymentLinkDialog
-        open={paymentLinkOpen}
-        onOpenChange={setPaymentLinkOpen}
-      />
-
-      <ChangeOrderStatusFieldsDialog
-        open={statusFieldsOpen}
-        onOpenChange={(next) => {
-          setStatusFieldsOpen(next);
-          if (!next) setPendingStatusChange(null);
-        }}
-        status={pendingStatusChange?.status}
-        isPending={isChangingStatus}
-        onSubmit={(extraValues) => {
-          if (!pendingStatusChange) return;
-          changeStatus({
-            orderId: pendingStatusChange.order.id,
-            statusId: pendingStatusChange.status.id,
+        returnDialogOpen={vm.returnDialogOpen}
+        onReturnDialogOpenChange={vm.setReturnDialogOpen}
+        returnOrder={vm.returnOrder}
+        paymentLinkOpen={vm.paymentLinkOpen}
+        onPaymentLinkOpenChange={vm.setPaymentLinkOpen}
+        statusFieldsOpen={vm.statusFieldsOpen}
+        onStatusFieldsOpenChange={vm.setStatusFieldsOpen}
+        pendingStatusChange={vm.pendingStatusChange}
+        onPendingStatusChangeClear={() => vm.setPendingStatusChange(null)}
+        isChangingStatus={vm.isChangingStatus}
+        onStatusFieldsSubmit={(extraValues) => {
+          if (!vm.pendingStatusChange) return;
+          vm.changeStatus({
+            orderId: vm.pendingStatusChange.order.id,
+            statusId: vm.pendingStatusChange.status.id,
             extraValues,
-            fields: getStatusCaseFields(pendingStatusChange.status),
+            fields: getStatusCaseFields(vm.pendingStatusChange.status),
           });
         }}
-      />
-
-      <ManageContractStatusesDialog
-        open={manageStatusesOpen}
-        onOpenChange={setManageStatusesOpen}
-        canCreate={canAddStatus}
-        canEdit={canEditStatus}
+        manageStatusesOpen={vm.manageStatusesOpen}
+        onManageStatusesOpenChange={vm.setManageStatusesOpen}
+        canAddStatus={vm.canAddStatus}
+        canEditStatus={vm.canEditStatus}
       />
     </div>
   );
