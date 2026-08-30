@@ -135,7 +135,7 @@ export default function Roles() {
                     </td>
                     {showActionsColumn && (
                       <td className="px-4 py-3.5">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center justify-start gap-2">
                           <PermissionGate section={PERMISSION_SECTIONS.roles} action="edit">
                             <Link href={`/home/roles-and-employees/roles/edit?id=${role.id}`}>
                               <OutlineActionButton variant="edit">تعديل</OutlineActionButton>
