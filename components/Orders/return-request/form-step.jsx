@@ -1,12 +1,14 @@
 "use client";
 
 import { Loader2, Paperclip, Undo2 } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import OrderActionDialogHeader from "@/components/shared/OrderActionDialogHeader";
 import { Button } from "../../ui/button";
 import { RETURN_ACCENT, RETURN_INPUT_CLASS, ReturnTile, formatReturnDateTime } from "./primitives";
 
 export default function ReturnRequestFormStep({
     open,
+    formSession = 0,
     order,
     refundAmount,
     onRefundAmountChange,
@@ -18,35 +20,27 @@ export default function ReturnRequestFormStep({
     onSubmit,
     onClose,
 }) {
+    const handleClose = () => {
+        if (isPending) return;
+        onClose();
+    };
+
     return (
-        <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+        <Dialog open={open} onOpenChange={(next) => !next && handleClose()}>
             <DialogContent
+                key={formSession}
                 className="sm:max-w-[560px] p-8 rounded-[18px] border-0 gap-0 max-h-[90vh] overflow-y-auto no-scrollbar"
                 dir="rtl"
                 closeButton={false}
             >
-                <button
-                    type="button"
-                    onClick={onClose}
-                    className="absolute left-6 top-6 w-9 h-9 flex items-center justify-center rounded-full bg-neutral-100 text-ink-placeholder hover:bg-[#FFEBEB] hover:text-[#E24444] transition-all z-10"
-                    aria-label="إغلاق"
-                >
-                    <i className="fa-solid fa-xmark text-sm" />
-                </button>
-
-                <DialogHeader className="mb-6 space-y-0">
-                    <div className="flex items-center justify-between gap-3 border-b border-[#F0F0F0] pb-4">
-                        <span
-                            className="w-[31px] h-[31px] rounded-[9px] text-white flex items-center justify-center shrink-0"
-                            style={{ backgroundColor: RETURN_ACCENT }}
-                        >
-                            <Undo2 className="size-[17px]" />
-                        </span>
-                        <DialogTitle className="text-lg font-bold text-black text-right">
-                            رفع طلب استرجاع
-                        </DialogTitle>
-                    </div>
-                </DialogHeader>
+                <OrderActionDialogHeader
+                    icon={Undo2}
+                    iconClassName="w-[31px] h-[31px] rounded-[9px]"
+                    iconStyle={{ backgroundColor: RETURN_ACCENT }}
+                    title="رفع طلب استرجاع"
+                    onClose={handleClose}
+                    className="mb-6"
+                />
 
                 {order ? (
                     <div className="flex flex-col gap-5">
@@ -95,6 +89,7 @@ export default function ReturnRequestFormStep({
                                     استعراض
                                 </span>
                                 <input
+                                    key={`contract-file-${formSession}`}
                                     type="file"
                                     accept="application/pdf"
                                     className="hidden"
@@ -138,7 +133,7 @@ export default function ReturnRequestFormStep({
                             <button
                                 type="button"
                                 disabled={isPending}
-                                onClick={onClose}
+                                onClick={handleClose}
                                 className="h-13 px-6 rounded-[11px] border border-[#E3E8E6] bg-[#F2F5F3] text-[#33403B] font-bold text-15 hover:bg-[#E7EDE9] transition-all"
                             >
                                 تراجع

@@ -75,16 +75,20 @@ export function getOrderAdminApprovalStatus(order) {
     order?.refund ??
     (Array.isArray(order?.refundable_contracts) ? order.refundable_contracts[0] : null);
 
-  const managementApproval = order?.management_approval?.approved ?? nested?.management_approval?.approved;
-
-  if (managementApproval !== undefined && managementApproval !== null) {
-    return managementApproval;
+  // `management_approval` is authoritative when present. `approved: null` means
+  // the request is still pending — do not fall back to a stale `admin_confirmed`.
+  const managementApproval =
+    order?.management_approval ?? nested?.management_approval ?? null;
+  if (managementApproval && typeof managementApproval === "object" && "approved" in managementApproval) {
+    return managementApproval.approved ?? null;
   }
 
+  // No management_approval block: `admin_confirmed: null` is also pending.
   return (
     nested?.admin_confirmed ??
     order?.admin_confirmed ??
     order?.accept_retrun_contract ??
-    order?.accept_return_contract
+    order?.accept_return_contract ??
+    null
   );
 }

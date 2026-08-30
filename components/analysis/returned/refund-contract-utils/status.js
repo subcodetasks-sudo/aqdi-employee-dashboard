@@ -31,6 +31,47 @@ export function isAdminRefundApproved(value) {
   return value === true || value === 1;
 }
 
+/**
+ * Defensive read of `data.summary.management_approval` into KPI counts.
+ * Key names vary across API revisions, so several aliases are tried.
+ * NOTE: verify the resolved tiles against the live API response.
+ */
+export function parseManagementApprovalCounts(summary) {
+  const source =
+    summary?.management_approval ??
+    summary?.managementApproval ??
+    summary ??
+    {};
+
+  const pick = (...keys) => {
+    for (const key of keys) {
+      const value = source?.[key];
+      if (typeof value === "number" && Number.isFinite(value)) return value;
+      if (typeof value === "string" && value.trim() !== "" && Number.isFinite(Number(value))) {
+        return Number(value);
+      }
+    }
+    return 0;
+  };
+
+  const pending = pick("pending", "waiting", "unconfirmed", "in_review", "under_review", "null");
+  const approved = pick("approved", "confirmed", "accepted", "approved_count");
+  const rejected = pick("rejected", "not_approved", "declined", "refused", "denied");
+  const refunded = pick("refunded", "is_refunded", "customer_refunded", "completed", "done");
+  const processing = pick("processing", "in_progress", "pending_refund", "awaiting_refund");
+
+  const hasRefundSplit = refunded > 0 || processing > 0;
+
+  return {
+    pending,
+    processing: hasRefundSplit
+      ? processing || Math.max(approved - refunded, 0)
+      : 0,
+    completed: hasRefundSplit ? refunded : approved,
+    rejected,
+  };
+}
+
 export function isReturnContractStatus(status) {
   if (!status) return false;
   if (Number(status.id) === RETURN_CONTRACT_STATUS_ID) return true;

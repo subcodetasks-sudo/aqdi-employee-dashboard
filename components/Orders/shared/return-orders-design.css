@@ -1,0 +1,80 @@
+/* Return-orders header KPIs — matches design.html .radm-kpis / .rk */
+
+.radm-kpis {
+  margin-right: auto;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.rk {
+  min-width: 132px;
+  height: 40px;
+  padding: 0 12px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+  line-height: 1;
+}
+
+.rk b {
+  font-size: 15px;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.rk-pend {
+  background: #fff9ee;
+  border-color: #f0dfbf;
+  color: #a8791e;
+}
+
+.rk-proc {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+  color: #1d4ed8;
+}
+
+.rk-done {
+  background: #f1faf5;
+  border-color: #cdebdc;
+  color: #0b7a4c;
+}
+
+.rk-rej {
+  background: #fdf3f1;
+  border-color: #edd3cd;
+  color: #b3472a;
+}
+
+.dark .rk-pend {
+  background: rgb(245 158 11 / 0.1);
+  border-color: rgb(245 158 11 / 0.25);
+  color: #fcd34d;
+}
+
+.dark .rk-proc {
+  background: rgb(59 130 246 / 0.1);
+  border-color: rgb(59 130 246 / 0.25);
+  color: #93c5fd;
+}
+
+.dark .rk-done {
+  background: rgb(16 185 129 / 0.1);
+  border-color: rgb(16 185 129 / 0.25);
+  color: #6ee7b7;
+}
+
+.dark .rk-rej {
+  background: rgb(239 68 68 / 0.1);
+  border-color: rgb(239 68 68 / 0.25);
+  color: #fca5a5;
+}

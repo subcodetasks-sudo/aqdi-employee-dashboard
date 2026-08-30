@@ -16,11 +16,14 @@ import {
   buildRefundsLookup,
   ensureReturnOrderRefund,
   fetchAllRefundContracts,
+  fetchRefundContractsSummary,
+  parseManagementApprovalCounts,
 } from "@/components/analysis/returned/refund-contract-utils";
 import { invalidateRefundCaches } from "@/src/lib/invalidate-orders-caches";
 import { useAllOrdersWrapper } from "@/src/hooks/use-all-orders-wrapper";
 
 const REFUNDS_LOOKUP_QUERY_KEY = "refundContractsLookup";
+const REFUNDS_SUMMARY_QUERY_KEY = "refundContractsSummary";
 
 export function useReturnOrdersWrapper() {
   const queryClient = useQueryClient();
@@ -41,6 +44,23 @@ export function useReturnOrdersWrapper() {
     () => buildRefundsLookup(refundContracts),
     [refundContracts]
   );
+
+  // KPI row is driven by the global summary, not the current table page.
+  const { data: refundsSummary } = useQuery({
+    queryKey: [REFUNDS_SUMMARY_QUERY_KEY],
+    queryFn: fetchRefundContractsSummary,
+    staleTime: 60_000,
+  });
+
+  const kpiCounts = useMemo(() => {
+    if (!refundsSummary) return null;
+    const parsed = parseManagementApprovalCounts(
+      refundsSummary.summary ?? { management_approval: refundsSummary.managementApproval }
+    );
+    const total = parsed.pending + parsed.processing + parsed.completed + parsed.rejected;
+    // Empty/unrecognized summary → let the KPI row fall back to page counts.
+    return total > 0 ? parsed : null;
+  }, [refundsSummary]);
 
   const { handleExport, isExporting } = usePaginatedExport({
     buildUrl: (page) => buildAdminOrdersUrl({ ...base.exportParams, page }),
@@ -72,6 +92,7 @@ export function useReturnOrdersWrapper() {
     isExporting,
     refundsLookup,
     refundItems: refundContracts,
+    kpiCounts,
     successDialog,
     setSuccessDialog,
     handleSuccessDialogClose,

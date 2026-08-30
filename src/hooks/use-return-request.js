@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { axiosInstance } from "@/src/utils/axios";
@@ -18,14 +18,12 @@ export function useReturnRequest({ open, order, orderId, orderUuid, queryKey, on
     const [contractFile, setContractFile] = useState(null);
     const queryClient = useQueryClient();
 
-    useEffect(() => {
-        if (!open) {
-            setStep(0);
-            setRefundAmount("");
-            setNotes("");
-            setContractFile(null);
-        }
-    }, [open]);
+    const resetForm = useCallback(() => {
+        setStep(0);
+        setRefundAmount("");
+        setNotes("");
+        setContractFile(null);
+    }, []);
 
     const contractId = resolveRefundableContractId(order, orderId ?? orderUuid);
     const resolvedOrderId = orderId ?? order?.id ?? orderUuid;
@@ -100,5 +98,6 @@ export function useReturnRequest({ open, order, orderId, orderUuid, queryKey, on
         isPending,
         handleSubmit,
         invalidateAfterClose,
+        resetForm,
     };
 }

@@ -17,6 +17,7 @@ import {
   RefundRetractSuccessDialog,
 } from "@/components/analysis/returned/refund-contract-success-dialog";
 import AllOrdersPagination from "./all-orders-pagination";
+import ReturnOrdersToolbarKpis from "./shared/return-orders-toolbar-kpis";
 import { buildReturnOrderColumns } from "./return-orders-columns";
 import { ALL_ORDERS_QUERY_KEY } from "@/src/hooks/use-realtime-new-orders";
 import { useReturnOrdersWrapper } from "@/src/hooks/use-return-orders-wrapper";
@@ -71,6 +72,7 @@ export default function ReturnOrdersWrapper() {
     isExporting,
     refundsLookup,
     refundItems,
+    kpiCounts,
     successDialog,
     setSuccessDialog,
     handleSuccessDialogClose,
@@ -127,6 +129,9 @@ export default function ReturnOrdersWrapper() {
       <RealtimeOrdersToolbar
         title="الطلبات المسترجعة"
         searchPlaceholder="بحث: رقم الطلب / الجوال / الاسم..."
+        headerKpis={
+          <ReturnOrdersToolbarKpis rows={tableOrders} counts={kpiCounts} />
+        }
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
         activeFilters={activeFilters}

@@ -2,6 +2,7 @@
 
 import { toast } from "sonner";
 import { useReturnRequest } from "@/src/hooks/use-return-request";
+import { useDialogFormSession } from "@/src/hooks/use-dialog-form-session";
 import ReturnRequestFormStep from "./return-request/form-step";
 import ReturnRequestWhatsappStep from "./return-request/whatsapp-step";
 import ReturnRequestSuccessStep from "./return-request/success-step";
@@ -27,15 +28,19 @@ export default function ReturnRequestDialog({
         isPending,
         handleSubmit,
         invalidateAfterClose,
+        resetForm,
     } = useReturnRequest({ open, order, orderId, orderUuid, queryKey, onReturnSuccess });
 
-    const handleClose = () => onOpenChange(false);
+  const formSession = useDialogFormSession(open, resetForm);
 
-    return (
-        <>
-            <ReturnRequestFormStep
-                open={open && step === 0}
-                order={order}
+  const handleClose = () => onOpenChange(false);
+
+  return (
+    <>
+      <ReturnRequestFormStep
+        open={open && step === 0}
+        formSession={formSession}
+        order={order}
                 refundAmount={refundAmount}
                 onRefundAmountChange={setRefundAmount}
                 notes={notes}

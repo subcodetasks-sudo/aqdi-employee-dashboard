@@ -109,6 +109,19 @@ export async function fetchAllRefundContracts() {
   return allItems;
 }
 
+/**
+ * Global refund-contract KPIs — GET /admin/analytics/refunds/contracts (page 1).
+ * The `summary` block is table-page independent, so it drives the KPI row.
+ */
+export async function fetchRefundContractsSummary() {
+  try {
+    const res = await axiosInstance.get(`${REFUNDS_CONTRACTS_API}?created_at=all&page=1`);
+    return extractRefundsContractsPayload(res.data);
+  } catch {
+    return null;
+  }
+}
+
 export async function fetchRefundContractIdForOrder(order, refundsLookup, options = {}) {
   const { allRefunds = [] } = options;
 
@@ -117,8 +130,8 @@ export async function fetchRefundContractIdForOrder(order, refundsLookup, option
 
   if (allRefunds.length > 0) {
     const found = findRefundItemForOrder(order, allRefunds);
-    const key = getRefundItemActionKey(found);
-    if (key) return String(key);
+    const key = found?.id ?? getRefundItemActionKey(found);
+    if (key != null && key !== "") return String(key);
   }
 
   const orderUuid = getOrderUuid(order);
@@ -142,7 +155,10 @@ export async function updateRefundContract(refundKey, body, orderContext = {}) {
     return response;
   }
 
-  if (body?.admin_confirmed === true) {
+  // The backend flips the contract to "استرجاع" on approval by itself. Only
+  // re-issue return-contract-status when a caller explicitly opts in as a
+  // fallback — and never let it fail the (already successful) approval.
+  if (body?.admin_confirmed === true && orderContext.syncContractStatus === true) {
     const order = {
       ...(orderContext.refund ?? {}),
       ...(orderContext.order ?? {}),
@@ -155,7 +171,11 @@ export async function updateRefundContract(refundKey, body, orderContext = {}) {
       order?.contractId ??
       order?.orderId ??
       order?.order_id;
-    await postReturnContractStatusForOrder(order, orderId, true);
+    try {
+      await postReturnContractStatusForOrder(order, orderId, true);
+    } catch {
+      // non-fatal: the refund approval itself already succeeded
+    }
   }
 
   return response;

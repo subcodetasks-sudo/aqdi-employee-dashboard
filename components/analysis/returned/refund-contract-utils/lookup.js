@@ -158,6 +158,18 @@ export function resolveReturnOrderRefund(order, refundsLookup) {
 }
 
 export function resolveRefundIdForAction(order, refund, refundsLookup) {
+  // Prefer the numeric refund-contract record id — most reliable key for
+  // POST /admin/analytics/refunds/contracts/{id} (approve / reject / retract).
+  const recordId =
+    refund?.id ??
+    refund?.refundRecordId ??
+    extractRefundContractId(order) ??
+    findRefundInLookup(order, refundsLookup)?.id ??
+    resolveReturnOrderRefund(order, refundsLookup)?.id ??
+    null;
+  if (recordId != null && recordId !== "") return String(recordId);
+
+  // Fall back to the contract uuid when no numeric id is resolvable.
   if (refund?.orderUuid && refund.orderUuid !== "—") return String(refund.orderUuid);
 
   const orderUuid = getOrderUuid(order);
