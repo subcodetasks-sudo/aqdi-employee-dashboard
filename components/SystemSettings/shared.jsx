@@ -94,7 +94,7 @@ export function StatusBadge({ active }) {
     <span
       className={cn(
         "inline-flex items-center rounded-full px-3 py-1 text-xs font-bold whitespace-nowrap",
-        active ? "bg-[#dcf5e8] text-[#0B7A4C]" : "bg-[#eef0ef] text-[#6b7c76]"
+        active ? "bg-[#dcf5e8] text-[#0B7A4C] dark:bg-emerald-500/15 dark:text-emerald-300" : "bg-[#eef0ef] text-[#6b7c76] dark:bg-white/10 dark:text-white/50"
       )}
     >
       {active ? "مفعل" : "غير مفعل"}
@@ -110,7 +110,7 @@ export function SectionHeading({ title, description, action }) {
           {title}
         </div>
         {description ? (
-          <p className="text-[12px] font-medium text-[#8a978f]">{description}</p>
+          <p className="text-[12px] font-medium text-[#8a978f] dark:text-white/45">{description}</p>
         ) : null}
       </div>
       {action}
@@ -164,13 +164,7 @@ export function SettingsEmptyRow({ colSpan, message = "لا عناصر بعد �
     <tr>
       <td
         colSpan={colSpan}
-        style={{
-          textAlign: "center",
-          color: "#98A39E",
-          fontSize: 12,
-          fontWeight: 700,
-          padding: "28px 16px",
-        }}
+        className="text-center text-xs font-bold py-7 px-4 text-[#98A39E] dark:text-white/45"
       >
         {message}
       </td>

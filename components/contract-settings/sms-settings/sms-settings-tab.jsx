@@ -80,18 +80,18 @@ export default function SmsSettingsTab() {
 
   return (
     <div className="space-y-6">
-      <div className="border-b border-neutral-100 pb-6 text-right">
-        <h2 className="text-22 font-black text-black">إعدادات رسائل SMS</h2>
-        <p className="mt-2 text-13 leading-7 text-[#707070]">
+      <div className="border-b border-neutral-100 pb-6 text-right dark:border-white/10">
+        <h2 className="text-22 font-black text-black dark:text-white">إعدادات رسائل SMS</h2>
+        <p className="mt-2 text-13 leading-7 text-[#707070] dark:text-white/55">
           قوالب رسائل SMS عامة لكل المشروع (مرة واحدة). ليست مرتبطة بنوع صك أو عقد.
         </p>
       </div>
 
-      <div className="mx-auto max-w-3xl space-y-5 rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm">
+      <div className="mx-auto max-w-3xl space-y-5 rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-card dark:shadow-none">
         {SMS_SETTINGS_FIELDS.map((field) => (
           <div key={field.key} className="space-y-2 text-right">
-            <label className="text-sm font-bold text-black">{field.label}</label>
-            <p className="text-xs text-ink-placeholder">{field.description}</p>
+            <label className="text-sm font-bold text-black dark:text-white">{field.label}</label>
+            <p className="text-xs text-ink-placeholder dark:text-white/45">{field.description}</p>
             <Textarea
               value={form[field.key]}
               onChange={(e) => {
@@ -108,7 +108,9 @@ export default function SmsSettingsTab() {
               }}
               rows={4}
               className={`min-h-[110px] rounded-2xl resize-none ${
-                fieldErrors[field.key] ? "border-red-400" : "border-surface-border"
+                fieldErrors[field.key]
+                  ? "border-red-400"
+                  : "border-surface-border dark:border-white/10 dark:bg-white/[0.04]"
               }`}
               placeholder={field.label}
             />

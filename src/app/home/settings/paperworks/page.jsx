@@ -102,7 +102,7 @@ export default function PaperworksPage(props) {
                 {contractTypeLabel(item.contract_type)}
               </SettingsTd>
               <SettingsTd>
-                <div className="flex items-center justify-end gap-2">
+                <div className="flex items-center justify-start gap-2">
                   <PermissionGate section={PERMISSION_SECTIONS.paperworks} action="edit">
                     <EditPaperworkDialog paperwork={item} />
                   </PermissionGate>

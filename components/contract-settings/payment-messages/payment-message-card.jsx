@@ -6,17 +6,17 @@ import EditPaymentMessageDialog from "./edit-payment-message-dialog";
 
 function ButtonPreview({ label, text, link }) {
   return (
-    <div className="rounded-xl border border-[#EEF1F0] bg-[#FAFBFA] p-3.5">
-      <p className="mb-1.5 text-[11px] font-bold text-[#9CA3AF]">{label}</p>
-      <p className="text-[13px] font-bold text-[#111827]">{text || "—"}</p>
+    <div className="rounded-xl border border-[#EEF1F0] bg-[#FAFBFA] p-3.5 dark:border-white/10 dark:bg-white/[0.04]">
+      <p className="mb-1.5 text-[11px] font-bold text-[#9CA3AF] dark:text-white/45">{label}</p>
+      <p className="text-[13px] font-bold text-[#111827] dark:text-white">{text || "—"}</p>
       <a
         href={link || undefined}
         target={link ? "_blank" : undefined}
         rel={link ? "noreferrer" : undefined}
         className={`mt-1 inline-flex max-w-full items-center gap-1 break-all text-[11px] ${
           link
-            ? "text-[#054D44] hover:underline"
-            : "pointer-events-none text-[#9CA3AF]"
+            ? "text-[#054D44] hover:underline dark:text-emerald-300"
+            : "pointer-events-none text-[#9CA3AF] dark:text-white/45"
         }`}
         dir="ltr"
       >
@@ -34,8 +34,8 @@ export default function PaymentMessageCard({ item, type }) {
   const Icon = isSuccess ? CheckCircle2 : CircleAlert;
 
   return (
-    <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-[#E6EBE9] bg-white shadow-[0_4px_12px_rgba(11,83,69,0.04)]">
-      <div className="flex items-start justify-between gap-3 border-b border-[#EEF1F0] px-5 py-4">
+    <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-[#E6EBE9] bg-white shadow-[0_4px_12px_rgba(11,83,69,0.04)] dark:border-white/10 dark:bg-card dark:shadow-none">
+      <div className="flex items-start justify-between gap-3 border-b border-[#EEF1F0] px-5 py-4 dark:border-white/10">
         <div className="flex min-w-0 items-start gap-3 text-right">
           <span
             className="mt-0.5 inline-flex size-10 shrink-0 items-center justify-center rounded-xl"
@@ -48,7 +48,7 @@ export default function PaymentMessageCard({ item, type }) {
           </span>
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <h3 className="text-[15px] font-black text-[#111827]">{meta.label}</h3>
+              <h3 className="text-[15px] font-black text-[#111827] dark:text-white">{meta.label}</h3>
               <span
                 className="inline-flex rounded-full px-2.5 py-0.5 text-[11px] font-bold"
                 style={{
@@ -59,7 +59,7 @@ export default function PaymentMessageCard({ item, type }) {
                 {hasItem ? "مفعّلة" : "غير مضافة"}
               </span>
             </div>
-            <p className="mt-1 text-[12px] font-medium leading-5 text-[#6B7280]">
+            <p className="mt-1 text-[12px] font-medium leading-5 text-[#6B7280] dark:text-white/55">
               {meta.description}
             </p>
           </div>
@@ -77,9 +77,9 @@ export default function PaymentMessageCard({ item, type }) {
       <div className="flex flex-1 flex-col gap-4 p-5">
         {hasItem ? (
           <>
-            <div className="rounded-xl border border-[#EEF1F0] bg-white p-4">
-              <p className="mb-2 text-[11px] font-bold text-[#9CA3AF]">نص الرسالة</p>
-              <p className="text-[13px] font-bold leading-7 text-[#111827]">
+            <div className="rounded-xl border border-[#EEF1F0] bg-white p-4 dark:border-white/10 dark:bg-white/[0.03]">
+              <p className="mb-2 text-[11px] font-bold text-[#9CA3AF] dark:text-white/45">نص الرسالة</p>
+              <p className="text-[13px] font-bold leading-7 text-[#111827] dark:text-white">
                 {item.message || "—"}
               </p>
             </div>
@@ -98,7 +98,7 @@ export default function PaymentMessageCard({ item, type }) {
             </div>
           </>
         ) : (
-          <div className="flex flex-1 flex-col items-center justify-center rounded-xl border border-dashed border-[#E6EBE9] bg-[#FAFBFA] px-5 py-10 text-center">
+          <div className="flex flex-1 flex-col items-center justify-center rounded-xl border border-dashed border-[#E6EBE9] bg-[#FAFBFA] px-5 py-10 text-center dark:border-white/10 dark:bg-white/[0.03]">
             <span
               className="mb-3 inline-flex size-12 items-center justify-center rounded-2xl"
               style={{
@@ -108,10 +108,10 @@ export default function PaymentMessageCard({ item, type }) {
             >
               <Icon className="size-6" />
             </span>
-            <p className="mb-1 text-[14px] font-black text-[#111827]">
+            <p className="mb-1 text-[14px] font-black text-[#111827] dark:text-white">
               لا توجد رسالة مضافة بعد
             </p>
-            <p className="mb-5 max-w-xs text-[12px] leading-6 text-[#6B7280]">
+            <p className="mb-5 max-w-xs text-[12px] leading-6 text-[#6B7280] dark:text-white/55">
               أضف رسالة واحدة من نوع {meta.label}، ثم عدّلها لاحقاً بدون حذف.
             </p>
             <EditPaymentMessageDialog type={type} triggerVariant="add" />

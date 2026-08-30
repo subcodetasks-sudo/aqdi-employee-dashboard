@@ -35,22 +35,22 @@ export default function SettingsFormDialog({
       <DialogContent
         closeButton={false}
         className={cn(
-          "w-[calc(100%-2rem)] max-w-[480px] max-h-[90vh] gap-0 overflow-x-hidden overflow-y-auto rounded-2xl border-[#E6EBE9] p-0 shadow-[0_24px_70px_rgba(0,0,0,0.28)] sm:rounded-2xl",
+          "w-[calc(100%-2rem)] max-w-[480px] max-h-[90vh] gap-0 overflow-x-hidden overflow-y-auto rounded-2xl border-[#E6EBE9] p-0 shadow-[0_24px_70px_rgba(0,0,0,0.28)] sm:rounded-2xl dark:border-white/10 dark:bg-card",
           maxWidthClass
         )}
       >
-        <DialogHeader className="space-y-0 border-b border-[#EEF1F0] px-4 py-3.5 text-right">
+        <DialogHeader className="space-y-0 border-b border-[#EEF1F0] px-4 py-3.5 text-right dark:border-white/10">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0 text-right">
-              <DialogTitle className="text-[15px] font-black text-[#111827]">{title}</DialogTitle>
+              <DialogTitle className="text-[15px] font-black text-[#111827] dark:text-white">{title}</DialogTitle>
               {description ? (
-                <p className="mt-1 text-[12px] font-medium text-[#6B7280]">{description}</p>
+                <p className="mt-1 text-[12px] font-medium text-[#6B7280] dark:text-white/55">{description}</p>
               ) : null}
             </div>
             <button
               type="button"
               onClick={() => onOpenChange?.(false)}
-              className="shrink-0 rounded-full p-1.5 text-neutral-500 hover:bg-neutral-100"
+              className="shrink-0 rounded-full p-1.5 text-neutral-500 hover:bg-neutral-100 dark:text-white/50 dark:hover:bg-white/10"
               aria-label="إغلاق"
             >
               <X className="size-4" />
@@ -62,7 +62,7 @@ export default function SettingsFormDialog({
           {children}
         </div>
 
-        <div className="flex items-center gap-2 border-t border-[#EEF1F0] px-4 py-3">
+        <div className="flex items-center gap-2 border-t border-[#EEF1F0] px-4 py-3 dark:border-white/10">
           <Button
             type="button"
             disabled={isPending || submitDisabled}
@@ -86,11 +86,11 @@ export default function SettingsFormDialog({
 }
 
 export const settingsFieldClass =
-  "h-11 rounded-xl border-[#E6EBE9] bg-white text-[13px] font-semibold focus-visible:border-[#054D44] focus-visible:ring-0";
+  "h-11 rounded-xl border-[#E6EBE9] bg-white text-[13px] font-semibold focus-visible:border-[#054D44] focus-visible:ring-0 dark:border-white/10 dark:bg-white/[0.04] dark:text-white";
 
 export function SettingsFieldLabel({ children, required }) {
   return (
-    <span className="text-[13px] font-bold text-[#111827]">
+    <span className="text-[13px] font-bold text-[#111827] dark:text-white">
       {children}
       {required ? <span className="text-red-500"> *</span> : null}
     </span>

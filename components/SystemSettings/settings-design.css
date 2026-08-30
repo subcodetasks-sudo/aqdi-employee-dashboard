@@ -315,6 +315,28 @@
   text-align: right;
 }
 
+.set-page .mkt-tbl thead th:last-child,
+.set-page .mkt-tbl td:last-child {
+  width: 1%;
+  white-space: nowrap;
+  text-align: right;
+}
+
+.set-page .mkt-tbl td:last-child .hr-acts,
+.set-page .mkt-tbl td:last-child > .flex {
+  display: inline-flex;
+  width: fit-content;
+  margin-inline-start: auto;
+}
+
+.set-page .hr-acts {
+  display: inline-flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  width: fit-content;
+}
+
 .set-page .mkt-tbl tbody tr:nth-child(even) {
   background: #fafcfb;
 }
@@ -360,7 +382,7 @@
   display: flex;
   gap: 6px;
   flex-wrap: wrap;
-  justify-content: center;
+  justify-content: flex-end;
 }
 
 .set-page .cpf-sec {
@@ -377,9 +399,18 @@
   color: #e6f2ec;
 }
 
+.dark .set-page .radm-ttl small,
+.dark .set-page .set-cattext small {
+  color: #9fb4ac;
+}
+
 .dark .set-page .mkt-back {
   background: #132620;
   color: #c4d8d0;
+}
+
+.dark .set-page .mkt-back:hover {
+  background: #1a332b;
 }
 
 .dark .set-page .set-sitecard,
@@ -389,6 +420,24 @@
   background: #12241d;
   border-color: #24463b;
   box-shadow: none;
+}
+
+.dark .set-page .set-catcard:hover {
+  border-color: #2f6b58;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  transform: translateY(-1px);
+}
+
+.dark .set-page .set-catarrow {
+  color: #5fd0a8;
+}
+
+.dark .set-page .set-sitestat {
+  color: #5fd0a8;
+}
+
+.dark .set-page .set-sitestat.off {
+  color: #f87171;
 }
 
 .dark .set-page .mkt-subtab {
@@ -412,6 +461,33 @@
 .dark .set-page .mkt-tbl td {
   border-bottom-color: #1e3d33;
   color: #d3e0da;
+}
+
+.dark .set-page .mkt-tbl tbody tr:nth-child(even) {
+  background: #12241d;
+}
+
+.dark .set-page .mkt-tbl tbody tr:hover {
+  background: #173a30;
+}
+
+.dark .set-page .mk-mini {
+  background: #173029;
+  border-color: #2c5648;
+  color: #5fd0a8;
+}
+
+.dark .set-page .mk-mini:hover {
+  background: #1e3d33;
+}
+
+.dark .set-page .mk-mini.hr-del {
+  color: #f87171 !important;
+  border-color: #7f1d1d !important;
+}
+
+.dark .set-page .mk-mini.hr-del:hover {
+  background: #3f1515 !important;
 }
 
 .dark .set-page .set-caticon {

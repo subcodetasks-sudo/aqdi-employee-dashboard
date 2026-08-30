@@ -87,9 +87,9 @@ export default function GeneralSettingsTab() {
 
   if (isError) {
     return (
-      <div className="rounded-2xl border border-[#FECACA] bg-[#FFF5F5] p-8 text-center">
-        <p className="text-[15px] font-bold text-[#B91C1C]">تعذر تحميل الإعدادات العامة</p>
-        <p className="mt-2 text-[13px] text-[#991B1B]">
+      <div className="rounded-2xl border border-[#FECACA] bg-[#FFF5F5] p-8 text-center dark:border-red-500/20 dark:bg-red-500/10">
+        <p className="text-[15px] font-bold text-[#B91C1C] dark:text-red-300">تعذر تحميل الإعدادات العامة</p>
+        <p className="mt-2 text-[13px] text-[#991B1B] dark:text-red-200/80">
           {error?.response?.data?.message || error?.message || "تأكد من توفر الـ API ثم أعد المحاولة"}
         </p>
       </div>

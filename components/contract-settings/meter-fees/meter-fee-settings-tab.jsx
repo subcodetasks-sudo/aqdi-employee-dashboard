@@ -83,19 +83,19 @@ export default function MeterFeeSettingsTab() {
 
   return (
     <div className="space-y-6">
-      <div className="border-b border-neutral-100 pb-6 text-right">
-        <h2 className="text-22 font-black text-black">رسوم العدادات</h2>
-        <p className="mt-2 text-13 leading-7 text-[#707070]">
+      <div className="border-b border-neutral-100 pb-6 text-right dark:border-white/10">
+        <h2 className="text-22 font-black text-black dark:text-white">رسوم العدادات</h2>
+        <p className="mt-2 text-13 leading-7 text-[#707070] dark:text-white/55">
           4 رسوم ثابتة على مستوى المشروع للمستأجر السكني والتجاري. الحقول اختيارية،
           والحد الأدنى 0.
         </p>
       </div>
 
-      <div className="mx-auto max-w-3xl space-y-5 rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm">
+      <div className="mx-auto max-w-3xl space-y-5 rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-card dark:shadow-none">
         <div className="grid gap-5 sm:grid-cols-2">
           {METER_FEE_SETTINGS_FIELDS.map((field) => (
             <div key={field.key} className="space-y-2 text-right">
-              <label className="text-sm font-bold text-black">{field.label}</label>
+              <label className="text-sm font-bold text-black dark:text-white">{field.label}</label>
               <Input
                 type="number"
                 min={0}
@@ -119,7 +119,7 @@ export default function MeterFeeSettingsTab() {
                 className={`h-12 rounded-2xl ${
                   fieldErrors[field.key]
                     ? "border-red-400"
-                    : "border-surface-border bg-neutral-50"
+                    : "border-surface-border bg-neutral-50 dark:bg-white/[0.04] dark:border-white/10"
                 }`}
                 placeholder="0"
               />

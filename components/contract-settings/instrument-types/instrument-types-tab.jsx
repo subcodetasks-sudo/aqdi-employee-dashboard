@@ -225,9 +225,9 @@ export default function InstrumentTypesTab() {
 
   return (
     <div className="space-y-6">
-      <div className="border-b border-neutral-100 pb-6 text-right">
-        <h2 className="text-22 font-black text-black">أنواع الصكوك</h2>
-        <p className="mt-2 text-13 leading-7 text-[#707070]">
+      <div className="border-b border-neutral-100 pb-6 text-right dark:border-white/10">
+        <h2 className="text-22 font-black text-black dark:text-white">أنواع الصكوك</h2>
+        <p className="mt-2 text-13 leading-7 text-[#707070] dark:text-white/55">
           قائمة أنواع الصكوك ثابتة ولا يمكن حذفها. تحكم في الإظهار في العقار والعقد،
           وعدّل الاسم الظاهر (label) لكل نوع.
           {items.length > 0 && (
@@ -236,14 +236,14 @@ export default function InstrumentTypesTab() {
         </p>
       </div>
 
-      <div className="w-full overflow-x-auto rounded-3xl border border-neutral-200 bg-white shadow-sm">
+      <div className="w-full overflow-x-auto rounded-3xl border border-neutral-200 bg-white shadow-sm dark:border-white/10 dark:bg-card dark:shadow-none">
         <table className="w-full border-collapse">
-          <thead className="bg-neutral-50">
+          <thead className="bg-neutral-50 dark:bg-white/[0.04]">
             <tr>
               {tableHeaders.map((header) => (
                 <th
                   key={header}
-                  className="whitespace-nowrap border-b border-neutral-200 p-[15px_20px] text-right text-13 font-medium text-ink-placeholder"
+                  className="whitespace-nowrap border-b border-neutral-200 p-[15px_20px] text-right text-13 font-medium text-ink-placeholder dark:border-white/10 dark:text-white/50"
                 >
                   {header}
                 </th>
@@ -260,10 +260,10 @@ export default function InstrumentTypesTab() {
               return (
                 <tr
                   key={item.instrument_type}
-                  className="border-b border-neutral-100 transition-all last:border-0 hover:bg-neutral-50"
+                  className="border-b border-neutral-100 transition-all last:border-0 hover:bg-neutral-50 dark:border-white/[0.06] dark:hover:bg-white/[0.04]"
                 >
                   <td className="p-[15px_20px] align-middle">
-                    <span className="text-13 font-bold text-black">
+                    <span className="text-13 font-bold text-black dark:text-white">
                       {item.type_name}
                     </span>
                   </td>
