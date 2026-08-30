@@ -9,6 +9,7 @@ import {
 import { Edit, Plus, X } from 'lucide-react';
 import { useState } from 'react';
 import AddEmployeeForm from './add-employee-form';
+import { OutlineActionButton } from '@/components/roles-and-employees/shared';
 export default function AddNewEmployeeDialog({
   isEdit = false,
   employee,
@@ -21,12 +22,7 @@ export default function AddNewEmployeeDialog({
     if (isEdit) {
       if (triggerVariant === "outline-edit") {
         return (
-          <button
-            type="button"
-            className="inline-flex items-center justify-center h-8 px-3 rounded-lg border border-[#93C5FD] bg-white text-[#2563EB] text-xs font-semibold hover:bg-[#EFF6FF] transition-colors"
-          >
-            تعديل
-          </button>
+          <OutlineActionButton variant="edit">تعديل</OutlineActionButton>
         );
       }
 
@@ -47,12 +43,7 @@ export default function AddNewEmployeeDialog({
 
     if (triggerVariant === "outline-add") {
       return (
-        <button
-          type="button"
-          className="inline-flex items-center gap-1.5 h-10 px-5 rounded-lg border border-[#D1D5DB] bg-white text-gray-700 text-13 font-semibold hover:bg-[#F9FAFB] transition-colors whitespace-nowrap"
-        >
-          + إضافة موظف
-        </button>
+        <OutlineActionButton className="h-10 px-5 text-13">+ إضافة موظف</OutlineActionButton>
       );
     }
 

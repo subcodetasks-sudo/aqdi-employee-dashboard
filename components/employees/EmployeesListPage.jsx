@@ -161,7 +161,7 @@ export default function EmployeesListPage() {
                   </td>
                   {showActionsColumn && (
                     <td className="px-4 py-3.5">
-                      <div className="flex items-center gap-2 flex-wrap">
+                      <div className="flex items-center justify-end gap-2 flex-wrap">
                         <PermissionGate section={PERMISSION_SECTIONS.employees} action="view">
                           <Link href={`/home/roles-and-employees/employees/${employee.id}`}>
                             <OutlineActionButton variant="view">عرض</OutlineActionButton>

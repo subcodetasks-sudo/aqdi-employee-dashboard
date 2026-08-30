@@ -46,7 +46,7 @@ export default function RolesAndEmployeesWrapper() {
 
   return (
     <div
-      className="flex flex-col gap-5 min-h-full p-4 md:p-6 transition-colors dark:bg-transparent"
+      className="flex flex-col gap-5 min-h-full transition-colors dark:bg-transparent"
       dir="rtl"
     >
       <div className="flex items-start gap-3">

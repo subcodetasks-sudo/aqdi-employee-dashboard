@@ -12,6 +12,7 @@ import { Loader2, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { OutlineActionButton } from '@/components/roles-and-employees/shared';
 
 export default function DeleteEmployeeDialog({
   employee,
@@ -43,12 +44,7 @@ export default function DeleteEmployeeDialog({
   const renderTrigger = () => {
     if (triggerVariant === "outline-delete") {
       return (
-        <button
-          type="button"
-          className="inline-flex items-center justify-center h-8 px-3 rounded-lg border border-[#FCA5A5] bg-white text-red-600 text-xs font-semibold hover:bg-[#FEF2F2] transition-colors"
-        >
-          حذف
-        </button>
+        <OutlineActionButton variant="delete">حذف</OutlineActionButton>
       );
     }
 
