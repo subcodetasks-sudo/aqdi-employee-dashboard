@@ -5,7 +5,7 @@ import SectionCard from "../shared/SectionCard";
 import { StatCardRow } from "../shared/StatCard";
 import { SourceBadge, TrendBadge, RoasChip, PosChip } from "../shared/Badges";
 import GroupedBarChart from "../shared/GroupedBarChart";
-import FunnelBars from "../shared/FunnelBars";
+import HorizontalBarChart from "@/components/Reports/shared/HorizontalBarChart";
 import {
   OVERVIEW_ROAS,
   OVERVIEW_STATS,
@@ -65,7 +65,14 @@ export default function OverviewTab() {
           <GroupedBarChart items={CHANNEL_SPEND_REVENUE} />
         </SectionCard>
         <SectionCard title="القمع التسويقي الكامل">
-          <FunnelBars steps={MARKETING_FUNNEL} />
+          <HorizontalBarChart
+            items={MARKETING_FUNNEL.map((step, index) => ({
+              label: step.label,
+              value: step.value,
+              detail: step.dropPct,
+              color: ["#0E5F4E", "#127A62", "#1A9478", "#25B088"][index],
+            }))}
+          />
         </SectionCard>
       </div>
 

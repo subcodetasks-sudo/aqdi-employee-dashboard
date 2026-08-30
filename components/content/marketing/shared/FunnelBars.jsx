@@ -17,7 +17,7 @@ export default function FunnelBars({ steps }) {
               <span className="w-11 shrink-0" />
             )}
             <div className="flex-1 min-w-0 flex items-center gap-3">
-              <div className="flex-1 h-[30px] bg-[#eef2f0] rounded-[8px] overflow-hidden">
+              <div className="flex-1 h-[30px] bg-[#eef2f0] rounded-[8px] overflow-hidden dark:bg-white/[0.08]">
                 <div
                   className="h-full rounded-[8px] bg-[#0E5F4E] transition-all duration-500 flex items-center px-3"
                   style={{ width: `${width}%` }}
@@ -27,7 +27,7 @@ export default function FunnelBars({ steps }) {
                   </span>
                 </div>
               </div>
-              <span className="text-[13px] font-bold text-[#2c3a34] shrink-0 min-w-[72px] text-right">
+              <span className="text-[13px] font-bold text-[#2c3a34] shrink-0 min-w-[72px] text-right dark:text-white/75">
                 {step.label}
               </span>
             </div>
