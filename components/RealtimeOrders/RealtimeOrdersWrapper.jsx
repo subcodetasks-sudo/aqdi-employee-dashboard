@@ -1,10 +1,13 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import {
   ControllableDataTable,
   useTablePreferences,
 } from "@/components/shared/controllable-table";
+import { makeSelectionColumn } from "@/components/shared/table-selection-column";
+import TableBatchActionsBar from "@/components/shared/table-batch-actions-bar";
+import { useRowSelection } from "@/src/hooks/use-row-selection";
 import NewRequestsSection from "./NewRequestsSection";
 import RealtimeOrdersToolbar from "./RealtimeOrdersToolbar";
 import RealtimeStatusFilterBar from "./RealtimeStatusFilterBar";
@@ -20,8 +23,14 @@ const TABLE_STORAGE_KEY = "realtime-orders-table-prefs";
 
 export default function RealtimeOrdersWrapper() {
   const vm = useRealtimeOrdersWrapper();
+  const selection = useRowSelection();
 
-  const columns = useMemo(
+  const clearSelection = selection.clear;
+  useEffect(() => {
+    clearSelection();
+  }, [vm.listParams, clearSelection]);
+
+  const baseColumns = useMemo(
     () =>
       buildRealtimeOrderColumns({
         dark: vm.isDark,
@@ -40,6 +49,27 @@ export default function RealtimeOrdersWrapper() {
       vm.changingStatusId,
       vm.canChangeStatus,
       vm.canAddStatus,
+    ]
+  );
+
+  const columns = useMemo(
+    () => [
+      makeSelectionColumn({
+        rows: vm.tableOrders,
+        selectedIds: selection.selectedIds,
+        onToggleRow: selection.toggle,
+        onToggleAll: selection.toggleMany,
+      }),
+      ...baseColumns.map((col, index) =>
+        index === 0 ? { ...col, sticky: undefined } : col
+      ),
+    ],
+    [
+      baseColumns,
+      vm.tableOrders,
+      selection.selectedIds,
+      selection.toggle,
+      selection.toggleMany,
     ]
   );
 
@@ -115,6 +145,14 @@ export default function RealtimeOrdersWrapper() {
           dark={vm.isDark}
         />
       ) : null}
+
+      <TableBatchActionsBar
+        count={selection.selectedCount}
+        onPrint={() => vm.handleBatchPrint(selection.selectedArray)}
+        onClear={selection.clear}
+        isPrinting={vm.isBatchPrinting}
+        dark={vm.isDark}
+      />
 
       <ControllableDataTable
         columns={columns}

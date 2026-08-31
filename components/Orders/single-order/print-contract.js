@@ -26,46 +26,9 @@ const section = (title, rows) => {
   `;
 };
 
-export function buildContractPrintHtml(orderData) {
-  if (!orderData) return "";
-
-  const summary = orderData.contract_summary ?? {};
-  const step1 = orderData.step1 ?? {};
-  const step2 = orderData.step2 ?? {};
-  const step3 = orderData.step3 ?? {};
-  const step4 = orderData.step4 ?? {};
-  const user = orderData.user ?? {};
-
-  const resolveImageUrl = (value) => {
-    if (!value) return null;
-    if (typeof value === "string") return value.trim() || null;
-    if (typeof value === "object") {
-      return value.url || value.path || value.full_url || value.src || null;
-    }
-    return null;
-  };
-
-  const images = [
-    summary.image_instrument,
-    summary.image_instrument_from_the_front,
-    summary.image_instrument_from_the_back,
-    summary.copy_power_of_attorney_from_heirs_to_agent,
-  ]
-    .map(resolveImageUrl)
-    .filter(Boolean);
-
-  const imagesHtml = images.length
-    ? `<div class="images">${images
-        .map((src) => `<img src="${src}" alt="صورة الصك" />`)
-        .join("")}</div>`
-    : "";
-
-  return `<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-  <meta charset="UTF-8" />
-  <title>طباعة العقد - ${display(orderData.uuid)}</title>
-  <style>
+const CONTRACT_PRINT_STYLES = `
+    /* margin:0 removes the browser-injected page URL/date footer & header */
+    @page { margin: 0; }
     * { box-sizing: border-box; }
     body {
       font-family: Arial, Tahoma, sans-serif;
@@ -73,6 +36,7 @@ export function buildContractPrintHtml(orderData) {
       color: #111;
       line-height: 1.6;
     }
+    .contract-doc + .contract-doc { padding-top: 8px; }
     .header {
       text-align: center;
       margin-bottom: 24px;
@@ -116,12 +80,48 @@ export function buildContractPrintHtml(orderData) {
       object-fit: contain;
     }
     @media print {
-      body { margin: 12px; }
+      /* keep readable page padding now that @page margin is 0 */
+      body { margin: 14mm 12mm; }
       .section { page-break-inside: avoid; }
     }
-  </style>
-</head>
-<body>
+`;
+
+/** Builds the inner markup for a single contract (no <html>/<head>/<body> wrapper). */
+export function buildContractPrintSections(orderData) {
+  if (!orderData) return "";
+
+  const summary = orderData.contract_summary ?? {};
+  const step1 = orderData.step1 ?? {};
+  const step2 = orderData.step2 ?? {};
+  const step3 = orderData.step3 ?? {};
+  const step4 = orderData.step4 ?? {};
+  const user = orderData.user ?? {};
+
+  const resolveImageUrl = (value) => {
+    if (!value) return null;
+    if (typeof value === "string") return value.trim() || null;
+    if (typeof value === "object") {
+      return value.url || value.path || value.full_url || value.src || null;
+    }
+    return null;
+  };
+
+  const images = [
+    summary.image_instrument,
+    summary.image_instrument_from_the_front,
+    summary.image_instrument_from_the_back,
+    summary.copy_power_of_attorney_from_heirs_to_agent,
+  ]
+    .map(resolveImageUrl)
+    .filter(Boolean);
+
+  const imagesHtml = images.length
+    ? `<div class="images">${images
+        .map((src) => `<img src="${src}" alt="صورة الصك" />`)
+        .join("")}</div>`
+    : "";
+
+  return `
   <div class="header">
     <h1>عقد إيجار - تفاصيل الطلب</h1>
     <p>رقم الطلب: ${display(orderData.uuid)}</p>
@@ -237,12 +237,53 @@ export function buildContractPrintHtml(orderData) {
       return step4.other_conditions || orderData?.other_conditions || "لا يوجد";
     })()],
     ["نص الشروط الإضافية", step4.text_additional_terms],
-  ])}
+  ])}`;
+}
+
+function wrapPrintDocument(title, innerHtml) {
+  return `<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <title>${title}</title>
+  <style>${CONTRACT_PRINT_STYLES}</style>
+</head>
+<body>
+${innerHtml}
 </body>
 </html>`;
 }
 
+export function buildContractPrintHtml(orderData) {
+  if (!orderData) return "";
+  return wrapPrintDocument(
+    `طباعة العقد - ${display(orderData.uuid)}`,
+    buildContractPrintSections(orderData)
+  );
+}
+
+/** Builds one print document containing every contract, one per page. */
+export function buildBatchContractPrintHtml(ordersData = []) {
+  const valid = (ordersData ?? []).filter(Boolean);
+  if (!valid.length) return "";
+
+  const articles = valid
+    .map((orderData, index) => {
+      const breakAfter =
+        index < valid.length - 1 ? ' style="page-break-after: always;"' : "";
+      return `<article class="contract-doc"${breakAfter}>${buildContractPrintSections(
+        orderData
+      )}</article>`;
+    })
+    .join("\n");
+
+  return wrapPrintDocument(`طباعة العقود (${valid.length})`, articles);
+}
+
 export function printOrderContract(orderData) {
-  const html = buildContractPrintHtml(orderData);
-  return printHtmlDocument(html);
+  return printHtmlDocument(buildContractPrintHtml(orderData));
+}
+
+export function printOrderContracts(ordersData) {
+  return printHtmlDocument(buildBatchContractPrintHtml(ordersData));
 }

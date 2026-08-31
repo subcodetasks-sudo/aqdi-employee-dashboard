@@ -1,10 +1,13 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import {
   ControllableDataTable,
   useTablePreferences,
 } from "@/components/shared/controllable-table";
+import { makeSelectionColumn } from "@/components/shared/table-selection-column";
+import TableBatchActionsBar from "@/components/shared/table-batch-actions-bar";
+import { useRowSelection } from "@/src/hooks/use-row-selection";
 import RealtimeOrdersToolbar from "@/components/RealtimeOrders/RealtimeOrdersToolbar";
 import WhatsAppPaymentLinkDialog from "@/components/RealtimeOrders/WhatsAppPaymentLinkDialog";
 import ReturnRequestDialog from "@/components/Orders/return-request-dialog";
@@ -60,6 +63,9 @@ export default function ReturnOrdersWrapper() {
     tableOrders,
     pagination,
     tableLoading,
+    listParams,
+    handleBatchPrint,
+    isBatchPrinting,
     goToDetails,
     changeStatus,
     isChangingStatus,
@@ -78,7 +84,14 @@ export default function ReturnOrdersWrapper() {
     handleSuccessDialogClose,
   } = useReturnOrdersWrapper();
 
-  const columns = useMemo(
+  const selection = useRowSelection();
+
+  const clearSelection = selection.clear;
+  useEffect(() => {
+    clearSelection();
+  }, [listParams, clearSelection]);
+
+  const baseColumns = useMemo(
     () =>
       buildReturnOrderColumns({
         dark: isDark,
@@ -107,6 +120,27 @@ export default function ReturnOrdersWrapper() {
       canAddStatus,
       refundsLookup,
       refundItems,
+    ]
+  );
+
+  const columns = useMemo(
+    () => [
+      makeSelectionColumn({
+        rows: tableOrders,
+        selectedIds: selection.selectedIds,
+        onToggleRow: selection.toggle,
+        onToggleAll: selection.toggleMany,
+      }),
+      ...baseColumns.map((col, index) =>
+        index === 0 ? { ...col, sticky: undefined } : col
+      ),
+    ],
+    [
+      baseColumns,
+      tableOrders,
+      selection.selectedIds,
+      selection.toggle,
+      selection.toggleMany,
     ]
   );
 
@@ -154,6 +188,14 @@ export default function ReturnOrdersWrapper() {
         onOpenPaymentLink={() => setPaymentLinkOpen(true)}
         canManageStatuses={canManageStatuses}
         onManageStatuses={() => setManageStatusesOpen(true)}
+      />
+
+      <TableBatchActionsBar
+        count={selection.selectedCount}
+        onPrint={() => handleBatchPrint(selection.selectedArray)}
+        onClear={selection.clear}
+        isPrinting={isBatchPrinting}
+        dark={isDark}
       />
 
       <ControllableDataTable

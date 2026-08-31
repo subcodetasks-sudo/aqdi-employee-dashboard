@@ -10,7 +10,8 @@ import {
   statusRequiresExtraFields,
 } from "@/components/RealtimeOrders/ChangeOrderStatusFieldsDialog";
 import {
-  canRequestOrderReturn,
+  getReturnRequestExistsMessage,
+  hasReturnRequest,
   isReturnContractStatus,
   normalizeOrderForReturnRequest,
 } from "@/components/analysis/returned/refund-contract-utils";
@@ -21,6 +22,7 @@ import {
 } from "@/components/Orders/shared/orders-export";
 import { usePaginatedExport } from "@/components/Orders/shared/use-paginated-export";
 import { printOrderContract } from "@/components/Orders/single-order/print-contract";
+import { useBatchPrintContracts } from "@/src/hooks/use-batch-print-contracts";
 import { useIsDark } from "@/src/hooks/useThemeMode";
 import { useContractStatuses } from "@/src/hooks/use-contract-statuses";
 import { usePermissions } from "@/src/hooks/usePermissions";
@@ -202,8 +204,8 @@ export function useAllOrdersWrapper({
         return;
       }
       const normalized = normalizeOrderForReturnRequest(row, row?.id);
-      if (!canRequestOrderReturn(normalized)) {
-        toast.info("يوجد طلب استرجاع مسبقاً لهذا الطلب");
+      if (hasReturnRequest(normalized)) {
+        toast.info(getReturnRequestExistsMessage(normalized));
         return;
       }
       setReturnOrder(normalized);
@@ -219,6 +221,9 @@ export function useAllOrdersWrapper({
 
     changeStatus({ orderId: row.id, statusId: status.id });
   };
+
+  const { isBatchPrinting, batchPrint: handleBatchPrint } =
+    useBatchPrintContracts();
 
   const handlePrint = async (row) => {
     if (!row?.id) {
@@ -323,6 +328,8 @@ export function useAllOrdersWrapper({
     changingStatusId,
     handleStatusChange,
     handlePrint,
+    handleBatchPrint,
+    isBatchPrinting,
     handleToggleFilter,
     handleExtraStatusChange,
     handleExport,

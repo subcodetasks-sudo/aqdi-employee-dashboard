@@ -10,7 +10,8 @@ import {
 } from "@/components/RealtimeOrders/ChangeOrderStatusFieldsDialog";
 import { STATUS_FILTER_PILLS } from "@/components/RealtimeOrders/mock-data";
 import {
-  canRequestOrderReturn,
+  getReturnRequestExistsMessage,
+  hasReturnRequest,
   isReturnContractStatus,
   normalizeOrderForReturnRequest,
 } from "@/components/analysis/returned/refund-contract-utils";
@@ -34,6 +35,7 @@ import {
 import { useChangeOrderStatus } from "@/src/hooks/use-change-order-status";
 import { getRealtimeStatusChipStatuses } from "@/src/lib/contract-statuses";
 import { useReceiveContract } from "@/src/hooks/use-receive-contract";
+import { useBatchPrintContracts } from "@/src/hooks/use-batch-print-contracts";
 
 const SECTION_FILTERS = ["authenticated", "canceled", "returned", "incomplete"];
 export const REALTIME_DEFAULT_PER_PAGE = 25;
@@ -208,6 +210,9 @@ export function useRealtimeOrdersWrapper() {
   const { mutate: receiveOrder, isPending: isReceiving, variables: receivingOrder } =
     useReceiveContract();
 
+  const { isBatchPrinting, batchPrint: handleBatchPrint } =
+    useBatchPrintContracts();
+
   const {
     mutate: changeStatus,
     isPending: isChangingStatus,
@@ -235,8 +240,8 @@ export function useRealtimeOrdersWrapper() {
         return;
       }
       const normalized = normalizeOrderForReturnRequest(row, row?.id);
-      if (!canRequestOrderReturn(normalized)) {
-        toast.info("يوجد طلب استرجاع مسبقاً لهذا الطلب");
+      if (hasReturnRequest(normalized)) {
+        toast.info(getReturnRequestExistsMessage(normalized));
         return;
       }
       setReturnOrder(normalized);
@@ -343,6 +348,9 @@ export function useRealtimeOrdersWrapper() {
     tableOrders,
     pagination,
     tableLoading,
+    listParams,
+    handleBatchPrint,
+    isBatchPrinting,
     receiveOrder,
     isReceiving,
     receivingOrder,
