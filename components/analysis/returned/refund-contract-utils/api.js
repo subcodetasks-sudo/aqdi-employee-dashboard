@@ -1,6 +1,5 @@
 import { axiosInstance } from "@/src/utils/axios";
-import { postOrderStatus, postReturnContractStatusForOrder } from "@/src/lib/order-status-api";
-import { RETURN_CONTRACT_STATUS_ID } from "./status";
+import { postReturnContractStatusForOrder } from "@/src/lib/order-status-api";
 import { getOrderUuid, getRefundItemActionKey } from "./ids";
 import { findRefundItemForOrder, resolveRefundIdForAction } from "./lookup";
 
@@ -34,59 +33,6 @@ export function extractRefundsContractsPayload(root) {
     managementApproval,
     contractStatuses,
   };
-}
-
-export async function ensureReturnContractStatus(orderId, returnStatusId = RETURN_CONTRACT_STATUS_ID) {
-  if (!orderId) {
-    throw new Error("تعذر تحديد الطلب لتغيير الحالة");
-  }
-
-  const response = await postOrderStatus(orderId, { statusId: returnStatusId });
-
-  if (response?.data?.success === false) {
-    throw new Error(response?.data?.message || "تعذر تغيير حالة العقد إلى استرجاع");
-  }
-
-  return response;
-}
-
-/**
- * Force contract status = 2 (استرجاع) on every known order identifier.
- * Backend refundable-contracts validates that status.
- */
-export async function ensureReturnContractStatusForOrder(
-  order,
-  orderId,
-  returnStatusId = RETURN_CONTRACT_STATUS_ID
-) {
-  const candidates = [
-    order?.uuid,
-    orderId,
-    order?.id,
-    order?.contract_id,
-    order?.contract_summary?.uuid,
-    order?.contract_summary?.id,
-  ].filter((value, index, arr) => {
-    if (value == null || value === "") return false;
-    return arr.findIndex((item) => String(item) === String(value)) === index;
-  });
-
-  if (!candidates.length) {
-    throw new Error("تعذر تحديد الطلب لتغيير الحالة");
-  }
-
-  let lastError = null;
-
-  for (const candidate of candidates) {
-    try {
-      await ensureReturnContractStatus(candidate, returnStatusId);
-      return candidate;
-    } catch (error) {
-      lastError = error;
-    }
-  }
-
-  throw lastError || new Error("تعذر تغيير حالة العقد إلى استرجاع");
 }
 
 export async function fetchAllRefundContracts() {

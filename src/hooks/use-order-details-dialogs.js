@@ -5,7 +5,8 @@ import { toast } from "sonner";
 import { fetchContractPaymentLink } from "@/components/Orders/shared/payment-gateway";
 import { getOrderContractUuid } from "@/components/Orders/messages/order-section-message-utils";
 import {
-  canRequestOrderReturn,
+  getReturnRequestExistsMessage,
+  hasReturnRequest,
   isReturnContractStatus,
   normalizeOrderForReturnRequest,
 } from "@/components/analysis/returned/refund-contract-utils";
@@ -50,8 +51,8 @@ export function useOrderDetailsDialogs({ orderData, id, canReturn, refetch }) {
       return;
     }
     const normalized = normalizeOrderForReturnRequest(source, source?.id ?? id);
-    if (!canRequestOrderReturn(normalized)) {
-      toast.info("يوجد طلب استرجاع مسبقاً لهذا الطلب");
+    if (hasReturnRequest(normalized)) {
+      toast.info(getReturnRequestExistsMessage(normalized));
       return;
     }
     setReturnOrder(normalized);
@@ -68,6 +69,7 @@ export function useOrderDetailsDialogs({ orderData, id, canReturn, refetch }) {
     };
 
     if (isReturnContractStatus(menuStatus)) {
+      // Same as the "رفع طلب استرجاع" pill: create a request, or block if one exists.
       openReturn(orderData);
       return;
     }

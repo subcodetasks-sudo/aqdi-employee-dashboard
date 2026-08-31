@@ -5,9 +5,7 @@ import { toast } from "sonner";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { axiosInstance } from "@/src/utils/axios";
 import {
-    ensureReturnContractStatusForOrder,
     resolveRefundableContractId,
-    RETURN_CONTRACT_STATUS_ID,
 } from "@/components/analysis/returned/refund-contract-utils";
 import { invalidateRefundCaches } from "@/src/lib/invalidate-orders-caches";
 
@@ -46,13 +44,8 @@ export function useReturnRequest({ open, order, orderId, orderUuid, queryKey, on
                 };
             }
 
-            // 1) أرسل طلب الاسترجاع أولاً
-            const response = await axiosInstance.post("/admin/refundable-contracts", payload);
-
-            // 2) بعد نجاح الطلب: غيّر الحالة إلى استرجاع (2)
-            await ensureReturnContractStatusForOrder(order, resolvedOrderId, RETURN_CONTRACT_STATUS_ID);
-
-            return response;
+            // أرسل طلب الاسترجاع فقط — الباك يحوّل حالة العقد إلى "استرجاع" تلقائياً.
+            return axiosInstance.post("/admin/refundable-contracts", payload);
         },
         onSuccess: (res) => {
             toast.success(res?.data?.message || "تم رفع طلب الاسترجاع بنجاح");

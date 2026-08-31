@@ -11,6 +11,12 @@ export function normalizeOrderForReturnRequest(order, orderId) {
       ...order,
       contract_id: order.contract_id ?? order.id ?? orderId,
       id: order.id ?? orderId,
+      has_return_request:
+        order.has_return_request ?? order.contract_summary?.has_return_request,
+      return_request_status:
+        order.return_request_status ?? order.contract_summary?.return_request_status ?? null,
+      refund_contract_id:
+        order.refund_contract_id ?? order.contract_summary?.refund_contract_id ?? null,
       status:
         order.status ??
         (order.contract_status_name || order.contract_status_id
@@ -46,6 +52,10 @@ export function normalizeOrderForReturnRequest(order, orderId) {
         color: summary.contract_status_color,
       },
     return_contract: order.return_contract ?? summary.return_contract,
+    has_return_request: order.has_return_request ?? summary.has_return_request,
+    return_request_status:
+      order.return_request_status ?? summary.return_request_status ?? null,
+    refund_contract_id: order.refund_contract_id ?? summary.refund_contract_id ?? null,
     customer_refunded: order.customer_refunded,
     refund_id: order.refund_id,
     refundable_contract_id: order.refundable_contract_id,

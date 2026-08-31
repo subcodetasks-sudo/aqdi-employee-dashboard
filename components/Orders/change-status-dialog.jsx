@@ -9,8 +9,9 @@ import { useQueryClient } from '@tanstack/react-query'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import ReturnRequestDialog from "./return-request-dialog"
 import {
-  canRequestOrderReturn,
   getOrderContractStatusDisplay,
+  getReturnRequestExistsMessage,
+  hasReturnRequest,
   isReturnContractStatus,
   normalizeOrderForReturnRequest,
 } from "@/components/analysis/returned/refund-contract-utils"
@@ -42,7 +43,6 @@ export default function ChangeStatusDialog({ orderId, order, queryKey }) {
   });
   const queryClient = useQueryClient()
   const returnOrder = normalizeOrderForReturnRequest(order, orderId)
-  const showReturnRequest = canRequestOrderReturn(returnOrder)
   const currentStatus = getOrderContractStatusDisplay(order ?? returnOrder)
 
   function getStatus() {
@@ -115,10 +115,9 @@ export default function ChangeStatusDialog({ orderId, order, queryKey }) {
   }
 
   const handleStatusClick = (status) => {
-    // استرجاع: افتح النموذج أولاً — تغيير الحالة يتم بعد نجاح إرسال الطلب
     if (isReturnContractStatus(status)) {
-      if (!showReturnRequest) {
-        toast.info("يوجد طلب استرجاع مسبقاً لهذا الطلب")
+      if (hasReturnRequest(returnOrder)) {
+        toast.info(getReturnRequestExistsMessage(returnOrder))
         return
       }
       openReturnDialog()

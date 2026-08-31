@@ -102,41 +102,97 @@ export function isReturnContractOrder(order) {
   return isReturnContractStatus({ name: statusName });
 }
 
+/** `refund_amount` is `0` / `"0.00"` / `null` on orders with no return request. */
+function hasPositiveRefundAmount(value) {
+  if (value == null || value === "") return false;
+  const amount = Number(value);
+  return Number.isFinite(amount) && amount > 0;
+}
+
+/** A refund record only counts when it carries a real id or amount — not `{}` / `0`. */
+function isMeaningfulRefundRecord(record) {
+  if (record == null) return false;
+  if (typeof record === "number" || typeof record === "string") {
+    const key = String(record).trim();
+    return key !== "" && key !== "0";
+  }
+  if (typeof record !== "object") return false;
+  if (record.id != null && record.id !== "" && String(record.id) !== "0") return true;
+  return hasPositiveRefundAmount(record.refund_amount ?? record.amount);
+}
+
+/**
+ * Authoritative "a return request exists for this order" — from the explicit
+ * backend flag only (top-level or mirrored in `contract_summary`). Never derived.
+ */
+export function hasReturnRequest(order) {
+  return (
+    order?.has_return_request === true ||
+    order?.contract_summary?.has_return_request === true
+  );
+}
+
+/** `pending` | `approved` | `rejected` | `refunded` | null. */
+export function getReturnRequestStatus(order) {
+  return (
+    order?.return_request_status ??
+    order?.contract_summary?.return_request_status ??
+    null
+  );
+}
+
+const RETURN_REQUEST_EXISTS_MESSAGE = {
+  pending: "يوجد طلب استرجاع قيد المراجعة لهذا الطلب",
+  approved: "تمت الموافقة على طلب استرجاع لهذا الطلب",
+  rejected: "يوجد طلب استرجاع مرفوض لهذا الطلب",
+  refunded: "تم استرجاع مبلغ هذا الطلب بالفعل",
+};
+
+/** Toast text for "can't start a return — one already exists", keyed to its status. */
+export function getReturnRequestExistsMessage(order) {
+  return (
+    RETURN_REQUEST_EXISTS_MESSAGE[getReturnRequestStatus(order)] ||
+    "يوجد طلب استرجاع مسبقاً لهذا الطلب"
+  );
+}
+
+/** Refundable-contract record id for approve/reject actions, or null. */
+export function getRefundContractId(order) {
+  return (
+    order?.refund_contract_id ??
+    order?.contract_summary?.refund_contract_id ??
+    null
+  );
+}
+
 export function hasExistingReturnRequest(order) {
   if (!order) return false;
+  // Explicit backend flag wins whenever the row carries it.
+  if (order.has_return_request != null || order.contract_summary?.has_return_request != null) {
+    return hasReturnRequest(order);
+  }
   if (isReturnContractOrder(order)) return true;
   if (order.is_return_order === true) return true;
-  if (extractRefundContractId(order)) return true;
-  if (order.refund_amount != null && order.refund_amount !== "") return true;
+
+  const refundContractId = extractRefundContractId(order);
+  if (refundContractId != null && refundContractId !== "" && String(refundContractId) !== "0") {
+    return true;
+  }
+
+  if (hasPositiveRefundAmount(order.refund_amount)) return true;
 
   const nested =
     order.refundable_contract ??
     order.refund ??
     (Array.isArray(order.refundable_contracts) ? order.refundable_contracts[0] : null);
-  if (nested) return true;
+  if (isMeaningfulRefundRecord(nested)) return true;
 
   return false;
 }
 
-/** Whether the row can still open "طلب إسترجاع" (approval stays on return-orders page). */
+/** Whether "رفع طلب استرجاع" can still be opened — i.e. no request exists yet. */
 export function canRequestOrderReturn(order) {
-  if (!order) return false;
-  if (hasExistingReturnRequest(order)) return false;
-
-  const customerRefunded = order.customer_refunded ?? order.is_refunded ?? order.refunded;
-
-  // Only block when the customer was actually refunded (true/1).
-  // `false` / `0` must still allow opening the return request dialog.
-  if (
-    customerRefunded === true ||
-    customerRefunded === 1 ||
-    customerRefunded === "1" ||
-    customerRefunded === "true"
-  ) {
-    return false;
-  }
-
-  return true;
+  return !!order && !hasReturnRequest(order);
 }
 
 export function isCustomerRefundPending(order) {
