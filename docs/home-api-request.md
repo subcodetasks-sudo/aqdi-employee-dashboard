@@ -2,13 +2,25 @@
 
 Updated: 2026-08-25
 
-The redesigned `/home` welcome screen currently runs on **frontend mock data**
-(`components/home/home-mock-data.js`). We need a single authenticated admin
-endpoint that returns the live payload so we can drop the mock.
+The redesigned `/home` welcome screen still uses `components/home/home-mock-data.js`
+for the **motto text** and the **quick-action link list**. A single aggregated
+`GET /admin/home` is still wanted to collapse the calls below into one.
 
-Frontend source of truth (UI wired to mock today):
+Already wired to live data (interim, until `GET /admin/home` lands):
+- `summary.*` KPI cards → `src/hooks/use-home-summary.js`
+  (`/admin/reports/orders`, `/admin/reports/sales`, `/admin/reports/customers`,
+  plus the unreceived-orders count).
+- `recent_activity` → `src/hooks/use-home-recent-activity.js`
+  (`/admin/orders?status_id=1` — new orders awaiting receipt).
+- quick-action `badge_count` for `realtime-orders` / `return-orders` → from `use-home-summary`.
+
+Every KPI card / shortcut / activity row is permission-gated via
+`usePermissions().canRoute(href)` — cards the user cannot open are not rendered,
+and the analytics-backed requests only fire when the user has `analytics` view.
+
+Frontend source of truth:
 - `components/home/HomeWelcomeWrapper.jsx`
-- `components/home/home-mock-data.js`
+- `components/home/home-mock-data.js` (motto + quick-action links only)
 
 ---
 
