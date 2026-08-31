@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -151,6 +152,25 @@ export function formatDateShort(dateString) {
   } catch {
     return dateString;
   }
+}
+
+export function useClientPagination(items, pageSize = 8) {
+  const [page, setPage] = useState(1);
+  const list = useMemo(() => (Array.isArray(items) ? items : []), [items]);
+  const lastPage = Math.max(1, Math.ceil(list.length / pageSize));
+  const currentPage = Math.min(page, lastPage);
+  const pageItems = useMemo(
+    () => list.slice((currentPage - 1) * pageSize, currentPage * pageSize),
+    [list, currentPage, pageSize]
+  );
+
+  return {
+    pageItems,
+    currentPage,
+    setCurrentPage: setPage,
+    total: list.length,
+    pagination: { last_page: lastPage, total: list.length },
+  };
 }
 
 export function TablePagination({ pagination, currentPage, setCurrentPage }) {

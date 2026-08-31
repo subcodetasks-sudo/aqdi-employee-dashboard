@@ -1,15 +1,10 @@
 "use client"
-import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTrigger
-} from "@/components/ui/dialog";
-import { Edit, Plus, X } from 'lucide-react';
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Pencil, UserPlus, X } from 'lucide-react';
 import { useState } from 'react';
 import AddEmployeeForm from './add-employee-form';
 import { OutlineActionButton } from '@/components/roles-and-employees/shared';
+
 export default function AddNewEmployeeDialog({
   isEdit = false,
   employee,
@@ -21,23 +16,30 @@ export default function AddNewEmployeeDialog({
   const renderTrigger = () => {
     if (isEdit) {
       if (triggerVariant === "outline-edit") {
+        return <OutlineActionButton variant="edit">تعديل</OutlineActionButton>;
+      }
+
+      if (triggerVariant === "outline-plain") {
         return (
-          <OutlineActionButton variant="edit">تعديل</OutlineActionButton>
+          <OutlineActionButton className="h-9 gap-1.5 px-4 text-13">
+            <Pencil className="size-4" />
+            تعديل
+          </OutlineActionButton>
         );
       }
 
       return (
-        <Button
-          className={`rounded-full flex items-center justify-center shadow-none border-0 ${
+        <button
+          type="button"
+          className={
             table
-              ? "w-9 h-9 bg-[#E6FFE6] text-brand-accent hover:bg-brand-accent hover:text-white p-0"
-              : "text-white"
-          }`}
-          size={table ? "icon" : "default"}
+              ? "flex size-9 items-center justify-center rounded-full bg-[#E6FFE6] text-brand-accent transition-colors hover:bg-brand-accent hover:text-white dark:bg-emerald-500/15 dark:text-emerald-300"
+              : "inline-flex items-center gap-2 rounded-full bg-brand-hover px-5 py-2.5 text-13 font-bold text-white transition-colors hover:bg-brand-hover/90"
+          }
         >
-          <Edit className="size-4" />
+          <Pencil className="size-4" />
           {!table && "تعديل"}
-        </Button>
+        </button>
       );
     }
 
@@ -48,30 +50,54 @@ export default function AddNewEmployeeDialog({
     }
 
     return (
-      <Button className="bg-brand-hover hover:bg-brand-hover/90 text-white h-12 rounded-full font-bold px-6 gap-2 whitespace-nowrap">
+      <button
+        type="button"
+        className="inline-flex items-center gap-2 whitespace-nowrap rounded-full bg-brand-hover px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-brand-hover/90"
+      >
         + إضافة موظف
-        <Plus className="w-4 h-4" />
-      </Button>
+        <UserPlus className="size-4" />
+      </button>
     );
   };
 
+  const title = isEdit ? "تعديل بيانات الموظف" : "إضافة موظف جديد";
+
   return (
-    <Dialog dir="rtl" open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{renderTrigger()}</DialogTrigger>
-      <DialogContent closeButton={false} className="max-w-3xl h-[95vh] overflow-y-auto no-scrollbar">
-        <DialogHeader>
-          <div dir='rtl' className='flex items-center justify-between  border-b pb-4'>
-            {/* header and close button */}
-            <h2 className='text-xl font-bold'>{isEdit ? "تعديل بيانات الموظف" : "إضافة موظف جديد"}</h2>
-            <Button variant="ghost" onClick={() => setOpen(false)}>
-              <X className='w-4 h-4' />
-            </Button>
+      <DialogContent
+        dir="rtl"
+        closeButton={false}
+        className="max-w-[min(760px,calc(100vw-2rem))] max-h-[min(92vh,940px)] overflow-y-auto no-scrollbar rounded-[28px] border-0 p-0 bg-white text-foreground dark:bg-[#0F1C16] dark:text-white"
+      >
+        <DialogTitle className="sr-only">{title}</DialogTitle>
+
+        <div className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-[#F0F0F0] bg-white px-6 pb-4 pt-6 dark:border-white/10 dark:bg-[#0F1C16]">
+          <div className="flex min-w-0 items-center gap-3">
+            <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-brand-hover/10 text-brand-hover dark:bg-emerald-500/15 dark:text-emerald-300">
+              {isEdit ? <Pencil className="size-4" /> : <UserPlus className="size-4" />}
+            </span>
+            <div className="min-w-0">
+              <h2 className="truncate text-lg font-black text-black dark:text-white">{title}</h2>
+              <p className="text-[11px] font-semibold text-[#8A8A84] dark:text-white/45">
+                بيانات الموظف والصلاحيات الوظيفية
+              </p>
+            </div>
           </div>
+          <button
+            type="button"
+            onClick={() => setOpen(false)}
+            aria-label="إغلاق"
+            className="flex size-9 shrink-0 items-center justify-center rounded-full bg-neutral-100 text-ink-placeholder transition-all hover:bg-[#FFEBEB] hover:text-[#E24444] dark:bg-white/10 dark:text-white/60 dark:hover:bg-[#3F1D1D] dark:hover:text-[#FCA5A5]"
+          >
+            <X className="size-4" />
+          </button>
+        </div>
 
+        <div className="px-6 py-5">
           <AddEmployeeForm isEdit={isEdit} employee={employee} onSuccess={() => setOpen(false)} />
-
-        </DialogHeader>
+        </div>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

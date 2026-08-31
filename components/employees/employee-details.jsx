@@ -1,8 +1,6 @@
 "use client";
 
-import Image from "next/image";
-import { Button } from "@/components/ui/button";
-import { Mail, Phone, Calendar, Trash2, Eye, User, Edit, FilePenLine, Plus, Wallet, Clock, Ban } from "lucide-react";
+import { BriefcaseBusiness, CalendarDays, Mail, ShieldCheck, ShieldX, Wallet } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa6";
 import AddNoteDialog from "./add-note-dialog";
 import AddSalaryDialog from "./add-salary-dialog";
@@ -10,158 +8,151 @@ import AddNewEmployeeDialog from "./add-employee-dialog";
 import BlockEmployeeDialog from "./block-employee-dialog";
 import DeleteEmployeeDialog from "./delete-employee-dialog";
 import SendOrderSmsButton from "@/components/Orders/shared/send-order-sms-button";
-import { WorkPeriodBadge } from "@/components/roles-and-employees/shared";
+import { WorkPeriodBadge, formatDateShort, formatSalary } from "@/components/roles-and-employees/shared";
 import PermissionGate from "@/components/auth/PermissionGate";
 import { PERMISSION_SECTIONS } from "@/src/lib/permissions";
+import { cn } from "@/lib/utils";
 
-export default function EmployeeDetailsCard({ employee, readOnly = false }) {
-  const formatDate = (dateString) => {
-    if (!dateString) return "---";
-    try {
-      const date = new Date(dateString);
-      return date.toLocaleDateString("ar-EG", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit"
-      });
-    } catch {
-      return dateString;
-    }
+function StatCard({ icon: Icon, label, value, title, tint = "slate", accent = false }) {
+  const tints = {
+    slate: "bg-slate-100 text-slate-600",
+    green: "bg-emerald-50 text-emerald-600",
+    red: "bg-red-50 text-red-500",
+    blue: "bg-blue-50 text-blue-600",
+    amber: "bg-amber-50 text-amber-600",
   };
 
   return (
+    <div className="relative flex items-center gap-3 overflow-hidden rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-md">
+      {accent && (
+        <span className="absolute right-0 top-1/2 h-10 w-1 -translate-y-1/2 rounded-full bg-brand-accent" />
+      )}
+      <span
+        className={cn(
+          "flex size-10 shrink-0 items-center justify-center rounded-xl",
+          tints[tint] || tints.slate
+        )}
+      >
+        <Icon className="size-5" />
+      </span>
+      <div className="min-w-0">
+        <p
+          className="truncate text-15 font-bold text-ink-heading"
+          title={title ?? (typeof value === "string" ? value : undefined)}
+        >
+          {value}
+        </p>
+        <p className="mt-0.5 text-11 text-ink-placeholder">{label}</p>
+      </div>
+    </div>
+  );
+}
+
+export default function EmployeeDetailsCard({ employee, readOnly = false }) {
+  const phone = employee?.phone;
+  const isActive =
+    employee?.is_active != null
+      ? Boolean(employee.is_active)
+      : !employee?.is_blocked;
+  const salary = formatSalary(employee?.base_salary);
+
+  return (
     <div dir="rtl" className="text-right">
-      <h2 className="text-lg font-bold">بيــانــات الموظـف :</h2>
-      <div dir="rtl" className="grid grid-cols-3 gap-4  mt-4">
-        {/* Right Profile Card */}
-        <div className="bg-gray-100 rounded-2xl p-4 flex flex-col items-center justify-center text-center">
-
-          <div className="relative size-28 rounded-full overflow-hidden border border-gray-200">
-            <Image
-              src={employee?.profile_image || "/images/defaultUser.jpg"}
-              width={112}
-              height={112}
-              alt={employee?.name || "avatar"}
-              className="size-full rounded-full object-cover"
-            />
-          </div>
-
-          <h3 className="mt-3 font-bold text-lg">{employee?.name || "---"}</h3>
-          <p className="text-sm text-muted-foreground">
-            {employee?.role || "موظف"}
-          </p>
-          <div className="mt-2">
-            <WorkPeriodBadge workPeriod={employee?.work_period} />
-          </div>
-
-          {employee?.phone && (
+      {/* Actions bar */}
+      {!readOnly && (
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          {phone && (
             <a
-              href={`https://wa.me/${employee.phone}`}
+              href={`https://wa.me/${phone}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-3 bg-green-600 hover:bg-green-700 text-white rounded-full p-2.5 flex items-center justify-center transition-all"
+              aria-label="مراسلة عبر واتساب"
+              className="me-auto flex size-9 items-center justify-center rounded-full bg-green-600 text-white transition-colors hover:bg-green-700"
             >
-              <FaWhatsapp size={18} />
+              <FaWhatsapp size={16} />
             </a>
           )}
+          <PermissionGate section={PERMISSION_SECTIONS.employees} action="edit">
+            <AddNoteDialog employee={employee} variant="outline" />
+          </PermissionGate>
+          <PermissionGate section={PERMISSION_SECTIONS.employee_salaries} action="create">
+            <AddSalaryDialog employee={employee} variant="outline" />
+          </PermissionGate>
+          <PermissionGate section={PERMISSION_SECTIONS.employees} action="edit">
+            <AddNewEmployeeDialog isEdit employee={employee} triggerVariant="outline-plain" />
+          </PermissionGate>
+          <PermissionGate section={PERMISSION_SECTIONS.employees} action="edit">
+            <BlockEmployeeDialog employee={employee} />
+          </PermissionGate>
+          <PermissionGate section={PERMISSION_SECTIONS.employees} action="delete">
+            <DeleteEmployeeDialog isSingle employee={employee} />
+          </PermissionGate>
+        </div>
+      )}
 
-          <div className="mt-3">
+      {/* Summary cards */}
+      <div className={cn("grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5", !readOnly && "mt-4")}>
+        <StatCard
+          icon={CalendarDays}
+          tint="slate"
+          label="تاريخ الإنشاء"
+          value={formatDateShort(employee?.created_at)}
+        />
+        <StatCard
+          icon={isActive ? ShieldCheck : ShieldX}
+          tint={isActive ? "green" : "red"}
+          accent
+          label="الحالة"
+          value={
+            <span className={isActive ? "text-emerald-600" : "text-red-500"}>
+              {isActive ? "مُفعّل" : "محظور"}
+            </span>
+          }
+        />
+        <StatCard
+          icon={Mail}
+          tint="blue"
+          accent
+          label="البريد الإلكتروني"
+          value={employee?.email || "---"}
+        />
+        <StatCard
+          icon={Wallet}
+          tint="green"
+          accent
+          label="الراتب الأساسي"
+          value={
+            salary ? (
+              <span className="text-emerald-600">
+                {salary} <span className="text-13 font-medium">ريال</span>
+              </span>
+            ) : (
+              "---"
+            )
+          }
+          title={salary || undefined}
+        />
+        <StatCard
+          icon={BriefcaseBusiness}
+          tint="amber"
+          accent
+          label="المسمى الوظيفي"
+          value={employee?.role || "موظف"}
+        />
+      </div>
+
+      {(employee?.work_period || !readOnly) && (
+        <div className="mt-3 flex flex-wrap items-center gap-3">
+          {employee?.work_period && <WorkPeriodBadge workPeriod={employee.work_period} />}
+          {!readOnly && (
             <SendOrderSmsButton
               employee={employee}
               employeeId={employee?.id}
               label="إرسال رسالة"
             />
-          </div>
-        </div>
-        {/* Left Section */}
-        <div dir='rtl' className="col-span-2 bg-gray-100 rounded-2xl p-4 flex flex-col justify-between">
-
-          {/* Top Actions */}
-          {!readOnly && (
-            <div className="flex justify-end items-center gap-3">
-              <PermissionGate section={PERMISSION_SECTIONS.employees} action="edit">
-                <AddNewEmployeeDialog isEdit={true} employee={employee} />
-              </PermissionGate>
-              <PermissionGate section={PERMISSION_SECTIONS.employees} action="edit">
-                <AddNoteDialog employee={employee} />
-              </PermissionGate>
-              <PermissionGate section={PERMISSION_SECTIONS.employee_salaries} action="create">
-                <AddSalaryDialog employee={employee} />
-              </PermissionGate>
-            </div>
-          )}
-
-          {/* Middle Info */}
-          <div className="flex items-center gap-8 mt-6">
-            {/* Email */}
-            <div className="flex items-center gap-3">
-              <div className="bg-brand-hover text-white p-4 rounded-full">
-                <Mail size={20} />
-              </div>
-              <div className="text-right">
-                <p className="font-medium">{employee?.email || "---"}</p>
-                <p className="text-sm text-muted-foreground">
-                  البريد الإلكتروني
-                </p>
-              </div>
-            </div>
-            {/* salary */}
-            <div className="flex items-center gap-3">
-              <div className="bg-brand-hover text-white p-4 rounded-full">
-                <Wallet size={20} />
-              </div>
-              <div className="text-right">
-                <p className="font-medium">
-                  {employee?.base_salary ? parseFloat(employee.base_salary).toLocaleString('ar-EG') : "---"}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  الراتب الأساسي
-                </p>
-              </div>
-            </div>
-          </div>
-          {/* Middle Info */}
-          <div className="flex items-center gap-8 mt-10">
-            {/* create date */}
-            <div className="flex items-center gap-3">
-              <div className="bg-black text-white p-4 rounded-full">
-                <Clock size={20} />
-              </div>
-              <div>
-                <p className="text-sm font-medium">{formatDate(employee?.created_at)}</p>
-                <p className="text-muted-foreground text-xs">تاريخ الإنشاء</p>
-              </div>
-            </div>
-            {/* update date */}
-            <div className="flex items-center gap-3">
-              <div className="bg-black text-white p-4 rounded-full">
-                <Clock size={20} />
-              </div>
-              <div>
-                <p className="text-sm font-medium">{formatDate(employee?.updated_at)}</p>
-                <p className="text-muted-foreground text-xs">تاريخ التحديث</p>
-              </div>
-            </div>
-
-          </div>
-
-
-          {!readOnly && (
-            <div className="flex gap-3 mt-4 justify-end ">
-              <PermissionGate section={PERMISSION_SECTIONS.employees} action="edit">
-                <BlockEmployeeDialog employee={employee} />
-              </PermissionGate>
-              <PermissionGate section={PERMISSION_SECTIONS.employees} action="delete">
-                <DeleteEmployeeDialog isSingle={true} employee={employee} />
-              </PermissionGate>
-            </div>
           )}
         </div>
-
-
-      </div>
+      )}
     </div>
   );
 }

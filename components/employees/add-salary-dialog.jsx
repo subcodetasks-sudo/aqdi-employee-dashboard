@@ -9,15 +9,24 @@ import {
 import { Plus, X } from 'lucide-react';
 import { useState } from 'react';
 import AddSalaryForm from './add-salry-form';
-export default function AddSalaryDialog({ employee }) {
+import { OutlineActionButton } from '@/components/roles-and-employees/shared';
+
+export default function AddSalaryDialog({ employee, variant = "primary" }) {
   const [open, setOpen] = useState(false);
   return (
     <Dialog dir='rtl' open={open} onOpenChange={setOpen}>
-      <DialogTrigger>
-        <Button className="bg-brand-hover text-white">
-          <Plus />
-          إضافة راتب
-        </Button>
+      <DialogTrigger asChild>
+        {variant === "outline" ? (
+          <OutlineActionButton className="h-9 gap-1.5 px-4 text-13">
+            <Plus className="size-4" />
+            إضافة راتب
+          </OutlineActionButton>
+        ) : (
+          <Button className="bg-brand-hover text-white">
+            <Plus />
+            إضافة راتب
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent closeButton={false} className="max-w-3xl">
         <DialogHeader>
