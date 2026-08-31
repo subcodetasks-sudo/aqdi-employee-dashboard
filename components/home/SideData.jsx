@@ -28,6 +28,7 @@ import { LuLogOut } from "react-icons/lu";
 import { useSidebarStore } from "@/src/stores/sidebar-store";
 import { useUserStore } from "@/src/stores/user-store";
 import { useUnreceivedOrdersWatcher } from "@/src/hooks/use-unreceived-orders-watcher";
+import { useReturnedOrdersCount } from "@/src/hooks/use-returned-orders-count";
 import { getWorkPeriodLabel } from "@/components/roles-and-employees/shared";
 import { useIsDark, useToggleTheme } from "@/src/hooks/useThemeMode";
 import { toast } from "sonner";
@@ -73,7 +74,7 @@ function NavLink({ item, pathname, collapsed, badgeCount }) {
         />
         {!collapsed && <span className="truncate">{item.label}</span>}
       </span>
-      {!collapsed && typeof badgeCount === 'number' && (
+      {!collapsed && typeof badgeCount === 'number' && badgeCount > 0 && (
         <span className="flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-[#E8923A] px-1.5 text-11 font-semibold leading-none text-white">
           {badgeCount > 99 ? '99+' : badgeCount}
         </span>
@@ -93,6 +94,7 @@ export default function SideData() {
   const { can, isReady } = usePermissions();
   const { user } = useUserStore();
   const unreceivedTotal = useUnreceivedOrdersWatcher();
+  const returnedTotal = useReturnedOrdersCount();
   const isDark = useIsDark();
   const { toggleTheme } = useToggleTheme();
 
@@ -212,7 +214,11 @@ export default function SideData() {
                           pathname={pathname}
                           collapsed={isCollapsed}
                           badgeCount={
-                            item.badge === 'unreceived' ? unreceivedTotal : undefined
+                            item.badge === 'unreceived'
+                              ? unreceivedTotal
+                              : item.badge === 'returned'
+                                ? returnedTotal
+                                : undefined
                           }
                         />
                       </div>

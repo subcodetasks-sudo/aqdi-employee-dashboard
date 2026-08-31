@@ -232,7 +232,7 @@ export const SIDEBAR_NAV = [
     items: [
       { label: 'الطلبات مباشر', href: '/home/realtime-orders', section: REALTIME_ORDERS_SECTIONS, badge: 'unreceived' },
       { label: 'العملاء', href: '/home/clients', section: null },
-      { label: 'طلبات الاسترجاع', href: '/home/return-orders', section: PERMISSION_SECTIONS.returned_request },
+      { label: 'طلبات الاسترجاع', href: '/home/return-orders', section: PERMISSION_SECTIONS.returned_request, badge: 'returned' },
       { label: 'الموظفون والأدوار', href: '/home/roles-and-employees', section: ROLES_AND_EMPLOYEES_SECTIONS },
       { label: 'التسويق والمحتوى', href: '/home/marketing-and-content', section: MARKETING_SECTIONS },
       { label: 'التقارير', href: '/home/reports', section: PERMISSION_SECTIONS.analytics },
