@@ -22,6 +22,7 @@ export const CONTRACT_SUB_TAB_ALIASES = {
 // `section` matches a PERMISSION_SECTIONS key — see config/permissions.php (backend) → screens /
 // duplicate_screens for the authoritative mapping.
 export const SYSTEM_CATEGORIES = [
+  { id: "app-status", label: "حالة التطبيق والإصدارات", subtitle: "تشغيل/إيقاف · إصدارات الجوال", href: "/home/settings/app-status", section: "settings" },
   { id: "unit-types", label: "أنواع الوحدات", subtitle: "قائمة بقيم · 10 عنصر", href: "/home/settings/unit-types", section: "property_reference" },
   { id: "unit-usage", label: "استخدام الوحدة", subtitle: "قائمة بقيم · 5 عنصر", href: "/home/settings/unit-usage", section: "property_reference" },
   { id: "regions", label: "المناطق", subtitle: "قائمة · 8 عنصر", href: "/home/settings/regions", section: "regions" },

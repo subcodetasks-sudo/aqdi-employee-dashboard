@@ -2,7 +2,6 @@ export const GENERAL_SETTINGS_QUERY_KEY = "general-settings";
 export const GENERAL_SETTINGS_API = "/admin/settings/general";
 
 export const GENERAL_SETTINGS_FIELDS = [
-  { key: "website", label: "الموقع" },
   { key: "apple_store", label: "متجر Apple" },
   { key: "android_store", label: "متجر Android" },
   { key: "website_status", label: "حالة الموقع" },
@@ -10,7 +9,6 @@ export const GENERAL_SETTINGS_FIELDS = [
 ];
 
 export const defaultGeneralSettings = {
-  website: true,
   apple_store: false,
   android_store: true,
   website_status: true,
@@ -27,6 +25,24 @@ function toBoolean(value, fallback) {
     if (["true", "1", "yes"].includes(normalized)) return true;
   }
   return Boolean(value);
+}
+
+// A field entry can be a bare boolean/number/string, or the newer
+// `{ key, label, enabled }` object shape — read `enabled` when present.
+function readFieldEnabled(entry, fallback) {
+  if (entry && typeof entry === "object" && !Array.isArray(entry) && "enabled" in entry) {
+    return toBoolean(entry.enabled, fallback);
+  }
+  return toBoolean(entry, fallback);
+}
+
+// Writes `value` back into a field entry, preserving the `{ key, label, enabled }`
+// object shape when the current entry uses it.
+function writeFieldEnabled(entry, value) {
+  if (entry && typeof entry === "object" && !Array.isArray(entry) && "enabled" in entry) {
+    return { ...entry, enabled: value };
+  }
+  return value;
 }
 
 function getSettingsRecord(data) {
@@ -46,7 +62,7 @@ export function extractGeneralSettings(response) {
   const record = getSettingsRecord(data);
 
   return GENERAL_SETTINGS_FIELDS.reduce((acc, field) => {
-    acc[field.key] = toBoolean(record?.[field.key], defaultGeneralSettings[field.key]);
+    acc[field.key] = readFieldEnabled(record?.[field.key], defaultGeneralSettings[field.key]);
     return acc;
   }, {});
 }
@@ -63,7 +79,7 @@ export function patchGeneralSettingsCache(response, key, value) {
   const record = getSettingsRecord(data);
   if (!record || typeof record !== "object") return response;
 
-  const updatedRecord = { ...record, [key]: value };
+  const updatedRecord = { ...record, [key]: writeFieldEnabled(record?.[key], value) };
 
   if (Array.isArray(data?.items)) {
     const items = [updatedRecord, ...data.items.slice(1)];
