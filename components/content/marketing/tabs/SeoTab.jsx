@@ -17,20 +17,27 @@ import {
   useStartSeoCrawl,
   useStopSeoCrawl,
 } from "@/src/hooks/use-seo-crawl";
+import { useMarketingKeywords } from "@/src/hooks/use-marketing-tracking";
+import {
+  useConnectGoogleSeo,
+  useGoogleSeoStatus,
+} from "@/src/hooks/use-marketing-integrations";
 import AllOrdersPagination from "@/components/Orders/all-orders-pagination";
 import SectionCard from "../shared/SectionCard";
 import { StatCardRow } from "../shared/StatCard";
 import { decodeUriText } from "../shared/decode-uri-text";
 import {
-  TrendBadge,
   SeverityBadge,
-  CompetitionBadge,
-  PosChip,
 } from "../shared/Badges";
 import {
-  SEO_KEYWORD_STATS,
-  SEO_KEYWORDS,
-} from "../shared/mock-data";
+  DASH,
+  KeywordStatusBadge,
+  PeriodFilterBar,
+  RankChip,
+  TrackingState,
+  fmtInt,
+  fmtMoney,
+} from "../shared/tracking-ui";
 
 const VIEWS = [
   { value: "keywords", label: "الكلمات المفتاحية" },
@@ -101,9 +108,13 @@ export default function SeoTab() {
   );
 }
 
+const COMPETITION_CLASS = { high: "comp-hi", medium: "comp-wr", low: "comp-ok" };
+
 function KeywordsView() {
   const { can } = usePermissions();
-  const canView = can(PERMISSION_SECTIONS.seo_crawl, "view");
+  const canView = can(PERMISSION_SECTIONS.analytics, "view");
+
+  const { data, isLoading, error, refetch } = useMarketingKeywords({ enabled: canView });
 
   if (!canView) {
     return (
@@ -113,54 +124,156 @@ function KeywordsView() {
     );
   }
 
+  const currency = data?.currency_label_ar || "﷼";
+  const summary = data?.summary || {};
+  const items = Array.isArray(data?.items) ? data.items : [];
+  const ranksMissing = items.length > 0 && items.every((row) => row.current_rank == null);
+
+  const cards = [
+    { value: fmtMoney(summary.organic_revenue, currency), label: "إيراد عضوي", tone: "g" },
+    { value: fmtInt(summary.organic_clicks), label: "نقرات عضوية" },
+    { value: fmtInt(summary.decreased), label: "انخفضت", tone: "r" },
+    { value: fmtInt(summary.increased), label: "ارتفعت", tone: "e" },
+    { value: summary.average_rank == null ? DASH : summary.average_rank, label: "متوسط الترتيب", tone: "b" },
+    { value: fmtInt(summary.target_keywords), label: "كلمات مستهدفة", tone: "b" },
+  ];
+
   return (
     <>
-      <StatCardRow items={SEO_KEYWORD_STATS} />
+      <PeriodFilterBar periods={data?.periods} />
 
-      <SectionCard title="الكلمات المفتاحية — الترتيب والمنافسة والحالة" className="mt-3">
-        <div className="tblwrap">
-          <table className="mkt-tbl">
-            <thead>
-              <tr>
-                <th>الكلمة / الصفحة</th>
-                <th>الترتيب الحالي</th>
-                <th>السابق</th>
-                <th>بحث/شهر</th>
-                <th>المنافسة</th>
-                <th>الحالة</th>
-                <th>الإيراد</th>
-                <th />
-              </tr>
-            </thead>
-            <tbody>
-              {SEO_KEYWORDS.map((row) => (
-                <tr key={row.keyword}>
-                  <td className="mkt-kw">
-                    {row.keyword}
-                    <span className="mkt-url">{row.page}</span>
-                  </td>
-                  <td>
-                    <PosChip pos={row.current} />
-                  </td>
-                  <td>{row.previous}</td>
-                  <td>{row.volume.toLocaleString("en-US")}</td>
-                  <td>
-                    <CompetitionBadge competition={row.competition} />
-                  </td>
-                  <td>
-                    <TrendBadge trend={row.trend} />
-                  </td>
-                  <td>{row.revenue.toLocaleString("en-US")} ﷼</td>
-                  <td>
-                    <span className="mk-arrow">←</span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </SectionCard>
+      <GoogleConnectionCard canConnect={can(PERMISSION_SECTIONS.seo_crawl, "create")} />
+
+      <TrackingState
+        isLoading={isLoading}
+        error={error}
+        isEmpty={!isLoading && !data}
+        onRetry={refetch}
+      >
+        <StatCardRow items={cards} />
+
+        {ranksMissing ? (
+          <p className="mkt-synchint" style={{ marginTop: 8 }}>
+            ربط Search Console من صفحة السيو لعرض ترتيب الكلمات — الإيرادات معروضة رغم غياب الترتيب.
+          </p>
+        ) : null}
+
+        <SectionCard title="الكلمات المفتاحية — الترتيب والمنافسة والحالة" className="mt-3">
+          {items.length === 0 ? (
+            <EmptyText>لا توجد كلمات مفتاحية لهذه الفترة.</EmptyText>
+          ) : (
+            <div className="tblwrap">
+              <table className="mkt-tbl">
+                <thead>
+                  <tr>
+                    <th>الكلمة / الصفحة</th>
+                    <th>الترتيب الحالي</th>
+                    <th>السابق</th>
+                    <th>بحث/شهر</th>
+                    <th>المنافسة</th>
+                    <th>الحالة</th>
+                    <th>الإيراد</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {items.map((row, index) => (
+                    <tr key={`${row.keyword}-${index}`}>
+                      <td className="mkt-kw">
+                        {row.keyword}
+                        {row.page_path ? <span className="mkt-url">{row.page_path}</span> : null}
+                      </td>
+                      <td>
+                        <RankChip rank={row.current_rank} tone={row.rank_tone} />
+                      </td>
+                      <td>{row.previous_rank == null ? DASH : row.previous_rank}</td>
+                      <td>{fmtInt(row.search_volume)}</td>
+                      <td>
+                        {row.competition ? (
+                          <span className={cn("mkt-comp", COMPETITION_CLASS[row.competition] || "comp-ok")}>
+                            {row.competition_label_ar || row.competition}
+                          </span>
+                        ) : (
+                          DASH
+                        )}
+                      </td>
+                      <td>
+                        <KeywordStatusBadge status={row.status} label={row.status_label_ar} />
+                      </td>
+                      <td>{fmtMoney(row.revenue, currency)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </SectionCard>
+      </TrackingState>
     </>
+  );
+}
+
+function GoogleConnectionCard({ canConnect }) {
+  const { status, connected, isLoading, unavailable, refetch } = useGoogleSeoStatus();
+  const connectMutation = useConnectGoogleSeo();
+
+  const handleConnect = () => {
+    connectMutation.mutate(undefined, {
+      onSuccess: (data) => {
+        const url = data?.auth_url;
+        if (url) {
+          window.open(url, "_blank", "noopener,noreferrer");
+          toast.success("افتح نافذة Google لإكمال الربط ثم عد لتحديث الحالة");
+        } else {
+          toast.error("لم يصل رابط الربط من الخادم");
+        }
+      },
+      onError: (err) =>
+        toast.error(
+          err?.response?.data?.message || "تعذّر بدء ربط Google — تحقق من إعداد الخادم"
+        ),
+    });
+  };
+
+  if (connected) {
+    return (
+      <div className="mkt-syncbar" style={{ marginBottom: 14 }}>
+        <div className="mkt-srcs">
+          <span className="mkt-srcchip">
+            <i className="mkt-srcdot on" />
+            Google Search Console مربوط
+            {status?.site_url ? ` — ${status.site_url}` : ""}
+          </span>
+        </div>
+        <div className="mkt-syncright">
+          <button type="button" className="mk-mini" onClick={() => refetch()}>
+            تحديث الحالة
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mk-callout" style={{ marginBottom: 14, background: "#f4f9f7", border: "1px solid #e0efe8" }}>
+      <div className="mk-co-t">ربط Google Search Console</div>
+      <div className="mk-co-v" style={{ fontWeight: 600, color: "#6b7c76" }}>
+        {isLoading
+          ? "جارٍ التحقق من حالة الربط…"
+          : unavailable
+            ? "ميزة الربط غير مُفعّلة على الخادم بعد (بانتظار تهيئة Google OAuth). ترتيب الكلمات وأكثر الصفحات زيارة ستبقى فارغة حتى يتم الربط."
+            : "غير مربوط. اربط الحساب لجلب ترتيب الكلمات المفتاحية وأكثر الصفحات زيارة."}
+      </div>
+      {canConnect && !unavailable ? (
+        <button
+          type="button"
+          className="mk-co-b"
+          onClick={handleConnect}
+          disabled={connectMutation.isPending}
+        >
+          {connectMutation.isPending ? "جارٍ التحضير…" : "ربط الحساب →"}
+        </button>
+      ) : null}
+    </div>
   );
 }
 
