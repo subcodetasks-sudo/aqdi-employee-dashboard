@@ -54,7 +54,7 @@ export default function ContractSettingsPage(props) {
   const visibleTabs = useMemo(
     () =>
       CONTRACT_SETTINGS_TABS.filter(
-        (tab) => !isReady || can(tab.section ?? PERMISSION_SECTIONS.settings, "view")
+        (tab) => isReady && can(tab.section ?? PERMISSION_SECTIONS.settings, "view")
       ),
     [can, isReady]
   );

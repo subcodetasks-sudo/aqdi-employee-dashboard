@@ -73,6 +73,54 @@ function getGreeting(date) {
     return 'مساء الخير'
 }
 
+// The header shows minute-precision time + a greeting that only flips on the
+// hour, so a 30s tick is plenty. Kept in its own hook/components so the clock
+// re-renders in isolation instead of re-rendering the whole dashboard (KPI
+// cards, quick actions, activity list) once a second.
+function useLiveDate(intervalMs = 30_000) {
+    const [now, setNow] = useState(() => new Date())
+    useEffect(() => {
+        const interval = setInterval(() => setNow(new Date()), intervalMs)
+        return () => clearInterval(interval)
+    }, [intervalMs])
+    return now
+}
+
+function GreetingLabel() {
+    const now = useLiveDate()
+    return (
+        <p className="mb-1 text-xs font-medium text-[#6B7571] dark:text-white/45">
+            {getGreeting(now)}
+        </p>
+    )
+}
+
+function TimeDateCards() {
+    const now = useLiveDate()
+    return (
+        <div className="mb-7 grid grid-cols-2 gap-3">
+            <div className="rounded-2xl border border-[#E8EEEC] bg-white px-4 py-3.5 dark:border-white/[0.06] dark:bg-white/[0.03]">
+                <div className="mb-2 flex items-center gap-1.5 text-[#6B7571] dark:text-white/40">
+                    <Clock3 className="size-3.5" strokeWidth={2} />
+                    <span className="text-[11px] font-medium">الوقت الآن</span>
+                </div>
+                <p className="text-base font-semibold tabular-nums text-[#0A1A16] dark:text-white">
+                    {formatArabicTime(now)}
+                </p>
+            </div>
+            <div className="rounded-2xl border border-[#E8EEEC] bg-white px-4 py-3.5 dark:border-white/[0.06] dark:bg-white/[0.03]">
+                <div className="mb-2 flex items-center gap-1.5 text-[#6B7571] dark:text-white/40">
+                    <CalendarDays className="size-3.5" strokeWidth={2} />
+                    <span className="text-[11px] font-medium">التاريخ</span>
+                </div>
+                <p className="text-base font-semibold tabular-nums text-[#0A1A16] dark:text-white">
+                    {formatArabicDate(now)}
+                </p>
+            </div>
+        </div>
+    )
+}
+
 function getFirstName(fullName) {
     if (!fullName) return ''
     return fullName.trim().split(/\s+/)[0]
@@ -115,14 +163,10 @@ function SummaryCard({ label, value, icon: Icon, accent, href }) {
 }
 
 export default function HomeWelcomeWrapper() {
-    const [now, setNow] = useState(() => new Date())
     const router = useRouter()
     const { user } = useUserStore()
     const firstName = getFirstName(user?.name)
     const roleLabel = user?.role_relation?.name ?? ''
-    const time = formatArabicTime(now)
-    const date = formatArabicDate(now)
-    const greeting = getGreeting(now)
 
     // Static copy still comes from the mock (motto + the quick-action link list).
     const { motto, quick_actions: quickActions, primary_cta: cta } = HOME_MOCK
@@ -230,11 +274,6 @@ export default function HomeWelcomeWrapper() {
 
     const showSidePanels = visibleQuickActions.length > 0 || canActivity
 
-    useEffect(() => {
-        const interval = setInterval(() => setNow(new Date()), 1000)
-        return () => clearInterval(interval)
-    }, [])
-
     return (
         <>
             <Header page="welcome" title={null} isMain={true} />
@@ -307,9 +346,7 @@ export default function HomeWelcomeWrapper() {
                                         />
                                     </div>
                                     <div className="min-w-0 pt-1">
-                                        <p className="mb-1 text-xs font-medium text-[#6B7571] dark:text-white/45">
-                                            {greeting}
-                                        </p>
+                                        <GreetingLabel />
                                         <h2 className="truncate text-xl font-bold text-[#0A1A16] dark:text-white">
                                             مرحباً بعودتك{firstName ? `، ${firstName}` : ''}
                                         </h2>
@@ -321,26 +358,7 @@ export default function HomeWelcomeWrapper() {
                                     </div>
                                 </div>
 
-                                <div className="mb-7 grid grid-cols-2 gap-3">
-                                    <div className="rounded-2xl border border-[#E8EEEC] bg-white px-4 py-3.5 dark:border-white/[0.06] dark:bg-white/[0.03]">
-                                        <div className="mb-2 flex items-center gap-1.5 text-[#6B7571] dark:text-white/40">
-                                            <Clock3 className="size-3.5" strokeWidth={2} />
-                                            <span className="text-[11px] font-medium">الوقت الآن</span>
-                                        </div>
-                                        <p className="text-base font-semibold tabular-nums text-[#0A1A16] dark:text-white">
-                                            {time}
-                                        </p>
-                                    </div>
-                                    <div className="rounded-2xl border border-[#E8EEEC] bg-white px-4 py-3.5 dark:border-white/[0.06] dark:bg-white/[0.03]">
-                                        <div className="mb-2 flex items-center gap-1.5 text-[#6B7571] dark:text-white/40">
-                                            <CalendarDays className="size-3.5" strokeWidth={2} />
-                                            <span className="text-[11px] font-medium">التاريخ</span>
-                                        </div>
-                                        <p className="text-base font-semibold tabular-nums text-[#0A1A16] dark:text-white">
-                                            {date}
-                                        </p>
-                                    </div>
-                                </div>
+                                <TimeDateCards />
 
                                 <button
                                     type="button"
@@ -475,7 +493,7 @@ export default function HomeWelcomeWrapper() {
                                                     ) : null}
                                                 </span>
                                                 <span className="shrink-0 pt-0.5 text-[11px] text-[#8A9490] dark:text-white/35">
-                                                    {formatHomeRelativeTime(item.created_at, now)}
+                                                    {formatHomeRelativeTime(item.created_at)}
                                                 </span>
                                             </Link>
                                         </li>

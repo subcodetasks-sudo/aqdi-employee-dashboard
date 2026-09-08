@@ -37,7 +37,7 @@ function errorMessage(err, fallback) {
 export default function AppStatusPanel() {
   const queryClient = useQueryClient();
   const { can, isReady } = usePermissions();
-  const canEdit = !isReady || can(PERMISSION_SECTIONS.settings, "edit");
+  const canEdit = isReady && can(PERMISSION_SECTIONS.settings, "edit");
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: [APP_STATUS_QUERY_KEY],

@@ -31,7 +31,7 @@ export default function TermsPage(props) {
         <Loader />
       ) : isError ? (
         <SettingsContentCard>
-          <p className="text-center text-gray-400 py-10">تعذر تحميل المحتوى.</p>
+          <p className="text-center text-gray-400 py-10 dark:text-white/45">تعذر تحميل المحتوى.</p>
         </SettingsContentCard>
       ) : (
         <SettingsContentCard>

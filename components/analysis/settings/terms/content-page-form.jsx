@@ -61,13 +61,13 @@ export default function ContentPageForm({ content, saveEndpoint, queryKey }) {
   return (
     <div className="space-y-6">
       {updatedAt && (
-        <p className="text-13 text-ink-placeholder">
-          آخر تحديث: <span className="font-medium text-[#616161]">{updatedAt}</span>
+        <p className="text-13 text-ink-placeholder dark:text-white/40">
+          آخر تحديث: <span className="font-medium text-[#616161] dark:text-white/70">{updatedAt}</span>
         </p>
       )}
 
       <div className="space-y-2">
-        <label className="text-sm font-bold text-black block">المحتوى</label>
+        <label className="text-sm font-bold text-black dark:text-white block">المحتوى</label>
         <div className="min-h-[420px]">
           <TextEditor
             key={editorKey}
@@ -77,7 +77,7 @@ export default function ContentPageForm({ content, saveEndpoint, queryKey }) {
         </div>
       </div>
 
-      <div className="flex items-center justify-end pt-4 border-t border-[#F0F0F0]">
+      <div className="flex items-center justify-end pt-4 border-t border-[#F0F0F0] dark:border-white/10">
         <PermissionGate section={PERMISSION_SECTIONS.app_content} action="edit">
           <Button
             type="button"

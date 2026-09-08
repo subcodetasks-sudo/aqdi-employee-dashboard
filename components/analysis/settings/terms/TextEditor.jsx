@@ -92,9 +92,9 @@ const ToolbarButton = ({ onClick, isActive, disabled, title, children, compact }
       'inline-flex shrink-0 items-center justify-center rounded-md transition-colors',
       compact ? 'size-7' : 'size-8',
       isActive
-        ? 'bg-[#054D44] text-white'
-        : 'text-[#4B5563] hover:bg-[#E8F5F1] hover:text-[#054D44]',
-      disabled && 'cursor-not-allowed opacity-35 hover:bg-transparent hover:text-[#4B5563]'
+        ? 'bg-[#054D44] text-white dark:bg-emerald-500 dark:text-[#0B1411]'
+        : 'text-[#4B5563] hover:bg-[#E8F5F1] hover:text-[#054D44] dark:text-white/65 dark:hover:bg-white/10 dark:hover:text-emerald-300',
+      disabled && 'cursor-not-allowed opacity-35 hover:bg-transparent hover:text-[#4B5563] dark:hover:text-white/65'
     )}
   >
     {children}
@@ -104,7 +104,7 @@ const ToolbarButton = ({ onClick, isActive, disabled, title, children, compact }
 const ToolbarDivider = ({ compact }) => (
   <div
     className={cn(
-      'mx-0.5 w-px shrink-0 bg-[#E5E7EB]',
+      'mx-0.5 w-px shrink-0 bg-[#E5E7EB] dark:bg-white/15',
       compact ? 'h-5' : 'h-6'
     )}
   />
@@ -127,7 +127,7 @@ const ColorSwatch = ({ title, value, onChange, compact }) => (
   <label
     title={title}
     className={cn(
-      'relative inline-flex shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-md border border-[#E6EBE9] bg-white',
+      'relative inline-flex shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-md border border-[#E6EBE9] bg-white dark:border-white/10 dark:bg-white/[0.04]',
       compact ? 'size-7' : 'size-8'
     )}
   >
@@ -202,7 +202,7 @@ function Toolbar({ editor, compact = false }) {
   return (
     <div
       className={cn(
-        'flex w-full min-w-0 max-w-full flex-wrap items-center border-b border-[#EEF1F0] bg-[#F8FAF9]',
+        'flex w-full min-w-0 max-w-full flex-wrap items-center border-b border-[#EEF1F0] bg-[#F8FAF9] dark:border-white/10 dark:bg-white/[0.03]',
         compact ? 'gap-0.5 px-1.5 py-1.5' : 'gap-1 p-2'
       )}
       dir="rtl"
@@ -531,7 +531,7 @@ export default function TextEditor({
   return (
     <div
       className={cn(
-        'w-full min-w-0 max-w-full overflow-hidden bg-white',
+        'w-full min-w-0 max-w-full overflow-hidden bg-white dark:bg-[#0F1C16]',
         compact ? 'rounded-none border-0' : 'rounded-lg border',
         className
       )}
@@ -542,7 +542,7 @@ export default function TextEditor({
       </div>
       <div
         className={cn(
-          'border-t border-[#EEF1F0] text-left text-[11px] text-[#9CA3AF]',
+          'border-t border-[#EEF1F0] text-left text-[11px] text-[#9CA3AF] dark:border-white/10 dark:text-white/40',
           compact ? 'px-3 py-1.5' : 'px-4 py-2'
         )}
         dir="ltr"
