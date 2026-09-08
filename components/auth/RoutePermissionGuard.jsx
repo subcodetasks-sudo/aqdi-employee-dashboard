@@ -18,7 +18,7 @@ function PageLoadingFallback({ pathname }) {
 export default function RoutePermissionGuard({ children }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { canRoute, isReady, isPermissionsLoading, firstAllowedHref, user } = usePermissions();
+  const { canRoute, isReady, firstAllowedHref, user } = usePermissions();
 
   const section = getSectionForPath(pathname);
   const allowed = canRoute(pathname);
@@ -35,21 +35,13 @@ export default function RoutePermissionGuard({ children }) {
       return;
     }
 
-    if (allowed || isPermissionsLoading) return;
+    if (allowed) return;
 
     toast.error('ليس لديك صلاحية للوصول إلى هذه الصفحة');
     router.replace(firstAllowedHref);
-  }, [isReady, allowed, firstAllowedHref, isPermissionsLoading, router, user]);
+  }, [isReady, allowed, firstAllowedHref, router, user]);
 
-  if (!isReady) {
-    return <PageLoadingFallback pathname={pathname} />;
-  }
-
-  if (!user) {
-    return <PageLoadingFallback pathname={pathname} />;
-  }
-
-  if (isPermissionsLoading && requiresPermissionCheck) {
+  if (!isReady || !user) {
     return <PageLoadingFallback pathname={pathname} />;
   }
 

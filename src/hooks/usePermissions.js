@@ -13,6 +13,7 @@ import {
   getSectionForPath,
   isSuperAdmin,
   normalizeUserPermissions,
+  resolveAuthUser,
 } from '@/src/lib/permissions';
 
 export function usePermissions() {
@@ -20,19 +21,22 @@ export function usePermissions() {
   const hasHydrated = useUserStore((state) => state._hasHydrated);
   const setUser = useUserStore((state) => state.setUser);
 
+  const authUser = useMemo(() => resolveAuthUser(user), [user]);
   const storedPermissions = useMemo(() => normalizeUserPermissions(user), [user]);
 
+  const roleId = authUser?.role_id ?? null;
+
   const shouldFetchRole =
-    !!user?.role_id && storedPermissions.length === 0 && !isSuperAdmin(user);
+    !!roleId && storedPermissions.length === 0 && !isSuperAdmin(user);
 
   const {
     data: rolePermissionsData,
     isLoading: rolePermissionsLoading,
     isError: rolePermissionsError,
   } = useQuery({
-    queryKey: ['my-role-permissions', user?.role_id],
+    queryKey: ['my-role-permissions', roleId],
     queryFn: async () => {
-      const res = await axiosInstance.get(`/admin/roles/${user.role_id}`);
+      const res = await axiosInstance.get(`/admin/roles/${roleId}`);
       return res?.data;
     },
     enabled: shouldFetchRole,
@@ -63,9 +67,15 @@ export function usePermissions() {
     return [];
   }, [user, rolePermissionsData]);
 
-  const isReady = hasHydrated;
+  // True only while we still need the role payload to know what the user can do.
+  // On error we settle with whatever we have (usually []) — fail closed, don't keep
+  // the UI in a "show everything" loading state forever.
   const isPermissionsLoading =
     shouldFetchRole && rolePermissionsLoading && !rolePermissionsError;
+
+  // Hydrated + permission resolution settled. Callers must hide gated nav/tabs
+  // until this is true (`isReady && can(...)`), never `!isReady || can(...)`.
+  const isReady = hasHydrated && !isPermissionsLoading;
 
   const can = useCallback(
     (section, action = 'view') => canAccess(permissions, user, section, action),
@@ -85,9 +95,9 @@ export function usePermissions() {
   const isAdmin = useMemo(() => isSuperAdmin(user), [user]);
 
   return {
-    user,
+    user: authUser ?? user,
     permissions,
-    roleId: user?.role_id ?? null,
+    roleId,
     isAdmin,
     isReady,
     isPermissionsLoading,

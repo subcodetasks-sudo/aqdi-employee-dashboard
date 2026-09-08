@@ -25,7 +25,7 @@ export default function ContractSettingsTab({ activeSub, onSubChange }) {
   const visibleSubTabs = useMemo(
     () =>
       CONTRACT_SUB_TABS.filter(
-        (tab) => !isReady || can(tab.section ?? PERMISSION_SECTIONS.settings, "view")
+        (tab) => isReady && can(tab.section ?? PERMISSION_SECTIONS.settings, "view")
       ),
     [can, isReady]
   );

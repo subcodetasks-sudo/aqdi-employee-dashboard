@@ -64,8 +64,11 @@ export default function LoginPage() {
           // Permissions are resolved reactively by usePermissions() once on /home
           // (it fetches the role by role_id if the login payload didn't include them),
           // so we don't block the redirect on an extra round-trip here.
-          setAuth(response.data, response.data?.token, variables.remember, response.data?.refresh_token ?? null);
-          await setAuthCookie(response.data?.token, variables.remember);
+          // Prefer nested `data.user` when present so tokens aren't stored as the user shape.
+          const payload = response.data;
+          const authUser = payload?.user && typeof payload.user === 'object' ? payload.user : payload;
+          setAuth(authUser, payload?.token, variables.remember, payload?.refresh_token ?? null);
+          await setAuthCookie(payload?.token, variables.remember);
           router.push('/home');
         } catch (error) {
           console.error('Login post-processing error:', error);

@@ -27,7 +27,10 @@ export default function RolesAndEmployeesWrapper() {
   const { isSidebarOpen, toggleSidebar } = useSidebarStore();
 
   const visibleTabs = useMemo(
-    () => TABS.filter((tab) => !isReady || !tab.section || can(tab.section, "view")),
+    () =>
+      isReady
+        ? TABS.filter((tab) => !tab.section || can(tab.section, "view"))
+        : [],
     [can, isReady]
   );
 

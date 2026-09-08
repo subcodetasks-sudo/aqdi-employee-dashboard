@@ -111,7 +111,7 @@ export default function SideData() {
 
   const visibleNav = SIDEBAR_NAV.map((group) => ({
     ...group,
-    items: group.items.filter((item) => !isReady || can(item.section, 'view')),
+    items: group.items.filter((item) => isReady && can(item.section, 'view')),
   })).filter((group) => group.items.length > 0);
 
   const isCollapsed = !isSidebarOpen;

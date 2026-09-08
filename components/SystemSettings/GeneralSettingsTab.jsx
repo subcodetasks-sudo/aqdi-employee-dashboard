@@ -44,9 +44,11 @@ export default function GeneralSettingsTab() {
 
   const toggles = extractGeneralSettings(data);
 
-  const visibleCategories = SYSTEM_CATEGORIES.filter(
-    (category) => !isReady || can(category.section ?? PERMISSION_SECTIONS.settings, "view")
-  );
+  const visibleCategories = isReady
+    ? SYSTEM_CATEGORIES.filter((category) =>
+        can(category.section ?? PERMISSION_SECTIONS.settings, "view")
+      )
+    : [];
 
   const { mutate, isPending, variables } = useMutation({
     mutationFn: ({ key, value }) =>
