@@ -1,25 +1,29 @@
 "use client";
 
-import { useMemo } from "react";
+import { startTransition, useMemo } from "react";
+import dynamic from "next/dynamic";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { usePermissions } from "@/src/hooks/usePermissions";
 import { MARKETING_TABS, SCOPE_BREADCRUMB } from "./shared/mock-data";
-import OverviewTab from "./tabs/OverviewTab";
-import CampaignsTab from "./tabs/CampaignsTab";
-import SeoTab from "./tabs/SeoTab";
-import ContentTab from "./tabs/ContentTab";
-import ReportsTab from "./tabs/ReportsTab";
-import PixelsTab from "./tabs/PixelsTab";
+import { MarketingPeriodProvider } from "./shared/marketing-period-context";
 import "./marketing-design.css";
 
+// Only one panel renders at a time — load each on demand so a tab's code
+// (and its charts/tables) isn't in the initial bundle.
+const TAB_LOADING = (
+  <p className="text-13 text-gray-400 dark:text-white/50 py-8">جارٍ التحميل…</p>
+);
+const loader = (importFn) =>
+  dynamic(importFn, { loading: () => TAB_LOADING });
+
 const TAB_COMPONENTS = {
-  overview: OverviewTab,
-  campaigns: CampaignsTab,
-  seo: SeoTab,
-  content: ContentTab,
-  reports: ReportsTab,
-  pixels: PixelsTab,
+  overview: loader(() => import("./tabs/OverviewTab")),
+  campaigns: loader(() => import("./tabs/CampaignsTab")),
+  seo: loader(() => import("./tabs/SeoTab")),
+  content: loader(() => import("./tabs/ContentTab")),
+  reports: loader(() => import("./tabs/ReportsTab")),
+  pixels: loader(() => import("./tabs/PixelsTab")),
 };
 
 export default function MarketingContentWrapper() {
@@ -29,7 +33,7 @@ export default function MarketingContentWrapper() {
   const { can, isReady } = usePermissions();
 
   const visibleTabs = useMemo(
-    () => MARKETING_TABS.filter((tab) => !isReady || can(tab.section, "view")),
+    () => (isReady ? MARKETING_TABS.filter((tab) => can(tab.section, "view")) : []),
     [can, isReady]
   );
 
@@ -39,9 +43,11 @@ export default function MarketingContentWrapper() {
     : visibleTabs[0]?.value;
 
   const setActiveTab = (value) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("tab", value);
-    router.replace(`${pathname}?${params.toString()}`);
+    startTransition(() => {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("tab", value);
+      router.replace(`${pathname}?${params.toString()}`);
+    });
   };
 
   const ActivePanel = TAB_COMPONENTS[activeTab];
@@ -82,7 +88,11 @@ export default function MarketingContentWrapper() {
       </div>
 
       <div className="mkt-body">
-        {ActivePanel ? <ActivePanel /> : null}
+        {ActivePanel ? (
+          <MarketingPeriodProvider>
+            <ActivePanel />
+          </MarketingPeriodProvider>
+        ) : null}
       </div>
     </div>
   );

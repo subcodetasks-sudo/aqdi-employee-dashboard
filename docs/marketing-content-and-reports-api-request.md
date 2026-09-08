@@ -67,6 +67,8 @@ SEO landing / static pages for the marketing site. Not period-scoped.
         "title": "توثيق عقد إيجار سكني",
         "path": "/residential",
         "target_keyword": "عقد إيجار سكني",
+        "meta_title": "توثيق عقد إيجار سكني | عقدي",
+        "meta_description": "أنجز توثيق عقد الإيجار السكني إلكترونيًا عبر عقدي.",
         "status": "published",
         "status_label_ar": "منشور",
         "updated_at": "2026-05-12",
@@ -79,14 +81,18 @@ SEO landing / static pages for the marketing site. Not period-scoped.
 
 - `status` enum: `published` (منشور) / `draft` (مسودة) / `archived` (مؤرشف).
 - `updated_at`: date only; `null` → UI shows `–`.
+- `meta_title` / `meta_description`: Arabic-only SEO for the public page (empty string OK).
 
 ### Mutations
 
 | Method | Path | Body |
 |---|---|---|
-| `POST` | `/api/admin/marketing/service-pages` | `{ title, path, target_keyword, status, body? }` |
+| `POST` | `/api/admin/marketing/service-pages` | `{ title, path, target_keyword, meta_title?, meta_description?, status, body? }` |
 | `PUT` | `/api/admin/marketing/service-pages/{id}` | same, all optional |
 | `DELETE` | `/api/admin/marketing/service-pages/{id}` | — |
+
+`meta_title` / `meta_description` are Arabic-only page SEO fields (empty string OK).
+Return them on list items so the admin table can show the current meta title.
 
 Return the created / updated row in `data`. `422` with `message` (Arabic) on validation
 error (e.g. duplicate `path`).
@@ -126,6 +132,8 @@ Accepts the period filter (attribution numbers are period-scoped) **and**:
       {
         "id": 341,
         "title": "دليلك الكامل لتوثيق عقد الإيجار إلكترونيًا 2026",
+        "meta_title": "دليلك لتوثيق عقد الإيجار إلكترونيًا | عقدي",
+        "meta_description": "خطوات توثيق عقد الإيجار إلكترونيًا عبر منصة عقدي.",
         "category_label_ar": "أدلة إرشادية",
         "author": "ريان",
         "status": "published",
@@ -154,7 +162,10 @@ Accepts the period filter (attribution numbers are period-scoped) **and**:
 
 - `views` / `leads` / `attributed_revenue`: attribution for the selected period
   (`0` when no data — never `null`).
-- `editorial_queue`: `draft` + `scheduled` articles, soonest `scheduled_at` first;
+- `editorial_queue`: `draft` + `scheduled` articles, soonest `scheduled_at` first.
+- List items should include `meta_title` (and ideally `meta_description`) from the
+  blog record — edit/create still goes through `/admin/blogs` which already accepts
+  `meta_title` / `meta_description` (Arabic-only).
   unscheduled drafts have `scheduled_at: null` (UI shows «غير مجدول»).
 - CRUD: reuse `/admin/blogs` (`POST` / `PUT /admin/blogs/{id}` / `DELETE`). Add a
   `scheduled_at` field there if it doesn't exist. If a create/edit needs a
