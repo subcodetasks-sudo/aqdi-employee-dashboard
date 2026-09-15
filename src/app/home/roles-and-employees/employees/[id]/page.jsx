@@ -1,7 +1,7 @@
 "use client"
 import { useUnwrapPageProps } from "@/src/hooks/use-unwrap-page-props";
 import React from 'react'
-import Header from '@/components/home/Header';
+import Header from '@/components/home/header';
 import EmployeeDetailsCard from '@/components/employees/employee-details';
 import SalaryTable from '@/components/employees/salary-table';
 import NotesTable from '@/components/employees/notes-table';

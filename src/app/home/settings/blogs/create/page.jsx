@@ -6,7 +6,7 @@ import {
   SettingsContentCard,
   SettingsListHeader,
   SettingsPageShell,
-} from "@/components/SystemSettings/shared";
+} from "@/components/system-settings/shared";
 
 export default function CreateBlogPage(props) {
   useUnwrapPageProps(props?.params, props?.searchParams);

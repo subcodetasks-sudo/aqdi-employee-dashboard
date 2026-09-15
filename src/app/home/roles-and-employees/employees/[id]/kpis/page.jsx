@@ -1,7 +1,7 @@
 "use client";
 
 import { useUnwrapPageProps } from "@/src/hooks/use-unwrap-page-props";
-import EmployeeKpisDetails from "@/components/roles-and-employees/EmployeeKpisDetails";
+import EmployeeKpisDetails from "@/components/roles-and-employees/employee-kpis-details";
 
 export default function EmployeeKpisPage(props) {
   useUnwrapPageProps(props?.params, props?.searchParams);

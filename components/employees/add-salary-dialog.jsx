@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/dialog";
 import { Plus, X } from 'lucide-react';
 import { useState } from 'react';
-import AddSalaryForm from './add-salry-form';
+import AddSalaryForm from './add-salary-form';
 import { OutlineActionButton } from '@/components/roles-and-employees/shared';
 
 export default function AddSalaryDialog({ employee, variant = "primary" }) {

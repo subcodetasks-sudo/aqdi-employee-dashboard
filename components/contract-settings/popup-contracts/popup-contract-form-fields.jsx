@@ -13,7 +13,7 @@ import { Switch } from "@/components/ui/switch";
 import { getPopupInstrumentTypeOptions } from "@/src/lib/popup-contracts";
 
 const TextEditor = dynamic(
-  () => import("@/components/analysis/settings/terms/TextEditor"),
+  () => import("@/components/analysis/settings/terms/text-editor"),
   { ssr: false }
 );
 

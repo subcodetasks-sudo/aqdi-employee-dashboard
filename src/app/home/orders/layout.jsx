@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
-import { clearRelatedContractOrigin } from "@/components/Orders/single-order/related-contract-origin-storage";
+import { clearRelatedContractOrigin } from "@/components/orders/single-order/related-contract-origin-storage";
 
 const SINGLE_ORDER_PAGE = /^\/home\/orders\/[^/]+$/;
 

@@ -3,7 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import PageSeoForm from "@/components/content/page-seo-form";
 import Loader from "@/components/home/loader";
-import { usePermissions } from "@/src/hooks/usePermissions";
+import { usePermissions } from "@/src/hooks/use-permissions";
 import { CONTENT_PAGE_ENDPOINTS } from "@/src/lib/content-admin";
 import { axiosInstance } from "@/src/utils/axios";
 

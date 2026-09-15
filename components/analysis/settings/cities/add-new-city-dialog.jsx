@@ -12,8 +12,8 @@ import {
 import SettingsFormDialog, {
   SettingsFieldLabel,
   settingsFieldClass,
-} from "@/components/SystemSettings/SettingsFormDialog";
-import { SettingsAddTrigger } from "@/components/SystemSettings/shared";
+} from "@/components/system-settings/settings-form-dialog";
+import { SettingsAddTrigger } from "@/components/system-settings/shared";
 import { axiosInstance } from "@/src/utils/axios";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";

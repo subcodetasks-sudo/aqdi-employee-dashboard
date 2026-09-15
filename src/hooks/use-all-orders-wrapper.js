@@ -4,11 +4,11 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { AlertCircle, Ban, CheckCircle2, Undo2 } from "lucide-react";
-import { mapRealtimeTableOrder } from "@/components/RealtimeOrders/map-realtime-order";
+import { mapRealtimeTableOrder } from "@/components/realtime-orders/map-realtime-order";
 import {
   getStatusCaseFields,
   statusRequiresExtraFields,
-} from "@/components/RealtimeOrders/ChangeOrderStatusFieldsDialog";
+} from "@/components/realtime-orders/change-order-status-fields-dialog";
 import {
   getReturnRequestExistsMessage,
   hasReturnRequest,
@@ -19,13 +19,13 @@ import { openDialogAfterMenuClose } from "@/src/lib/open-dialog-after-menu-close
 import {
   exportOrdersToExcel,
   extractStandardOrderPage,
-} from "@/components/Orders/shared/orders-export";
-import { usePaginatedExport } from "@/components/Orders/shared/use-paginated-export";
-import { printOrderContract } from "@/components/Orders/single-order/print-contract";
+} from "@/components/orders/shared/orders-export";
+import { usePaginatedExport } from "@/components/orders/shared/use-paginated-export";
+import { printOrderContract } from "@/components/orders/single-order/print-contract";
 import { useBatchPrintContracts } from "@/src/hooks/use-batch-print-contracts";
-import { useIsDark } from "@/src/hooks/useThemeMode";
+import { useIsDark } from "@/src/hooks/use-theme-mode";
 import { useContractStatuses } from "@/src/hooks/use-contract-statuses";
-import { usePermissions } from "@/src/hooks/usePermissions";
+import { usePermissions } from "@/src/hooks/use-permissions";
 import { PERMISSION_SECTIONS } from "@/src/lib/permissions";
 import {
   ALL_ORDERS_QUERY_KEY,

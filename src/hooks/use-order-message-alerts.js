@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { axiosInstance } from "@/src/utils/axios";
-import { normalizeMessageAlerts } from "@/components/Orders/messages/order-message-utils";
+import { normalizeMessageAlerts } from "@/components/orders/messages/order-message-utils";
 import { getMessagesByType, parseCustomerMessagesAll } from "@/src/lib/customer-messages";
 
 async function fetchCustomerMessagesForOrders() {

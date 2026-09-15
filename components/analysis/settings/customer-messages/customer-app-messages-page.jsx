@@ -2,7 +2,7 @@
 
 import AddNewMessageForClientDialog from "@/components/analysis/settings/message-for-clients/add-message-for-client";
 import DisplayMessageForClientDialog from "@/components/analysis/settings/message-for-clients/display-message-for-client";
-import PermissionGate from "@/components/auth/PermissionGate";
+import PermissionGate from "@/components/auth/permission-gate";
 import { PERMISSION_SECTIONS } from "@/src/lib/permissions";
 import {
   SETTINGS_DELETE_TRIGGER_CLASS,
@@ -13,7 +13,7 @@ import {
   SettingsTable,
   SettingsTableRow,
   SettingsTd,
-} from "@/components/SystemSettings/shared";
+} from "@/components/system-settings/shared";
 import { useCustomerMessages } from "@/src/hooks/use-customer-messages";
 import { axiosInstance } from "@/src/utils/axios";
 import { useMutation, useQueryClient } from "@tanstack/react-query";

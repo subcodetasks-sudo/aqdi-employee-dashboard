@@ -4,7 +4,7 @@ import Loader from "@/components/home/loader";
 
 import { useUnwrapPageProps } from "@/src/hooks/use-unwrap-page-props";
 import BlogDetails from "@/components/analysis/settings/blogs/blog-details";
-import { SettingsContentCard, SettingsListHeader } from "@/components/SystemSettings/shared";
+import { SettingsContentCard, SettingsListHeader } from "@/components/system-settings/shared";
 import { axiosInstance } from "@/src/utils/axios";
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "next/navigation";

@@ -9,7 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import SettingsFormDialog, {
   settingsFieldClass,
   SettingsFieldLabel,
-} from "@/components/SystemSettings/SettingsFormDialog";
+} from "@/components/system-settings/settings-form-dialog";
 import {
   resolveImageUrl,
   websiteImageToForm,

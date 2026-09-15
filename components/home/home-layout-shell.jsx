@@ -1,8 +1,8 @@
 "use client";
 
-import SideData from "@/components/home/SideData";
-import UtilitySidePanel from "@/components/home/UtilitySidePanel";
-import RoutePermissionGuard from "@/components/auth/RoutePermissionGuard";
+import SideData from "@/components/home/side-data";
+import UtilitySidePanel from "@/components/home/utility-side-panel";
+import RoutePermissionGuard from "@/components/auth/route-permission-guard";
 
 export default function HomeLayoutShell({ children }) {
   return (

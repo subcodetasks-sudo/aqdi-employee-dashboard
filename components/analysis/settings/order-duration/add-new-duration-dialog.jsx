@@ -12,8 +12,8 @@ import {
 import SettingsFormDialog, {
   SettingsFieldLabel,
   settingsFieldClass,
-} from "@/components/SystemSettings/SettingsFormDialog";
-import { SettingsAddTrigger } from "@/components/SystemSettings/shared";
+} from "@/components/system-settings/settings-form-dialog";
+import { SettingsAddTrigger } from "@/components/system-settings/shared";
 import { getContractTypeLabel } from "@/src/lib/contract-period-utils";
 import { getInstrumentTypeOptions } from "@/src/lib/instrument-types";
 import { axiosInstance } from "@/src/utils/axios";

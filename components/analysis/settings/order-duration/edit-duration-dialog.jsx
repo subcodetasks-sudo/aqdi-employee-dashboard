@@ -12,8 +12,8 @@ import {
 import SettingsFormDialog, {
   SettingsFieldLabel,
   settingsFieldClass,
-} from "@/components/SystemSettings/SettingsFormDialog";
-import { SETTINGS_EDIT_TRIGGER_CLASS } from "@/components/SystemSettings/shared";
+} from "@/components/system-settings/settings-form-dialog";
+import { SETTINGS_EDIT_TRIGGER_CLASS } from "@/components/system-settings/shared";
 import { getInstrumentTypeOptions } from "@/src/lib/instrument-types";
 import { axiosInstance } from "@/src/utils/axios";
 import { useMutation, useQueryClient } from "@tanstack/react-query";

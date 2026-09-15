@@ -2,7 +2,7 @@
 
 import { useUnwrapPageProps } from "@/src/hooks/use-unwrap-page-props";
 import { useMemo, useState } from "react";
-import Header from "@/components/home/Header";
+import Header from "@/components/home/header";
 import PopupContractsTab from "@/components/contract-settings/popup-contracts/popup-contracts-tab";
 import PaymentMessagesTab from "@/components/contract-settings/payment-messages/payment-messages-tab";
 import InstrumentTypesTab from "@/components/contract-settings/instrument-types/instrument-types-tab";
@@ -10,7 +10,7 @@ import SmsSettingsTab from "@/components/contract-settings/sms-settings/sms-sett
 import MeterFeeSettingsTab from "@/components/contract-settings/meter-fees/meter-fee-settings-tab";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FileText, Gauge, MessageSquareText, ScrollText, Settings2 } from "lucide-react";
-import { usePermissions } from "@/src/hooks/usePermissions";
+import { usePermissions } from "@/src/hooks/use-permissions";
 import { PERMISSION_SECTIONS } from "@/src/lib/permissions";
 
 const CONTRACT_SETTINGS_TABS = [

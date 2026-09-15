@@ -8,7 +8,7 @@ import {
 import ContentPageForm from "@/components/analysis/settings/terms/content-page-form";
 import { SettingsContentCard, SettingsListHeader,
   SettingsPageShell,
-} from "@/components/SystemSettings/shared";
+} from "@/components/system-settings/shared";
 import { axiosInstance } from "@/src/utils/axios";
 import { useQuery } from "@tanstack/react-query";
 

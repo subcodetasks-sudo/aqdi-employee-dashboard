@@ -1,10 +1,10 @@
 "use client";
 
 import { useUnwrapPageProps } from "@/src/hooks/use-unwrap-page-props";
-import ClientDetailsWrapper from "@/components/clients/ClientDetailsWrapper";
-import UserDetailsCard from "@/components/analysis/UsersAnalysis/user-details";
-import UserContractsTable from "@/components/analysis/UsersAnalysis/user-contracts-table";
-import Header from "@/components/home/Header";
+import ClientDetailsWrapper from "@/components/clients/client-details-wrapper";
+import UserDetailsCard from "@/components/analysis/users-analysis/user-details";
+import UserContractsTable from "@/components/analysis/users-analysis/user-contracts-table";
+import Header from "@/components/home/header";
 import Loader from "@/components/home/loader";
 import { axiosInstance } from "@/src/utils/axios";
 import { useQuery } from "@tanstack/react-query";

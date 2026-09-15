@@ -2,9 +2,9 @@ import '@fortawesome/fontawesome-free/css/all.min.css';
 import './globals.css';
 import { Toaster } from 'sonner';
 import { Tajawal } from 'next/font/google';
-import ReactQueryProvider from '../utils/providers/ReactQueryProvider';
-import StoreHydrator from '@/components/auth/StoreHydrator';
-import FirebaseMessagingProvider from '@/components/firebase/FirebaseMessagingProvider';
+import ReactQueryProvider from '../utils/providers/react-query-provider';
+import StoreHydrator from '@/components/auth/store-hydrator';
+import FirebaseMessagingProvider from '@/components/firebase/firebase-messaging-provider';
 import ThemeProvider from '@/components/theme/theme-provider';
 
 const tajawal = Tajawal({

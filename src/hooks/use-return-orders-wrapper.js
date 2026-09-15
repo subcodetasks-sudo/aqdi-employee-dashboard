@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { mapRealtimeTableOrder } from "@/components/RealtimeOrders/map-realtime-order";
+import { mapRealtimeTableOrder } from "@/components/realtime-orders/map-realtime-order";
 import {
   ALL_ORDERS_QUERY_KEY,
   buildAdminOrdersUrl,
@@ -10,8 +10,8 @@ import {
 import {
   extractStandardOrderPage,
   exportRefundContractsToExcel,
-} from "@/components/Orders/shared/orders-export";
-import { usePaginatedExport } from "@/components/Orders/shared/use-paginated-export";
+} from "@/components/orders/shared/orders-export";
+import { usePaginatedExport } from "@/components/orders/shared/use-paginated-export";
 import {
   buildRefundsLookup,
   ensureReturnOrderRefund,

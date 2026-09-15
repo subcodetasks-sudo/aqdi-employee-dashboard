@@ -6,7 +6,7 @@ import {
 import { useState } from "react";
 import AddCouponDialog from "@/components/analysis/settings/coupons/add-coupon-dialog";
 import DeleteCouponDialog from "@/components/analysis/settings/coupons/delete-coupon-dialog";
-import PermissionGate from "@/components/auth/PermissionGate";
+import PermissionGate from "@/components/auth/permission-gate";
 import { PERMISSION_SECTIONS } from "@/src/lib/permissions";
 import {
   SettingsEmptyRow,
@@ -18,7 +18,7 @@ import {
   SettingsTd,
   StatusBadge,
   SettingsPageShell,
-} from "@/components/SystemSettings/shared";
+} from "@/components/system-settings/shared";
 import { Switch } from "@/components/ui/switch";
 import { axiosInstance } from "@/src/utils/axios";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";

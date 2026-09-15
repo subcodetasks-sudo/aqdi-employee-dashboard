@@ -8,7 +8,7 @@ import {
   SettingsContentCard,
   SettingsListHeader,
   SettingsPageShell,
-} from "@/components/SystemSettings/shared";
+} from "@/components/system-settings/shared";
 import { axiosInstance } from "@/src/utils/axios";
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "next/navigation";

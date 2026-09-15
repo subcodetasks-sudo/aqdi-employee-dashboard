@@ -1,7 +1,7 @@
 "use client";
 
 import { useUnwrapPageProps } from "@/src/hooks/use-unwrap-page-props";
-import ClientsWrapper from "@/components/clients/ClientsWrapper";
+import ClientsWrapper from "@/components/clients/clients-wrapper";
 
 export default function ClientsPage(props) {
   useUnwrapPageProps(props?.params, props?.searchParams);

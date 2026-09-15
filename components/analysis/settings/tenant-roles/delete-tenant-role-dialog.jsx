@@ -16,7 +16,7 @@ import {
 import { TENANT_ROLES_QUERY_KEY } from "@/src/hooks/use-tenant-roles";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2, X } from "lucide-react";
-import { SETTINGS_DELETE_TRIGGER_CLASS } from "@/components/SystemSettings/shared";
+import { SETTINGS_DELETE_TRIGGER_CLASS } from "@/components/system-settings/shared";
 import { toast } from "sonner";
 
 export default function DeleteTenantRoleDialog({ role }) {

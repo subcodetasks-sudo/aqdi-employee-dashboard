@@ -1,7 +1,7 @@
 "use client";
 
 import { useUnwrapPageProps } from "@/src/hooks/use-unwrap-page-props";
-import AllOrdersWrapper from "@/components/Orders/AllOrdersWrapper";
+import AllOrdersWrapper from "@/components/orders/all-orders-wrapper";
 
 export default function OrdersPage(props) {
   useUnwrapPageProps(props?.params, props?.searchParams);

@@ -12,8 +12,8 @@ import {
 import SettingsFormDialog, {
   SettingsFieldLabel,
   settingsFieldClass,
-} from "@/components/SystemSettings/SettingsFormDialog";
-import { SettingsAddTrigger } from "@/components/SystemSettings/shared";
+} from "@/components/system-settings/settings-form-dialog";
+import { SettingsAddTrigger } from "@/components/system-settings/shared";
 import PaperworkIconField from "@/components/analysis/settings/paperworks/paperwork-icon-field";
 import { buildPaperworkFormData } from "@/components/analysis/settings/paperworks/paperwork-form-data";
 import { axiosInstance } from "@/src/utils/axios";

@@ -1,4 +1,4 @@
-import HomeWelcomeWrapper from "@/components/home/HomeWelcomeWrapper";
+import HomeWelcomeWrapper from "@/components/home/home-welcome-wrapper";
 
 export default async function Page({ params, searchParams }) {
   await Promise.all([params, searchParams]);

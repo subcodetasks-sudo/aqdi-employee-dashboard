@@ -3,7 +3,7 @@
 import { useUnwrapPageProps } from "@/src/hooks/use-unwrap-page-props";
 import AddNewTypeDialog from "@/components/analysis/settings/unit-types/add-new-type-dialog";
 import EditTypeUnitDialog from "@/components/analysis/settings/unit-types/edit-type-unit-dialog";
-import PermissionGate from "@/components/auth/PermissionGate";
+import PermissionGate from "@/components/auth/permission-gate";
 import { PERMISSION_SECTIONS } from "@/src/lib/permissions";
 import {
   SETTINGS_DELETE_TRIGGER_CLASS,
@@ -15,12 +15,12 @@ import {
   SettingsTable,
   SettingsTableRow,
   SettingsTd,
-} from "@/components/SystemSettings/shared";
+} from "@/components/system-settings/shared";
 import {
   contractTypeLabel,
   extractItems,
   fetchBothContractTypes,
-} from "@/components/SystemSettings/settings-list/fetch-contract-type-lists";
+} from "@/components/system-settings/settings-list/fetch-contract-type-lists";
 import { axiosInstance } from "@/src/utils/axios";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";

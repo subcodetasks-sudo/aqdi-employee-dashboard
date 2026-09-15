@@ -4,12 +4,12 @@ import { useState } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { PERMISSION_SECTIONS } from "@/src/lib/permissions";
-import PermissionGate from "@/components/auth/PermissionGate";
+import PermissionGate from "@/components/auth/permission-gate";
 import ContentPageSeoPanel from "@/components/content/content-page-seo-panel";
 import { useMarketingArticles } from "@/src/hooks/use-marketing-content";
-import SectionCard from "../shared/SectionCard";
-import { StatCardRow } from "../shared/StatCard";
-import { StatusPill } from "../shared/Badges";
+import SectionCard from "../shared/section-card";
+import { StatCardRow } from "../shared/stat-card";
+import { StatusPill } from "../shared/badges";
 import {
   PeriodFilterBar,
   TrackingState,

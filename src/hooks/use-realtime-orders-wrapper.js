@@ -3,12 +3,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { mapRealtimeNewOrder, mapRealtimeTableOrder } from "@/components/RealtimeOrders/map-realtime-order";
+import { mapRealtimeNewOrder, mapRealtimeTableOrder } from "@/components/realtime-orders/map-realtime-order";
 import {
   getStatusCaseFields,
   statusRequiresExtraFields,
-} from "@/components/RealtimeOrders/ChangeOrderStatusFieldsDialog";
-import { STATUS_FILTER_PILLS } from "@/components/RealtimeOrders/mock-data";
+} from "@/components/realtime-orders/change-order-status-fields-dialog";
+import { STATUS_FILTER_PILLS } from "@/components/realtime-orders/mock-data";
 import {
   getReturnRequestExistsMessage,
   hasReturnRequest,
@@ -19,11 +19,11 @@ import { openDialogAfterMenuClose } from "@/src/lib/open-dialog-after-menu-close
 import {
   exportOrdersToExcel,
   extractStandardOrderPage,
-} from "@/components/Orders/shared/orders-export";
-import { usePaginatedExport } from "@/components/Orders/shared/use-paginated-export";
-import { useIsDark } from "@/src/hooks/useThemeMode";
+} from "@/components/orders/shared/orders-export";
+import { usePaginatedExport } from "@/components/orders/shared/use-paginated-export";
+import { useIsDark } from "@/src/hooks/use-theme-mode";
 import { useContractStatuses } from "@/src/hooks/use-contract-statuses";
-import { usePermissions } from "@/src/hooks/usePermissions";
+import { usePermissions } from "@/src/hooks/use-permissions";
 import { PERMISSION_SECTIONS } from "@/src/lib/permissions";
 import {
   REALTIME_ORDERS_QUERY_KEY,

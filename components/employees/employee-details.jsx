@@ -7,9 +7,9 @@ import AddSalaryDialog from "./add-salary-dialog";
 import AddNewEmployeeDialog from "./add-employee-dialog";
 import BlockEmployeeDialog from "./block-employee-dialog";
 import DeleteEmployeeDialog from "./delete-employee-dialog";
-import SendOrderSmsButton from "@/components/Orders/shared/send-order-sms-button";
+import SendOrderSmsButton from "@/components/orders/shared/send-order-sms-button";
 import { WorkPeriodBadge, formatDateShort, formatSalary } from "@/components/roles-and-employees/shared";
-import PermissionGate from "@/components/auth/PermissionGate";
+import PermissionGate from "@/components/auth/permission-gate";
 import { PERMISSION_SECTIONS } from "@/src/lib/permissions";
 import { cn } from "@/lib/utils";
 

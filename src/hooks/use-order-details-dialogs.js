@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { fetchContractPaymentLink } from "@/components/Orders/shared/payment-gateway";
-import { getOrderContractUuid } from "@/components/Orders/messages/order-section-message-utils";
+import { fetchContractPaymentLink } from "@/components/orders/shared/payment-gateway";
+import { getOrderContractUuid } from "@/components/orders/messages/order-section-message-utils";
 import {
   getReturnRequestExistsMessage,
   hasReturnRequest,
@@ -11,7 +11,7 @@ import {
   normalizeOrderForReturnRequest,
 } from "@/components/analysis/returned/refund-contract-utils";
 import { openDialogAfterMenuClose } from "@/src/lib/open-dialog-after-menu-close";
-import { statusRequiresExtraFields } from "@/components/RealtimeOrders/ChangeOrderStatusFieldsDialog";
+import { statusRequiresExtraFields } from "@/components/realtime-orders/change-order-status-fields-dialog";
 import { useChangeOrderStatus } from "@/src/hooks/use-change-order-status";
 
 const EMPTY_PAYMENT_LINK = {

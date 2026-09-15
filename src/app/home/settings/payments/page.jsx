@@ -13,7 +13,7 @@ import {
   SettingsTableRow,
   SettingsTd,
   SettingsPageShell,
-} from "@/components/SystemSettings/shared";
+} from "@/components/system-settings/shared";
 import { axiosInstance } from "@/src/utils/axios";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";

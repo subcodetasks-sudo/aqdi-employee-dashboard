@@ -12,7 +12,7 @@ import {
   getContractPeriodLabel,
 } from "@/src/lib/contract-period-utils";
 import { getInstrumentTypeLabel } from "@/src/lib/instrument-types";
-import { SETTINGS_VIEW_TRIGGER_CLASS } from "@/components/SystemSettings/shared";
+import { SETTINGS_VIEW_TRIGGER_CLASS } from "@/components/system-settings/shared";
 import { X } from "lucide-react";
 import { useState } from "react";
 

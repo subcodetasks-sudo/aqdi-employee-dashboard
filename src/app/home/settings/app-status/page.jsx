@@ -1,13 +1,13 @@
 "use client";
 
 import { useUnwrapPageProps } from "@/src/hooks/use-unwrap-page-props";
-import PermissionGate from "@/components/auth/PermissionGate";
+import PermissionGate from "@/components/auth/permission-gate";
 import { PERMISSION_SECTIONS } from "@/src/lib/permissions";
 import {
   SettingsListHeader,
   SettingsPageShell,
-} from "@/components/SystemSettings/shared";
-import AppStatusPanel from "@/components/SystemSettings/app-status/app-status-panel";
+} from "@/components/system-settings/shared";
+import AppStatusPanel from "@/components/system-settings/app-status/app-status-panel";
 
 export default function AppStatusPage(props) {
   useUnwrapPageProps(props?.params, props?.searchParams);

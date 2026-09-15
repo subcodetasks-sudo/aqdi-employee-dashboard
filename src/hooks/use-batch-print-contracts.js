@@ -3,7 +3,7 @@
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { axiosInstance } from "@/src/utils/axios";
-import { printOrderContracts } from "@/components/Orders/single-order/print-contract";
+import { printOrderContracts } from "@/components/orders/single-order/print-contract";
 
 /**
  * Fetches the full order payload for each id and opens a single print

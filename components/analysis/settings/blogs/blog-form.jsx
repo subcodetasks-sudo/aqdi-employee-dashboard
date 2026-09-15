@@ -25,7 +25,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 
 const TextEditor = dynamic(
-  () => import("@/components/analysis/settings/terms/TextEditor"),
+  () => import("@/components/analysis/settings/terms/text-editor"),
   { ssr: false }
 );
 

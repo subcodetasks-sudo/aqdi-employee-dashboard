@@ -7,11 +7,11 @@ import { axiosInstance } from "@/src/utils/axios";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import PermissionGate from "@/components/auth/PermissionGate";
+import PermissionGate from "@/components/auth/permission-gate";
 import { PERMISSION_SECTIONS } from "@/src/lib/permissions";
 
 const TextEditor = dynamic(
-  () => import("@/components/analysis/settings/terms/TextEditor"),
+  () => import("@/components/analysis/settings/terms/text-editor"),
   { ssr: false }
 );
 

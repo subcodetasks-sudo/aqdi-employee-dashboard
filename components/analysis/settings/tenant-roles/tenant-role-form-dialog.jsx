@@ -13,8 +13,8 @@ import {
 import SettingsFormDialog, {
   SettingsFieldLabel,
   settingsFieldClass,
-} from "@/components/SystemSettings/SettingsFormDialog";
-import { SETTINGS_EDIT_TRIGGER_CLASS, SettingsAddTrigger } from "@/components/SystemSettings/shared";
+} from "@/components/system-settings/settings-form-dialog";
+import { SETTINGS_EDIT_TRIGGER_CLASS, SettingsAddTrigger } from "@/components/system-settings/shared";
 import { axiosInstance } from "@/src/utils/axios";
 import {
   ADMIN_TENANT_ROLES_API,
@@ -27,7 +27,7 @@ import { toast } from "sonner";
 import dynamic from "next/dynamic";
 
 const TextEditor = dynamic(
-  () => import("@/components/analysis/settings/terms/TextEditor"),
+  () => import("@/components/analysis/settings/terms/text-editor"),
   { ssr: false }
 );
 

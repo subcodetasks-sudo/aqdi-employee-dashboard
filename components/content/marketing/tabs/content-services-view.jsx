@@ -2,16 +2,16 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { usePermissions } from "@/src/hooks/usePermissions";
+import { usePermissions } from "@/src/hooks/use-permissions";
 import { PERMISSION_SECTIONS } from "@/src/lib/permissions";
 import ContentPageSeoPanel from "@/components/content/content-page-seo-panel";
 import {
   useServicePageMutations,
   useServicePages,
 } from "@/src/hooks/use-marketing-content";
-import SectionCard from "../shared/SectionCard";
-import { StatCardRow } from "../shared/StatCard";
-import { StatusPill } from "../shared/Badges";
+import SectionCard from "../shared/section-card";
+import { StatCardRow } from "../shared/stat-card";
+import { StatusPill } from "../shared/badges";
 import { TrackingState, fmtInt } from "../shared/tracking-ui";
 
 const PAGE_STATUS_OPTIONS = [

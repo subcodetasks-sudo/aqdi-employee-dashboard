@@ -6,7 +6,7 @@ import AddFaqDialog from "@/components/analysis/settings/faqs/add-faq-dialog";
 import EditFaqDialog from "@/components/analysis/settings/faqs/edit-faq-dialog";
 import DeleteFaqDialog from "@/components/analysis/settings/faqs/delete-faq-dialog";
 import ContentPageSeoPanel from "@/components/content/content-page-seo-panel";
-import PermissionGate from "@/components/auth/PermissionGate";
+import PermissionGate from "@/components/auth/permission-gate";
 import { PERMISSION_SECTIONS } from "@/src/lib/permissions";
 import {
   SettingsEmptyRow,
@@ -18,7 +18,7 @@ import {
   SettingsTd,
   SettingsPageShell,
   SettingsContentCard,
-} from "@/components/SystemSettings/shared";
+} from "@/components/system-settings/shared";
 import { axiosInstance } from "@/src/utils/axios";
 import { useQuery } from "@tanstack/react-query";
 

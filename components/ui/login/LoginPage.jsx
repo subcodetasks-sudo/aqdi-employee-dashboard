@@ -17,7 +17,7 @@ import { useUserStore } from '@/src/stores/user-store';
 import { useRouter } from 'next/navigation';
 import { setAuthCookie } from '@/src/app/actions/auth';
 import { toast } from 'sonner';
-import { useIsDark, useToggleTheme } from '@/src/hooks/useThemeMode';
+import { useIsDark, useToggleTheme } from '@/src/hooks/use-theme-mode';
 
 export default function LoginPage() {
   const { setAuth } = useUserStore();
