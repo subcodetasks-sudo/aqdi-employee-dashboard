@@ -1,18 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
+import { useIsClient } from "@/src/hooks/use-is-client";
 
 /** True when resolved theme is dark (safe after mount). */
 export function useIsDark() {
   const { resolvedTheme, theme } = useTheme();
-  const [mounted, setMounted] = useState(false);
+  const isClient = useIsClient();
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) return false;
+  if (!isClient) return false;
   return (resolvedTheme ?? theme) === "dark";
 }
 

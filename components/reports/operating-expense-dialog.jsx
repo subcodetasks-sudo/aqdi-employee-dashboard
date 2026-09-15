@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -20,14 +20,16 @@ export default function OperatingExpenseDialog({ open, onOpenChange, expense }) 
   const [form, setForm] = useState(EMPTY_FORM);
   const isEdit = Boolean(expense?.id);
 
-  useEffect(() => {
+  const [prevOpen, setPrevOpen] = useState(false);
+  if (open !== prevOpen) {
+    setPrevOpen(open);
     if (open) {
       setForm({
         expense: expense?.expense ?? "",
         amount: expense?.amount != null ? String(expense.amount) : "",
       });
     }
-  }, [open, expense]);
+  }
 
   const { mutate: createExpense, isPending: isCreating } = useCreateOperatingExpense();
   const { mutate: updateExpense, isPending: isUpdating } = useUpdateOperatingExpense();

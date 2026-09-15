@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -29,9 +29,11 @@ export default function AddNewDurationDialog({ activeTab = "housing" }) {
   const queryClient = useQueryClient();
   const contractLabel = getContractTypeLabel(contractType);
 
-  useEffect(() => {
+  const [prevOpen, setPrevOpen] = useState(false);
+  if (open !== prevOpen) {
+    setPrevOpen(open);
     if (open) setContractType(activeTab);
-  }, [open, activeTab]);
+  }
 
   const { mutate, isPending } = useMutation({
     mutationFn: () =>

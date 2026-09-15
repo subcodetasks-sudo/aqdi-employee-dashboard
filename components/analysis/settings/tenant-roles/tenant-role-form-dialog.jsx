@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -60,12 +60,14 @@ export default function TenantRoleFormDialog({ role = null }) {
   const [editorKey, setEditorKey] = useState(0);
   const queryClient = useQueryClient();
 
-  useEffect(() => {
+  const [prevOpen, setPrevOpen] = useState(false);
+  if (open !== prevOpen) {
+    setPrevOpen(open);
     if (open) {
       setForm(isEdit ? roleToForm(role) : { ...EMPTY_FORM });
       setEditorKey((prev) => prev + 1);
     }
-  }, [open, isEdit, role]);
+  }
 
   const setField = (key, value) => {
     setForm((prev) => ({ ...prev, [key]: value }));

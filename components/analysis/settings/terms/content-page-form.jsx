@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/button";
 import { axiosInstance } from "@/src/utils/axios";
@@ -35,11 +35,12 @@ export default function ContentPageForm({ content, saveEndpoint, queryKey }) {
   const [descriptionAr, setDescriptionAr] = useState("");
   const [editorKey, setEditorKey] = useState(0);
 
-  useEffect(() => {
-    if (!content) return;
+  const [syncedContent, setSyncedContent] = useState(null);
+  if (content && content !== syncedContent) {
+    setSyncedContent(content);
     setDescriptionAr(content.description_ar || content.description || "");
     setEditorKey((prev) => prev + 1);
-  }, [content]);
+  }
 
   const { mutate: saveContent, isPending } = useMutation({
     mutationFn: (payload) => axiosInstance.post(saveEndpoint, payload),

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Loader2, X } from "lucide-react";
 import {
   Dialog,
@@ -37,6 +37,12 @@ function isFieldVisible(field, values) {
   return isFieldRequired(field, values) || String(values?.[requiredIf[0]] ?? "") === String(requiredIf[1]);
 }
 
+function buildEmptyValues(fields) {
+  return Object.fromEntries(
+    fields.map((field) => [field.name, field.type === "file" ? null : ""])
+  );
+}
+
 export function getStatusCaseFields(status) {
   const fields = status?.status_case?.fields;
   return Array.isArray(fields) ? fields : [];
@@ -58,21 +64,16 @@ export default function ChangeOrderStatusFieldsDialog({
   const fields = useMemo(() => getStatusCaseFields(status), [status]);
   const [values, setValues] = useState({});
   const [session, setSession] = useState(0);
+  const [prevOpen, setPrevOpen] = useState(false);
 
-  const resetForm = useCallback(() => {
-    const next = {};
-    fields.forEach((field) => {
-      next[field.name] = field.type === "file" ? null : "";
-    });
-    setValues(next);
-  }, [fields]);
-
-  useEffect(() => {
+  // Each open starts a fresh session: remount the content and clear the fields.
+  if (open !== prevOpen) {
+    setPrevOpen(open);
     if (open) {
       setSession((value) => value + 1);
-      resetForm();
+      setValues(buildEmptyValues(fields));
     }
-  }, [open, resetForm]);
+  }
 
   const missingRequired = fields.some(
     (field) =>

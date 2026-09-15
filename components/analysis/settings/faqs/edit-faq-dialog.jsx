@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import SettingsFormDialog, {
@@ -19,12 +19,14 @@ export default function EditFaqDialog({ faq }) {
   const [answerAr, setAnswerAr] = useState(faq?.answer_ar ?? "");
   const queryClient = useQueryClient();
 
-  useEffect(() => {
+  const [prevOpen, setPrevOpen] = useState(false);
+  if (open !== prevOpen) {
+    setPrevOpen(open);
     if (open) {
       setTitleAr(faq?.title_ar ?? "");
       setAnswerAr(faq?.answer_ar ?? "");
     }
-  }, [open, faq]);
+  }
 
   const { mutate, isPending } = useMutation({
     mutationFn: () =>

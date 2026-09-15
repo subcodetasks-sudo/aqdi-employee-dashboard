@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Pencil, Printer, ReceiptText, X } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -15,12 +15,14 @@ import RiyalIcon from "./riyal-icon";
 
 export default function InvoicePreviewDialog({ open, onOpenChange, invoice }) {
   const [customerName, setCustomerName] = useState("");
+  const [syncedInvoice, setSyncedInvoice] = useState(null);
 
-  useEffect(() => {
-    if (open && invoice) {
-      setCustomerName(invoice.customerName || "");
-    }
-  }, [open, invoice]);
+  // Re-seed the editable name whenever the dialog opens on an invoice.
+  const openInvoice = open ? invoice : null;
+  if (openInvoice !== syncedInvoice) {
+    setSyncedInvoice(openInvoice);
+    if (openInvoice) setCustomerName(openInvoice.customerName || "");
+  }
 
   if (!invoice) return null;
 

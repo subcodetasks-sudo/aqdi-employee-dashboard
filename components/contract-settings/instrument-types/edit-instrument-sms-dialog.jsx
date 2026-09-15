@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -25,11 +25,11 @@ export default function EditInstrumentSmsDialog({ item }) {
   const [form, setForm] = useState(emptySettingContractSmsForm(item));
   const queryClient = useQueryClient();
 
-  useEffect(() => {
-    if (open) {
-      setForm(emptySettingContractSmsForm(item));
-    }
-  }, [open, item]);
+  const [prevOpen, setPrevOpen] = useState(false);
+  if (open !== prevOpen) {
+    setPrevOpen(open);
+    if (open) setForm(emptySettingContractSmsForm(item));
+  }
 
   const { mutate, isPending } = useMutation({
     mutationFn: () => {

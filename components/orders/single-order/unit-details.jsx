@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { Inbox, Loader2, Save, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { ContractStepEditor } from "./contract-edit/contract-step-editor";
@@ -53,6 +53,14 @@ function getUnitInitialValues(unit, fields) {
   return Object.fromEntries(entries);
 }
 
+function getAllUnitInitialValues(unit) {
+  return {
+    ...getUnitInitialValues(unit, ADMIN_UNIT_CORE_FIELDS),
+    ...getUnitInitialValues(unit, ADMIN_UNIT_ROOM_FIELDS),
+    ...getUnitInitialValues(unit, ADMIN_UNIT_SERVICE_FIELDS),
+  };
+}
+
 function unitFormDeps(unit) {
   return [
     unit?.id,
@@ -95,15 +103,16 @@ function SingleUnitBlock({ unit, data, index, formRef }) {
       ? `الوحدة رقم ${unit.unit_number}`
       : `وحدة #${unit?.id ?? index + 1}`;
 
-  const initialValues = useMemo(
-    () => ({
-      ...getUnitInitialValues(unit, ADMIN_UNIT_CORE_FIELDS),
-      ...getUnitInitialValues(unit, ADMIN_UNIT_ROOM_FIELDS),
-      ...getUnitInitialValues(unit, ADMIN_UNIT_SERVICE_FIELDS),
-    }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    unitFormDeps(unit)
-  );
+  // Keep the form seed stable; rebuild it only when a field the form uses changes.
+  const unitFormKey = JSON.stringify(unitFormDeps(unit));
+  const [initialSnapshot, setInitialSnapshot] = useState(() => ({
+    key: unitFormKey,
+    values: getAllUnitInitialValues(unit),
+  }));
+  if (initialSnapshot.key !== unitFormKey) {
+    setInitialSnapshot({ key: unitFormKey, values: getAllUnitInitialValues(unit) });
+  }
+  const initialValues = initialSnapshot.values;
 
   const handleSaveSection = useCallback(
     async (payload) => {

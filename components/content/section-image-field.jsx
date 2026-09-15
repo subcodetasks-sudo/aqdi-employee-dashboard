@@ -50,22 +50,26 @@ export default function SectionImageField({
   const watchedValue = form.watch(name);
   const file = watchedValue instanceof File ? watchedValue : null;
   const [removed, setRemoved] = useState(false);
-  const [blobUrl, setBlobUrl] = useState(null);
+  const [blobPreview, setBlobPreview] = useState(null);
 
   useEffect(() => {
-    if (!file) {
-      setBlobUrl(null);
-      return undefined;
-    }
+    if (!file) return undefined;
     const url = URL.createObjectURL(file);
-    setBlobUrl(url);
+    // An object URL is an external resource: it must be created and revoked in the same effect.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setBlobPreview({ file, url });
     return () => URL.revokeObjectURL(url);
   }, [file]);
 
+  // Only trust a URL minted for the current file; older ones are already revoked.
+  const blobUrl = file && blobPreview?.file === file ? blobPreview.url : null;
+
   // A fresh initialUrl means new server data landed — drop the local "removed" flag.
-  useEffect(() => {
+  const [prevInitialUrl, setPrevInitialUrl] = useState(initialUrl);
+  if (initialUrl !== prevInitialUrl) {
+    setPrevInitialUrl(initialUrl);
     setRemoved(false);
-  }, [initialUrl]);
+  }
 
   useEffect(() => {
     form.setValue(removedFieldName, removed);

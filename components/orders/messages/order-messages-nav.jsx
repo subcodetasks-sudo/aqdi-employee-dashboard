@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { ChevronLeft, Loader2 } from "lucide-react";
+import { useIsClient } from "@/src/hooks/use-is-client";
 import { useOrderMessageAlerts } from "@/src/hooks/use-order-message-alerts";
 import OrderMessageDialog from "./order-message-dialog";
 import OrderPricesPanel from "./order-prices-panel";
@@ -153,11 +154,7 @@ function DropdownMenuShell({
 }) {
   const rootRef = useRef(null);
   const [panelPos, setPanelPos] = useState({ top: 0, left: 0 });
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useIsClient();
 
   const updatePosition = useCallback(() => {
     const el = rootRef.current;

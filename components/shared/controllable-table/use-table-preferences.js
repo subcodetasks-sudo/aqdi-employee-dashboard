@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useIsClient } from "@/src/hooks/use-is-client";
 import { DEFAULT_TABLE_DENSITY } from "./density";
 
 function readStored(storageKey, fallback) {
@@ -34,14 +35,17 @@ export function useTablePreferences({
     visibleColumns: defaultVisible,
   };
 
-  const [prefs, setPrefs] = useState(defaults);
-  const [hydrated, setHydrated] = useState(false);
+  const isClient = useIsClient();
+  // `key` is the storageKey the prefs were loaded from (null until hydrated).
+  const [state, setState] = useState({ key: null, prefs: defaults });
 
-  useEffect(() => {
-    setPrefs(readStored(storageKey, defaults));
-    setHydrated(true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- hydrate once from storageKey
-  }, [storageKey]);
+  // localStorage is client-only: load after hydration, and again if the key changes.
+  if (isClient && state.key !== storageKey) {
+    setState({ key: storageKey, prefs: readStored(storageKey, defaults) });
+  }
+
+  const { prefs } = state;
+  const hydrated = isClient && state.key === storageKey;
 
   useEffect(() => {
     if (!storageKey || !hydrated) return;
@@ -53,28 +57,37 @@ export function useTablePreferences({
   }, [prefs, storageKey, hydrated]);
 
   const setDensity = useCallback((density) => {
-    setPrefs((prev) => ({ ...prev, density }));
-  }, []);
+    setState((current) => ({
+      ...current,
+      prefs: { ...current.prefs, density },
+    }));
+  }, [setState]);
 
   const setColumnVisible = useCallback((columnId, visible) => {
-    setPrefs((prev) => ({
-      ...prev,
-      visibleColumns: {
-        ...prev.visibleColumns,
-        [columnId]: visible,
+    setState((current) => ({
+      ...current,
+      prefs: {
+        ...current.prefs,
+        visibleColumns: {
+          ...current.prefs.visibleColumns,
+          [columnId]: visible,
+        },
       },
     }));
-  }, []);
+  }, [setState]);
 
   const toggleColumn = useCallback((columnId) => {
-    setPrefs((prev) => ({
-      ...prev,
-      visibleColumns: {
-        ...prev.visibleColumns,
-        [columnId]: !(prev.visibleColumns?.[columnId] ?? true),
+    setState((current) => ({
+      ...current,
+      prefs: {
+        ...current.prefs,
+        visibleColumns: {
+          ...current.prefs.visibleColumns,
+          [columnId]: !(current.prefs.visibleColumns?.[columnId] ?? true),
+        },
       },
     }));
-  }, []);
+  }, [setState]);
 
   const isColumnVisible = useCallback(
     (column) => {

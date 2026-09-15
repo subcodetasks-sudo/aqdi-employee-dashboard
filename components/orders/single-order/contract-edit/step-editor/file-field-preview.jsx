@@ -17,17 +17,21 @@ function resolveFileDisplayUrl(value) {
 
 export default function FileFieldPreview({ value }) {
   const isFile = typeof File !== "undefined" && value instanceof File;
-  const [objectUrl, setObjectUrl] = useState(null);
+  const isImageFile = isFile && Boolean(value.type?.startsWith("image/"));
+  const [objectPreview, setObjectPreview] = useState(null);
 
   useEffect(() => {
-    if (!isFile || !value.type?.startsWith("image/")) {
-      setObjectUrl(null);
-      return;
-    }
+    if (!isImageFile) return undefined;
     const url = URL.createObjectURL(value);
-    setObjectUrl(url);
+    // An object URL is an external resource: it must be created and revoked in the same effect.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setObjectPreview({ file: value, url });
     return () => URL.revokeObjectURL(url);
-  }, [isFile, value]);
+  }, [isImageFile, value]);
+
+  // Only trust a URL minted for the current file; older ones are already revoked.
+  const objectUrl =
+    isImageFile && objectPreview?.file === value ? objectPreview.url : null;
 
   if (isFile) {
     return (

@@ -63,11 +63,16 @@ export default function NewRequestsDialog({
     };
   }, []);
 
+  const [prevOpen, setPrevOpen] = useState(open);
+  if (open !== prevOpen) {
+    setPrevOpen(open);
+    if (!open) setIsFullscreen(false);
+  }
+
   useEffect(() => {
     if (!open && isBrowserFullscreen()) {
       exitBrowserFullscreen().catch(() => {});
     }
-    if (!open) setIsFullscreen(false);
   }, [open]);
 
   const toggleFullscreen = useCallback(async () => {

@@ -37,9 +37,11 @@ export default function EmployeesListPage() {
     return () => clearTimeout(handler);
   }, [searchQuery]);
 
-  useEffect(() => {
+  const [pageSearchQuery, setPageSearchQuery] = useState(debouncedSearchQuery);
+  if (pageSearchQuery !== debouncedSearchQuery) {
+    setPageSearchQuery(debouncedSearchQuery);
     setCurrentPage(1);
-  }, [debouncedSearchQuery]);
+  }
 
   function getAllEmployees(page = 1, search = "") {
     let url = `/admin/employees?page=${page}`;

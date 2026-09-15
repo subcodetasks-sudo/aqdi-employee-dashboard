@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -24,12 +24,14 @@ export default function AddNewMessageSectionDialog({ isEdit, section, defaultTyp
   const [type, setType] = useState(defaultType || "client");
   const queryClient = useQueryClient();
 
-  useEffect(() => {
+  const [prevOpen, setPrevOpen] = useState(false);
+  if (open !== prevOpen) {
+    setPrevOpen(open);
     if (open) {
       setNameAr(section?.name_ar || "");
       setType(section?.type || defaultType || "client");
     }
-  }, [open, section, defaultType]);
+  }
 
   const mutation = useMutation({
     mutationFn: (payload) => {

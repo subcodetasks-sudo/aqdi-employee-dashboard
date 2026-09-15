@@ -144,9 +144,19 @@ export function useRealtimeOrdersWrapper() {
     return () => clearTimeout(handler);
   }, [searchQuery]);
 
-  useEffect(() => {
+  // Any list-param change sends the user back to the first page.
+  const pageResetKey = JSON.stringify([
+    debouncedSearch,
+    activeSection,
+    extraStatusId,
+    contractType,
+    perPage,
+  ]);
+  const [prevPageResetKey, setPrevPageResetKey] = useState(pageResetKey);
+  if (pageResetKey !== prevPageResetKey) {
+    setPrevPageResetKey(pageResetKey);
     setCurrentPage(1);
-  }, [debouncedSearch, activeSection, extraStatusId, contractType, perPage]);
+  }
 
   const listParams = useMemo(() => {
     const hasAuthenticated = activeSection === "authenticated";

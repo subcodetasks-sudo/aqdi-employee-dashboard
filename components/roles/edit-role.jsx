@@ -1,5 +1,5 @@
 'use client'
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
 import { Switch } from "@/components/ui/switch"
@@ -101,9 +101,8 @@ export default function EditRole() {
         [modules]
     );
 
-    useEffect(() => {
-        if (!roleId || !role || !modules.length || formInitialized) return;
-
+    // Seed the form once, as soon as both the role and the permission modules are loaded.
+    if (!formInitialized && roleId && role && modules.length) {
         const permissionNames = permissionNamesFromMatrix(role.permission_matrix);
 
         setSelectedPermissionNames(permissionNames);
@@ -121,7 +120,7 @@ export default function EditRole() {
             employee_id: role.employee_id ? String(role.employee_id) : '',
         });
         setFormInitialized(true);
-    }, [role, modules, roleId, allPermissionNames, formInitialized]);
+    }
 
     const handleFieldChange = (field, value) => {
         setFormData((prev) => ({ ...prev, [field]: value }));

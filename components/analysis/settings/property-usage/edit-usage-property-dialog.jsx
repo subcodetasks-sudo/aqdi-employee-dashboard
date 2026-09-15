@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -24,12 +24,14 @@ export default function EditUsagePropertyDialog({ unit }) {
   const [unitType, setUnitType] = useState(unit?.contract_type || "");
   const queryClient = useQueryClient();
 
-  useEffect(() => {
+  const [prevOpen, setPrevOpen] = useState(false);
+  if (open !== prevOpen) {
+    setPrevOpen(open);
     if (open) {
       setUnitName(unit?.name_ar || "");
       setUnitType(unit?.contract_type || "");
     }
-  }, [open, unit]);
+  }
 
   const { mutate, isPending } = useMutation({
     mutationFn: () =>

@@ -12,18 +12,21 @@ export default function PaperworkIconField({
   onRemove,
   isRemoving = false,
 }) {
-  const [preview, setPreview] = useState(iconUrl || null);
+  const [filePreview, setFilePreview] = useState(null);
 
   useEffect(() => {
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => setPreview(reader.result);
-      reader.readAsDataURL(file);
-      return;
-    }
+    if (!file) return undefined;
+    const reader = new FileReader();
+    reader.onloadend = () => setFilePreview({ file, url: reader.result });
+    reader.readAsDataURL(file);
+    return () => {
+      reader.onloadend = null;
+    };
+  }, [file]);
 
-    setPreview(iconUrl || null);
-  }, [file, iconUrl]);
+  // A picked file wins over the saved icon once its data URL is ready.
+  const preview =
+    file && filePreview?.file === file ? filePreview.url : iconUrl || null;
 
   const handleFileChange = (event) => {
     const nextFile = event.target.files?.[0] ?? null;

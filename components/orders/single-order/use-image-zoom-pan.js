@@ -32,10 +32,15 @@ export function useImageZoomPan({ enabled = true, resetDeps = [] } = {}) {
     setPosition({ x: 0, y: 0 });
   }, []);
 
-  useEffect(() => {
-    resetTransform();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, resetDeps);
+  const [prevResetDeps, setPrevResetDeps] = useState(resetDeps);
+  const resetDepsChanged =
+    resetDeps.length !== prevResetDeps.length ||
+    resetDeps.some((dep, index) => !Object.is(dep, prevResetDeps[index]));
+  if (resetDepsChanged) {
+    setPrevResetDeps(resetDeps);
+    setScale(1);
+    setPosition({ x: 0, y: 0 });
+  }
 
   useEffect(() => {
     if (!enabled || !containerEl) return undefined;

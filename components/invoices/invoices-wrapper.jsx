@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { PanelLeft } from "lucide-react";
 import { toast } from "sonner";
@@ -79,9 +79,13 @@ export default function InvoicesWrapper() {
     });
   }, [rows, searchQuery, statusFilter, typeFilter]);
 
-  useEffect(() => {
+  // Any filter change sends the user back to the first page.
+  const filterKey = JSON.stringify([searchQuery, statusFilter, typeFilter]);
+  const [pageFilterKey, setPageFilterKey] = useState(filterKey);
+  if (pageFilterKey !== filterKey) {
+    setPageFilterKey(filterKey);
     setPage(1);
-  }, [searchQuery, statusFilter, typeFilter]);
+  }
 
   const pageRows = useMemo(
     () => filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),

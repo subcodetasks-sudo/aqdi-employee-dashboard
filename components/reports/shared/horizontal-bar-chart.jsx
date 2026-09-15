@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -56,9 +56,11 @@ export function VerticalBarChart({ items, className, height = 160, pageSize, sho
   const [page, setPage] = useState(0);
   const totalPages = pageSize ? Math.max(Math.ceil(items.length / pageSize), 1) : 1;
 
-  useEffect(() => {
+  const [pageSource, setPageSource] = useState({ items, pageSize });
+  if (pageSource.items !== items || pageSource.pageSize !== pageSize) {
+    setPageSource({ items, pageSize });
     setPage(0);
-  }, [items, pageSize]);
+  }
 
   const safePage = Math.min(page, totalPages - 1);
   const visibleItems = pageSize ? items.slice(safePage * pageSize, safePage * pageSize + pageSize) : items;

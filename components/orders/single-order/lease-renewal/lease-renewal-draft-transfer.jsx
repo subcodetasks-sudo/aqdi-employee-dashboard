@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { ChevronLeft, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -51,10 +51,12 @@ export default function LeaseRenewalDraftTransfer({
   );
   const [selectedStatus, setSelectedStatus] = useState(currentStatus);
 
-  useEffect(() => {
+  const [syncedOrderData, setSyncedOrderData] = useState(orderData);
+  if (orderData !== syncedOrderData) {
+    setSyncedOrderData(orderData);
     setDraftNumber(getOrderDraftContractNumber(orderData));
-    setSelectedStatus(getOrderDraftStatusFromDetail(orderData));
-  }, [orderData]);
+    setSelectedStatus(currentStatus);
+  }
 
   const { data: statusData, isLoading: statusesLoading } = useQuery({
     queryKey: ["draft-contract-statuses-active"],

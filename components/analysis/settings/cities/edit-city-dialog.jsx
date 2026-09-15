@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -32,12 +32,14 @@ export default function EditCityDialog({ city }) {
   });
   const data = regions?.data?.data?.items;
 
-  useEffect(() => {
+  const [prevOpen, setPrevOpen] = useState(false);
+  if (open !== prevOpen) {
+    setPrevOpen(open);
     if (open) {
       setCityName(city?.name_ar || "");
       setRegionType(city?.regions?.id != null ? String(city.regions.id) : "");
     }
-  }, [open, city]);
+  }
 
   const { mutate, isPending } = useMutation({
     mutationFn: () =>

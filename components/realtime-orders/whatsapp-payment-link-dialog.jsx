@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Check, Link2, Loader2, X } from "lucide-react";
 import { toast } from "sonner";
@@ -69,18 +69,15 @@ export default function WhatsAppPaymentLinkDialog({ open, onOpenChange }) {
 
   const referencePrice = selectedPeriod?.price ?? null;
 
-  useEffect(() => {
-    if (!open) return;
-    if (!periods.length) {
-      setPeriodId("");
-      return;
-    }
-    setPeriodId((current) =>
-      periods.some((period) => String(period.id) === String(current))
-        ? current
-        : String(periods[0].id)
-    );
-  }, [open, contractType, periods]);
+  // Keep the chosen period valid for the current contract type's period list.
+  if (open) {
+    const nextPeriodId = !periods.length
+      ? ""
+      : periods.some((period) => String(period.id) === String(periodId))
+        ? periodId
+        : String(periods[0].id);
+    if (nextPeriodId !== periodId) setPeriodId(nextPeriodId);
+  }
 
   const resetForm = () => {
     setMobile("");

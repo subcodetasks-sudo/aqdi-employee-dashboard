@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Image from "next/image";
 import { Copy, Download, ExternalLink, Eye, ImageIcon, MapPin } from "lucide-react";
 import { toast } from "sonner";
@@ -240,13 +240,11 @@ export default function NationalAddressContent({ address }) {
     return TAB_DEFS.filter((tab) => tabHasData(address, tab.id));
   }, [address]);
 
-  const [activeTab, setActiveTab] = useState(tabs[0]?.id ?? null);
-
-  useEffect(() => {
-    if (!tabs.some((tab) => tab.id === activeTab)) {
-      setActiveTab(tabs[0]?.id ?? null);
-    }
-  }, [tabs, activeTab]);
+  const [selectedTab, setActiveTab] = useState(tabs[0]?.id ?? null);
+  // Fall back to the first available tab when the selected one has no data.
+  const activeTab = tabs.some((tab) => tab.id === selectedTab)
+    ? selectedTab
+    : (tabs[0]?.id ?? null);
 
   if (!address || tabs.length === 0) {
     return (

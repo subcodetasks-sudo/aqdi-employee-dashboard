@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Loader2,
   MessageSquareText,
@@ -139,12 +139,14 @@ export default function SendOrderSmsButton({
   const charCount = message.length;
   const segmentCount = Math.max(1, Math.ceil(charCount / SMS_SEGMENT_LENGTH));
 
-  useEffect(() => {
+  const [prevOpen, setPrevOpen] = useState(open);
+  if (open !== prevOpen) {
+    setPrevOpen(open);
     if (!open) {
       setMessage("");
       setActiveTemplateId(null);
     }
-  }, [open]);
+  }
 
   const { mutate, isPending } = useMutation({
     mutationFn: () => {

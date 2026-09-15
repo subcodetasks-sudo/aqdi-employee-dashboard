@@ -115,9 +115,12 @@ export default function ClientsWrapper() {
     return () => clearTimeout(handler);
   }, [searchInput]);
 
-  useEffect(() => {
+  const pageResetKey = JSON.stringify([searchQuery, pageSize]);
+  const [prevPageResetKey, setPrevPageResetKey] = useState(pageResetKey);
+  if (pageResetKey !== prevPageResetKey) {
+    setPrevPageResetKey(pageResetKey);
     setCurrentPage(1);
-  }, [searchQuery, pageSize]);
+  }
 
   const { rows, meta, summary, isLoading, isFetching, isError } = useClientsList({
     page: currentPage,

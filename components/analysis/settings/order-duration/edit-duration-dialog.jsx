@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -27,13 +27,16 @@ export default function EditDurationDialog({ duration }) {
   const [instrumentType, setInstrumentType] = useState(duration?.instrument_type || "");
   const queryClient = useQueryClient();
 
-  useEffect(() => {
-    if (!open) return;
-    setDurationName(duration?.period || "");
-    setPrice(duration?.price != null ? String(duration.price) : "");
-    setDurationType(duration?.contract_type || "housing");
-    setInstrumentType(duration?.instrument_type || "");
-  }, [open, duration]);
+  const [prevOpen, setPrevOpen] = useState(false);
+  if (open !== prevOpen) {
+    setPrevOpen(open);
+    if (open) {
+      setDurationName(duration?.period || "");
+      setPrice(duration?.price != null ? String(duration.price) : "");
+      setDurationType(duration?.contract_type || "housing");
+      setInstrumentType(duration?.instrument_type || "");
+    }
+  }
 
   const { mutate, isPending } = useMutation({
     mutationFn: () =>

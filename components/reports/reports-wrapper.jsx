@@ -69,35 +69,42 @@ export default function ReportsWrapper() {
   const [period, setPeriod] = useState(searchParams.get("period") ?? "all");
   const [dateFrom, setDateFrom] = useState(searchParams.get("date_from") ?? "");
   const [dateTo, setDateTo] = useState(searchParams.get("date_to") ?? "");
-  const [contractType, setContractType] = useState(searchParams.get("contract_type") ?? "all");
-  const [employee, setEmployee] = useState(searchParams.get("employee_id") ?? "all");
+  const [selectedContractType, setContractType] = useState(searchParams.get("contract_type") ?? "all");
+  const [selectedEmployee, setEmployee] = useState(searchParams.get("employee_id") ?? "all");
 
   const { contractTypeOptions, employeeOptions, isLoadingEmployees } =
     useReportFilterOptions();
+
+  // Unknown filter values (stale URL, removed employee) fall back to a valid option.
+  const contractType = isLoadingEmployees
+    ? selectedContractType
+    : resolveReportFilterValue(selectedContractType, contractTypeOptions);
+  const employee = isLoadingEmployees
+    ? selectedEmployee
+    : resolveReportFilterValue(selectedEmployee, employeeOptions);
 
   const lastUpdated = useMemo(() => formatLastUpdated(), []);
 
   useEffect(() => {
     if (isLoadingEmployees) return;
-
-    const validContractType = resolveReportFilterValue(contractType, contractTypeOptions);
-    const validEmployee = resolveReportFilterValue(employee, employeeOptions);
-
-    if (validContractType === contractType && validEmployee === employee) return;
-
-    if (validContractType !== contractType) setContractType(validContractType);
-    if (validEmployee !== employee) setEmployee(validEmployee);
+    if (contractType === selectedContractType && employee === selectedEmployee) return;
+    if (
+      searchParams.get("contract_type") === contractType &&
+      searchParams.get("employee_id") === employee
+    ) {
+      return;
+    }
 
     const params = new URLSearchParams(searchParams.toString());
-    params.set("contract_type", validContractType);
-    params.set("employee_id", validEmployee);
+    params.set("contract_type", contractType);
+    params.set("employee_id", employee);
     router.replace(`${pathname}?${params.toString()}`);
   }, [
     isLoadingEmployees,
     contractType,
     employee,
-    contractTypeOptions,
-    employeeOptions,
+    selectedContractType,
+    selectedEmployee,
     pathname,
     router,
     searchParams,

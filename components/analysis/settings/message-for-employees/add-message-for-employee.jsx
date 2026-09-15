@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -35,13 +35,15 @@ export default function AddNewMessageForEmployeeDialog({ isEdit, messageAlert })
 
   const queryClient = useQueryClient();
 
-  useEffect(() => {
+  const [prevOpen, setPrevOpen] = useState(false);
+  if (open !== prevOpen) {
+    setPrevOpen(open);
     if (open) {
       setSelectedSection(messageAlert?.message_alert_section_id?.toString() || "");
       setSelectedItem(messageAlert?.message_alert_section_item_id?.toString() || "");
       setMessage(messageAlert?.message || "");
     }
-  }, [open, messageAlert]);
+  }
 
   const { data: sectionsData, isLoading: sectionsLoading } = useQuery({
     queryKey: ["message-alert-sections-employee"],

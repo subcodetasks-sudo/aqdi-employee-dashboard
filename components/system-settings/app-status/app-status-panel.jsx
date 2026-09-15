@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -52,11 +52,11 @@ export default function AppStatusPanel() {
     android: emptyPlatformForm.android,
   });
 
-  useEffect(() => {
-    if (!data) return;
-    const next = extractAppStatus(data);
-    setForms({ website: next.website, ios: next.ios, android: next.android });
-  }, [data]);
+  const [syncedData, setSyncedData] = useState(null);
+  if (data && data !== syncedData) {
+    setSyncedData(data);
+    setForms({ website: status.website, ios: status.ios, android: status.android });
+  }
 
   const mobileToggleMutation = useMutation({
     mutationFn: ({ value }) =>

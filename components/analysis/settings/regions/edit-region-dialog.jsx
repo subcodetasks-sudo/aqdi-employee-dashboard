@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import SettingsFormDialog, {
   SettingsFieldLabel,
@@ -16,9 +16,11 @@ export default function EditRegionDialog({ region }) {
   const [regionName, setRegionName] = useState(region?.name_ar || "");
   const queryClient = useQueryClient();
 
-  useEffect(() => {
+  const [prevOpen, setPrevOpen] = useState(false);
+  if (open !== prevOpen) {
+    setPrevOpen(open);
     if (open) setRegionName(region?.name_ar || "");
-  }, [open, region]);
+  }
 
   const { mutate, isPending } = useMutation({
     mutationFn: () =>
