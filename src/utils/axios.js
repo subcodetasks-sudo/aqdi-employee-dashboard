@@ -75,17 +75,26 @@ async function forceLogout() {
 
     const accessToken = getAccessToken();
     const refreshToken = getRefreshToken();
-    if (refreshToken) {
+    // Lazy import keeps this module free of a hard Firebase cycle at load time.
+    const { disconnectFcmToken, getStoredFcmToken } = await import("@/src/lib/firebase/messaging");
+    const fcmToken = getStoredFcmToken();
+
+    if (refreshToken || fcmToken) {
         // Best-effort server-side revocation — never block the redirect on it.
+        const payload = {};
+        if (refreshToken) payload.refresh_token = refreshToken;
+        if (fcmToken) payload.fcm_token = fcmToken;
+
         refreshClient
             .post(
                 AUTH_ENDPOINTS.logout,
-                { refresh_token: refreshToken },
+                payload,
                 { headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined }
             )
             .catch(() => {});
     }
 
+    await disconnectFcmToken().catch(() => {});
     clearAuthSession();
 
     // Also clears the `token` cookie src/proxy.js reads for route protection —

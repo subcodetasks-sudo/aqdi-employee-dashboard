@@ -183,7 +183,6 @@ export const ROUTE_SECTION_RULES = [
   { prefix: '/home/settings/property-usage', section: PERMISSION_SECTIONS.property_reference },
   { prefix: '/home/settings/regions', section: PERMISSION_SECTIONS.regions },
   { prefix: '/home/settings/cities', section: PERMISSION_SECTIONS.cities },
-  { prefix: '/home/settings/order-duration', section: PERMISSION_SECTIONS.contract_periods },
   { prefix: '/home/settings/message-sections', section: PERMISSION_SECTIONS.message_alerts },
   { prefix: '/home/settings/message-section-items', section: PERMISSION_SECTIONS.message_alerts },
   { prefix: '/home/settings/message-for-employee', section: PERMISSION_SECTIONS.message_alerts },

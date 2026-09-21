@@ -93,6 +93,7 @@ export function invalidateRefundCaches(queryClient, { queryKey, orderId } = {}) 
   invalidateOrdersCaches(queryClient, { queryKey, orderId });
   invalidate(queryClient, ["refundContracts"]);
   invalidate(queryClient, ["refundContractsLookup"]);
+  invalidate(queryClient, ["refundContractsSummary"]);
   invalidate(queryClient, ["returnOrders"]);
   invalidate(queryClient, ["status"]);
 }
