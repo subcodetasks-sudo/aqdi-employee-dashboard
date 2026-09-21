@@ -11,6 +11,7 @@ import { useRowSelection } from "@/src/hooks/use-row-selection";
 import RealtimeOrdersToolbar from "@/components/realtime-orders/realtime-orders-toolbar";
 import WhatsAppPaymentLinkDialog from "@/components/realtime-orders/whatsapp-payment-link-dialog";
 import ReturnRequestDialog from "@/components/orders/return-request-dialog";
+import ConfirmOrderStatusChangeDialog from "@/components/orders/confirm-order-status-change-dialog";
 import ChangeOrderStatusFieldsDialog, {
   getStatusCaseFields,
 } from "@/components/realtime-orders/change-order-status-fields-dialog";
@@ -56,6 +57,10 @@ export default function ReturnOrdersWrapper() {
     setStatusFieldsOpen,
     pendingStatusChange,
     setPendingStatusChange,
+    confirmStatusOpen,
+    setConfirmStatusOpen,
+    pendingStatusConfirm,
+    confirmStatusChange,
     manageStatusesOpen,
     setManageStatusesOpen,
     statusItems,
@@ -230,6 +235,18 @@ export default function ReturnOrdersWrapper() {
       <WhatsAppPaymentLinkDialog
         open={paymentLinkOpen}
         onOpenChange={setPaymentLinkOpen}
+      />
+
+      <ConfirmOrderStatusChangeDialog
+        open={confirmStatusOpen}
+        onOpenChange={setConfirmStatusOpen}
+        statusName={
+          pendingStatusConfirm?.status?.name ??
+          pendingStatusConfirm?.status?.label
+        }
+        orderLabel={pendingStatusConfirm?.orderLabel}
+        isPending={isChangingStatus && !pendingStatusConfirm?.requiresFields}
+        onConfirm={confirmStatusChange}
       />
 
       <ChangeOrderStatusFieldsDialog

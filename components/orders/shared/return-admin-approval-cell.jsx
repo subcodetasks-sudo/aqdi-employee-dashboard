@@ -27,19 +27,17 @@ import {
 } from "@/components/analysis/returned/refund-contract-utils";
 import { invalidateRefundCaches } from "@/src/lib/invalidate-orders-caches";
 
-function getApprovalMeta(row) {
-  const status = getOrderAdminApprovalStatus(row);
-  // Customer refund (is_refunded) is a separate signal from admin approval.
-  const customerRefunded =
-    row?.is_refunded === true ||
-    row?.is_refunded === 1 ||
-    row?.customer_refunded === true ||
-    row?.refunded === true;
+function getApprovalMeta(row, refund) {
+  // Prefer refund-lookup status so the badge matches toolbar KPIs.
+  const status =
+    refund != null
+      ? refund.adminConfirmed ?? getOrderAdminApprovalStatus(row)
+      : getOrderAdminApprovalStatus(row);
 
   if (status === true || status === 1) {
     return {
       key: "approved",
-      label: customerRefunded ? "تم الاسترجاع" : "تمت الموافقة",
+      label: "تمت الموافقة",
       className: "bg-[#E6FFE6] text-[#047857] dark:bg-emerald-500/15 dark:text-emerald-300",
     };
   }
@@ -72,7 +70,7 @@ export default function ReturnAdminApprovalCell({
     [row, refund, refundsLookup]
   );
 
-  const approval = getApprovalMeta(row);
+  const approval = getApprovalMeta(row, refund);
   const canAct = canShowReturnOrderApproval(row, refund) && approval.key === "pending";
 
   const amount = row?.refund_amount ?? refund?.refundAmount;
@@ -150,7 +148,9 @@ export default function ReturnAdminApprovalCell({
                 <X className="size-3.5" strokeWidth={2.75} />
               </button>
             </span>
-          ) : isAdminRefundApproved(getOrderAdminApprovalStatus(row)) ? (
+          ) : isAdminRefundApproved(
+              refund?.adminConfirmed ?? getOrderAdminApprovalStatus(row)
+            ) ? (
             <Check className="size-3.5 text-[#15803D] dark:text-emerald-400" strokeWidth={2.75} />
           ) : null}
         </div>

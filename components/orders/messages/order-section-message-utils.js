@@ -1,21 +1,40 @@
 /** بيانات الطلب المستخدمة في إرسال الخطأ عبر واتساب (منفصلة عن رسائل الأقسام) */
 
+import {
+  getOrderAddressStep,
+  getOrderDeedStep,
+  getOrderFinancialStep,
+  getOrderOwnerStep,
+  getOrderTenantStep,
+  getOrderUnits,
+  getOrderUnitsStep,
+  pickAgentRelatedField,
+} from "@/src/lib/order-detail-steps";
+
 export function getOrderSectionFields(orderData, context) {
   const summary = orderData?.contract_summary ?? {};
+  const owner = getOrderOwnerStep(orderData);
+  const address = getOrderAddressStep(orderData);
+  const deed = getOrderDeedStep(orderData);
   const orderId = orderData?.uuid ?? orderData?.id ?? summary?.id;
 
   if (context === "owner") {
     return [
       { label: "رقم الطلب", value: orderId },
-      { label: "اسم المالك", value: summary.name_owner },
-      { label: "رقم الهوية", value: summary.property_owner_id_num },
-      { label: "تاريخ الميلاد", value: summary.property_owner_dob },
-      { label: "رقم الجوال", value: summary.property_owner_mobile },
-      { label: "ايبان المالك", value: summary.property_owner_iban },
-      { label: "المنطقة", value: summary.relation_labels?.property_region },
-      { label: "المدينة", value: summary.relation_labels?.property_city },
-      { label: "الحي", value: summary.neighborhood },
-      { label: "الشارع", value: summary.street },
+      { label: "رقم الهوية", value: owner.property_owner_id_num ?? summary.property_owner_id_num },
+      { label: "تاريخ الميلاد", value: owner.property_owner_dob ?? summary.property_owner_dob },
+      { label: "رقم الجوال", value: owner.property_owner_mobile ?? summary.property_owner_mobile },
+      { label: "ايبان المالك", value: owner.property_owner_iban ?? summary.property_owner_iban },
+      {
+        label: "المنطقة",
+        value: summary.relation_labels?.property_region || address.property_place_name,
+      },
+      {
+        label: "المدينة",
+        value: summary.relation_labels?.property_city || address.city_name,
+      },
+      { label: "الحي", value: address.neighborhood ?? summary.neighborhood },
+      { label: "الشارع", value: address.street ?? summary.street },
     ];
   }
 
@@ -26,47 +45,74 @@ export function getOrderSectionFields(orderData, context) {
         label: "اسم الوكيل",
         value:
           summary.name_of_property_owner_agent ??
-          summary.property_owner_agent_name ??
-          summary.name_owner,
+          summary.property_owner_agent_name,
       },
-      { label: "رقم الهوية", value: summary.id_num_of_property_owner_agent },
-      { label: "تاريخ الميلاد", value: summary.dob_of_property_owner_agent },
-      { label: "رقم الجوال", value: summary.mobile_of_property_owner_agent },
+      {
+        label: "رقم الهوية",
+        value: pickAgentRelatedField(orderData, "id_num_of_property_owner_agent"),
+      },
+      {
+        label: "تاريخ الميلاد",
+        value: pickAgentRelatedField(orderData, "dob_of_property_owner_agent"),
+      },
+      {
+        label: "رقم الجوال",
+        value: pickAgentRelatedField(orderData, "mobile_of_property_owner_agent"),
+      },
+      {
+        label: "رقم الوكالة",
+        value: pickAgentRelatedField(
+          orderData,
+          "agency_number_in_instrument_of_property_owner"
+        ),
+      },
     ];
   }
-
-  const step1 = orderData?.step1 ?? {};
 
   if (context === "propertyAddress") {
     return [
       { label: "رقم الطلب", value: orderId },
-      { label: "المدينة", value: step1.city_name || step1.property_city_id },
-      { label: "المنطقة", value: step1.property_place_name || step1.property_place_id },
-      { label: "الحي", value: step1.neighborhood },
-      { label: "الشارع", value: step1.street },
-      { label: "رقم المبنى", value: step1.building_number },
-      { label: "رقم الإضافي", value: step1.extra_figure },
-      { label: "الرمز البريدي", value: step1.postal_code },
-      { label: "خط العرض", value: step1.latitude },
-      { label: "خط الطول", value: step1.longitude },
+      { label: "المدينة", value: address.city_name || address.property_city_id },
+      {
+        label: "المنطقة",
+        value: address.property_place_name || address.property_place_id,
+      },
+      { label: "الحي", value: address.neighborhood },
+      { label: "الشارع", value: address.street },
+      { label: "رقم المبنى", value: address.building_number },
+      { label: "رقم الإضافي", value: address.extra_figure },
+      { label: "الرمز البريدي", value: address.postal_code },
+      { label: "خط العرض", value: address.latitude ?? address.lat },
+      { label: "خط الطول", value: address.longitude ?? address.lng },
     ];
   }
 
   if (context === "propertyDetails") {
     return [
       { label: "رقم الطلب", value: orderId },
-      { label: "استخدام العقار", value: step1.property_usages_name },
-      { label: "نوع العقار", value: step1.property_type_name },
-      { label: "إجمالي عدد الوحدات في كل طابق", value: step1.number_of_units_per_floor },
-      { label: "إجمالي عدد الطوابق", value: step1.number_of_floors },
-      { label: "عمر العقار", value: step1.age_of_the_property },
-      { label: "إجمالي عدد الوحدات في العقار", value: step1.number_of_units_in_realestate },
-      { label: "إسم مالك العقار", value: summary.name_owner },
+      {
+        label: "استخدام العقار",
+        value: deed.property_usages_name ?? address.property_usages_name,
+      },
+      {
+        label: "نوع العقار",
+        value: deed.property_type_name ?? address.property_type_name,
+      },
+      {
+        label: "إجمالي عدد الوحدات في كل طابق",
+        value: deed.number_of_units_per_floor,
+      },
+      { label: "إجمالي عدد الطوابق", value: deed.number_of_floors },
+      { label: "عمر العقار", value: deed.age_of_the_property },
+      {
+        label: "إجمالي عدد الوحدات في العقار",
+        value: deed.number_of_units_in_realestate,
+      },
     ];
   }
 
-  const step2 = orderData?.step2 ?? {};
-  const unit = step2.unit ?? orderData?.unit ?? {};
+  const unitsStep = getOrderUnitsStep(orderData);
+  const unit = getOrderUnits(orderData)[0] ?? unitsStep.unit ?? {};
 
   if (context === "unitDetails") {
     return [
@@ -74,64 +120,67 @@ export function getOrderSectionFields(orderData, context) {
       {
         label: "نوع الوحدة",
         value:
-          step2.unit_type_name ||
           unit.unit_type_name ||
-          step2.unit_type_id ||
-          unit.unit_type_id,
+          unitsStep.unit_type_name ||
+          unit.unit_type_id ||
+          unitsStep.unit_type_id,
       },
       {
         label: "استخدام الوحدة",
         value:
-          step2.unit_usage_name ||
           unit.unit_usage_name ||
-          step2.unit_usage_id ||
-          unit.unit_usage_id,
+          unitsStep.unit_usage_name ||
+          unit.unit_usage_id ||
+          unitsStep.unit_usage_id,
       },
-      { label: "رقم الوحدة", value: step2.unit_number ?? unit.unit_number },
-      { label: "رقم الطابق", value: step2.floor_number ?? unit.floor_number },
-      { label: "مساحة الوحدة", value: step2.unit_area ?? unit.unit_area },
-      { label: "إجمالي الغرف", value: step2.tootal_rooms ?? unit.tootal_rooms },
-      { label: "عدد الغرف", value: step2.number_of_rooms ?? unit.number_of_rooms },
+      { label: "رقم الوحدة", value: unit.unit_number ?? unitsStep.unit_number },
+      { label: "رقم الطابق", value: unit.floor_number ?? unitsStep.floor_number },
+      { label: "مساحة الوحدة", value: unit.unit_area ?? unitsStep.unit_area },
+      { label: "إجمالي الغرف", value: unit.tootal_rooms ?? unitsStep.tootal_rooms },
+      {
+        label: "عدد الغرف",
+        value: unit.number_of_rooms ?? unitsStep.number_of_rooms,
+      },
       {
         label: "عدد الصالات",
-        value: step2.The_number_of_halls ?? unit.The_number_of_halls,
+        value: unit.The_number_of_halls ?? unitsStep.The_number_of_halls,
       },
       {
         label: "عدد المطابخ",
-        value: step2.The_number_of_kitchens ?? unit.The_number_of_kitchens,
+        value: unit.The_number_of_kitchens ?? unitsStep.The_number_of_kitchens,
       },
       {
         label: "عدد دورات المياه",
-        value: step2.The_number_of_toilets ?? unit.The_number_of_toilets,
+        value: unit.The_number_of_toilets ?? unitsStep.The_number_of_toilets,
       },
     ];
   }
 
-  const step3 = orderData?.step3 ?? {};
+  const tenant = getOrderTenantStep(orderData);
 
   if (context === "contractTenant") {
     return [
       { label: "رقم الطلب", value: orderId },
-      { label: "كيان المستأجر", value: step3.tenant_entity },
-      { label: "رقم هوية المستأجر", value: step3.tenant_id_num },
-      { label: "تاريخ ميلاد المستأجر", value: step3.tenant_dob },
-      { label: "رقم جوال المستأجر", value: step3.tenant_mobile },
+      { label: "كيان المستأجر", value: tenant.tenant_entity },
+      { label: "رقم هوية المستأجر", value: tenant.tenant_id_num },
+      { label: "تاريخ ميلاد المستأجر", value: tenant.tenant_dob },
+      { label: "رقم جوال المستأجر", value: tenant.tenant_mobile },
       {
         label: "الرقم الموحد للمنشأة",
-        value: step3.tenant_entity_unified_registry_number,
+        value: tenant.tenant_entity_unified_registry_number,
       },
       {
         label: "رقم هوية وكيل المستأجر",
-        value: step3.id_num_of_property_tenant_agent,
+        value: tenant.id_num_of_property_tenant_agent,
       },
       {
         label: "جوال وكيل المستأجر",
-        value: step3.mobile_of_property_tenant_agent,
+        value: tenant.mobile_of_property_tenant_agent,
       },
     ];
   }
 
-  const step4 = orderData?.step4 ?? {};
+  const financial = getOrderFinancialStep(orderData);
 
   if (context === "financialTerms") {
     return [
@@ -142,25 +191,25 @@ export function getOrderSectionFields(orderData, context) {
           orderData?.payment_type?.name_trans ||
           orderData?.payment_type?.name_ar ||
           orderData?.payment_type?.name ||
-          step4.payment_type_name ||
-          step4.payment_type_id,
+          financial.payment_type_name ||
+          financial.payment_type_id,
       },
       {
         label: "مدة العقد",
         value:
-          typeof step4.contract_term_in_years === "object"
-            ? step4.contract_term_in_years?.name ||
-              step4.contract_term_in_years?.period
-            : step4.contract_term_in_years,
+          typeof financial.contract_term_in_years === "object"
+            ? financial.contract_term_in_years?.name ||
+              financial.contract_term_in_years?.period
+            : financial.contract_term_in_years,
       },
-      { label: "مدة (سنوات)", value: step4.duration_years },
-      { label: "مدة (أشهر)", value: step4.duration_months },
-      { label: "تاريخ بداية العقد", value: step4.contract_starting_date },
+      { label: "مدة (سنوات)", value: financial.duration_years },
+      { label: "مدة (أشهر)", value: financial.duration_months },
+      { label: "تاريخ بداية العقد", value: financial.contract_starting_date },
       {
         label: "صلاحيات المستأجر",
         value: (() => {
           const details =
-            orderData?.tenant_roles_details || step4.tenant_roles_details;
+            orderData?.tenant_roles_details || financial.tenant_roles_details;
           if (Array.isArray(details) && details.length) {
             return details
               .map((item) => {
@@ -173,12 +222,12 @@ export function getOrderSectionFields(orderData, context) {
               .join("، ");
           }
           const names =
-            orderData?.tenant_role_names || step4.tenant_role_names;
+            orderData?.tenant_role_names || financial.tenant_role_names;
           if (Array.isArray(names) && names.length) return names.join("، ");
           return (
             orderData?.tenant_role?.text_of_reason ||
             orderData?.tenant_role?.name ||
-            step4.tenant_role_id
+            financial.tenant_role_id
           );
         })(),
       },
@@ -186,19 +235,19 @@ export function getOrderSectionFields(orderData, context) {
         label: "شروط أخرى",
         value: (() => {
           const list =
-            orderData?.other_conditions_list || step4.other_conditions_list;
+            orderData?.other_conditions_list || financial.other_conditions_list;
           if (Array.isArray(list) && list.length) {
             return list.filter(Boolean).join("، ");
           }
           return (
             orderData?.other_conditions ||
-            step4.other_conditions ||
-            step4.text_additional_terms
+            financial.other_conditions ||
+            financial.text_additional_terms
           );
         })(),
       },
-      { label: "نص الشروط الإضافية", value: step4.text_additional_terms },
-      { label: "ملاحظات", value: step4.notes },
+      { label: "نص الشروط الإضافية", value: financial.text_additional_terms },
+      { label: "ملاحظات", value: financial.notes },
     ];
   }
 
@@ -250,24 +299,27 @@ export function getOrderClientPhone(orderData) {
 
 export function getOrderPhoneForContext(orderData, context) {
   const summary = orderData?.contract_summary ?? {};
-  const step3 = orderData?.step3 ?? {};
+  const owner = getOrderOwnerStep(orderData);
+  const tenant = getOrderTenantStep(orderData);
 
   if (context === "agent") {
-    return summary?.mobile_of_property_owner_agent || "";
+    return pickAgentRelatedField(orderData, "mobile_of_property_owner_agent") || "";
   }
 
   if (context === "contractTenant") {
     return (
-      step3?.tenant_mobile ||
-      step3?.mobile_of_property_tenant_agent ||
+      tenant?.tenant_mobile ||
+      tenant?.mobile_of_property_tenant_agent ||
       orderData?.user?.mobile ||
       orderData?.user_mobile ||
+      owner.property_owner_mobile ||
       summary?.property_owner_mobile ||
       ""
     );
   }
 
   return (
+    owner.property_owner_mobile ||
     summary?.property_owner_mobile ||
     orderData?.user?.mobile ||
     orderData?.user_mobile ||

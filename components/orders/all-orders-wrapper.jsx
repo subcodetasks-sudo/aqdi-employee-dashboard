@@ -156,6 +156,10 @@ export default function AllOrdersWrapper() {
         onStatusFieldsOpenChange={vm.setStatusFieldsOpen}
         pendingStatusChange={vm.pendingStatusChange}
         onPendingStatusChangeClear={() => vm.setPendingStatusChange(null)}
+        confirmStatusOpen={vm.confirmStatusOpen}
+        onConfirmStatusOpenChange={vm.setConfirmStatusOpen}
+        pendingStatusConfirm={vm.pendingStatusConfirm}
+        onConfirmStatusChange={vm.confirmStatusChange}
         isChangingStatus={vm.isChangingStatus}
         onStatusFieldsSubmit={(extraValues) => {
           if (!vm.pendingStatusChange) return;

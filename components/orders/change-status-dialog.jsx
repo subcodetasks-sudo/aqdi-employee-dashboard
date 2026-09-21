@@ -1,5 +1,5 @@
 "use client"
-import React, { useMemo, useState } from 'react'
+import React, { useMemo, useRef, useState } from 'react'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { axiosInstance } from '@/src/utils/axios'
@@ -12,8 +12,10 @@ import {
   getOrderContractStatusDisplay,
   getReturnRequestExistsMessage,
   hasReturnRequest,
+  isOrderPaid,
   isReturnContractStatus,
   normalizeOrderForReturnRequest,
+  UNPAID_ORDER_RETURN_MESSAGE,
 } from "@/components/analysis/returned/refund-contract-utils"
 import { openDialogAfterMenuClose } from "@/src/lib/open-dialog-after-menu-close"
 import { invalidateOrdersCaches, invalidateContractStatusCaches } from "@/src/lib/invalidate-orders-caches"
@@ -26,9 +28,13 @@ import {
 } from "@/src/lib/contract-statuses"
 import ChangeOrderStatusFieldsDialog, {
   getStatusCaseFields,
-  statusRequiresExtraFields,
 } from "@/components/realtime-orders/change-order-status-fields-dialog"
+import ConfirmOrderStatusChangeDialog from "@/components/orders/confirm-order-status-change-dialog"
 import { postOrderStatus } from "@/src/lib/order-status-api"
+import {
+  normalizeOrderMenuStatus,
+  useConfirmOrderStatusChange,
+} from "@/src/hooks/use-confirm-order-status-change"
 
 export default function ChangeStatusDialog({ orderId, order, queryKey }) {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -86,11 +92,32 @@ export default function ChangeStatusDialog({ orderId, order, queryKey }) {
   function changeStatus({ statusId, extraValues, fields }) {
     return postOrderStatus(orderId, { statusId, extraValues, fields })
   }
+
+  const changeStatusRef = useRef(null)
+
+  const {
+    confirmOpen: confirmStatusOpen,
+    pendingConfirm: pendingStatusConfirm,
+    requestConfirm,
+    confirmStatusChange,
+    clearConfirm,
+    handleConfirmOpenChange: setConfirmStatusOpen,
+  } = useConfirmOrderStatusChange({
+    onDirectChange: (pending) => {
+      changeStatusRef.current?.({ statusId: pending.status.id })
+    },
+    onNeedsFields: (pending) => {
+      setPendingStatus(pending.status)
+      setStatusFieldsOpen(true)
+    },
+  })
+
   const { mutate: changeStatusMutate, isPending: changeStatusPending } = useMutation({
     mutationFn: changeStatus,
     onSuccess: (res) => {
       setStatusFieldsOpen(false)
       setPendingStatus(null)
+      clearConfirm()
       toast.success(res?.data?.message || "تم تغيير حالة الطلب")
       invalidateOrdersCaches(queryClient, { queryKey, orderId })
     },
@@ -98,6 +125,7 @@ export default function ChangeStatusDialog({ orderId, order, queryKey }) {
       toast.error(res?.response?.data?.message || "حدث خطأ أثناء تغيير حالة الطلب")
     }
   })
+  changeStatusRef.current = changeStatusMutate
 
   const { mutate: deleteOrder, isPending: isDeleting } = useMutation({
     mutationFn: () => axiosInstance.post(`/admin/orders/${orderId}/delete`),
@@ -115,7 +143,13 @@ export default function ChangeStatusDialog({ orderId, order, queryKey }) {
   }
 
   const handleStatusClick = (status) => {
-    if (isReturnContractStatus(status)) {
+    const menuStatus = normalizeOrderMenuStatus(status)
+
+    if (isReturnContractStatus(menuStatus)) {
+      if (!isOrderPaid(returnOrder)) {
+        toast.error(UNPAID_ORDER_RETURN_MESSAGE)
+        return
+      }
       if (hasReturnRequest(returnOrder)) {
         toast.info(getReturnRequestExistsMessage(returnOrder))
         return
@@ -124,13 +158,12 @@ export default function ChangeStatusDialog({ orderId, order, queryKey }) {
       return
     }
 
-    if (statusRequiresExtraFields(status)) {
-      setPendingStatus(status)
-      openDialogAfterMenuClose(() => setStatusFieldsOpen(true))
-      return
-    }
-
-    changeStatusMutate({ statusId: status.id })
+    requestConfirm({
+      order,
+      orderId,
+      status: menuStatus,
+      orderLabel: order?.uuid ?? orderId,
+    })
   }
 
   return (
@@ -212,6 +245,18 @@ export default function ChangeStatusDialog({ orderId, order, queryKey }) {
         order={returnOrder}
         orderId={orderId}
         queryKey={queryKey}
+      />
+
+      <ConfirmOrderStatusChangeDialog
+        open={confirmStatusOpen}
+        onOpenChange={setConfirmStatusOpen}
+        statusName={
+          pendingStatusConfirm?.status?.name ??
+          pendingStatusConfirm?.status?.label
+        }
+        orderLabel={pendingStatusConfirm?.orderLabel}
+        isPending={changeStatusPending && !pendingStatusConfirm?.requiresFields}
+        onConfirm={confirmStatusChange}
       />
       
       <ChangeOrderStatusFieldsDialog
