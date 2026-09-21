@@ -14,6 +14,7 @@ import {
 import ChangeStatusDialog from "@/components/orders/change-status-dialog";
 import ContractPaymentLinkButton from "@/components/orders/single-order/contract-payment-link-button";
 import SendOrderSmsButton from "@/components/orders/shared/send-order-sms-button";
+import { getOrderFinancialStep } from "@/src/lib/order-detail-steps";
 
 const display = (v) => (v == null || v === "" ? "---" : String(v));
 
@@ -44,14 +45,14 @@ export default function LeaseRenewalHeader({
   onCopy,
 }) {
   const summary = orderData?.contract_summary ?? {};
-  const step4 = orderData?.step4 ?? {};
+  const financial = getOrderFinancialStep(orderData);
   const user = orderData?.user ?? {};
   const orderUuid = display(orderData?.uuid);
   const mobile = display(user.mobile);
   const statusName = display(summary.contract_status_name || "قيد المعالجة...");
   const contractType = display(summary.contract_type || "تجاري");
   const contractPeriod = display(summary.contract_period || "سنة");
-  const startDate = formatDate(step4.contract_starting_date || "01-10-2023");
+  const startDate = formatDate(financial.contract_starting_date || "01-10-2023");
 
   const tabBase =
     "flex items-center gap-2 py-3 px-5 rounded-2xl text-xs font-bold transition-all shrink-0";

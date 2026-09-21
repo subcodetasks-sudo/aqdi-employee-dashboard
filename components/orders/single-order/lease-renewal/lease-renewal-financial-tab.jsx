@@ -12,6 +12,11 @@ import {
   formatDisplayValue,
   isEmptyDisplayValue,
 } from "../contract-summary-view";
+import {
+  getOrderFinancialStep,
+  getOrderUnits,
+  getOrderUnitsStep,
+} from "@/src/lib/order-detail-steps";
 
 const MoneyCard = ({ label, value, accent = "border-brand-accent" }) => {
   const empty = isEmptyDisplayValue(value);
@@ -60,38 +65,48 @@ const PermissionCard = ({ label, active }) =>
   );
 
 export default function LeaseRenewalFinancialTab({ orderData }) {
-  const step4 = orderData?.step4 ?? {};
-  const step2 = orderData?.step2 ?? {};
+  const financial = getOrderFinancialStep(orderData);
+  const unitsStep = getOrderUnitsStep(orderData);
+  const firstUnit = getOrderUnits(orderData)[0] ?? {};
 
   const totalValue =
-    step4.contract_term_in_years?.price ||
-    step4.annual_rent_amount_for_the_unit ||
+    financial.contract_term_in_years?.price ||
+    financial.annual_rent_amount_for_the_unit ||
     null;
 
   const electricityMeter =
-    step2.electricity_meter_number || step2.electricity_meter || null;
-  const waterMeter = step2.water_meter_number || step2.water_meter || null;
-  const startDate = step4.contract_starting_date || null;
+    firstUnit.electricity_meter_number ||
+    unitsStep.electricity_meter_number ||
+    firstUnit.electricity_meter ||
+    unitsStep.electricity_meter ||
+    null;
+  const waterMeter =
+    firstUnit.water_meter_number ||
+    unitsStep.water_meter_number ||
+    firstUnit.water_meter ||
+    unitsStep.water_meter ||
+    null;
+  const startDate = financial.contract_starting_date || null;
   const dateType =
-    step4.type_contract_starting_date === "hijri"
+    financial.type_contract_starting_date === "hijri"
       ? "هجري"
-      : step4.type_contract_starting_date === "gregorian"
+      : financial.type_contract_starting_date === "gregorian"
         ? "ميلادي"
-        : step4.type_contract_starting_date || "—";
+        : financial.type_contract_starting_date || "—";
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 w-full min-w-0">
       <div className="bg-[#F4F4F4] rounded-20 p-4 min-w-0 overflow-hidden">
         <ContractStepEditor
           title="البيانات المالية"
-          step="step4"
+          step="step6"
           fields={LEASE_RENEWAL_FINANCIAL_FIELDS}
         >
           <div className="space-y-3">
             <MoneyCard label="إجمالي قيمة العقد" value={totalValue} accent="border-brand-accent" />
             <MoneyCard
               label="طريقة الدفعات"
-              value={step4.payment_type_name || "—"}
+              value={financial.payment_type_name || "—"}
               accent="border-[#BDBDBD]"
             />
             {electricityMeter ? (
@@ -133,7 +148,7 @@ export default function LeaseRenewalFinancialTab({ orderData }) {
       <div className="bg-[#F4F4F4] rounded-20 p-4 min-w-0 overflow-hidden">
         <ContractStepEditor
           title="مدة العقد"
-          step="step4"
+          step="step6"
           fields={LEASE_RENEWAL_CONTRACT_DATE_FIELDS}
         >
           <div className="space-y-3">
@@ -141,7 +156,7 @@ export default function LeaseRenewalFinancialTab({ orderData }) {
             <MoneyCard label="نوع التاريخ" value={dateType} accent="border-[#3B82F6]" />
             <MoneyCard
               label="الغرامة اليومية"
-              value={step4.daily_fine || "—"}
+              value={financial.daily_fine || "—"}
               accent="border-[#EF4444]"
             />
           </div>
@@ -149,12 +164,12 @@ export default function LeaseRenewalFinancialTab({ orderData }) {
       </div>
 
       <div className="bg-[#F4F4F4] rounded-20 p-4 min-w-0 overflow-hidden">
-        <ContractStepEditor title="الصلاحيات" step="step4" fields={[]} showEdit={false}>
+        <ContractStepEditor title="الصلاحيات" step="step6" fields={[]} showEdit={false}>
           <div className="space-y-3">
-            <PermissionCard label="التأجير من الباطن" active={Boolean(step4.other_conditions)} />
+            <PermissionCard label="التأجير من الباطن" active={Boolean(financial.other_conditions)} />
             <PermissionCard
               label="الترميمات والتحسينات"
-              active={Boolean(step4.text_additional_terms)}
+              active={Boolean(financial.text_additional_terms)}
             />
             <PermissionCard label="مراجعة الجهات الحكومية" active={false} />
             <PermissionCard label="تعديل الوحدة الإيجارية" active={false} />
@@ -163,7 +178,7 @@ export default function LeaseRenewalFinancialTab({ orderData }) {
       </div>
 
       <div className="bg-[#F4F4F4] rounded-20 p-4 flex flex-col h-fit min-w-0 overflow-hidden sm:col-span-2 xl:col-span-1">
-        <ContractStepEditor title="تحويل الطلب" step="step4" fields={[]} showEdit={false}>
+        <ContractStepEditor title="تحويل الطلب" step="step6" fields={[]} showEdit={false}>
           <LeaseRenewalDraftTransfer
             orderId={orderData?.id}
             orderData={orderData}

@@ -23,6 +23,11 @@ import {
   isEmptyDisplayValue,
 } from "../contract-summary-view";
 import AgencyDocumentViewerDialog from "../agency-document-viewer-dialog";
+import {
+  getOrderDeedStep,
+  getOrderFinancialStep,
+  getOrderTenantStep,
+} from "@/src/lib/order-detail-steps";
 
 const EMPTY_ADDITIONAL_TERMS = "لا توجد شروط أو متغيرات إضافية من العميل";
 const EMPTY_NOTES = "لا توجد ملاحظات";
@@ -50,11 +55,13 @@ const getFileExtension = (url) => {
 
 export default function LeaseRenewalRenewTab({ orderData }) {
   const [viewerOpen, setViewerOpen] = useState(false);
-  const step3 = orderData?.step3 ?? {};
-  const step4 = orderData?.step4 ?? {};
+  const tenant = getOrderTenantStep(orderData);
+  const financial = getOrderFinancialStep(orderData);
+  const deed = getOrderDeedStep(orderData);
   const orderUuid = orderData?.uuid ?? "410001";
   const instrumentImage = resolveInstrumentUrl(
     orderData?.contract_summary?.image_instrument ??
+      deed.image_instrument ??
       orderData?.image_instrument
   );
   const isPdf = isPdfUrl(instrumentImage);
@@ -62,8 +69,8 @@ export default function LeaseRenewalRenewTab({ orderData }) {
   const documentName = `الصك #${orderUuid}`;
   const viewerTitle = isPdf ? "معاينة عقد PDF" : "معاينة الصك";
 
-  const additionalTerms = step4.text_additional_terms?.trim() || null;
-  const notesEdits = step4.notes_edits?.trim() || null;
+  const additionalTerms = financial.text_additional_terms?.trim() || null;
+  const notesEdits = financial.notes_edits?.trim() || null;
   const termsLines = additionalTerms
     ? additionalTerms.split(/\n+/).map((line) => line.trim()).filter(Boolean)
     : [];
@@ -207,21 +214,21 @@ export default function LeaseRenewalRenewTab({ orderData }) {
           <div className="bg-[#F4F4F4] rounded-20 p-5 min-w-0 overflow-hidden">
             <ContractStepEditor
               title="تفاصيل المستأجر :"
-              step="step3"
+              step="step4"
               fields={LEASE_RENEWAL_TENANT_FIELDS}
             >
               <div
                 className={`bg-white rounded-2xl p-4 border-r-[3px] border-r-[#9C27B0] shadow-sm w-full min-w-0 ${
-                  isEmptyDisplayValue(step3.tenant_dob) ? "opacity-45" : ""
+                  isEmptyDisplayValue(tenant.tenant_dob) ? "opacity-45" : ""
                 }`}
               >
                 <p className="text-11 text-[#9E9E9E] mb-1">تاريخ ميلاد المستأجر</p>
                 <p
                   className={`text-15 font-bold break-words ${
-                    isEmptyDisplayValue(step3.tenant_dob) ? "text-ink-placeholder" : "text-black"
+                    isEmptyDisplayValue(tenant.tenant_dob) ? "text-ink-placeholder" : "text-black"
                   }`}
                 >
-                  {formatDisplayValue(step3.tenant_dob)}
+                  {formatDisplayValue(tenant.tenant_dob)}
                 </p>
               </div>
             </ContractStepEditor>
@@ -238,7 +245,7 @@ export default function LeaseRenewalRenewTab({ orderData }) {
 
         <ContractStepEditor
           title="الشروط والمتغيرات التي طلبها العميل :"
-          step="step4"
+          step="step6"
           fields={LEASE_RENEWAL_TERMS_FIELDS}
         >
           <div className="bg-white rounded-20 p-6 border border-[#EBEBEB] shadow-sm relative min-h-[200px] min-w-0 overflow-hidden">
@@ -279,7 +286,7 @@ export default function LeaseRenewalRenewTab({ orderData }) {
 
         <ContractStepEditor
           title="يرجى الانتباه :"
-          step="step4"
+          step="step6"
           fields={LEASE_RENEWAL_NOTES_FIELDS}
         >
           <div className="bg-[#F0F0F0] rounded-2xl p-5 flex gap-3 items-start border border-[#E8E8E8] min-w-0">

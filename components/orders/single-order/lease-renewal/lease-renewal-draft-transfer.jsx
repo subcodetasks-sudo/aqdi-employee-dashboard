@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { ChevronLeft, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -20,6 +20,8 @@ import {
   getOrderDraftStatusFromDetail,
 } from "@/src/lib/draft-contract-statuses";
 import { invalidateDraftOrdersCaches } from "@/src/lib/invalidate-orders-caches";
+import ConfirmOrderStatusChangeDialog from "@/components/orders/confirm-order-status-change-dialog";
+import { openDialogAfterMenuClose } from "@/src/lib/open-dialog-after-menu-close";
 
 const DEFAULT_STATUS_STYLE = {
   backgroundColor: "#FFE8EE",
@@ -50,6 +52,9 @@ export default function LeaseRenewalDraftTransfer({
     getOrderDraftContractNumber(orderData)
   );
   const [selectedStatus, setSelectedStatus] = useState(currentStatus);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [pendingStatus, setPendingStatus] = useState(null);
+  const pendingApplyRef = useRef(null);
 
   const [syncedOrderData, setSyncedOrderData] = useState(orderData);
   if (orderData !== syncedOrderData) {
@@ -80,6 +85,12 @@ export default function LeaseRenewalDraftTransfer({
         draft_contract_status_id: statusId,
       }),
     onSuccess: (res) => {
+      if (pendingApplyRef.current) {
+        setSelectedStatus(pendingApplyRef.current);
+        pendingApplyRef.current = null;
+      }
+      setConfirmOpen(false);
+      setPendingStatus(null);
       toast.success(res?.data?.message || "تم تحديث حالة التحويل");
       invalidateOrder();
     },
@@ -110,13 +121,20 @@ export default function LeaseRenewalDraftTransfer({
   });
 
   const handleStatusSelect = (item) => {
-    setSelectedStatus({
+    const nextStatus = {
       id: item.id,
       name: item.name,
       color: item.color,
       colorText: item.color_text,
-    });
-    updateDraftStatus(item.id);
+    };
+    setPendingStatus(nextStatus);
+    openDialogAfterMenuClose(() => setConfirmOpen(true));
+  };
+
+  const handleConfirmStatus = () => {
+    if (!pendingStatus?.id) return;
+    pendingApplyRef.current = pendingStatus;
+    updateDraftStatus(pendingStatus.id);
   };
 
   const handleSave = () => {
@@ -228,11 +246,28 @@ export default function LeaseRenewalDraftTransfer({
     </div>
   );
 
+  const confirmDialog = (
+    <ConfirmOrderStatusChangeDialog
+      open={confirmOpen}
+      onOpenChange={(next) => {
+        if (isUpdatingStatus) return;
+        setConfirmOpen(next);
+        if (!next) setPendingStatus(null);
+      }}
+      title="تأكيد تغيير حالة التحويل"
+      statusName={pendingStatus?.name}
+      orderLabel={orderData?.uuid ?? orderId}
+      isPending={isUpdatingStatus}
+      onConfirm={handleConfirmStatus}
+    />
+  );
+
   if (layout === "column") {
     return (
       <div className="flex flex-col gap-5 h-fit">
         {transferBlock}
         {draftNumberBlock}
+        {confirmDialog}
       </div>
     );
   }
@@ -241,6 +276,7 @@ export default function LeaseRenewalDraftTransfer({
     <div className="flex flex-col gap-4">
       {transferBlock}
       {draftNumberBlock}
+      {confirmDialog}
     </div>
   );
 }
