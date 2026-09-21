@@ -1,6 +1,7 @@
 "use client";
 
 import ReturnRequestDialog from "@/components/orders/return-request-dialog";
+import ConfirmOrderStatusChangeDialog from "@/components/orders/confirm-order-status-change-dialog";
 import ChangeOrderStatusFieldsDialog from "./change-order-status-fields-dialog";
 import ManageContractStatusesDialog from "./manage-contract-statuses-dialog";
 import WhatsAppPaymentLinkDialog from "./whatsapp-payment-link-dialog";
@@ -16,6 +17,10 @@ export default function RealtimeOrdersDialogs({
   onStatusFieldsOpenChange,
   pendingStatusChange,
   onPendingStatusChangeClear,
+  confirmStatusOpen,
+  onConfirmStatusOpenChange,
+  pendingStatusConfirm,
+  onConfirmStatusChange,
   isChangingStatus,
   onStatusFieldsSubmit,
   manageStatusesOpen,
@@ -36,6 +41,18 @@ export default function RealtimeOrdersDialogs({
       <WhatsAppPaymentLinkDialog
         open={paymentLinkOpen}
         onOpenChange={onPaymentLinkOpenChange}
+      />
+
+      <ConfirmOrderStatusChangeDialog
+        open={confirmStatusOpen}
+        onOpenChange={onConfirmStatusOpenChange}
+        statusName={
+          pendingStatusConfirm?.status?.name ??
+          pendingStatusConfirm?.status?.label
+        }
+        orderLabel={pendingStatusConfirm?.orderLabel}
+        isPending={isChangingStatus && !pendingStatusConfirm?.requiresFields}
+        onConfirm={onConfirmStatusChange}
       />
 
       <ChangeOrderStatusFieldsDialog

@@ -7,6 +7,7 @@ import ContractTenant from "@/components/orders/single-order/contract-tenant";
 import FinancialDetailes from "@/components/orders/single-order/financial-details";
 import ReturnRequestDialog from "@/components/orders/return-request-dialog";
 import PaymentLinkDialog from "@/components/orders/shared/payment-link-dialog";
+import ConfirmOrderStatusChangeDialog from "@/components/orders/confirm-order-status-change-dialog";
 import ChangeOrderStatusFieldsDialog, {
   getStatusCaseFields,
 } from "../change-order-status-fields-dialog";
@@ -38,6 +39,10 @@ export default function OrderDetailsDialogs({ id, orderData, view, dialogs }) {
     setStatusFieldsOpen,
     pendingStatusChange,
     setPendingStatusChange,
+    confirmStatusOpen,
+    setConfirmStatusOpen,
+    pendingStatusConfirm,
+    confirmStatusChange,
     paymentDialogOpen,
     setPaymentDialogOpen,
     paymentLink,
@@ -107,6 +112,18 @@ export default function OrderDetailsDialogs({ id, orderData, view, dialogs }) {
         onOpenChange={setEjarDocumentationOpen}
         orderData={orderData}
         queryKey={queryKey}
+      />
+
+      <ConfirmOrderStatusChangeDialog
+        open={confirmStatusOpen}
+        onOpenChange={setConfirmStatusOpen}
+        statusName={
+          pendingStatusConfirm?.status?.name ??
+          pendingStatusConfirm?.status?.label
+        }
+        orderLabel={pendingStatusConfirm?.orderLabel}
+        isPending={isChangingStatus && !pendingStatusConfirm?.requiresFields}
+        onConfirm={confirmStatusChange}
       />
 
       <ChangeOrderStatusFieldsDialog

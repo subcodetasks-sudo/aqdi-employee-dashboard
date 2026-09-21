@@ -105,18 +105,12 @@ export function AccentCard({
 
 export function Field({ label, value, empty }) {
   const isEmpty = empty || value === "" || value == null;
+  if (isEmpty) return null;
   return (
     <div className="flex items-center justify-between gap-3 text-xs">
       <span className="text-gray-400 font-medium shrink-0">{label}</span>
-      <span
-        className={cn(
-          "font-bold text-left truncate min-w-0",
-          isEmpty
-            ? "text-[#D1D5DB] dark:text-white/25"
-            : "text-gray-900 dark:text-white/90"
-        )}
-      >
-        {isEmpty ? "—" : value}
+      <span className="font-bold text-left truncate min-w-0 text-gray-900 dark:text-white/90">
+        {value}
       </span>
     </div>
   );

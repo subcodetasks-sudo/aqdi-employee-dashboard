@@ -3,12 +3,13 @@ import { isDraftOrderRow } from "@/src/lib/draft-contract-statuses";
 export function getContractTypeKey(row = {}) {
   const explicit = row?.contract_type_key;
   if (explicit === "housing" || explicit === "commercial") return explicit;
+  if (explicit === "residential") return "housing";
 
   const type = String(row?.contract_type ?? row?.contract_type_trans ?? "")
     .trim()
     .toLowerCase();
   if (!type) return "";
-  if (type.includes("سكن") || type === "housing") return "housing";
+  if (type.includes("سكن") || type === "housing" || type === "residential") return "housing";
   if (type.includes("تجار") || type === "commercial") return "commercial";
   return "";
 }

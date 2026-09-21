@@ -7,7 +7,6 @@ import {
   SingleOrderProvider,
   useSingleOrderContext,
 } from "@/components/orders/single-order/single-order-context";
-import LeaseRenewalOrderView from "@/components/orders/single-order/lease-renewal/lease-renewal-order-view";
 import { useSidebarStore } from "@/src/stores/sidebar-store";
 import { useContractStatuses } from "@/src/hooks/use-contract-statuses";
 import { usePermissions } from "@/src/hooks/use-permissions";
@@ -71,7 +70,9 @@ function OrderDetailsBody() {
   );
   const back = resolveBackLink(searchParams.get("from"));
   const isLeaseRenewal =
-    orderData?.contract_summary?.instrument_type_key === "lease_renewal";
+    orderData?.contract_summary?.instrument_type_key === "lease_renewal" ||
+    orderData?.step1?.instrument_type_key === "lease_renewal" ||
+    orderData?.instrument_type_key === "lease_renewal";
 
   const handleOpenNotes = () => {
     setOrderId(id);
@@ -113,11 +114,12 @@ function OrderDetailsBody() {
         isStatusPending={dialogs.isChangingStatus}
       />
 
-      {isLeaseRenewal ? (
-        <LeaseRenewalOrderView orderData={orderData} />
-      ) : (
-        <OrderGroupsLayout order={view} onEdit={dialogs.setEditorSection} />
-      )}
+      <OrderGroupsLayout
+        order={view}
+        orderData={orderData}
+        onEdit={dialogs.setEditorSection}
+        isLeaseRenewal={isLeaseRenewal}
+      />
 
       <OrderDetailsDialogs id={id} orderData={orderData} view={view} dialogs={dialogs} />
 

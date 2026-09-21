@@ -1,3 +1,9 @@
+import { getOrderAddressStep } from "@/src/lib/order-detail-steps";
+import {
+  absolutizeMediaUrl,
+  fileNameFromMediaUrl,
+} from "@/src/lib/media-url";
+
 function pick(...values) {
   for (const value of values) {
     if (value == null || value === "") continue;
@@ -6,24 +12,14 @@ function pick(...values) {
   return null;
 }
 
+/** Resolve API file payloads to an absolute browser-loadable URL. */
 export function resolveImageUrl(value) {
-  if (!value) return null;
-  if (typeof value === "string") return value.trim() || null;
-  if (typeof value === "object") {
-    return value.url || value.path || value.full_url || value.src || null;
-  }
-  return null;
+  return absolutizeMediaUrl(value);
 }
 
 export function fileNameFromUrl(url) {
   if (!url) return null;
-  try {
-    const path = String(url).split("?")[0];
-    const name = path.split("/").pop();
-    return name || null;
-  } catch {
-    return null;
-  }
+  return fileNameFromMediaUrl(url, null);
 }
 
 export function parseCoordinate(value) {
@@ -63,7 +59,7 @@ export function parseCoordsFromUrl(url) {
 export function isLikelyImageUrl(url) {
   if (!url || typeof url !== "string") return false;
   const path = url.split("?")[0].toLowerCase();
-  return /\.(jpe?g|png|gif|webp|bmp|svg|pdf|heic|heif)$/i.test(path);
+  return /\.(jpe?g|png|gif|webp|bmp|svg|heic|heif)$/i.test(path);
 }
 
 export function isMapsUrl(url) {
@@ -80,12 +76,12 @@ export function isMapsUrl(url) {
   );
 }
 
-function resolveNationalAddressType(step1 = {}, orderData = {}) {
-  const source = String(step1.address_source ?? orderData.address_source ?? "").toLowerCase();
-  const imageUrl = resolveImageUrl(pick(step1.image_address, orderData.image_address));
-  const addressUrl = pick(step1.address_url, orderData.address_url);
-  const lat = parseCoordinate(pick(step1.latitude, orderData.latitude));
-  const lng = parseCoordinate(pick(step1.longitude, orderData.longitude));
+function resolveNationalAddressType(address = {}, orderData = {}) {
+  const source = String(address.address_source ?? orderData.address_source ?? "").toLowerCase();
+  const imageUrl = resolveImageUrl(pick(address.image_address, orderData.image_address));
+  const addressUrl = pick(address.address_url, orderData.address_url);
+  const lat = parseCoordinate(pick(address.latitude, address.lat, orderData.latitude, orderData.lat));
+  const lng = parseCoordinate(pick(address.longitude, address.lng, orderData.longitude, orderData.lng));
 
   if (source.includes("صورة") || source.includes("image") || source.includes("img")) {
     return "img";
@@ -109,18 +105,24 @@ function resolveNationalAddressType(step1 = {}, orderData = {}) {
 }
 
 export function resolveNationalAddress(orderData = {}) {
-  const step1 = orderData.step1 ?? {};
+  const address = getOrderAddressStep(orderData);
   const summary = orderData.contract_summary ?? {};
-  const addressUrl = pick(step1.address_url, orderData.address_url);
+  const addressUrl = pick(address.address_url, orderData.address_url);
   const imageUrl =
-    resolveImageUrl(pick(step1.image_address, orderData.image_address)) ||
+    resolveImageUrl(pick(address.image_address, orderData.image_address)) ||
     (isLikelyImageUrl(addressUrl) ? addressUrl : null);
 
   const fromUrl = parseCoordsFromUrl(addressUrl);
-  const lat = parseCoordinate(pick(step1.latitude, orderData.latitude)) ?? fromUrl?.lat ?? null;
-  const lng = parseCoordinate(pick(step1.longitude, orderData.longitude)) ?? fromUrl?.lng ?? null;
+  const lat =
+    parseCoordinate(pick(address.latitude, address.lat, orderData.latitude, orderData.lat)) ??
+    fromUrl?.lat ??
+    null;
+  const lng =
+    parseCoordinate(pick(address.longitude, address.lng, orderData.longitude, orderData.lng)) ??
+    fromUrl?.lng ??
+    null;
 
-  const type = resolveNationalAddressType(step1, orderData);
+  const type = resolveNationalAddressType(address, orderData);
 
   const mapsUrl =
     lat != null && lng != null
@@ -132,19 +134,30 @@ export function resolveNationalAddress(orderData = {}) {
   const sourceLabels = {
     img: "صورة بطاقة العنوان",
     location: "رابط خرائط قوقل",
-    text: pick(step1.address_source, "العنوان الوطني"),
+    text: pick(address.address_source, "العنوان الوطني"),
   };
 
   return {
     type,
-    source: sourceLabels[type] || pick(step1.address_source, "العنوان الوطني"),
-    city: pick(summary.relation_labels?.property_city, step1.city_name, step1.property_city_name),
-    district: pick(summary.neighborhood, step1.neighborhood),
-    building: pick(summary.building_number, step1.building_number),
-    street: pick(summary.street, step1.street),
-    postal_code: pick(summary.postal_code, step1.postal_code),
-    additional_number: pick(step1.additional_number, summary.additional_number),
-    short_address: pick(step1.short_address, summary.short_address, step1.national_address),
+    source: sourceLabels[type] || pick(address.address_source, "العنوان الوطني"),
+    city: pick(
+      summary.relation_labels?.property_city,
+      orderData.relation_labels?.property_city,
+      address.city_name,
+      address.property_city_name,
+      orderData.city_name
+    ),
+    district: pick(summary.neighborhood, address.neighborhood, orderData.neighborhood),
+    building: pick(summary.building_number, address.building_number, orderData.building_number),
+    street: pick(summary.street, address.street, orderData.street),
+    postal_code: pick(summary.postal_code, address.postal_code, orderData.postal_code),
+    additional_number: pick(
+      address.extra_figure,
+      address.additional_number,
+      summary.additional_number,
+      orderData.extra_figure
+    ),
+    short_address: pick(address.short_address, summary.short_address, address.national_address),
     image_url: imageUrl,
     image_name: fileNameFromUrl(imageUrl),
     address_url: addressUrl,

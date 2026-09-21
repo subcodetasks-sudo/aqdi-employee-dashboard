@@ -15,6 +15,11 @@ const UNIT_FIELDS = [
   { key: "kitchens", label: "المطابخ" },
   { key: "ac", label: "المكيفات" },
   { key: "furnished", label: "مؤثثة" },
+  { key: "kitchen_tank", label: "خزان المطبخ" },
+  { key: "kitchen_cabinets", label: "خزائن المطبخ" },
+  { key: "electricity_meter", label: "عداد الكهرباء" },
+  { key: "water_meter", label: "عداد المياه" },
+  { key: "services", label: "الخدمات" },
 ];
 
 function UnitCard({ unit, onEdit }) {

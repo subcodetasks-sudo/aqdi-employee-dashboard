@@ -32,6 +32,10 @@ import PaymentLinkDialog from "@/components/orders/shared/payment-link-dialog";
 import { invalidateOrdersCaches } from "@/src/lib/invalidate-orders-caches";
 import { cn } from "@/lib/utils";
 import { RT } from "./theme";
+import {
+  getSaudiMobileError,
+  sanitizeSaudiContactInput,
+} from "@/src/lib/saudi-contact";
 
 const fieldClass =
   "h-12 rounded-xl border-surface-border-soft bg-[#F5F8F7] px-4 text-13 font-medium shadow-none focus-visible:ring-0 focus-visible:border-brand-dark";
@@ -139,8 +143,9 @@ export default function WhatsAppPaymentLinkDialog({ open, onOpenChange }) {
   });
 
   const handleSubmit = () => {
-    if (!mobile.trim()) {
-      toast.error("رقم جوال العميل مطلوب");
+    const phoneError = getSaudiMobileError(mobile, { required: true });
+    if (phoneError) {
+      toast.error(phoneError);
       return;
     }
     const parsedAmount = Number(amount);
@@ -205,8 +210,12 @@ export default function WhatsAppPaymentLinkDialog({ open, onOpenChange }) {
                 <input
                   dir="ltr"
                   value={mobile}
-                  onChange={(e) => setMobile(e.target.value)}
+                  onChange={(e) =>
+                    setMobile(sanitizeSaudiContactInput("phone", e.target.value))
+                  }
                   placeholder="05xxxxxxxx"
+                  inputMode="numeric"
+                  maxLength={12}
                   className={cn(fieldClass, "w-full")}
                 />
               </label>

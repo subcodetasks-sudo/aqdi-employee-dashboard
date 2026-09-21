@@ -1,11 +1,14 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Image from "next/image";
 import { Copy, Download, ExternalLink, Eye, ImageIcon, MapPin } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import MediaPreviewDialog from "@/components/shared/media-preview-dialog";
+import {
+  downloadMedia,
+  fileNameFromMediaUrl,
+} from "@/src/lib/media-url";
 import { Field } from "./primitives";
 import { isLikelyImageUrl, isMapsUrl } from "../national-address-utils";
 
@@ -159,9 +162,26 @@ function MapAddressPanel({ address }) {
 
 function ImageAddressPanel({ address }) {
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [downloading, setDownloading] = useState(false);
   const imageUrl = getImageUrl(address);
 
   if (!imageUrl) return null;
+
+  const handleDownload = async () => {
+    if (downloading) return;
+    setDownloading(true);
+    try {
+      const ok = await downloadMedia(
+        imageUrl,
+        address.image_name || fileNameFromMediaUrl(imageUrl)
+      );
+      toast.success(ok ? "تم التحميل بنجاح" : "تم فتح الملف للتحميل");
+    } catch {
+      toast.error("تعذر تحميل الصورة");
+    } finally {
+      setDownloading(false);
+    }
+  };
 
   return (
     <>
@@ -176,13 +196,11 @@ function ImageAddressPanel({ address }) {
           onClick={() => setPreviewOpen(true)}
           className="group relative mb-3 block w-full overflow-hidden rounded-xl border border-[#D7E3DE] bg-white dark:border-white/10 dark:bg-[#0B1411]"
         >
-          <div className="relative aspect-[4/3] max-h-[220px] w-full">
-            <Image
+          <div className="relative flex aspect-[4/3] max-h-[220px] w-full items-center justify-center p-2">
+            <img
               src={imageUrl}
               alt="صورة العنوان الوطني"
-              fill
-              className="object-contain p-2"
-              unoptimized
+              className="max-h-full max-w-full object-contain"
             />
           </div>
           <span className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors group-hover:bg-black/10">
@@ -202,14 +220,15 @@ function ImageAddressPanel({ address }) {
             <Eye className="size-3.5" />
             عرض
           </button>
-          <a
-            href={imageUrl}
-            download
-            className="inline-flex items-center gap-1 text-xs font-bold text-status-neutral hover:underline dark:text-white/55"
+          <button
+            type="button"
+            onClick={handleDownload}
+            disabled={downloading}
+            className="inline-flex items-center gap-1 text-xs font-bold text-status-neutral hover:underline disabled:opacity-60 dark:text-white/55"
           >
             <Download className="size-3.5" />
-            تحميل
-          </a>
+            {downloading ? "جاري التحميل..." : "تحميل"}
+          </button>
         </div>
       </div>
 

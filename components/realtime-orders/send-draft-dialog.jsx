@@ -6,6 +6,12 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import OrderActionDialogHeader from "@/components/shared/order-action-dialog-header";
 import { useUpdateOrder } from "@/src/hooks/use-update-order";
 import { useDialogFormSession } from "@/src/hooks/use-dialog-form-session";
+import {
+  getSaudiMobileError,
+  sanitizeSaudiContactInput,
+} from "@/src/lib/saudi-contact";
+import { toast } from "sonner";
+import { getOrderTenantStep } from "@/src/lib/order-detail-steps";
 
 export default function SendDraftDialog({
   open,
@@ -17,9 +23,10 @@ export default function SendDraftDialog({
   const [contactMode, setContactMode] = useState("same");
   const [otherNumber, setOtherNumber] = useState("");
 
+  const tenant = getOrderTenantStep(orderData);
   const registeredMobile =
     orderData?.user?.mobile ??
-    orderData?.step3?.tenant_mobile ??
+    tenant?.tenant_mobile ??
     orderData?.tenant_mobile ??
     "";
 
@@ -43,6 +50,13 @@ export default function SendDraftDialog({
 
   const handleSubmit = () => {
     if (!canSubmit || isPending) return;
+    if (contactMode === "other") {
+      const phoneError = getSaudiMobileError(otherNumber, { required: true });
+      if (phoneError) {
+        toast.error(phoneError);
+        return;
+      }
+    }
     submit({
       orderId: orderData?.id,
       body: {
@@ -145,10 +159,14 @@ export default function SendDraftDialog({
               <input
                 type="text"
                 value={otherNumber}
-                onChange={(e) => setOtherNumber(e.target.value)}
-                placeholder="أدخل رقم التواصل الفعلي"
+                onChange={(e) =>
+                  setOtherNumber(sanitizeSaudiContactInput("phone", e.target.value))
+                }
+                placeholder="05xxxxxxxx"
                 disabled={isPending}
                 dir="ltr"
+                inputMode="numeric"
+                maxLength={12}
                 className="w-full h-13 bg-white border border-surface-border rounded-2xl px-4 text-sm focus:outline-none focus:border-brand-hover focus:ring-1 focus:ring-brand-hover/20 transition-all"
               />
             ) : (

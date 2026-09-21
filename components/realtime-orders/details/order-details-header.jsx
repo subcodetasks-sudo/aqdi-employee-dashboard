@@ -46,6 +46,7 @@ import {
 import { getOrderContractUuid } from "@/components/orders/messages/order-section-message-utils";
 import { fetchContractPaymentLink } from "@/components/orders/shared/payment-gateway";
 import { getSendErrorTitle } from "@/components/orders/messages/order-send-error-utils";
+import { isOrderPaid } from "@/components/analysis/returned/refund-contract-utils";
 
 const ACTION_PILLS = [
   {
@@ -351,6 +352,29 @@ export default function OrderDetailsHeader({
           {stamp}
         </span>
 
+        {order.documentation_deadline_at ? (
+          <span className="h-7 px-3 rounded-full border border-[#F59E0B] text-[#B45309] text-[12.5px] font-bold inline-flex items-center gap-1.5">
+            <CalendarDays className="size-3.5" />
+            موعد التوثيق:{" "}
+            {new Date(order.documentation_deadline_at)
+              .toLocaleString("en-GB", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: false,
+              })
+              .replace(",", " -")}
+          </span>
+        ) : null}
+
+        {order.app_or_web ? (
+          <span className="h-7 px-3 rounded-full bg-[#EEF2FF] text-[#3730A3] text-[12.5px] font-bold inline-flex items-center">
+            المصدر: {order.app_or_web}
+          </span>
+        ) : null}
+
         <button
           type="button"
           onClick={onOpenNotes}
@@ -466,7 +490,12 @@ export default function OrderDetailsHeader({
       </div>
 
       <div className="border-t border-[#EEF2F0] dark:border-white/5 pt-3 flex flex-wrap gap-2">
-        {ACTION_PILLS.map((pill) => {
+        {ACTION_PILLS.filter((pill) => {
+          if (pill.id === "refund") {
+            return isOrderPaid(orderData ?? order);
+          }
+          return true;
+        }).map((pill) => {
           const Icon = pill.Icon;
           return (
             <button
