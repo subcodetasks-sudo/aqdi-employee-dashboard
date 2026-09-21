@@ -8,8 +8,16 @@ import PaymentMessagesTab from "@/components/contract-settings/payment-messages/
 import InstrumentTypesTab from "@/components/contract-settings/instrument-types/instrument-types-tab";
 import SmsSettingsTab from "@/components/contract-settings/sms-settings/sms-settings-tab";
 import MeterFeeSettingsTab from "@/components/contract-settings/meter-fees/meter-fee-settings-tab";
+import TaxApplicationFeeSettingsTab from "@/components/contract-settings/tax-fees/tax-application-fee-settings-tab";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FileText, Gauge, MessageSquareText, ScrollText, Settings2 } from "lucide-react";
+import {
+  FileText,
+  Gauge,
+  MessageSquareText,
+  Percent,
+  ScrollText,
+  Settings2,
+} from "lucide-react";
 import { usePermissions } from "@/src/hooks/use-permissions";
 import { PERMISSION_SECTIONS } from "@/src/lib/permissions";
 
@@ -38,6 +46,12 @@ const CONTRACT_SETTINGS_TABS = [
     icon: Gauge,
     // No dedicated catalog key yet — stays behind the umbrella settings.view gate.
     section: null,
+  },
+  {
+    value: "tax-fees",
+    label: "الضريبة ورسوم التطبيق",
+    icon: Percent,
+    section: PERMISSION_SECTIONS.settings,
   },
   {
     value: "payment-messages",
@@ -108,6 +122,10 @@ export default function ContractSettingsPage(props) {
 
         <TabsContent value="meter-fees" className="mt-0">
           <MeterFeeSettingsTab />
+        </TabsContent>
+
+        <TabsContent value="tax-fees" className="mt-0">
+          <TaxApplicationFeeSettingsTab />
         </TabsContent>
 
         <TabsContent value="payment-messages" className="mt-0">

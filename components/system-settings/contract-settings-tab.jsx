@@ -6,6 +6,7 @@ import PopupContractsTab from "@/components/contract-settings/popup-contracts/po
 import InstrumentTypesTab from "@/components/contract-settings/instrument-types/instrument-types-tab";
 import SmsSettingsTab from "@/components/contract-settings/sms-settings/sms-settings-tab";
 import MeterFeeSettingsTab from "@/components/contract-settings/meter-fees/meter-fee-settings-tab";
+import TaxApplicationFeeSettingsTab from "@/components/contract-settings/tax-fees/tax-application-fee-settings-tab";
 import PaymentMessagesTab from "@/components/contract-settings/payment-messages/payment-messages-tab";
 import { usePermissions } from "@/src/hooks/use-permissions";
 import { PERMISSION_SECTIONS } from "@/src/lib/permissions";
@@ -16,6 +17,7 @@ const SUB_TAB_PANELS = {
   "instrument-types": InstrumentTypesTab,
   "sms-settings": SmsSettingsTab,
   "meter-fees": MeterFeeSettingsTab,
+  "tax-fees": TaxApplicationFeeSettingsTab,
   "payment-messages": PaymentMessagesTab,
 };
 

@@ -438,19 +438,21 @@ export default function ClientsWrapper() {
                     </td>
 
                     <td className="px-3 py-3.5 whitespace-nowrap">
-                      <span className="text-13 font-bold text-gray-900 dark:text-white">
-                        {row.name}
-                      </span>
-                      {row.platformLabel ? (
-                        <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded-md bg-[#DCFCE7] text-green-700 dark:bg-emerald-500/20 dark:text-emerald-300 text-10 font-bold">
-                          {row.platformLabel}
+                      <div className="inline-flex items-center gap-2">
+                        <span className="text-13 font-bold text-gray-900 dark:text-white">
+                          {row.name}
                         </span>
-                      ) : null}
-                      {row.blocked ? (
-                        <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded-md bg-[#FEE2E2] text-red-600 dark:bg-rose-500/20 dark:text-rose-300 text-10 font-bold">
-                          محظور
-                        </span>
-                      ) : null}
+                        {row.platformLabel ? (
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-[#DCFCE7] text-green-700 dark:bg-emerald-500/20 dark:text-emerald-300 text-10 font-bold">
+                            {row.platformLabel}
+                          </span>
+                        ) : null}
+                        {row.blocked ? (
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-[#FEE2E2] text-red-600 dark:bg-rose-500/20 dark:text-rose-300 text-10 font-bold">
+                            محظور
+                          </span>
+                        ) : null}
+                      </div>
                     </td>
 
                     <td

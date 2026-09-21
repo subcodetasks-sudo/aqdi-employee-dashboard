@@ -16,6 +16,7 @@ import { axiosInstance, AUTH_ENDPOINTS } from '@/src/utils/axios';
 import { useUserStore } from '@/src/stores/user-store';
 import { useRouter } from 'next/navigation';
 import { setAuthCookie } from '@/src/app/actions/auth';
+import { requestFcmToken } from '@/src/lib/firebase/messaging';
 import { toast } from 'sonner';
 import { useIsDark, useToggleTheme } from '@/src/hooks/use-theme-mode';
 
@@ -44,11 +45,23 @@ export default function LoginPage() {
 
   const {mutate ,isPending}=useMutation({
     mutationFn:async(data)=>{
+      let fcm_token = null;
+
+      try {
+        fcm_token = await requestFcmToken();
+      } catch (error) {
+        console.warn("[firebase] FCM token unavailable during login:", error);
+      }
+
       const payload = {
         email: data.email,
         password: data.password,
         remember_me: !!data.remember,
       };
+
+      if (fcm_token) {
+        payload.fcm_token = fcm_token;
+      }
 
       const res = await axiosInstance.post(AUTH_ENDPOINTS.login, payload)
       return res.data

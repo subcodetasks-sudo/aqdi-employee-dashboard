@@ -10,6 +10,7 @@ export const CONTRACT_SUB_TABS = [
   { id: "instrument-types", label: "أنواع الصكوك", section: "instrument_settings" },
   { id: "sms-settings", label: "إعدادات رسائل SMS", section: "sms" },
   { id: "meter-fees", label: "رسوم العدادات", section: null },
+  { id: "tax-fees", label: "الضريبة ورسوم التطبيق", section: "settings" },
   { id: "payment-messages", label: "إعدادات رسائل الدفع", section: "payment_messages" },
 ];
 
@@ -29,7 +30,6 @@ export const SYSTEM_CATEGORIES = [
   { id: "cities", label: "المدن", subtitle: "قائمة بقيم · 10 عنصر", href: "/home/settings/cities", section: "cities" },
   { id: "property-types", label: "أنواع العقار", subtitle: "قائمة بقيم · 10 عنصر", href: "/home/settings/property-types", section: "property_reference" },
   { id: "property-usage", label: "استخدام العقار", subtitle: "قائمة بقيم · 5 عنصر", href: "/home/settings/property-usage", section: "property_reference" },
-  { id: "order-duration", label: "مدة الطلب", subtitle: "سجلات · 4 عنصر", href: "/home/settings/order-duration", section: "contract_periods" },
   { id: "message-sections", label: "أقسام الرسائل", subtitle: "سجلات · 5 عنصر", href: "/home/settings/message-sections", section: "message_alerts" },
   { id: "message-section-items", label: "بنود أقسام الرسائل", subtitle: "قائمة بقيم · 3 عنصر", href: "/home/settings/message-section-items", section: "message_alerts" },
   { id: "customer-app-messages", label: "الرسائل التطبيقية للعميل", subtitle: "رسائل موجّهة · 2 عنصر", href: "/home/settings/customer-app-messages", section: "app_content" },

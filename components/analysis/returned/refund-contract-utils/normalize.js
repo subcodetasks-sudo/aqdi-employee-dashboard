@@ -11,6 +11,9 @@ export function normalizeOrderForReturnRequest(order, orderId) {
       ...order,
       contract_id: order.contract_id ?? order.id ?? orderId,
       id: order.id ?? orderId,
+      is_paid: order.is_paid ?? order.contract_summary?.is_paid,
+      payment_status:
+        order.payment_status ?? order.contract_summary?.payment_status,
       has_return_request:
         order.has_return_request ?? order.contract_summary?.has_return_request,
       return_request_status:
@@ -76,6 +79,13 @@ export function mapAnalyticsRefundContractToOrderRow(item) {
   const approved = item.management_approval?.approved ?? item.admin_confirmed ?? null;
   const paymentAmount = item.payment_amount ?? item.amount_payment ?? null;
   const contractUuid = item.contract_uuid ?? item.order_number ?? item.uuid ?? null;
+  const isRefunded = item.is_refunded === true || item.is_refunded === 1;
+
+  let returnRequestStatus = item.return_request_status ?? null;
+  if (isRefunded || approved === true || approved === 1) returnRequestStatus = "approved";
+  else if (approved === false || approved === 0) returnRequestStatus = "rejected";
+  else if (returnRequestStatus == null) returnRequestStatus = "pending";
+  else if (returnRequestStatus === "refunded") returnRequestStatus = "approved";
 
   return {
     id: item.contract_id ?? item.id,
@@ -95,6 +105,7 @@ export function mapAnalyticsRefundContractToOrderRow(item) {
     customer_refunded: item.is_refunded,
     refunded: item.is_refunded,
     refunded_status: item.refunded_status ?? null,
+    return_request_status: returnRequestStatus,
     employee_name: item.requester?.name ?? item.employee_name ?? "—",
     requester: item.requester ?? null,
     user_id: item.user_id ?? item.customer_id ?? item.user?.id ?? null,

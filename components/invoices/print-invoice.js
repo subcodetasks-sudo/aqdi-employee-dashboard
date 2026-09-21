@@ -1,6 +1,7 @@
 import { printHtmlDocument } from "@/src/lib/print";
 
 const TYPE_LABEL = {
+  housing: "سكني",
   residential: "سكني",
   commercial: "تجاري",
 };

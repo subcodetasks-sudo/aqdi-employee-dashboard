@@ -76,7 +76,6 @@ export default function RealEstateDetailsContent({ data }) {
     <div dir="rtl" className="flex flex-col gap-8">
       <Section title="بيانات المالك">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <DetailCard label="اسم المالك" value={data?.name_owner} copyable borderColor="border-green-500" />
           <DetailCard label="رقم الهوية" value={data?.national_num} copyable borderColor="border-blue-500" />
           <DetailCard label="تاريخ الميلاد (ميلادي)" value={data?.DOB} borderColor="border-purple-500" />
           <DetailCard label="تاريخ الميلاد (هجري)" value={data?.dob_hijri} borderColor="border-orange-500" />
@@ -113,7 +112,7 @@ export default function RealEstateDetailsContent({ data }) {
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
         {/* <Section title="تفاصيل العقار">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <DetailCard label="اسم العقار" value={data?.name_real_estate || data?.name_owner} borderColor="border-green-600" />
+            <DetailCard label="اسم العقار" value={data?.name_real_estate} borderColor="border-green-600" />
             <DetailCard label="نوع العقار" value={data?.property_type_name} borderColor="border-lime-500" />
             <DetailCard label="استخدام العقار" value={data?.property_usages_name} borderColor="border-blue-600" />
             <DetailCard label="نوع العقد" value={getContractTypeLabel(data?.contract_type)} borderColor="border-purple-600" />

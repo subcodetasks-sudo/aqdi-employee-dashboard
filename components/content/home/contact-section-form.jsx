@@ -11,6 +11,10 @@ import {
   getStringValue,
 } from "@/src/lib/content-admin";
 import { useSaveSection } from "@/src/hooks/use-save-section";
+import {
+  getSaudiMobileError,
+  isSaudiMobile,
+} from "@/src/lib/saudi-contact";
 
 const DEFAULT_VALUES = {
   badgeText: "دعم مباشر وشخصي",
@@ -87,7 +91,12 @@ export default function ContactSectionForm({ initialData, saveEndpoint, queryKey
         label="رقم التواصل"
         placeholder="05xxxxxxxx"
         dir="ltr"
-        rules={{ required: "رقم التواصل مطلوب" }}
+        inputKind="phone"
+        rules={{
+          required: "رقم التواصل مطلوب",
+          validate: (value) =>
+            isSaudiMobile(value) || getSaudiMobileError(value, { required: true }),
+        }}
       />
       <SectionImageField
         form={form}

@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Loader from "@/components/home/loader";
 import { axiosInstance } from "@/src/utils/axios";
+import { normalizeEmployeesListResponse } from "@/src/lib/employees";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronLeft } from "lucide-react";
 import {
@@ -21,7 +22,9 @@ export default function Salaries() {
   const router = useRouter();
 
   function getAllEmployees(page = 1) {
-    return axiosInstance.get(`/admin/employees?page=${page}`).then((res) => res?.data);
+    return axiosInstance
+      .get(`/admin/employees?page=${page}`)
+      .then((res) => normalizeEmployeesListResponse(res?.data));
   }
 
   const { data, isLoading } = useQuery({
@@ -29,8 +32,7 @@ export default function Salaries() {
     queryFn: () => getAllEmployees(currentPage),
   });
 
-  const employees = data?.items || data?.data?.items;
-  const pagination = data?.pagination || data?.data?.pagination;
+  const { items: employees, pagination } = normalizeEmployeesListResponse(data ?? {});
 
   if (isLoading) {
     return <Loader />;

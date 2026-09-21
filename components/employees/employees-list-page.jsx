@@ -12,6 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import PermissionGate from "@/components/auth/permission-gate";
 import { usePermissions } from "@/src/hooks/use-permissions";
+import { normalizeEmployeesListResponse } from "@/src/lib/employees";
 import { PERMISSION_SECTIONS } from "@/src/lib/permissions";
 import {
   EmployeeAvatar,
@@ -48,16 +49,16 @@ export default function EmployeesListPage() {
     if (search) {
       url += `&search=${encodeURIComponent(search)}`;
     }
-    return axiosInstance.get(url).then((res) => res?.data);
+    return axiosInstance.get(url).then((res) => normalizeEmployeesListResponse(res?.data));
   }
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["allEmployees", currentPage, debouncedSearchQuery],
     queryFn: () => getAllEmployees(currentPage, debouncedSearchQuery),
   });
 
-  const employees = data?.items || data?.data?.items;
-  const pagination = data?.pagination || data?.data?.pagination;
+  // Re-normalize so a stale pre-fix cache (raw API body) still renders.
+  const { items: employees, pagination } = normalizeEmployeesListResponse(data ?? {});
 
   const { mutateAsync: changeStatus, isPending: isPendingChangeStatus } = useMutation({
     mutationFn: (id) =>
@@ -74,6 +75,23 @@ export default function EmployeesListPage() {
 
   if (isLoading) {
     return <Loader />;
+  }
+
+  if (isError) {
+    return (
+      <div className="flex flex-col items-center gap-3 py-16 text-center" dir="rtl">
+        <p className="text-sm text-gray-500 dark:text-white/55">
+          {error?.response?.data?.message || error?.message || "تعذر تحميل الموظفين"}
+        </p>
+        <button
+          type="button"
+          onClick={() => refetch()}
+          className="h-9 px-4 rounded-lg bg-brand-dark text-white text-13 font-medium hover:opacity-90 transition-opacity"
+        >
+          إعادة المحاولة
+        </button>
+      </div>
+    );
   }
 
   return (
@@ -110,7 +128,7 @@ export default function EmployeesListPage() {
             </tr>
           </thead>
           <tbody>
-            {employees && employees.length > 0 ? (
+            {employees.length > 0 ? (
               employees.map((employee, index) => (
                 <tr
                   key={employee.id}

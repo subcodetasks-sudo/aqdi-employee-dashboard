@@ -1,16 +1,21 @@
 "use client";
 
-import { useCallback } from "react";
-import Image from "next/image";
+import { useCallback, useState } from "react";
 import { Download, Eye, Minus, Plus, Share2 } from "lucide-react";
+import { toast } from "sonner";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import OrderActionDialogHeader from "@/components/shared/order-action-dialog-header";
 import { useImageZoomPan } from "@/components/orders/single-order/use-image-zoom-pan";
+import {
+  absolutizeMediaUrl,
+  downloadMedia,
+  fileNameFromMediaUrl,
+  isPdfMediaUrl,
+} from "@/src/lib/media-url";
 import { cn } from "@/lib/utils";
 
 export function isPdfUrl(url) {
-  if (!url || typeof url !== "string") return false;
-  return url.split("?")[0].toLowerCase().endsWith(".pdf");
+  return isPdfMediaUrl(url);
 }
 
 export default function MediaPreviewDialog({
@@ -23,7 +28,10 @@ export default function MediaPreviewDialog({
   icon = Eye,
   iconClassName = "bg-brand-hover",
 }) {
-  const isPdf = isPdfUrl(url);
+  const mediaUrl = absolutizeMediaUrl(url);
+  const mediaDownloadUrl = absolutizeMediaUrl(downloadUrl || url);
+  const isPdf = isPdfMediaUrl(mediaUrl);
+  const [downloading, setDownloading] = useState(false);
 
   const {
     scale,
@@ -36,21 +44,37 @@ export default function MediaPreviewDialog({
     cursorClass,
   } = useImageZoomPan({
     enabled: open && !isPdf,
-    resetDeps: [open, url],
+    resetDeps: [open, mediaUrl],
   });
 
   const handleShare = useCallback(async () => {
-    if (!url) return;
+    if (!mediaUrl) return;
     try {
       if (navigator.share) {
-        await navigator.share({ title, url });
+        await navigator.share({ title, url: mediaUrl });
         return;
       }
     } catch {
       /* user cancelled or unsupported */
     }
-    window.open(url, "_blank", "noopener,noreferrer");
-  }, [url, title]);
+    window.open(mediaUrl, "_blank", "noopener,noreferrer");
+  }, [mediaUrl, title]);
+
+  const handleDownload = useCallback(async () => {
+    if (!mediaDownloadUrl || downloading) return;
+    setDownloading(true);
+    try {
+      const ok = await downloadMedia(
+        mediaDownloadUrl,
+        subtitle || fileNameFromMediaUrl(mediaDownloadUrl)
+      );
+      toast.success(ok ? "تم التحميل بنجاح" : "تم فتح الملف للتحميل");
+    } catch {
+      toast.error("تعذر تحميل الملف");
+    } finally {
+      setDownloading(false);
+    }
+  }, [mediaDownloadUrl, subtitle, downloading]);
 
   const handleClose = () => onOpenChange(false);
 
@@ -81,7 +105,7 @@ export default function MediaPreviewDialog({
         </div>
 
         <div className="relative overflow-hidden bg-[#F4F6F5] px-4 py-4 dark:bg-[#0B1411] sm:px-6">
-          {open && url ? (
+          {open && mediaUrl ? (
             <div className="relative overflow-hidden rounded-2xl border border-[#D7E3DE] bg-white dark:border-white/10 dark:bg-[#0F1C16]">
               <div className="absolute left-4 top-1/2 z-10 flex -translate-y-1/2 flex-col gap-2">
                 <ViewerToolButton icon={Share2} label="مشاركة" onClick={handleShare} />
@@ -110,7 +134,7 @@ export default function MediaPreviewDialog({
               >
                 {isPdf ? (
                   <iframe
-                    src={url}
+                    src={mediaUrl}
                     title={title}
                     className="min-h-[min(58vh,520px)] w-full max-w-[min(720px,100%)] rounded-xl border-0 bg-white shadow-sm"
                   />
@@ -124,14 +148,12 @@ export default function MediaPreviewDialog({
                         cursorClass === "cursor-grabbing" ? "none" : "transform 0.15s ease-out",
                     }}
                   >
-                    <Image
-                      src={url}
+                    {/* Native img: avoids Next/Image remotePatterns blocking API storage hosts */}
+                    <img
+                      src={mediaUrl}
                       alt={title}
-                      width={640}
-                      height={900}
                       className="h-auto max-h-[min(56vh,520px)] w-auto max-w-full select-none object-contain"
                       draggable={false}
-                      unoptimized
                     />
                   </div>
                 )}
@@ -145,22 +167,23 @@ export default function MediaPreviewDialog({
         </div>
 
         <div className="flex items-center gap-3 border-t border-[#E8EEEC] bg-white px-6 py-5 dark:border-white/10 dark:bg-[#0F1C16]">
-          {downloadUrl ? (
-            <a
-              href={downloadUrl}
-              download
-              className="inline-flex h-12 min-w-[140px] flex-1 items-center justify-center gap-2 rounded-2xl border border-[#D7E3DE] bg-[#F7FAF8] text-sm font-bold text-brand-dark transition-colors hover:bg-[#EEF5F1] dark:border-white/10 dark:bg-white/[0.04] dark:text-[#6EE7B7] dark:hover:bg-white/[0.07]"
+          {mediaDownloadUrl ? (
+            <button
+              type="button"
+              onClick={handleDownload}
+              disabled={downloading}
+              className="inline-flex h-12 min-w-[140px] flex-1 items-center justify-center gap-2 rounded-2xl border border-[#D7E3DE] bg-[#F7FAF8] text-sm font-bold text-brand-dark transition-colors hover:bg-[#EEF5F1] disabled:opacity-60 dark:border-white/10 dark:bg-white/[0.04] dark:text-[#6EE7B7] dark:hover:bg-white/[0.07]"
             >
               <Download className="size-4" />
-              تحميل
-            </a>
+              {downloading ? "جاري التحميل..." : "تحميل"}
+            </button>
           ) : null}
           <button
             type="button"
             onClick={handleClose}
             className={cn(
               "h-12 min-w-[140px] rounded-2xl bg-brand-hover text-sm font-bold text-white transition-colors hover:bg-brand-hover/90",
-              downloadUrl ? "flex-1" : "mx-auto w-full max-w-[280px]"
+              mediaDownloadUrl ? "flex-1" : "mx-auto w-full max-w-[280px]"
             )}
           >
             إغلاق

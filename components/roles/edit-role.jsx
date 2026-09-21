@@ -11,6 +11,7 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { axiosInstance } from '@/src/utils/axios'
+import { normalizeEmployeesListResponse } from '@/src/lib/employees'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import Loader from '@/components/home/loader'
 import { cn } from '@/lib/utils'
@@ -88,13 +89,15 @@ export default function EditRole() {
     const { data: employeesRes } = useQuery({
         queryKey: ['employees-list-role'],
         queryFn: () =>
-            axiosInstance.get('/admin/employees?per_page=200').then((res) => res?.data),
+            axiosInstance
+              .get('/admin/employees?per_page=200')
+              .then((res) => normalizeEmployeesListResponse(res?.data)),
         enabled: !!roleId,
     });
 
     const role = roleRes?.data ?? roleRes;
     const modules = useMemo(() => createRes?.data?.permission_modules ?? [], [createRes?.data?.permission_modules]);
-    const employees = employeesRes?.data?.items ?? employeesRes?.items ?? [];
+    const employees = employeesRes?.items ?? [];
 
     const allPermissionNames = useMemo(
         () => modules.flatMap((module) => module.actions.map((action) => action.permission_name)),

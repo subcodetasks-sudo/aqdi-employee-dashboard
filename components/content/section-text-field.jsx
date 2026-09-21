@@ -10,6 +10,10 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  getSaudiContactFieldKind,
+  sanitizeSaudiContactInput,
+} from "@/src/lib/saudi-contact";
 
 const LABEL_CLASS = {
   md: "text-[14px] font-bold text-black dark:text-white",
@@ -41,10 +45,12 @@ export default function SectionTextField({
   size = "md",
   dir,
   className,
+  inputKind,
 }) {
   const controlClass =
     className || (multiline ? TEXTAREA_CLASS[size] : INPUT_CLASS[size]);
   const Control = multiline ? Textarea : Input;
+  const kind = inputKind || getSaudiContactFieldKind(name);
 
   return (
     <FormField
@@ -60,8 +66,18 @@ export default function SectionTextField({
             <Control
               {...field}
               placeholder={placeholder}
-              dir={dir}
+              dir={dir || (kind ? "ltr" : undefined)}
+              inputMode={kind ? "numeric" : undefined}
+              maxLength={
+                kind === "national_id" ? 10 : kind === "phone" ? 12 : undefined
+              }
               className={controlClass}
+              onChange={(e) => {
+                const next = kind
+                  ? sanitizeSaudiContactInput(kind, e.target.value)
+                  : e.target.value;
+                field.onChange(next);
+              }}
             />
           </FormControl>
           {description ? (

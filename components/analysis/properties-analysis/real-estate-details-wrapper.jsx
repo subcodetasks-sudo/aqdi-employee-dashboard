@@ -18,7 +18,7 @@ export default function RealEstateDetailsWrapper() {
 
   const estate = data?.data;
 
-  const pageTitle = estate?.name_real_estate || estate?.name_owner || `عقار #${id}`;
+  const pageTitle = estate?.name_real_estate || `عقار #${id}`;
 
   if (isLoading) return <Loader />;
 

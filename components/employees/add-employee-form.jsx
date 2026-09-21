@@ -27,6 +27,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  sanitizeSaudiContactInput,
+  zodSaudiMobile,
+} from "@/src/lib/saudi-contact";
 
 const FIELD_INPUT =
   "h-11 border border-[#d5e3dc] dark:border-[#2c5648] rounded-[10px] bg-white dark:bg-[#0f241d] text-[13.5px] text-[#123] dark:text-[#e6f2ec] focus-visible:ring-0 focus-visible:border-brand-main dark:focus-visible:border-emerald-500 transition-colors";
@@ -62,7 +66,7 @@ const employeeSchema = (isEdit) =>
       ? z.string().optional()
       : z.string().min(6, "كلمة المرور يجب أن تكون 6 أحرف على الأقل"),
     email: z.string().email("البريد الإلكتروني غير صحيح"),
-    phone: z.string().min(10, "رقم الهاتف غير صحيح"),
+    phone: zodSaudiMobile(z),
     base_salary: z.string().min(1, "الراتب الأساسي مطلوب"),
     role_id: z.string().min(1, "الدور الوظيفي مطلوب"),
     is_active: z.string().optional().default("1"),
@@ -265,7 +269,19 @@ export default function AddEmployeeForm({ isEdit = false, employee, onSuccess })
                 <FormItem>
                   <FormLabel className={LABEL_CLASS}>رقم الهاتف</FormLabel>
                   <FormControl>
-                    <Input className={FIELD_INPUT} dir="ltr" placeholder="05xxxxxxxx" {...field} />
+                    <Input
+                      className={FIELD_INPUT}
+                      dir="ltr"
+                      placeholder="05xxxxxxxx"
+                      inputMode="numeric"
+                      maxLength={12}
+                      {...field}
+                      onChange={(e) =>
+                        field.onChange(
+                          sanitizeSaudiContactInput("phone", e.target.value)
+                        )
+                      }
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

@@ -1,4 +1,4 @@
-import { extractRefundContractId } from "./ids";
+import { extractRefundContractId, getOrderAdminApprovalStatus } from "./ids";
 
 /** Contract status id for "استرجاع" — required before submitting a refund request. */
 export const RETURN_CONTRACT_STATUS_ID = 2;
@@ -31,10 +31,52 @@ export function isAdminRefundApproved(value) {
   return value === true || value === 1;
 }
 
+function isCustomerRefundedFlag(row) {
+  const value = row?.customer_refunded ?? row?.is_refunded ?? row?.refunded;
+  return value === true || value === 1;
+}
+
+/**
+ * Bucket a return-order / refund-contract row into toolbar KPI keys.
+ * Matches backend statuses: pending | approved | rejected.
+ * "refunded" / customer-refunded count as approved (تم الاسترجاع = تمت الموافقة).
+ */
+export function getReturnOrderApprovalKpiKey(row) {
+  if (!row) return "pending";
+
+  if (isCustomerRefundedFlag(row)) return "approved";
+
+  const requestStatus = getReturnRequestStatus(row);
+  if (requestStatus === "rejected") return "rejected";
+  if (requestStatus === "approved" || requestStatus === "refunded") return "approved";
+  if (requestStatus === "pending") return "pending";
+
+  const status = getOrderAdminApprovalStatus(row);
+  if (isAdminRefundApproved(status)) return "approved";
+  if (status === false || status === 0) return "rejected";
+  return "pending";
+}
+
+/** Count return-order rows into toolbar KPI buckets. */
+export function countReturnOrdersByApproval(rows = []) {
+  let pending = 0;
+  let approved = 0;
+  let rejected = 0;
+
+  rows.forEach((row) => {
+    const key = getReturnOrderApprovalKpiKey(row);
+    if (key === "approved") approved += 1;
+    else if (key === "rejected") rejected += 1;
+    else pending += 1;
+  });
+
+  return { pending, approved, rejected };
+}
+
 /**
  * Defensive read of `data.summary.management_approval` into KPI counts.
- * Key names vary across API revisions, so several aliases are tried.
- * NOTE: verify the resolved tiles against the live API response.
+ * Backend statuses are pending / approved / rejected; older refunded/processing
+ * aliases fold into approved.
  */
 export function parseManagementApprovalCounts(summary) {
   const source =
@@ -57,17 +99,13 @@ export function parseManagementApprovalCounts(summary) {
   const pending = pick("pending", "waiting", "unconfirmed", "in_review", "under_review", "null");
   const approved = pick("approved", "confirmed", "accepted", "approved_count");
   const rejected = pick("rejected", "not_approved", "declined", "refused", "denied");
+  // Legacy splits still fold into approved (تم الاسترجاع = تمت الموافقة).
   const refunded = pick("refunded", "is_refunded", "customer_refunded", "completed", "done");
   const processing = pick("processing", "in_progress", "pending_refund", "awaiting_refund");
 
-  const hasRefundSplit = refunded > 0 || processing > 0;
-
   return {
     pending,
-    processing: hasRefundSplit
-      ? processing || Math.max(approved - refunded, 0)
-      : 0,
-    completed: hasRefundSplit ? refunded : approved,
+    approved: approved + refunded + processing,
     rejected,
   };
 }
@@ -190,9 +228,24 @@ export function hasExistingReturnRequest(order) {
   return false;
 }
 
-/** Whether "رفع طلب استرجاع" can still be opened — i.e. no request exists yet. */
+/** True when the order/contract is explicitly marked paid. */
+export function isOrderPaid(order) {
+  if (!order) return false;
+  const summary = order.contract_summary ?? {};
+  const value =
+    order.is_paid ??
+    summary.is_paid ??
+    order.payment_status ??
+    summary.payment_status;
+  return value === true || value === 1 || value === "1" || value === "paid";
+}
+
+export const UNPAID_ORDER_RETURN_MESSAGE =
+  "لا يمكن رفع طلب استرجاع لطلب غير مدفوع";
+
+/** Whether "رفع طلب استرجاع" can still be opened — paid + no request yet. */
 export function canRequestOrderReturn(order) {
-  return !!order && !hasReturnRequest(order);
+  return !!order && isOrderPaid(order) && !hasReturnRequest(order);
 }
 
 export function isCustomerRefundPending(order) {
