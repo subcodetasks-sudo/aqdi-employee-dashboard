@@ -30,6 +30,10 @@ import {
 } from "./step-editor/field-styles";
 import ContractFormField from "./step-editor/contract-form-field";
 import { useSectionEditorDialog } from "@/components/realtime-orders/details/section-editor-context";
+import {
+  getSaudiContactFieldError,
+  getSaudiContactFieldKind,
+} from "@/src/lib/saudi-contact";
 
 export const ContractStepEditor = forwardRef(function ContractStepEditor(
   {
@@ -93,7 +97,7 @@ export const ContractStepEditor = forwardRef(function ContractStepEditor(
         }
       } else if (f.calendarTypeKey && base[f.calendarTypeKey] == null) {
         // Ensure linked calendar-type keys stay available even if not edited here.
-        for (const maybeStep of ["summary", "step3", "step4"]) {
+        for (const maybeStep of ["summary", "step1", "step2", "step3", "step4", "step6"]) {
           const stepValues = getStepFormValues(orderData, maybeStep);
           if (stepValues[f.calendarTypeKey] != null && stepValues[f.calendarTypeKey] !== "") {
             extra[f.calendarTypeKey] = stepValues[f.calendarTypeKey];
@@ -138,6 +142,20 @@ export const ContractStepEditor = forwardRef(function ContractStepEditor(
     if (Object.keys(requiredErrors).length > 0) {
       setFieldErrors((prev) => ({ ...prev, ...requiredErrors }));
       toast.error("يرجى تعبئة الحقول المطلوبة");
+      return;
+    }
+
+    const formatErrors = {};
+    for (const field of fields) {
+      if (!isFieldVisible(field, form)) continue;
+      if (!getSaudiContactFieldKind(field)) continue;
+      if (isFieldEmpty(form[field.key])) continue;
+      const message = getSaudiContactFieldError(field, form[field.key]);
+      if (message) formatErrors[field.key] = message;
+    }
+    if (Object.keys(formatErrors).length > 0) {
+      setFieldErrors((prev) => ({ ...prev, ...formatErrors }));
+      toast.error(Object.values(formatErrors)[0]);
       return;
     }
 

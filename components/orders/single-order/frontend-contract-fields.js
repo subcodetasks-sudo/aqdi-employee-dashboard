@@ -3,6 +3,11 @@
  * Dashboard sections should display only these (empty → faded).
  */
 
+import {
+  getOrderAddressStep,
+  getOrderFinancialStep,
+} from "@/src/lib/order-detail-steps";
+
 export const INSTRUMENT_IMAGE_FIELDS = [
   { key: "image_instrument", label: "صورة الصك" },
   { key: "image_instrument_from_the_front", label: "صورة الصك (من الأمام)" },
@@ -55,7 +60,7 @@ export function pickFirst(...values) {
 }
 
 export function resolveAddressFieldValue(orderData, field) {
-  const step1 = orderData?.step1 || {};
+  const address = getOrderAddressStep(orderData);
   const labels = orderData?.relation_labels || {};
 
   if (field.key === "property_place_id") {
@@ -64,7 +69,8 @@ export function resolveAddressFieldValue(orderData, field) {
       orderData?.property_region?.name_trans,
       orderData?.property_region?.name_ar,
       orderData?.property_region?.name,
-      step1.property_place_id,
+      address.property_place_name,
+      address.property_place_id,
       orderData?.property_place_id
     );
   }
@@ -75,20 +81,22 @@ export function resolveAddressFieldValue(orderData, field) {
       orderData?.property_city?.name_trans,
       orderData?.property_city?.name_ar,
       orderData?.property_city?.name,
-      step1.property_city_id,
+      address.city_name,
+      address.property_city_name,
+      address.property_city_id,
       orderData?.property_city_id
     );
   }
 
   if (field.key === "latitude") {
-    return pickFirst(step1.latitude, orderData?.latitude, step1.lat, orderData?.lat);
+    return pickFirst(address.latitude, orderData?.latitude, address.lat, orderData?.lat);
   }
 
   if (field.key === "longitude") {
-    return pickFirst(step1.longitude, orderData?.longitude, step1.lng, orderData?.lng);
+    return pickFirst(address.longitude, orderData?.longitude, address.lng, orderData?.lng);
   }
 
-  return pickFirst(step1[field.key], orderData?.[field.key]);
+  return pickFirst(address[field.key], orderData?.[field.key]);
 }
 
 /**
@@ -96,11 +104,11 @@ export function resolveAddressFieldValue(orderData, field) {
  * Prefers tenant_roles_details (with values), then ids + values/names.
  */
 export function resolveTenantRoleDetails(orderData, tenantRoles = []) {
-  const step4 = orderData?.step4 || {};
+  const financial = getOrderFinancialStep(orderData);
 
   const details = pickFirst(
     orderData?.tenant_roles_details,
-    step4.tenant_roles_details
+    financial.tenant_roles_details
   );
   if (Array.isArray(details) && details.length > 0) {
     return details.map((item) => ({
@@ -120,17 +128,17 @@ export function resolveTenantRoleDetails(orderData, tenantRoles = []) {
 
   const valuesRaw = pickFirst(
     orderData?.tenant_role_values,
-    step4.tenant_role_values
+    financial.tenant_role_values
   );
   const values =
     valuesRaw && typeof valuesRaw === "object" && !Array.isArray(valuesRaw)
       ? valuesRaw
       : {};
 
-  const ids = pickFirst(orderData?.tenant_role_ids, step4.tenant_role_ids);
+  const ids = pickFirst(orderData?.tenant_role_ids, financial.tenant_role_ids);
   const names = pickFirst(
     orderData?.tenant_role_names,
-    step4.tenant_role_names
+    financial.tenant_role_names
   );
 
   if (Array.isArray(ids) && ids.length > 0) {
@@ -167,7 +175,7 @@ export function resolveTenantRoleDetails(orderData, tenantRoles = []) {
     }));
   }
 
-  const legacyId = pickFirst(orderData?.tenant_role_id, step4.tenant_role_id);
+  const legacyId = pickFirst(orderData?.tenant_role_id, financial.tenant_role_id);
   if (legacyId != null && legacyId !== "") {
     const role = tenantRoles.find(
       (item) => String(item?.id) === String(legacyId)
@@ -178,8 +186,8 @@ export function resolveTenantRoleDetails(orderData, tenantRoles = []) {
         label:
           orderData?.tenant_role?.text_of_reason ||
           orderData?.tenant_role?.name ||
-          step4?.tenant_role?.text_of_reason ||
-          step4?.tenant_role?.name ||
+          financial?.tenant_role?.text_of_reason ||
+          financial?.tenant_role?.name ||
           orderData?.relation_labels?.tenant_role ||
           role?.text_of_reason ||
           role?.name ||
@@ -196,10 +204,10 @@ export function resolveTenantRoleDetails(orderData, tenantRoles = []) {
 
 /** Resolve other-conditions list for display. */
 export function resolveOtherConditionsList(orderData) {
-  const step4 = orderData?.step4 || {};
+  const financial = getOrderFinancialStep(orderData);
   const list = pickFirst(
     orderData?.other_conditions_list,
-    step4.other_conditions_list
+    financial.other_conditions_list
   );
   if (Array.isArray(list) && list.length > 0) {
     return list
@@ -208,7 +216,7 @@ export function resolveOtherConditionsList(orderData) {
   }
   const legacy = pickFirst(
     orderData?.other_conditions,
-    step4.other_conditions
+    financial.other_conditions
   );
   if (legacy != null && String(legacy).trim() !== "") {
     return [String(legacy).trim()];

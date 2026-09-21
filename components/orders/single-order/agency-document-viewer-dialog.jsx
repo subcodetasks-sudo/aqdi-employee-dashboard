@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback } from "react";
-import Image from "next/image";
 import {
   Minus,
   Plus,
@@ -10,22 +9,17 @@ import {
   X,
 } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { absolutizeMediaUrl, isPdfMediaUrl } from "@/src/lib/media-url";
 import { useImageZoomPan } from "./use-image-zoom-pan";
 
 function isPdfUrl(url) {
-  if (!url || typeof url !== "string") return false;
-  return url.split("?")[0].toLowerCase().endsWith(".pdf");
+  return isPdfMediaUrl(url);
 }
 
 export function resolveAgencyDocumentUrl(summary) {
   if (!summary) return null;
   const raw = summary.copy_of_the_authorization_or_agency;
-  if (!raw) return null;
-  if (typeof raw === "string") return raw.trim() || null;
-  if (typeof raw === "object") {
-    return raw.url || raw.path || raw.full_url || raw.src || null;
-  }
-  return null;
+  return absolutizeMediaUrl(raw);
 }
 
 export default function AgencyDocumentViewerDialog({
@@ -128,14 +122,11 @@ export default function AgencyDocumentViewerDialog({
                       transition: cursorClass === "cursor-grabbing" ? "none" : "transform 0.15s ease-out",
                     }}
                   >
-                    <Image
+                    <img
                       src={documentUrl}
                       alt={title}
-                      width={640}
-                      height={900}
                       className="h-auto max-h-[min(64vh,560px)] w-auto max-w-full select-none object-contain"
                       draggable={false}
-                      unoptimized
                     />
                   </div>
                 )}

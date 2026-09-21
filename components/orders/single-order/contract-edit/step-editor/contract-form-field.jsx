@@ -7,14 +7,24 @@ import FileFieldPreview from "./file-field-preview";
 import TenantRolesMultiField from "./tenant-roles-multi-field";
 import OtherConditionsListField from "./other-conditions-list-field";
 import { useResolvedSelectOptions } from "./use-resolved-select-options";
+import {
+  getSaudiContactFieldKind,
+  sanitizeSaudiContactInput,
+} from "@/src/lib/saudi-contact";
+import {
+  getOrderAddressStep,
+  getOrderUnitsStep,
+} from "@/src/lib/order-detail-steps";
 
 function resolveSelectCurrentLabelFallback(field, orderData, formValues) {
   const labels = orderData?.contract_summary?.relation_labels ?? {};
+  const address = getOrderAddressStep(orderData);
+  const unitsStep = getOrderUnitsStep(orderData);
   if (field.key === "property_place_id") {
     return (
       labels.property_region ||
       orderData?.property_region?.name_ar ||
-      orderData?.step1?.property_place_name ||
+      address.property_place_name ||
       null
     );
   }
@@ -22,16 +32,26 @@ function resolveSelectCurrentLabelFallback(field, orderData, formValues) {
     return (
       labels.property_city ||
       orderData?.property_city?.name_ar ||
-      orderData?.step1?.city_name ||
-      orderData?.step1?.property_city_name ||
+      address.city_name ||
+      address.property_city_name ||
       null
     );
   }
   if (field.key === "unit_type_id") {
-    return formValues?.unit_type_name || orderData?.step2?.unit_type_name || orderData?.unit_type_name || null;
+    return (
+      formValues?.unit_type_name ||
+      unitsStep.unit_type_name ||
+      orderData?.unit_type_name ||
+      null
+    );
   }
   if (field.key === "unit_usage_id") {
-    return formValues?.unit_usage_name || orderData?.step2?.unit_usage_name || orderData?.unit_usage_name || null;
+    return (
+      formValues?.unit_usage_name ||
+      unitsStep.unit_usage_name ||
+      orderData?.unit_usage_name ||
+      null
+    );
   }
   if (field.displayKey && formValues?.[field.displayKey]) {
     return formValues[field.displayKey];
@@ -238,19 +258,47 @@ export default function ContractFormField({
     );
   }
 
+  const contactKind = getSaudiContactFieldKind(field);
+
   return (
     <div className={`flex flex-col gap-2 ${field.colSpan === 2 ? "md:col-span-2" : ""}`}>
       <label htmlFor={id} className={fieldLabelClass}>
         {field.label}
+        {field.required ? <span className="text-[#E24444]"> *</span> : null}
       </label>
       <input
         id={id}
         type="text"
+        inputMode={contactKind ? "numeric" : undefined}
+        pattern={contactKind ? "[0-9]*" : undefined}
+        maxLength={
+          contactKind === "national_id" ? 10 : contactKind === "phone" ? 12 : undefined
+        }
         value={value ?? ""}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(e) => {
+          onChange(
+            contactKind
+              ? sanitizeSaudiContactInput(field, e.target.value)
+              : e.target.value
+          );
+        }}
         className={inputClass}
-        placeholder={field.hint || ""}
-        dir={field.key.includes("mobile") || field.key.includes("id_num") ? "ltr" : "rtl"}
+        placeholder={
+          field.hint ||
+          (contactKind === "national_id"
+            ? "1xxxxxxxxx أو 2xxxxxxxxx"
+            : contactKind === "phone"
+              ? "05xxxxxxxx"
+              : "")
+        }
+        dir={
+          contactKind ||
+          field.key.includes("mobile") ||
+          field.key.includes("id_num")
+            ? "ltr"
+            : "rtl"
+        }
+        autoComplete="off"
       />
       {error ? <p className="text-xs text-[#E24444]">{error}</p> : null}
     </div>

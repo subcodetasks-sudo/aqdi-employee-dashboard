@@ -1,4 +1,20 @@
 import { printHtmlDocument } from "@/src/lib/print";
+import {
+  getOrderAddressStep,
+  getOrderDeedStep,
+  getOrderEndowmentNazir,
+  getOrderFinancialStep,
+  getOrderOwnerStep,
+  getOrderTenantStep,
+  getOrderUnits,
+  getOrderUnitsStep,
+  hasEndowmentNazir,
+  hasLegalAgent,
+  pickAgentRelatedField,
+  resolveOrderContractTypeKey,
+} from "@/src/lib/order-detail-steps";
+import { getContractTypeLabel } from "@/src/lib/contract-period-utils";
+import { absolutizeMediaUrl } from "@/src/lib/media-url";
 
 const display = (value) => {
   if (value === null || value === undefined || value === "") return "---";
@@ -9,6 +25,7 @@ const display = (value) => {
 
 const section = (title, rows) => {
   const items = rows
+    .filter(([, value]) => value !== null && value !== undefined && value !== "")
     .map(
       ([label, value]) => `
       <tr>
@@ -17,6 +34,8 @@ const section = (title, rows) => {
       </tr>`
     )
     .join("");
+
+  if (!items) return "";
 
   return `
     <section class="section">
@@ -91,32 +110,45 @@ export function buildContractPrintSections(orderData) {
   if (!orderData) return "";
 
   const summary = orderData.contract_summary ?? {};
-  const step1 = orderData.step1 ?? {};
-  const step2 = orderData.step2 ?? {};
-  const step3 = orderData.step3 ?? {};
-  const step4 = orderData.step4 ?? {};
+  const deed = getOrderDeedStep(orderData);
+  const address = getOrderAddressStep(orderData);
+  const owner = getOrderOwnerStep(orderData);
+  const tenant = getOrderTenantStep(orderData);
+  const unitsStep = getOrderUnitsStep(orderData);
+  const unit = getOrderUnits(orderData)[0] ?? unitsStep.unit ?? {};
+  const financial = getOrderFinancialStep(orderData);
   const user = orderData.user ?? {};
+  const contractTypeKey = resolveOrderContractTypeKey(orderData);
+  const contractTypeLabel =
+    contractTypeKey === "housing" || contractTypeKey === "commercial"
+      ? getContractTypeLabel(contractTypeKey)
+      : summary.contract_type || orderData.contract_type_trans || orderData.contract_type;
 
-  const resolveImageUrl = (value) => {
-    if (!value) return null;
-    if (typeof value === "string") return value.trim() || null;
-    if (typeof value === "object") {
-      return value.url || value.path || value.full_url || value.src || null;
-    }
-    return null;
-  };
+  const resolveImageUrl = (value) => absolutizeMediaUrl(value);
 
   const images = [
     summary.image_instrument,
+    deed.image_instrument,
     summary.image_instrument_from_the_front,
+    deed.image_instrument_from_the_front,
     summary.image_instrument_from_the_back,
+    deed.image_instrument_from_the_back,
     summary.copy_power_of_attorney_from_heirs_to_agent,
+    deed.copy_power_of_attorney_from_heirs_to_agent,
+    pickAgentRelatedField(orderData, "copy_power_of_attorney_from_heirs_to_agent"),
+    pickAgentRelatedField(orderData, "copy_of_the_authorization_or_agency"),
+    pickAgentRelatedField(orderData, "Image_inheritance_certificate"),
+    pickAgentRelatedField(orderData, "copy_of_the_endowment_registration_certificate"),
+    pickAgentRelatedField(orderData, "copy_of_the_trusteeship_deed"),
+    pickAgentRelatedField(orderData, "copy_of_guardians_power_of_attorney_for_agent"),
   ]
     .map(resolveImageUrl)
     .filter(Boolean);
 
-  const imagesHtml = images.length
-    ? `<div class="images">${images
+  const uniqueImages = [...new Set(images)];
+
+  const imagesHtml = uniqueImages.length
+    ? `<div class="images">${uniqueImages
         .map((src) => `<img src="${src}" alt="صورة الصك" />`)
         .join("")}</div>`
     : "";
@@ -125,78 +157,85 @@ export function buildContractPrintSections(orderData) {
   <div class="header">
     <h1>عقد إيجار - تفاصيل الطلب</h1>
     <p>رقم الطلب: ${display(orderData.uuid)}</p>
-    <p>حالة الطلب: ${display(summary.contract_status_name)}</p>
+    <p>حالة الطلب: ${display(summary.contract_status_name || orderData.status_label)}</p>
     <p>رقم جوال العميل: ${display(user.mobile)}</p>
     <p>تاريخ الطباعة: ${new Date().toLocaleString("ar-SA")}</p>
   </div>
 
   ${section("الصك - الملاك", [
-    ["اسم المالك", summary.name_owner],
-    ["رقم الهوية", summary.property_owner_id_num],
-    ["تاريخ الميلاد", summary.property_owner_dob],
-    ["رقم الجوال", summary.property_owner_mobile],
-   // ["ايبان المالك", summary.property_owner_iban],
-    ["المنطقة", summary.relation_labels?.property_region],
-    ["المدينة", summary.relation_labels?.property_city],
-    ["الحي", summary.neighborhood],
-    ["الشارع", summary.street],
+    ["رقم الهوية", owner.property_owner_id_num ?? summary.property_owner_id_num],
+    ["تاريخ الميلاد", owner.property_owner_dob ?? summary.property_owner_dob],
+    ["رقم الجوال", owner.property_owner_mobile ?? summary.property_owner_mobile],
+    ["المنطقة", summary.relation_labels?.property_region || address.property_place_name],
+    ["المدينة", summary.relation_labels?.property_city || address.city_name],
+    ["الحي", address.neighborhood ?? summary.neighborhood],
+    ["الشارع", address.street ?? summary.street],
   ])}
 
-  ${summary.add_legal_agent_of_owner === 1
+  ${hasLegalAgent(orderData)
     ? section("بيانات الوكيل", [
-        ["اسم الوكيل", summary.name_owner],
-        ["رقم الهوية", summary.id_num_of_property_owner_agent],
-        ["تاريخ الميلاد", summary.dob_of_property_owner_agent],
-        ["رقم الجوال", summary.mobile_of_property_owner_agent],
+        ["اسم الوكيل", summary.name_of_property_owner_agent ?? summary.property_owner_agent_name],
+        ["رقم الهوية", pickAgentRelatedField(orderData, "id_num_of_property_owner_agent")],
+        ["تاريخ الميلاد", pickAgentRelatedField(orderData, "dob_of_property_owner_agent")],
+        ["رقم الجوال", pickAgentRelatedField(orderData, "mobile_of_property_owner_agent")],
+        [
+          "رقم الوكالة",
+          pickAgentRelatedField(orderData, "agency_number_in_instrument_of_property_owner"),
+        ],
+        [
+          "تاريخ الوكالة",
+          pickAgentRelatedField(orderData, "agency_instrument_date_of_property_owner"),
+        ],
       ])
+    : ""}
+
+  ${hasEndowmentNazir(orderData)
+    ? (() => {
+        const nazir = getOrderEndowmentNazir(orderData);
+        return section("ناظر الوقف", [
+          ["رقم الهوية", nazir.id_num_of_property_owner_agent],
+          ["رقم الجوال", nazir.mobile_of_property_owner_agent],
+          ["أكثر من صك نظارة", nazir.is_multiple_trusteeship_deed_copy],
+        ]);
+      })()
     : ""}
 
   ${imagesHtml ? `<section class="section"><h2>صور الصك</h2>${imagesHtml}</section>` : ""}
 
   ${section("العنوان الوطني للعقار", [
-    ["المدينة", step1.city_name || step1.property_city_id],
-    ["المنطقة", step1.property_place_name || step1.property_place_id],
-    ["الشارع", step1.street],
-    ["الحي", step1.neighborhood],
-    ["رقم الإضافي", step1.extra_figure],
-    ["رقم المبنى", step1.building_number],
-    ["الرمز البريدي", step1.postal_code],
-  ])}
-
-  ${section("تفاصيل العقار", [
-    // ["استخدام العقار", step1.property_usages_name],
-    // ["نوع العقار", step1.property_type_name],
-    // ["إجمالي عدد الوحدات في كل طابق", step1.number_of_units_per_floor],
-    // ["إجمالي عدد الطوابق", step1.number_of_floors],
-    // ["عمر العقار", step1.age_of_the_property],
-    // ["إجمالي عدد الوحدات في العقار", step1.number_of_units_in_realestate],
-    // ["اسم مالك العقار", summary.name_owner],
+    ["المدينة", address.city_name || address.property_city_id],
+    ["المنطقة", address.property_place_name || address.property_place_id],
+    ["الشارع", address.street],
+    ["الحي", address.neighborhood],
+    ["رقم الإضافي", address.extra_figure],
+    ["رقم المبنى", address.building_number],
+    ["الرمز البريدي", address.postal_code],
   ])}
 
   ${section("تفاصيل الوحدة", [
-    ["رقم الوحدة", step2.unit?.unit_number || step2.unit_number],
-    ["نوع الوحدة", step2.unit_type_name || step2.unit_type?.name_ar],
-    ["استخدام الوحدة", step2.unit_usage_name || step2.unit_usage?.name_ar],
-    ["رقم الطابق", step2.unit?.floor_number || step2.floor_number],
-    ["مساحة الوحدة", step2.unit?.unit_area || step2.unit_area],
-    ["عدد الغرف", step2.tootal_rooms],
-    ["مؤثثة", step2.furnished],
-    ["مطبخ راكب", step2.kitchen_tank],
-    ["دورة مياه", step2.The_number_of_the_toilet],
-    ["الصالة", step2.The_number_of_halls],
-    ["مكيف سبليت", step2.split_ac || "لا يوجد"],
-    ["مكيف شباك", step2.window_ac || "لا يوجد"],
-    ["مطبخ", step2.The_number_of_kitchens],
-    ["عداد الكهرباء", step2.electricity_meter_number],
-    ["عداد المياه", step2.water_meter_number],
+    ["رقم الوحدة", unit.unit_number || unitsStep.unit_number],
+    ["نوع الوحدة", unit.unit_type_name || unitsStep.unit_type_name || unitsStep.unit_type?.name_ar],
+    ["استخدام الوحدة", unit.unit_usage_name || unitsStep.unit_usage_name || unitsStep.unit_usage?.name_ar],
+    ["رقم الطابق", unit.floor_number || unitsStep.floor_number],
+    ["مساحة الوحدة", unit.unit_area || unitsStep.unit_area],
+    ["عدد الغرف", unit.tootal_rooms || unitsStep.tootal_rooms],
+    ["مؤثثة", unit.furnished ?? unitsStep.furnished],
+    ["مطبخ راكب", unit.kitchen_tank ?? unitsStep.kitchen_tank],
+    ["دورة مياه", unit.The_number_of_the_toilet || unit.The_number_of_toilets || unitsStep.The_number_of_the_toilet],
+    ["الصالة", unit.The_number_of_halls || unitsStep.The_number_of_halls],
+    ["مكيف سبليت", unit.split_ac || unitsStep.split_ac || "لا يوجد"],
+    ["مكيف شباك", unit.window_ac || unitsStep.window_ac || "لا يوجد"],
+    ["مطبخ", unit.The_number_of_kitchens || unitsStep.The_number_of_kitchens],
+    ["عداد الكهرباء", unit.electricity_meter_number || unitsStep.electricity_meter_number],
+    ["عداد المياه", unit.water_meter_number || unitsStep.water_meter_number],
   ])}
 
   ${section("العقد - المستأجر", [
-    ["نوع العقد", summary.contract_type],
-    ["تاريخ بدء العقد", step4.contract_starting_date],
-    ["مدة العقد", summary.contract_period],
+    ["نوع العقد", contractTypeLabel],
+    ["تاريخ بدء العقد", financial.contract_starting_date],
+    ["مدة العقد", summary.contract_period || financial.contract_term_name],
     ["صلاحيات المستأجر", (() => {
-      const details = orderData?.tenant_roles_details || step4.tenant_roles_details;
+      const details = orderData?.tenant_roles_details || financial.tenant_roles_details;
       if (Array.isArray(details) && details.length) {
         return details
           .map((item) => {
@@ -211,32 +250,32 @@ export function buildContractPrintSections(orderData) {
       }
       const names =
         orderData?.tenant_role_names ||
-        step4.tenant_role_names ||
-        step3.tenant_role_names;
+        financial.tenant_role_names ||
+        tenant.tenant_role_names;
       return Array.isArray(names) ? names.join("، ") : names;
     })()],
-    ["رقم هوية المستأجر", step3.tenant_id_num],
-    ["تاريخ ميلاد المستأجر", step3.tenant_dob],
-    ["رقم جوال المستأجر", step3.tenant_mobile],
+    ["رقم هوية المستأجر", tenant.tenant_id_num],
+    ["تاريخ ميلاد المستأجر", tenant.tenant_dob],
+    ["رقم جوال المستأجر", tenant.tenant_mobile],
   ])}
 
   ${section("البيانات المالية", [
-    ["مبلغ الإيجار السنوي للوحدة", step4.annual_rent_amount_for_the_unit],
-    ["نوع الدفع", step4.payment_type_name],
-    ["الغرامة اليومية", step4.daily_fine],
-    ["إجمالي السعر", step4.contract_term_in_years?.price],
-    ["مدة العقد", step4.contract_term_name],
-    ["تاريخ بداية العقد", step4.contract_starting_date],
-    ["نوع التاريخ", step4.type_contract_starting_date === "hijri" ? "هجري" : "ميلادي"],
+    ["مبلغ الإيجار السنوي للوحدة", financial.annual_rent_amount_for_the_unit],
+    ["نوع الدفع", financial.payment_type_name],
+    ["الغرامة اليومية", financial.daily_fine],
+    ["إجمالي السعر", financial.contract_term_in_years?.price],
+    ["مدة العقد", financial.contract_term_name],
+    ["تاريخ بداية العقد", financial.contract_starting_date],
+    ["نوع التاريخ", financial.type_contract_starting_date === "hijri" ? "هجري" : financial.type_contract_starting_date === "gregorian" ? "ميلادي" : financial.type_contract_starting_date],
     ["شروط أخرى", (() => {
       const list =
-        orderData?.other_conditions_list || step4.other_conditions_list;
+        orderData?.other_conditions_list || financial.other_conditions_list;
       if (Array.isArray(list) && list.length) {
         return list.filter(Boolean).join("، ");
       }
-      return step4.other_conditions || orderData?.other_conditions || "لا يوجد";
+      return financial.other_conditions || orderData?.other_conditions || null;
     })()],
-    ["نص الشروط الإضافية", step4.text_additional_terms],
+    ["نص الشروط الإضافية", financial.text_additional_terms],
   ])}`;
 }
 

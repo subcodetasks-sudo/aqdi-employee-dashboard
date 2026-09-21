@@ -11,6 +11,7 @@ import {
 } from "./contract-edit/contract-field-schemas";
 import { normalizeFieldValue } from "@/src/lib/contract-update";
 import { useSingleOrderContext } from "./single-order-context";
+import { getOrderUnits, getOrderUnitsCount } from "@/src/lib/order-detail-steps";
 
 const GOLD = "#B8860B";
 
@@ -169,7 +170,7 @@ function SingleUnitBlock({ unit, data, index, formRef }) {
 
       <ContractStepEditor
         ref={formRef}
-        step="step2"
+        step="step5"
         fieldGroups={UNIT_FIELD_GROUPS}
         initialValues={initialValues}
         seedFromInitialValuesOnly
@@ -194,8 +195,8 @@ function UnitsEmptyState() {
 }
 
 const UnitDetailes = ({ data }) => {
-  const units = Array.isArray(data?.units) ? data.units : [];
-  const unitsCount = data?.units_count ?? units.length;
+  const units = getOrderUnits(data);
+  const unitsCount = getOrderUnitsCount(data);
   const isEmpty = unitsCount === 0 || units.length === 0;
   const unitRefs = useRef(new Map());
   const [isSavingAll, setIsSavingAll] = useState(false);

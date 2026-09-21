@@ -5,18 +5,17 @@ import { useRegions } from "@/src/hooks/use-regions";
 import { useCities } from "@/src/hooks/use-cities";
 import { useUnitTypes } from "@/src/hooks/use-unit-types";
 import { useUnitUsages } from "@/src/hooks/use-unit-usages";
+import {
+  getOrderAddressStep,
+  resolveOrderContractTypeKey,
+} from "@/src/lib/order-detail-steps";
 
 export function resolveOrderContractType(orderData) {
-  return (
-    orderData?.contract_type ||
-    orderData?.contract_summary?.contract_type ||
-    orderData?.step4?.contract_type ||
-    null
-  );
+  return resolveOrderContractTypeKey(orderData);
 }
 
 export function useResolvedSelectOptions(field, orderData, formValues) {
-  const contractType = resolveOrderContractType(orderData);
+  const contractType = resolveOrderContractType(orderData) || "housing";
 
   const needsTenantRoles =
     field?.optionsSource === "tenant-roles" || field?.key === "tenant_role_id";
@@ -35,19 +34,20 @@ export function useResolvedSelectOptions(field, orderData, formValues) {
   const needsUnitUsages =
     field?.optionsSource === "unit-usages" || field?.key === "unit_usage_id";
 
+  const address = getOrderAddressStep(orderData);
   const regionId =
     formValues?.property_place_id ??
-    orderData?.step1?.property_place_id ??
+    address?.property_place_id ??
     orderData?.property_place_id ??
     null;
 
   const { options: tenantOptions, isLoading: tenantLoading } = useTenantRoles(needsTenantRoles);
   const { options: paymentOptions, isLoading: paymentLoading } = usePaymentTypes(
-    contractType || "housing",
+    contractType,
     needsPaymentTypes
   );
   const { options: periodOptions, isLoading: periodsLoading } = useContractPeriodsForType(
-    contractType || "housing",
+    contractType,
     { enabled: needsContractPeriods }
   );
   const { options: regionOptions, isLoading: regionsLoading } = useRegions(needsRegions);
@@ -56,11 +56,11 @@ export function useResolvedSelectOptions(field, orderData, formValues) {
     regionId: needsCities ? regionId : null,
   });
   const { options: unitTypeOptions, isLoading: unitTypesLoading } = useUnitTypes(
-    contractType || "housing",
+    contractType,
     needsUnitTypes
   );
   const { options: unitUsageOptions, isLoading: unitUsagesLoading } = useUnitUsages(
-    contractType || "housing",
+    contractType,
     needsUnitUsages
   );
 

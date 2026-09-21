@@ -2,7 +2,7 @@
 
 /** Owner fields from POST /contract/step3 */
 export const SUMMARY_OWNER_FIELDS = [
-  { key: "property_owner_id_num", label: "رقم الهوية", type: "text" },
+  { key: "property_owner_id_num", label: "رقم الهوية", type: "text", inputKind: "national_id" },
   {
     key: "property_owner_dob",
     label: "تاريخ الميلاد",
@@ -18,11 +18,16 @@ export const SUMMARY_OWNER_FIELDS = [
       { value: "gregorian", label: "ميلادي" },
     ],
   },
-  { key: "property_owner_mobile", label: "رقم الجوال", type: "text" },
+  { key: "property_owner_mobile", label: "رقم الجوال", type: "text", inputKind: "phone" },
 ];
 
 export const SUMMARY_AGENT_FIELDS = [
-  { key: "id_num_of_property_owner_agent", label: "رقم هوية الوكيل", type: "text" },
+  {
+    key: "id_num_of_property_owner_agent",
+    label: "رقم هوية الوكيل",
+    type: "text",
+    inputKind: "national_id",
+  },
   {
     key: "dob_of_property_owner_agent",
     label: "تاريخ ميلاد الوكيل",
@@ -38,7 +43,12 @@ export const SUMMARY_AGENT_FIELDS = [
       { value: "gregorian", label: "ميلادي" },
     ],
   },
-  { key: "mobile_of_property_owner_agent", label: "جوال الوكيل", type: "text" },
+  {
+    key: "mobile_of_property_owner_agent",
+    label: "جوال الوكيل",
+    type: "text",
+    inputKind: "phone",
+  },
   {
     key: "copy_of_the_authorization_or_agency",
     label: "صورة التفويض / الوكالة",
@@ -321,12 +331,14 @@ export const STEP3_TENANT_FIELDS = [
     label: "رقم هوية المستأجر",
     type: "text",
     entity: "person",
+    inputKind: "national_id",
   },
   {
     key: "tenant_mobile",
     label: "رقم جوال المستأجر",
     type: "text",
     entity: "person",
+    inputKind: "phone",
   },
   {
     key: "type_tenant_dob",
@@ -374,12 +386,14 @@ export const STEP3_TENANT_FIELDS = [
     label: "رقم هوية مالك السجل",
     type: "text",
     entity: "institution",
+    inputKind: "national_id",
   },
   {
     key: "mobile_of_property_tenant_agent",
     label: "رقم جوال مالك السجل",
     type: "text",
     entity: "institution",
+    inputKind: "phone",
   },
   {
     key: "type_dob_tenant_agent",
@@ -418,11 +432,13 @@ export const STEP3_TENANT_AGENT_FIELDS = [
     key: "id_num_of_property_tenant_agent",
     label: "رقم هوية مالك السجل",
     type: "text",
+    inputKind: "national_id",
   },
   {
     key: "mobile_of_property_tenant_agent",
     label: "رقم جوال مالك السجل",
     type: "text",
+    inputKind: "phone",
   },
   {
     key: "dob_of_property_tenant_agent",
@@ -453,7 +469,7 @@ export const STEP3_CONTRACT_META_FIELDS = [
     key: "contract_starting_date",
     label: "تاريخ بدء العقد",
     type: "date",
-    step: "step4",
+    step: "step6",
     calendarTypeKey: "type_contract_starting_date",
   },
 ];

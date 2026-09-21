@@ -8,6 +8,7 @@ import { pickFirst } from "./frontend-contract-fields";
 import AgencyDocumentViewerDialog, {
   resolveAgencyDocumentUrl,
 } from "./agency-document-viewer-dialog";
+import { getOrderTenantStep } from "@/src/lib/order-detail-steps";
 
 function isPdfUrl(url) {
   if (!url || typeof url !== "string") return false;
@@ -16,9 +17,9 @@ function isPdfUrl(url) {
 
 function ContractTenant({ data }) {
   const [agencyViewerOpen, setAgencyViewerOpen] = useState(false);
-  const step3 = data?.step3 ?? {};
+  const tenant = getOrderTenantStep(data);
   const pick = (key, ...alts) =>
-    pickFirst(step3[key], data?.[key], ...alts.map((k) => step3[k] ?? data?.[k]));
+    pickFirst(tenant[key], data?.[key], ...alts.map((k) => tenant[k] ?? data?.[k]));
 
   const tenantEntity = pick("tenant_entity");
   const isInstitution = tenantEntity === "institution";
@@ -38,7 +39,7 @@ function ContractTenant({ data }) {
     <div className="space-y-6 p-4 lg:p-6" dir="rtl">
       <ContractStepEditor
         title="تفاصيل المستأجر"
-        step="step3"
+        step="step4"
         fields={STEP3_TENANT_FIELDS}
         startInEditing
         formOnly

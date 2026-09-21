@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useMemo } from "react";
-import Image from "next/image";
 import { Copy, ExternalLink, Link2, MapPin } from "lucide-react";
 import { toast } from "sonner";
 import { ContractStepEditor } from "./contract-edit/contract-step-editor";
@@ -9,6 +8,8 @@ import { STEP1_ADDRESS_FIELDS } from "./contract-edit/contract-field-schemas";
 import { useImageZoomPan } from "./use-image-zoom-pan";
 import { isEmptyDisplayValue } from "./contract-summary-view";
 import { pickFirst } from "./frontend-contract-fields";
+import { getOrderAddressStep } from "@/src/lib/order-detail-steps";
+import { absolutizeMediaUrl } from "@/src/lib/media-url";
 
 const copy = (value) => {
   if (isEmptyDisplayValue(value)) return;
@@ -51,14 +52,14 @@ function parseCoordsFromUrl(url) {
 }
 
 function resolveMapLocation(data) {
-  const step1 = data?.step1 ?? {};
+  const address = getOrderAddressStep(data);
   const lat = parseCoordinate(
-    pickFirst(step1.latitude, data?.latitude, step1.lat, data?.lat)
+    pickFirst(address.latitude, data?.latitude, address.lat, data?.lat)
   );
   const lng = parseCoordinate(
-    pickFirst(step1.longitude, data?.longitude, step1.lng, data?.lng)
+    pickFirst(address.longitude, data?.longitude, address.lng, data?.lng)
   );
-  const addressUrl = pickFirst(step1.address_url, data?.address_url);
+  const addressUrl = pickFirst(address.address_url, data?.address_url);
   const fromUrl = parseCoordsFromUrl(addressUrl);
 
   if (lat != null && lng != null) {
@@ -94,14 +95,7 @@ function resolveMapLocation(data) {
   return null;
 }
 
-const resolveImageUrl = (value) => {
-  if (!value) return null;
-  if (typeof value === "string") return value.trim() || null;
-  if (typeof value === "object") {
-    return value.url || value.path || value.full_url || value.src || null;
-  }
-  return null;
-};
+const resolveImageUrl = (value) => absolutizeMediaUrl(value);
 
 const AddressImageViewer = ({ src }) => {
   const {
@@ -133,14 +127,11 @@ const AddressImageViewer = ({ src }) => {
               cursorClass === "cursor-grabbing" ? "none" : "transform 0.15s ease-out",
           }}
         >
-          <Image
+          <img
             src={src}
             alt="صورة العنوان"
-            width={720}
-            height={540}
             className="h-auto max-h-[min(56vh,480px)] w-auto max-w-full select-none object-contain"
             draggable={false}
-            unoptimized
           />
         </div>
       </div>
@@ -198,10 +189,10 @@ const PropertyLocationMap = ({ location }) => {
 };
 
 export default function PropertyDetails({ data }) {
-  const step1 = data?.step1 ?? {};
+  const address = getOrderAddressStep(data);
 
   const imageAddress = resolveImageUrl(
-    pickFirst(step1.image_address, data?.image_address)
+    pickFirst(address.image_address, data?.image_address)
   );
 
   const location = useMemo(() => resolveMapLocation(data), [data]);
@@ -228,7 +219,7 @@ export default function PropertyDetails({ data }) {
 
       <ContractStepEditor
         title="العنوان الوطني للعقار"
-        step="step1"
+        step="step2"
         fields={STEP1_ADDRESS_FIELDS}
         startInEditing
         formOnly

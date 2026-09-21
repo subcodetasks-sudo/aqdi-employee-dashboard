@@ -23,7 +23,7 @@ function FinancialDetailes() {
   return (
     <div dir="rtl">
       <ContractStepEditor
-        step="step4"
+        step="step6"
         fieldGroups={FIELD_GROUPS}
         startInEditing
         formOnly
