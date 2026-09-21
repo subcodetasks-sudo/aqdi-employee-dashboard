@@ -8,7 +8,7 @@ import { useUserStore } from "@/src/stores/user-store";
 import { useSidebarStore } from "@/src/stores/sidebar-store";
 import { isFirebaseConfigured } from "@/src/lib/firebase/config";
 import {
-  clearStoredFcmToken,
+  disconnectFcmToken,
   getFirebaseMessaging,
   requestFcmToken,
 } from "@/src/lib/firebase/messaging";
@@ -109,7 +109,7 @@ export function useFirebaseMessaging() {
     if (hasHydrated && !token) {
       unsubscribeRef.current();
       unsubscribeRef.current = () => {};
-      clearStoredFcmToken();
+      void disconnectFcmToken();
     }
   }, [hasHydrated, token]);
 }

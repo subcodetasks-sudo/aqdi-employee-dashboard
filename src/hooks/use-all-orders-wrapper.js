@@ -1,19 +1,17 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { AlertCircle, Ban, CheckCircle2, Undo2 } from "lucide-react";
 import { mapRealtimeTableOrder } from "@/components/realtime-orders/map-realtime-order";
 import {
-  getStatusCaseFields,
-  statusRequiresExtraFields,
-} from "@/components/realtime-orders/change-order-status-fields-dialog";
-import {
   getReturnRequestExistsMessage,
   hasReturnRequest,
+  isOrderPaid,
   isReturnContractStatus,
   normalizeOrderForReturnRequest,
+  UNPAID_ORDER_RETURN_MESSAGE,
 } from "@/components/analysis/returned/refund-contract-utils";
 import { openDialogAfterMenuClose } from "@/src/lib/open-dialog-after-menu-close";
 import {
@@ -35,6 +33,10 @@ import {
 } from "@/src/hooks/use-realtime-new-orders";
 import { axiosInstance } from "@/src/utils/axios";
 import { useChangeOrderStatus } from "@/src/hooks/use-change-order-status";
+import {
+  normalizeOrderMenuStatus,
+  useConfirmOrderStatusChange,
+} from "@/src/hooks/use-confirm-order-status-change";
 import { getAllOrdersExtraFilterStatuses } from "@/src/lib/contract-statuses";
 
 const COMPLETION_FILTERS = ["authenticated", "incomplete"];
@@ -187,6 +189,28 @@ export function useAllOrdersWrapper({
     router.push(`/home/orders/${row.id ?? row.uuid}`);
   };
 
+  const changeStatusRef = useRef(null);
+
+  const {
+    confirmOpen: confirmStatusOpen,
+    pendingConfirm: pendingStatusConfirm,
+    requestConfirm,
+    confirmStatusChange,
+    clearConfirm,
+    handleConfirmOpenChange: setConfirmStatusOpen,
+  } = useConfirmOrderStatusChange({
+    onDirectChange: (pending) => {
+      changeStatusRef.current?.({
+        orderId: pending.orderId,
+        statusId: pending.status.id,
+      });
+    },
+    onNeedsFields: (pending) => {
+      setPendingStatusChange({ order: pending.order, status: pending.status });
+      setStatusFieldsOpen(true);
+    },
+  });
+
   const {
     mutate: changeStatus,
     isPending: isChangingStatus,
@@ -196,17 +220,13 @@ export function useAllOrdersWrapper({
     onSuccess: () => {
       setStatusFieldsOpen(false);
       setPendingStatusChange(null);
+      clearConfirm();
     },
   });
+  changeStatusRef.current = changeStatus;
 
   const handleStatusChange = (row, status) => {
-    const menuStatus = {
-      id: status.id,
-      name: status.name ?? status.label,
-      label: status.label ?? status.name,
-      color: status.color,
-      status_case: status.status_case ?? null,
-    };
+    const menuStatus = normalizeOrderMenuStatus(status);
 
     if (isReturnContractStatus(menuStatus)) {
       if (!canReturn) {
@@ -214,6 +234,10 @@ export function useAllOrdersWrapper({
         return;
       }
       const normalized = normalizeOrderForReturnRequest(row, row?.id);
+      if (!isOrderPaid(normalized)) {
+        toast.error(UNPAID_ORDER_RETURN_MESSAGE);
+        return;
+      }
       if (hasReturnRequest(normalized)) {
         toast.info(getReturnRequestExistsMessage(normalized));
         return;
@@ -223,13 +247,7 @@ export function useAllOrdersWrapper({
       return;
     }
 
-    if (statusRequiresExtraFields(menuStatus)) {
-      setPendingStatusChange({ order: row, status: menuStatus });
-      openDialogAfterMenuClose(() => setStatusFieldsOpen(true));
-      return;
-    }
-
-    changeStatus({ orderId: row.id, statusId: status.id });
+    requestConfirm({ order: row, orderId: row.id, status: menuStatus });
   };
 
   const { isBatchPrinting, batchPrint: handleBatchPrint } =
@@ -325,6 +343,10 @@ export function useAllOrdersWrapper({
     setStatusFieldsOpen,
     pendingStatusChange,
     setPendingStatusChange,
+    confirmStatusOpen,
+    setConfirmStatusOpen,
+    pendingStatusConfirm,
+    confirmStatusChange,
     manageStatusesOpen,
     setManageStatusesOpen,
     statusItems,

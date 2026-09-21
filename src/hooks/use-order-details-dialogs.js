@@ -1,18 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { fetchContractPaymentLink } from "@/components/orders/shared/payment-gateway";
 import { getOrderContractUuid } from "@/components/orders/messages/order-section-message-utils";
 import {
   getReturnRequestExistsMessage,
   hasReturnRequest,
+  isOrderPaid,
   isReturnContractStatus,
   normalizeOrderForReturnRequest,
+  UNPAID_ORDER_RETURN_MESSAGE,
 } from "@/components/analysis/returned/refund-contract-utils";
 import { openDialogAfterMenuClose } from "@/src/lib/open-dialog-after-menu-close";
-import { statusRequiresExtraFields } from "@/components/realtime-orders/change-order-status-fields-dialog";
 import { useChangeOrderStatus } from "@/src/hooks/use-change-order-status";
+import {
+  normalizeOrderMenuStatus,
+  useConfirmOrderStatusChange,
+} from "@/src/hooks/use-confirm-order-status-change";
 
 const EMPTY_PAYMENT_LINK = {
   paymentUrl: "",
@@ -35,15 +40,41 @@ export function useOrderDetailsDialogs({ orderData, id, canReturn, refetch }) {
   const [pendingStatusChange, setPendingStatusChange] = useState(null);
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [paymentLink, setPaymentLink] = useState(EMPTY_PAYMENT_LINK);
+  const changeStatusRef = useRef(null);
+
+  const {
+    confirmOpen: confirmStatusOpen,
+    pendingConfirm: pendingStatusConfirm,
+    requestConfirm,
+    confirmStatusChange,
+    clearConfirm,
+    handleConfirmOpenChange: setConfirmStatusOpen,
+  } = useConfirmOrderStatusChange({
+    onDirectChange: (pending) => {
+      changeStatusRef.current?.({
+        orderId: pending.orderId,
+        statusId: pending.status.id,
+      });
+    },
+    onNeedsFields: (pending) => {
+      setPendingStatusChange({
+        orderId: pending.orderId,
+        status: pending.status,
+      });
+      setStatusFieldsOpen(true);
+    },
+  });
 
   const { mutate: changeStatus, isPending: isChangingStatus } = useChangeOrderStatus({
     queryKey: ["single-order", id],
     onSuccess: () => {
       setStatusFieldsOpen(false);
       setPendingStatusChange(null);
+      clearConfirm();
       refetch();
     },
   });
+  changeStatusRef.current = changeStatus;
 
   const openReturn = (source = orderData) => {
     if (!canReturn) {
@@ -51,6 +82,10 @@ export function useOrderDetailsDialogs({ orderData, id, canReturn, refetch }) {
       return;
     }
     const normalized = normalizeOrderForReturnRequest(source, source?.id ?? id);
+    if (!isOrderPaid(normalized)) {
+      toast.error(UNPAID_ORDER_RETURN_MESSAGE);
+      return;
+    }
     if (hasReturnRequest(normalized)) {
       toast.info(getReturnRequestExistsMessage(normalized));
       return;
@@ -60,13 +95,7 @@ export function useOrderDetailsDialogs({ orderData, id, canReturn, refetch }) {
   };
 
   const handleStatusChange = (_row, status) => {
-    const menuStatus = {
-      id: status.id,
-      name: status.name ?? status.label,
-      label: status.label ?? status.name,
-      color: status.color,
-      status_case: status.status_case ?? null,
-    };
+    const menuStatus = normalizeOrderMenuStatus(status);
 
     if (isReturnContractStatus(menuStatus)) {
       // Same as the "رفع طلب استرجاع" pill: create a request, or block if one exists.
@@ -74,13 +103,12 @@ export function useOrderDetailsDialogs({ orderData, id, canReturn, refetch }) {
       return;
     }
 
-    if (statusRequiresExtraFields(menuStatus)) {
-      setPendingStatusChange({ orderId: orderData.id, status: menuStatus });
-      openDialogAfterMenuClose(() => setStatusFieldsOpen(true));
-      return;
-    }
-
-    changeStatus({ orderId: orderData.id, statusId: status.id });
+    requestConfirm({
+      order: orderData,
+      orderId: orderData.id,
+      status: menuStatus,
+      orderLabel: orderData?.uuid ?? orderData?.id,
+    });
   };
 
   const handlePayLink = async () => {
@@ -129,6 +157,10 @@ export function useOrderDetailsDialogs({ orderData, id, canReturn, refetch }) {
     setStatusFieldsOpen,
     pendingStatusChange,
     setPendingStatusChange,
+    confirmStatusOpen,
+    setConfirmStatusOpen,
+    pendingStatusConfirm,
+    confirmStatusChange,
     paymentDialogOpen,
     setPaymentDialogOpen,
     paymentLink,

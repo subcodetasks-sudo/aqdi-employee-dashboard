@@ -5,7 +5,9 @@ import { toast } from "sonner";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { axiosInstance } from "@/src/utils/axios";
 import {
+    isOrderPaid,
     resolveRefundableContractId,
+    UNPAID_ORDER_RETURN_MESSAGE,
 } from "@/components/analysis/returned/refund-contract-utils";
 import { invalidateRefundCaches } from "@/src/lib/invalidate-orders-caches";
 
@@ -59,6 +61,10 @@ export function useReturnRequest({ open, order, orderId, orderUuid, queryKey, on
     });
 
     const handleSubmit = () => {
+        if (!isOrderPaid(order)) {
+            toast.error(UNPAID_ORDER_RETURN_MESSAGE);
+            return;
+        }
         if (!contractId) {
             toast.error("تعذر تحديد العقد المرتبط بالطلب");
             return;
