@@ -142,9 +142,91 @@ export const STEP1_ADDRESS_FIELDS = [
   { key: "address_url", label: "رابط العنوان", type: "text" },
 ];
 
-/** Kept for edit compatibility; not part of frontend step2 address payload */
+/** Deed / property details — POST /admin/orders (step1 keys) */
 export const STEP1_PROPERTY_FIELDS = [
-  { key: "name_real_estate", label: "اسم العقار", type: "text" },
+  { key: "name_real_estate", label: "اسم العقار", type: "text", step: "step1" },
+  {
+    key: "property_type_id",
+    label: "نوع العقار",
+    type: "select",
+    optionsSource: "property-types",
+    displayKey: "property_type_name",
+    step: "step1",
+  },
+  {
+    key: "property_usages_id",
+    label: "استخدام العقار",
+    type: "select",
+    optionsSource: "property-usages",
+    displayKey: "property_usages_name",
+    step: "step1",
+  },
+  {
+    key: "contract_ownership",
+    label: "ملكية العقد",
+    type: "text",
+    step: "step1",
+  },
+  {
+    key: "real_estate_registry_number",
+    label: "رقم السجل العقاري",
+    type: "text",
+    step: "step1",
+  },
+  {
+    key: "unit_number_of_real",
+    label: "رقم الوحدة في العقار",
+    type: "text",
+    step: "step1",
+  },
+  {
+    key: "instrument_history",
+    label: "تاريخ الصك",
+    type: "date",
+    calendarTypeKey: "type_instrument_history",
+    step: "step1",
+  },
+  {
+    key: "type_instrument_history",
+    label: "نوع تاريخ الصك",
+    type: "select",
+    options: [
+      { value: "hijri", label: "هجري" },
+      { value: "gregorian", label: "ميلادي" },
+    ],
+    step: "step1",
+  },
+  {
+    key: "date_first_registration",
+    label: "تاريخ أول تسجيل",
+    type: "date",
+    calendarTypeKey: "type_date_first_registration",
+    step: "step1",
+  },
+  {
+    key: "type_date_first_registration",
+    label: "نوع تاريخ أول تسجيل",
+    type: "select",
+    options: [
+      { value: "hijri", label: "هجري" },
+      { value: "gregorian", label: "ميلادي" },
+    ],
+    step: "step1",
+  },
+  { key: "age_of_the_property", label: "عمر العقار", type: "text", step: "step1" },
+  { key: "number_of_floors", label: "عدد الطوابق", type: "text", step: "step1" },
+  {
+    key: "number_of_units_per_floor",
+    label: "عدد الوحدات في كل طابق",
+    type: "text",
+    step: "step1",
+  },
+  {
+    key: "number_of_units_in_realestate",
+    label: "إجمالي وحدات العقار",
+    type: "text",
+    step: "step1",
+  },
 ];
 
 /** Unit — POST /contract/step5 (legacy single-unit contract fields) */
@@ -192,10 +274,17 @@ export const ADMIN_UNIT_CORE_FIELDS = [
 
 export const ADMIN_UNIT_ROOM_FIELDS = [
   { key: "tootal_rooms", label: "إجمالي الغرف", type: "text" },
+  { key: "The_number_of_halls", label: "عدد الصالات", type: "text" },
+  { key: "number_of_councils", label: "عدد المجالس", type: "text" },
   { key: "The_number_of_kitchens", label: "عدد المطابخ", type: "text" },
   { key: "The_number_of_toilets", label: "عدد دورات المياه", type: "text" },
   { key: "window_ac", label: "مكيف شباك", type: "text" },
   { key: "split_ac", label: "مكيف سبليت", type: "text" },
+  {
+    key: "number_of_unit_air_conditioners",
+    label: "عدد مكيفات الوحدة",
+    type: "text",
+  },
 ];
 
 export const ADMIN_UNIT_SERVICE_FIELDS = [
@@ -231,6 +320,12 @@ export const ADMIN_UNIT_SERVICE_FIELDS = [
       { value: "owner", label: "المالك" },
       { value: "tenant", label: "المستأجر" },
     ],
+  },
+  { key: "Gasmeter", label: "عداد غاز", type: "boolean" },
+  {
+    key: "Number_parking_spaces",
+    label: "عدد مواقف السيارات",
+    type: "text",
   },
 ];
 
@@ -356,6 +451,43 @@ export const STEP3_TENANT_FIELDS = [
     type: "date",
     entity: "person",
     calendarTypeKey: "type_tenant_dob",
+  },
+  {
+    key: "tenant_name",
+    label: "اسم المستأجر",
+    type: "text",
+  },
+  {
+    key: "tenant_email",
+    label: "البريد الإلكتروني",
+    type: "text",
+  },
+  {
+    key: "tenant_nationality",
+    label: "الجنسية",
+    type: "text",
+  },
+  {
+    key: "tenant_work",
+    label: "العمل",
+    type: "text",
+  },
+  {
+    key: "tenant_gender",
+    label: "الجنس",
+    type: "text",
+  },
+  {
+    key: "is_there_a_legal_representative_of_the_tenant",
+    label: "هل يوجد ممثل نظامي للمستأجر؟",
+    type: "boolean",
+  },
+  {
+    key: "copy_of_the_owner_record",
+    label: "صورة سجل المالك",
+    type: "file",
+    accept: "image/*,application/pdf",
+    colSpan: 3,
   },
   // —— منشأة / مؤسسة ——
   {
@@ -505,6 +637,31 @@ export const STEP4_FINANCIAL_FIELDS = [
       value: String(i),
       label: String(i),
     })),
+  },
+  { key: "daily_fine", label: "الغرامة اليومية", type: "text" },
+  { key: "sub_delay", label: "تأخير فرعي", type: "text" },
+  { key: "deposit", label: "التأمين", type: "text" },
+  { key: "Guarantee_amount", label: "مبلغ الضمان", type: "text" },
+  {
+    key: "premium_membership_for_free",
+    label: "عضوية مميزة مجاناً",
+    type: "boolean",
+  },
+  {
+    key: "client_account_holder_name",
+    label: "اسم صاحب الحساب",
+    type: "text",
+  },
+  {
+    key: "bank_account_number",
+    label: "رقم الحساب البنكي",
+    type: "text",
+  },
+  {
+    key: "notes_edits",
+    label: "ملاحظات التعديل",
+    type: "textarea",
+    colSpan: 2,
   },
 ];
 

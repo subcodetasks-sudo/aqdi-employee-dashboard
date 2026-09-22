@@ -297,6 +297,16 @@ export const ContractStepEditor = forwardRef(function ContractStepEditor(
             next.dob_of_property_tenant_agent_month = parts[1];
             next.dob_of_property_tenant_agent_year = parts[2];
           }
+          if (field.key === "instrument_history") {
+            next.instrument_history_day = parts[0];
+            next.instrument_history_month = parts[1];
+            next.instrument_history_year = parts[2];
+          }
+          if (field.key === "date_first_registration") {
+            next.date_first_registration_day = parts[0];
+            next.date_first_registration_month = parts[1];
+            next.date_first_registration_year = parts[2];
+          }
         }
       }
 

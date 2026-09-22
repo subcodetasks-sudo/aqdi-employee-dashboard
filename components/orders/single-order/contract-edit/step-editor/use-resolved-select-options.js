@@ -5,6 +5,8 @@ import { useRegions } from "@/src/hooks/use-regions";
 import { useCities } from "@/src/hooks/use-cities";
 import { useUnitTypes } from "@/src/hooks/use-unit-types";
 import { useUnitUsages } from "@/src/hooks/use-unit-usages";
+import { usePropertyTypes } from "@/src/hooks/use-property-types";
+import { usePropertyUsages } from "@/src/hooks/use-property-usages";
 import {
   getOrderAddressStep,
   resolveOrderContractTypeKey,
@@ -33,6 +35,10 @@ export function useResolvedSelectOptions(field, orderData, formValues) {
     field?.optionsSource === "unit-types" || field?.key === "unit_type_id";
   const needsUnitUsages =
     field?.optionsSource === "unit-usages" || field?.key === "unit_usage_id";
+  const needsPropertyTypes =
+    field?.optionsSource === "property-types" || field?.key === "property_type_id";
+  const needsPropertyUsages =
+    field?.optionsSource === "property-usages" || field?.key === "property_usages_id";
 
   const address = getOrderAddressStep(orderData);
   const regionId =
@@ -63,6 +69,14 @@ export function useResolvedSelectOptions(field, orderData, formValues) {
     contractType,
     needsUnitUsages
   );
+  const { options: propertyTypeOptions, isLoading: propertyTypesLoading } = usePropertyTypes(
+    contractType,
+    needsPropertyTypes
+  );
+  const { options: propertyUsageOptions, isLoading: propertyUsagesLoading } = usePropertyUsages(
+    contractType,
+    needsPropertyUsages
+  );
 
   if (Array.isArray(field?.options) && field.options.length > 0) {
     return { options: field.options, isLoading: false };
@@ -75,6 +89,10 @@ export function useResolvedSelectOptions(field, orderData, formValues) {
   if (needsCities) return { options: cityOptions, isLoading: citiesLoading };
   if (needsUnitTypes) return { options: unitTypeOptions, isLoading: unitTypesLoading };
   if (needsUnitUsages) return { options: unitUsageOptions, isLoading: unitUsagesLoading };
+  if (needsPropertyTypes) return { options: propertyTypeOptions, isLoading: propertyTypesLoading };
+  if (needsPropertyUsages) {
+    return { options: propertyUsageOptions, isLoading: propertyUsagesLoading };
+  }
 
   return { options: field?.options ?? [], isLoading: false };
 }

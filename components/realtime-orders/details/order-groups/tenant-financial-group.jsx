@@ -48,9 +48,41 @@ export default function TenantFinancialGroup({ order, onEdit }) {
         badgeClassName="bg-[#DCFCE7] text-green-700 dark:bg-[#064E3B]/40 dark:text-[#6EE7B7]"
       >
         <div className="space-y-2">
+          <Field label="اسم المستأجر" value={order.tenant?.name} />
           <Field label="هوية المستأجر" value={order.tenant?.id_num} />
           <Field label="تاريخ الميلاد" value={order.tenant?.dob_display} />
           <Field label="جوال المستأجر" value={order.tenant?.phone} />
+          <Field label="البريد الإلكتروني" value={order.tenant?.email} />
+          <Field label="الجنسية" value={order.tenant?.nationality} />
+          <Field label="العمل" value={order.tenant?.work} />
+          <Field label="الجنس" value={order.tenant?.gender} />
+          <Field label="منطقة المنشأة" value={order.tenant?.entity_region} />
+          <Field label="مدينة المنشأة" value={order.tenant?.entity_city} />
+          <Field
+            label="منطقة الممثل النظامي"
+            value={order.tenant?.entity_legal_region}
+          />
+          <Field
+            label="مدينة الممثل النظامي"
+            value={order.tenant?.entity_legal_city}
+          />
+          <Field
+            label="ممثل نظامي للمستأجر"
+            value={order.tenant?.has_legal_representative}
+          />
+          {order.tenant?.owner_record_url ? (
+            <div className="rounded-xl bg-status-neutral-bg dark:bg-white/[0.04] px-3 py-2.5 space-y-1">
+              <p className="text-[10.5px] font-bold text-gray-400">صورة سجل المالك</p>
+              <a
+                href={order.tenant.owner_record_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs font-bold text-brand-dark dark:text-[#6EE7B7] hover:underline truncate block"
+              >
+                {order.tenant.owner_record_name || "عرض المرفق"}
+              </a>
+            </div>
+          ) : null}
         </div>
       </AccentCard>
 
@@ -94,6 +126,23 @@ export default function TenantFinancialGroup({ order, onEdit }) {
             <span className="text-gray-400 dark:text-white/40 font-medium">إجمالي الإيجار</span>
             <Money value={financial.rent} className="text-sm" />
           </div>
+          <Field label="الغرامة اليومية" value={financial.daily_fine} />
+          <Field label="تأخير فرعي" value={financial.sub_delay} />
+          <Field label="التأمين" value={financial.deposit} />
+          <Field label="مبلغ الضمان" value={financial.guarantee_amount} />
+          <Field
+            label="عضوية مميزة مجاناً"
+            value={financial.premium_membership_for_free}
+          />
+          <Field
+            label="اسم صاحب الحساب"
+            value={financial.client_account_holder_name}
+          />
+          <Field
+            label="رقم الحساب البنكي"
+            value={financial.bank_account_number}
+          />
+          <Field label="ملاحظات التعديل" value={financial.notes_edits} />
         </div>
 
         {totalPrice?.items?.length ? (

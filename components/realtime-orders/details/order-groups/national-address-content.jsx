@@ -31,6 +31,7 @@ function hasValue(value) {
 function hasTextAddress(address) {
   return [
     address?.short_address,
+    address?.region,
     address?.city,
     address?.district,
     address?.building,
@@ -43,9 +44,7 @@ function hasTextAddress(address) {
 function hasMapAddress(address) {
   return (
     hasValue(address?.maps_url) ||
-    hasValue(address?.embed_url) ||
-    hasValue(address?.address_url) ||
-    (address?.lat != null && address?.lng != null)
+    (hasValue(address?.address_url) && isMapsUrl(address.address_url))
   );
 }
 
@@ -69,15 +68,13 @@ function getMapsUrl(address) {
   if (hasValue(address?.address_url) && isMapsUrl(address.address_url)) {
     return address.address_url;
   }
-  if (address?.lat != null && address?.lng != null) {
-    return `https://www.google.com/maps?q=${address.lat},${address.lng}`;
-  }
   return null;
 }
 
 function TextAddressPanel({ address }) {
   const fields = [
     { label: "العنوان المختصر", value: address.short_address },
+    { label: "المنطقة", value: address.region },
     { label: "المدينة", value: address.city },
     { label: "الحي", value: address.district },
     { label: "رقم المبنى", value: address.building },
@@ -99,9 +96,9 @@ function TextAddressPanel({ address }) {
 
 function MapAddressPanel({ address }) {
   const mapsUrl = getMapsUrl(address);
-  const hasCoords = address.lat != null && address.lng != null;
+  if (!mapsUrl) return null;
 
-  if (!mapsUrl && !hasCoords && !address.embed_url) return null;
+  const hasCoords = address.lat != null && address.lng != null;
 
   return (
     <div className="rounded-xl border border-[#D7E3DE] bg-[#F7FAF8] p-3 dark:border-white/10 dark:bg-white/[0.03]">
@@ -120,13 +117,6 @@ function MapAddressPanel({ address }) {
             referrerPolicy="no-referrer-when-downgrade"
           />
         </div>
-      ) : hasCoords ? (
-        <div className="mb-3 flex h-[220px] items-center justify-center rounded-xl border border-dashed border-[#D7E3DE] bg-white dark:border-white/10 dark:bg-[#0B1411]">
-          <div className="text-center">
-            <MapPin className="mx-auto mb-2 size-8 text-brand-dark dark:text-[#6EE7B7]" />
-            <p className="text-xs font-bold text-gray-600 dark:text-white/70">موقع على الخريطة</p>
-          </div>
-        </div>
       ) : null}
 
       {hasCoords ? (
@@ -135,27 +125,25 @@ function MapAddressPanel({ address }) {
         </p>
       ) : null}
 
-      {mapsUrl ? (
-        <div className="flex flex-wrap items-center gap-2">
-          <button
-            type="button"
-            onClick={() => copyText(mapsUrl)}
-            className="inline-flex items-center gap-1.5 rounded-full border border-[#D7E3DE] bg-white px-3 py-1.5 text-xs font-bold text-gray-600 transition-colors hover:border-brand-dark/30 hover:text-brand-dark dark:border-white/10 dark:bg-white/[0.04] dark:text-white/70 dark:hover:text-[#6EE7B7]"
-          >
-            <Copy className="size-3.5" />
-            نسخ الرابط
-          </button>
-          <a
-            href={mapsUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 rounded-full bg-brand-hover px-3 py-1.5 text-xs font-bold text-white transition-colors hover:bg-brand-hover/90"
-          >
-            <ExternalLink className="size-3.5" />
-            فتح في الخرائط
-          </a>
-        </div>
-      ) : null}
+      <div className="flex flex-wrap items-center gap-2">
+        <button
+          type="button"
+          onClick={() => copyText(mapsUrl)}
+          className="inline-flex items-center gap-1.5 rounded-full border border-[#D7E3DE] bg-white px-3 py-1.5 text-xs font-bold text-gray-600 transition-colors hover:border-brand-dark/30 hover:text-brand-dark dark:border-white/10 dark:bg-white/[0.04] dark:text-white/70 dark:hover:text-[#6EE7B7]"
+        >
+          <Copy className="size-3.5" />
+          نسخ الرابط
+        </button>
+        <a
+          href={mapsUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 rounded-full bg-brand-hover px-3 py-1.5 text-xs font-bold text-white transition-colors hover:bg-brand-hover/90"
+        >
+          <ExternalLink className="size-3.5" />
+          فتح في الخرائط
+        </a>
+      </div>
     </div>
   );
 }

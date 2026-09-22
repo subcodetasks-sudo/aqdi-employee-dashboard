@@ -12,6 +12,8 @@ export const CALENDAR_TYPE_TO_DATE_KEYS = {
   type_tenant_dob: ["tenant_dob"],
   type_dob_tenant_agent: ["dob_of_property_tenant_agent"],
   type_contract_starting_date: ["contract_starting_date"],
+  type_instrument_history: ["instrument_history"],
+  type_date_first_registration: ["date_first_registration"],
 };
 
 export function convertDateBetweenCalendars(dateString, fromType, toType) {

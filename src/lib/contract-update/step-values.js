@@ -59,12 +59,17 @@ export const CONTRACT_STEP_KEYS = {
     "is_multiple_trusteeship_deed_copy",
     "real_estate_registry_number",
     "date_first_registration",
+    "type_date_first_registration",
+    "instrument_history",
     "property_type_id",
     "property_usages_id",
     "age_of_the_property",
     "number_of_floors",
     "number_of_units_per_floor",
     "number_of_units_in_realestate",
+    "name_real_estate",
+    "unit_number_of_real",
+    "contract_ownership",
     "deed_type",
     "deed_addition_method",
   ],
@@ -124,6 +129,9 @@ export const CONTRACT_STEP_KEYS = {
     "copy_power_of_attorney_from_heirs_to_agent",
     "Image_inheritance_certificate",
     "property_owner_is_deceased",
+    "agent_iban_of_property_owner",
+    "id_num_of_property_owner_agent_record",
+    "dob_hijri_of_property_owner_agent",
     "copy_of_the_endowment_registration_certificate",
     "copy_of_the_trusteeship_deed",
     "is_multiple_trusteeship_deed_copy",
@@ -153,6 +161,7 @@ export const CONTRACT_STEP_KEYS = {
     "dobof_property_tenant_agent_year",
     "mobile_of_property_tenant_agent",
     "copy_of_the_authorization_or_agency",
+    "copy_of_the_owner_record",
     "notes",
     "tenant_name",
     "tenant_email",
@@ -172,11 +181,13 @@ export const CONTRACT_STEP_KEYS = {
     "tootal_rooms",
     "number_of_rooms",
     "The_number_of_halls",
+    "number_of_councils",
     "The_number_of_kitchens",
     "The_number_of_toilets",
     "The_number_of_the_toilet",
     "window_ac",
     "split_ac",
+    "number_of_unit_air_conditioners",
     "kitchen_tank",
     "furnished",
     "type_furnished",
@@ -186,6 +197,8 @@ export const CONTRACT_STEP_KEYS = {
     "water_meter",
     "water_meter_number",
     "water_meter_ownership",
+    "Gasmeter",
+    "Number_parking_spaces",
   ],
   /** step6 — المالية */
   step6: [
@@ -212,6 +225,12 @@ export const CONTRACT_STEP_KEYS = {
     "tenant_role_ids",
     "tenant_role_values",
     "daily_fine",
+    "sub_delay",
+    "deposit",
+    "Guarantee_amount",
+    "premium_membership_for_free",
+    "bank_account_number",
+    "client_account_holder_name",
   ],
 };
 
@@ -362,6 +381,16 @@ function readFinancial(orderData, key) {
   return financial[key] ?? orderData?.[key];
 }
 
+function composeDateParts(bucket, baseKey) {
+  if (!bucket) return null;
+  const full = bucket[baseKey];
+  if (full != null && full !== "") return full;
+  const composed = [bucket[`${baseKey}_day`], bucket[`${baseKey}_month`], bucket[`${baseKey}_year`]]
+    .filter((part) => part != null && part !== "")
+    .join("-");
+  return composed || null;
+}
+
 function readValue(orderData, step, key) {
   if (step === "summary") {
     const owner = getOrderOwnerStep(orderData);
@@ -376,6 +405,43 @@ function readValue(orderData, step, key) {
   }
   if (step === "step1") {
     const deed = getOrderDeedStep(orderData);
+    if (key === "instrument_history") {
+      return (
+        composeDateParts(deed, "instrument_history") ??
+        composeDateParts(orderData, "instrument_history")
+      );
+    }
+    if (key === "date_first_registration") {
+      return (
+        composeDateParts(deed, "date_first_registration") ??
+        composeDateParts(orderData, "date_first_registration")
+      );
+    }
+    if (key === "name_real_estate") {
+      return (
+        deed.name_real_estate ??
+        orderData?.name_real_estate ??
+        orderData?.real_estate?.name_real_estate ??
+        orderData?.real_estate?.name ??
+        null
+      );
+    }
+    if (key === "property_type_id") {
+      return (
+        deed.property_type_id ??
+        orderData?.property_type_id ??
+        orderData?.property_type?.id ??
+        null
+      );
+    }
+    if (key === "property_usages_id") {
+      return (
+        deed.property_usages_id ??
+        orderData?.property_usages_id ??
+        orderData?.property_usages?.id ??
+        null
+      );
+    }
     return (
       deed[key] ??
       pickAgentRelatedField(orderData, key) ??

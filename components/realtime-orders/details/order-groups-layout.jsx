@@ -5,6 +5,7 @@ import TenantFinancialGroup from "./order-groups/tenant-financial-group";
 import UnitsGroup from "./order-groups/units-group";
 import StatusTimeline from "./order-groups/status-timeline";
 import LeaseRenewalFeatures from "./order-groups/lease-renewal-features";
+import ExtrasGroup from "./order-groups/extras-group";
 
 export default function OrderGroupsLayout({
   order,
@@ -19,6 +20,8 @@ export default function OrderGroupsLayout({
         <TenantFinancialGroup order={order} onEdit={onEdit} />
         <UnitsGroup order={order} onEdit={onEdit} />
       </div>
+
+      <ExtrasGroup order={order} />
 
       {isLeaseRenewal ? <LeaseRenewalFeatures orderData={orderData} /> : null}
 

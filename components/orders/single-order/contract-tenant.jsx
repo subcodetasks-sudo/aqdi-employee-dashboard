@@ -17,6 +17,7 @@ function isPdfUrl(url) {
 
 function ContractTenant({ data }) {
   const [agencyViewerOpen, setAgencyViewerOpen] = useState(false);
+  const [ownerRecordViewerOpen, setOwnerRecordViewerOpen] = useState(false);
   const tenant = getOrderTenantStep(data);
   const pick = (key, ...alts) =>
     pickFirst(tenant[key], data?.[key], ...alts.map((k) => tenant[k] ?? data?.[k]));
@@ -35,6 +36,14 @@ function ContractTenant({ data }) {
   });
   const agencyIsPdf = isPdfUrl(agencyDocumentUrl);
 
+  const ownerRecordUrl = resolveAgencyDocumentUrl({
+    copy_of_the_authorization_or_agency: pick(
+      "copy_of_the_owner_record",
+      "copy_of_the_owner_record_path"
+    ),
+  });
+  const ownerRecordIsPdf = isPdfUrl(ownerRecordUrl);
+
   return (
     <div className="space-y-6 p-4 lg:p-6" dir="rtl">
       <ContractStepEditor
@@ -44,6 +53,33 @@ function ContractTenant({ data }) {
         startInEditing
         formOnly
       />
+
+      {ownerRecordUrl ? (
+        <div className="rounded-2xl border border-surface-border dark:border-white/10 bg-white dark:bg-white/[0.03] p-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="text-right">
+              <p className="text-xs font-medium text-gray-400 dark:text-white/40">
+                صورة سجل المالك
+              </p>
+              <p className="mt-1 text-sm font-bold text-gray-800 dark:text-white">
+                {ownerRecordIsPdf ? "ملف PDF مرفق" : "صورة مرفقة"}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setOwnerRecordViewerOpen(true)}
+              className="inline-flex items-center gap-1.5 rounded-full border border-[#E0E0E0] dark:border-white/10 bg-neutral-50 dark:bg-white/[0.04] px-3 py-1.5 text-xs font-bold text-ink-subtle dark:text-white/70 hover:border-brand-hover hover:text-brand-hover"
+            >
+              {ownerRecordIsPdf ? (
+                <FileText className="size-3.5 text-[#E24444]" />
+              ) : (
+                <Eye className="size-3.5" />
+              )}
+              معاينة
+            </button>
+          </div>
+        </div>
+      ) : null}
 
       {isInstitution && isAgentAuth ? (
         <div className="rounded-2xl border border-surface-border dark:border-white/10 bg-white dark:bg-white/[0.03] p-4">
@@ -83,6 +119,13 @@ function ContractTenant({ data }) {
         onOpenChange={setAgencyViewerOpen}
         documentUrl={agencyDocumentUrl}
         title={agencyIsPdf ? "وكالة PDF" : "صورة الوكالة"}
+      />
+
+      <AgencyDocumentViewerDialog
+        open={ownerRecordViewerOpen}
+        onOpenChange={setOwnerRecordViewerOpen}
+        documentUrl={ownerRecordUrl}
+        title={ownerRecordIsPdf ? "سجل المالك PDF" : "صورة سجل المالك"}
       />
     </div>
   );

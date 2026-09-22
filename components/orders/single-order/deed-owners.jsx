@@ -5,6 +5,7 @@ import { ContractStepEditor } from "./contract-edit/contract-step-editor";
 import {
   SUMMARY_AGENT_FIELDS,
   SUMMARY_INSTRUMENT_IMAGE_FIELDS,
+  STEP1_PROPERTY_FIELDS,
 } from "./contract-edit/contract-field-schemas";
 import { getInstrumentTypeLabel } from "@/src/lib/instrument-types";
 import { pickFirst } from "./frontend-contract-fields";
@@ -65,6 +66,22 @@ const AGENCY_EXTRA_FIELDS = [
       { value: "hijri", label: "هجري" },
       { value: "gregorian", label: "ميلادي" },
     ],
+  },
+  {
+    key: "agent_iban_of_property_owner",
+    label: "آيبان الوكيل",
+    type: "text",
+  },
+  {
+    key: "id_num_of_property_owner_agent_record",
+    label: "هوية سجل الوكيل",
+    type: "text",
+    inputKind: "national_id",
+  },
+  {
+    key: "dob_hijri_of_property_owner_agent",
+    label: "تاريخ ميلاد الوكيل (هجري)",
+    type: "text",
   },
   {
     key: "property_owner_is_deceased",
@@ -134,16 +151,41 @@ const DeedOwners = ({ data }) => {
         title: "بيانات المالك",
         fields: [
           {
+            key: "name_owner",
+            label: "اسم المالك",
+            type: "text",
+          },
+          {
             key: "property_owner_id_num",
             label: "رقم الهوية",
             type: "text",
             inputKind: "national_id",
           },
           {
+            key: "property_owner_dob",
+            label: "تاريخ الميلاد",
+            type: "date",
+            calendarTypeKey: "type_dob_property_owner",
+          },
+          {
+            key: "type_dob_property_owner",
+            label: "نوع تاريخ الميلاد",
+            type: "select",
+            options: [
+              { value: "hijri", label: "هجري" },
+              { value: "gregorian", label: "ميلادي" },
+            ],
+          },
+          {
             key: "property_owner_mobile",
             label: "رقم الجوال",
             type: "text",
             inputKind: "phone",
+          },
+          {
+            key: "property_owner_iban",
+            label: "آيبان المالك",
+            type: "text",
           },
           {
             key: "add_legal_agent_of_owner",
@@ -167,6 +209,11 @@ const DeedOwners = ({ data }) => {
         fields: ENDOWMENT_FIELDS,
       });
     }
+
+    groups.push({
+      title: "بيانات العقار",
+      fields: STEP1_PROPERTY_FIELDS,
+    });
 
     groups.push({
       title: "مرفقات الصك",

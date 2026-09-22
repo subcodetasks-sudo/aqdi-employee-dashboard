@@ -46,7 +46,11 @@ import {
 import { getOrderContractUuid } from "@/components/orders/messages/order-section-message-utils";
 import { fetchContractPaymentLink } from "@/components/orders/shared/payment-gateway";
 import { getSendErrorTitle } from "@/components/orders/messages/order-send-error-utils";
-import { isOrderPaid } from "@/components/analysis/returned/refund-contract-utils";
+import {
+  getReturnRequestStatus,
+  isOrderPaid,
+  isReturnContractStatus,
+} from "@/components/analysis/returned/refund-contract-utils";
 
 const ACTION_PILLS = [
   {
@@ -299,6 +303,7 @@ export default function OrderDetailsHeader({
 
         <StatusSelect
           order={order}
+          orderData={orderData}
           statuses={statuses}
           onStatusChange={onStatusChange}
           disabled={!canChangeStatus || isStatusPending}
@@ -492,7 +497,7 @@ export default function OrderDetailsHeader({
       <div className="border-t border-[#EEF2F0] dark:border-white/5 pt-3 flex flex-wrap gap-2">
         {ACTION_PILLS.filter((pill) => {
           if (pill.id === "refund") {
-            return isOrderPaid(orderData ?? order);
+            return !shouldHideRefundActions(orderData ?? order);
           }
           return true;
         }).map((pill) => {
@@ -526,7 +531,34 @@ export default function OrderDetailsHeader({
   );
 }
 
-function StatusSelect({ order, statuses = [], onStatusChange, disabled }) {
+function isOrderAlreadyRefunded(order) {
+  if (!order) return false;
+  const summary = order.contract_summary ?? {};
+  const flag =
+    order.customer_refunded ??
+    order.is_refunded ??
+    order.refunded ??
+    summary.customer_refunded ??
+    summary.is_refunded ??
+    summary.refunded;
+  if (flag === true || flag === 1 || flag === "1") return true;
+  return getReturnRequestStatus(order) === "refunded";
+}
+
+/** Hide استرجاع status / refund pill when paid or already refunded. */
+function shouldHideRefundActions(order) {
+  return isOrderPaid(order) || isOrderAlreadyRefunded(order);
+}
+
+function StatusSelect({ order, orderData, statuses = [], onStatusChange, disabled }) {
+  const source = orderData ?? order;
+  const hideReturnStatus = shouldHideRefundActions(source);
+
+  const selectableStatuses = statuses.filter((status) => {
+    if (!isReturnContractStatus(status)) return true;
+    return !hideReturnStatus;
+  });
+
   return (
     <DropdownMenu dir="rtl">
       <DropdownMenuTrigger asChild>
@@ -544,10 +576,10 @@ function StatusSelect({ order, statuses = [], onStatusChange, disabled }) {
         dir="rtl"
         className="min-w-[220px] rounded-xl p-1 border-surface-border-soft max-h-[280px] overflow-y-auto text-right"
       >
-        {statuses.length === 0 ? (
+        {selectableStatuses.length === 0 ? (
           <p className="px-3 py-2 text-xs text-gray-400">لا توجد حالات</p>
         ) : (
-          statuses.map((status) => {
+          selectableStatuses.map((status) => {
             const label = status.name ?? status.label;
             const active =
               String(status.id) === String(order.status_id) ||

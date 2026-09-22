@@ -71,10 +71,13 @@ function unitFormDeps(unit) {
     unit?.unit_type_id,
     unit?.unit_usage_id,
     unit?.tootal_rooms,
+    unit?.The_number_of_halls,
+    unit?.number_of_councils,
     unit?.The_number_of_kitchens,
     unit?.The_number_of_toilets,
     unit?.window_ac,
     unit?.split_ac,
+    unit?.number_of_unit_air_conditioners,
     unit?.kitchen_tank,
     unit?.furnished,
     unit?.type_furnished,
@@ -84,6 +87,8 @@ function unitFormDeps(unit) {
     unit?.water_meter,
     unit?.water_meter_number,
     unit?.water_meter_ownership,
+    unit?.Gasmeter,
+    unit?.Number_parking_spaces,
     unit?.updated_at,
   ];
 }

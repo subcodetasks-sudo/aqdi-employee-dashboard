@@ -80,8 +80,6 @@ function resolveNationalAddressType(address = {}, orderData = {}) {
   const source = String(address.address_source ?? orderData.address_source ?? "").toLowerCase();
   const imageUrl = resolveImageUrl(pick(address.image_address, orderData.image_address));
   const addressUrl = pick(address.address_url, orderData.address_url);
-  const lat = parseCoordinate(pick(address.latitude, address.lat, orderData.latitude, orderData.lat));
-  const lng = parseCoordinate(pick(address.longitude, address.lng, orderData.longitude, orderData.lng));
 
   if (source.includes("صورة") || source.includes("image") || source.includes("img")) {
     return "img";
@@ -93,13 +91,11 @@ function resolveNationalAddressType(address = {}, orderData = {}) {
     source.includes("موقع")
   ) {
     if (imageUrl || (addressUrl && isLikelyImageUrl(addressUrl))) return "img";
-    if (lat != null && lng != null) return "location";
     if (addressUrl && isMapsUrl(addressUrl)) return "location";
     return "text";
   }
 
   if (imageUrl || (addressUrl && isLikelyImageUrl(addressUrl))) return "img";
-  if (lat != null && lng != null) return "location";
   if (addressUrl && isMapsUrl(addressUrl)) return "location";
   return "text";
 }
@@ -112,24 +108,12 @@ export function resolveNationalAddress(orderData = {}) {
     resolveImageUrl(pick(address.image_address, orderData.image_address)) ||
     (isLikelyImageUrl(addressUrl) ? addressUrl : null);
 
-  const fromUrl = parseCoordsFromUrl(addressUrl);
-  const lat =
-    parseCoordinate(pick(address.latitude, address.lat, orderData.latitude, orderData.lat)) ??
-    fromUrl?.lat ??
-    null;
-  const lng =
-    parseCoordinate(pick(address.longitude, address.lng, orderData.longitude, orderData.lng)) ??
-    fromUrl?.lng ??
-    null;
+  const mapsUrl = addressUrl && isMapsUrl(addressUrl) ? addressUrl : null;
+  const fromUrl = mapsUrl ? parseCoordsFromUrl(mapsUrl) : null;
+  const lat = fromUrl?.lat ?? null;
+  const lng = fromUrl?.lng ?? null;
 
   const type = resolveNationalAddressType(address, orderData);
-
-  const mapsUrl =
-    lat != null && lng != null
-      ? `https://www.google.com/maps?q=${lat},${lng}`
-      : addressUrl && isMapsUrl(addressUrl)
-        ? addressUrl
-        : null;
 
   const sourceLabels = {
     img: "صورة بطاقة العنوان",
@@ -146,6 +130,15 @@ export function resolveNationalAddress(orderData = {}) {
       address.city_name,
       address.property_city_name,
       orderData.city_name
+    ),
+    region: pick(
+      summary.relation_labels?.property_region,
+      orderData.relation_labels?.property_region,
+      orderData.property_region?.name_trans,
+      orderData.property_region?.name_ar,
+      orderData.property_region?.name,
+      address.property_place_name,
+      orderData.property_place_name
     ),
     district: pick(summary.neighborhood, address.neighborhood, orderData.neighborhood),
     building: pick(summary.building_number, address.building_number, orderData.building_number),
@@ -167,8 +160,6 @@ export function resolveNationalAddress(orderData = {}) {
     embed_url:
       lat != null && lng != null
         ? `https://maps.google.com/maps?q=${lat},${lng}&z=15&output=embed`
-        : fromUrl
-          ? `https://maps.google.com/maps?q=${fromUrl.lat},${fromUrl.lng}&z=15&output=embed`
-          : null,
+        : null,
   };
 }

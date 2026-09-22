@@ -17,9 +17,10 @@ import {
 } from "@/src/lib/order-detail-steps";
 
 function resolveSelectCurrentLabelFallback(field, orderData, formValues) {
-  const labels = orderData?.contract_summary?.relation_labels ?? {};
+  const labels = orderData?.contract_summary?.relation_labels ?? orderData?.relation_labels ?? {};
   const address = getOrderAddressStep(orderData);
   const unitsStep = getOrderUnitsStep(orderData);
+  const deed = orderData?.step1 ?? {};
   if (field.key === "property_place_id") {
     return (
       labels.property_region ||
@@ -34,6 +35,28 @@ function resolveSelectCurrentLabelFallback(field, orderData, formValues) {
       orderData?.property_city?.name_ar ||
       address.city_name ||
       address.property_city_name ||
+      null
+    );
+  }
+  if (field.key === "property_type_id") {
+    return (
+      formValues?.property_type_name ||
+      labels.property_type ||
+      deed.property_type_name ||
+      orderData?.property_type_name ||
+      orderData?.property_type?.name_ar ||
+      orderData?.property_type?.name ||
+      null
+    );
+  }
+  if (field.key === "property_usages_id") {
+    return (
+      formValues?.property_usages_name ||
+      labels.property_usages ||
+      deed.property_usages_name ||
+      orderData?.property_usages_name ||
+      orderData?.property_usages?.name_ar ||
+      orderData?.property_usages?.name ||
       null
     );
   }
