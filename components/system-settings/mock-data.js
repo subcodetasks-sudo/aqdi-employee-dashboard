@@ -43,6 +43,8 @@ export const SYSTEM_CATEGORIES = [
   { id: "notifications", label: "الإشعارات", subtitle: "إرسال إشعار", href: "/home/settings/notifications", section: "notifications" },
   { id: "payments", label: "المدفوعات", subtitle: "سجل المدفوعات", href: "/home/settings/payments", section: "payments" },
   { id: "payment-types", label: "طرق الدفع", subtitle: "سجلات · 5 عنصر", href: "/home/settings/payment-types", section: "app_content" },
+  { id: "contract-periods", label: "مدة العقد", subtitle: "مدد السكني والتجاري", href: "/home/settings/contract-periods", section: "contract_periods" },
+  { id: "services-pricing", label: "أسعار الخدمات", subtitle: "أسعار السكني والتجاري", href: "/home/settings/services-pricing", section: "services_pricing" },
   { id: "tenant-roles", label: "صلاحيات المستأجر", subtitle: "سجلات · 3 عنصر", href: "/home/settings/tenant-roles", section: "tenant_roles" },
   { id: "paperworks", label: "أوراق العمل", subtitle: "سجلات · 4 عنصر", href: "/home/settings/paperworks", section: "paperworks" },
 ];
