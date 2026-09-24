@@ -28,6 +28,7 @@ import {
   getOrderFinancialStep,
   getOrderTenantStep,
 } from "@/src/lib/order-detail-steps";
+import { downloadMedia } from "@/src/lib/media-url";
 
 const EMPTY_ADDITIONAL_TERMS = "لا توجد شروط أو متغيرات إضافية من العميل";
 const EMPTY_NOTES = "لا توجد ملاحظات";
@@ -87,31 +88,12 @@ export default function LeaseRenewalRenewTab({ orderData }) {
     if (!requireInstrumentImage()) return;
 
     const filename = `${documentName}.${fileExtension}`;
-
-    try {
-      const response = await fetch(instrumentImage);
-      if (!response.ok) throw new Error("fetch failed");
-      const blob = await response.blob();
-      const blobUrl = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = blobUrl;
-      link.download = filename;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(blobUrl);
+    const ok = await downloadMedia(instrumentImage, filename);
+    if (ok) {
       toast.success(isPdf ? "تم تحميل العقد PDF بنجاح" : "تم تحميل صورة الصك بنجاح");
-    } catch {
-      const link = document.createElement("a");
-      link.href = instrumentImage;
-      link.download = filename;
-      link.target = "_blank";
-      link.rel = "noopener noreferrer";
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      toast.success(isPdf ? "تم بدء تحميل العقد PDF" : "تم بدء تحميل صورة الصك");
+      return;
     }
+    toast.error(isPdf ? "تعذر تحميل العقد PDF" : "تعذر تحميل صورة الصك");
   };
 
   const handleViewInstrument = () => {

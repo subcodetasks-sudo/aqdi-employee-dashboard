@@ -68,7 +68,8 @@ export default function MediaPreviewDialog({
         mediaDownloadUrl,
         subtitle || fileNameFromMediaUrl(mediaDownloadUrl)
       );
-      toast.success(ok ? "تم التحميل بنجاح" : "تم فتح الملف للتحميل");
+      if (ok) toast.success("تم التحميل بنجاح");
+      else toast.error("تعذر تحميل الملف");
     } catch {
       toast.error("تعذر تحميل الملف");
     } finally {

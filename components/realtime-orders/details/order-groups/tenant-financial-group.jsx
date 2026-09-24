@@ -1,6 +1,9 @@
 "use client";
 
-import { Check, CreditCard, UserRound, Wallet } from "lucide-react";
+import { useState } from "react";
+import { Check, CreditCard, Download, UserRound, Wallet } from "lucide-react";
+import { toast } from "sonner";
+import { downloadMedia, fileNameFromMediaUrl } from "@/src/lib/media-url";
 import { RT } from "../../theme";
 import { cn } from "@/lib/utils";
 import { AccentCard, Field, GroupTitle, Money } from "./primitives";
@@ -23,6 +26,41 @@ function paymentStatusLabel(status) {
   if (status === "pending") return "قيد الانتظار";
   if (status === "failed") return "فشل";
   return status || null;
+}
+
+function OwnerRecordDownload({ url, name }) {
+  const [downloading, setDownloading] = useState(false);
+
+  const handleDownload = async () => {
+    if (downloading) return;
+    setDownloading(true);
+    try {
+      const ok = await downloadMedia(url, name || fileNameFromMediaUrl(url));
+      if (ok) toast.success("تم التحميل بنجاح");
+      else toast.error("تعذر تحميل الملف");
+    } catch {
+      toast.error("تعذر تحميل الملف");
+    } finally {
+      setDownloading(false);
+    }
+  };
+
+  return (
+    <div className="rounded-xl bg-status-neutral-bg dark:bg-white/[0.04] px-3 py-2.5 space-y-1">
+      <p className="text-[10.5px] font-bold text-gray-400">صورة سجل المالك</p>
+      <button
+        type="button"
+        onClick={handleDownload}
+        disabled={downloading}
+        className="inline-flex max-w-full items-center gap-1.5 text-xs font-bold text-brand-dark hover:underline disabled:opacity-60 dark:text-[#6EE7B7]"
+      >
+        <Download className="size-3.5 shrink-0" />
+        <span className="truncate">
+          {downloading ? "جاري التحميل..." : name || "تحميل المرفق"}
+        </span>
+      </button>
+    </div>
+  );
 }
 
 export default function TenantFinancialGroup({ order, onEdit }) {
@@ -71,17 +109,10 @@ export default function TenantFinancialGroup({ order, onEdit }) {
             value={order.tenant?.has_legal_representative}
           />
           {order.tenant?.owner_record_url ? (
-            <div className="rounded-xl bg-status-neutral-bg dark:bg-white/[0.04] px-3 py-2.5 space-y-1">
-              <p className="text-[10.5px] font-bold text-gray-400">صورة سجل المالك</p>
-              <a
-                href={order.tenant.owner_record_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs font-bold text-brand-dark dark:text-[#6EE7B7] hover:underline truncate block"
-              >
-                {order.tenant.owner_record_name || "عرض المرفق"}
-              </a>
-            </div>
+            <OwnerRecordDownload
+              url={order.tenant.owner_record_url}
+              name={order.tenant.owner_record_name}
+            />
           ) : null}
         </div>
       </AccentCard>

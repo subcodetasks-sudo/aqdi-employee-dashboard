@@ -78,9 +78,27 @@ export function isPdfMediaUrl(url) {
   return url.split("?")[0].toLowerCase().endsWith(".pdf");
 }
 
+function triggerBlobDownload(blob, name) {
+  const blobUrl = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = blobUrl;
+  link.download = name;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(blobUrl);
+}
+
+async function fetchAsBlob(href, credentials) {
+  const response = await fetch(href, { credentials });
+  if (!response.ok) throw new Error("fetch failed");
+  return response.blob();
+}
+
 /**
- * Force a file download. Blob fetch works for CORS-enabled cross-origin
- * assets; falls back to opening the URL when fetch is blocked.
+ * Force a file download in the current tab. Tries a direct blob fetch first,
+ * then the same-origin `/media-download` proxy when CORS blocks the file host.
+ * Never opens a new tab.
  */
 export async function downloadMedia(url, filename) {
   const href = absolutizeMediaUrl(url);
@@ -88,28 +106,28 @@ export async function downloadMedia(url, filename) {
 
   const name = filename || fileNameFromMediaUrl(href, "download");
 
-  try {
-    const response = await fetch(href, { mode: "cors", credentials: "omit" });
-    if (!response.ok) throw new Error("fetch failed");
-    const blob = await response.blob();
-    const blobUrl = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = blobUrl;
-    link.download = name;
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    URL.revokeObjectURL(blobUrl);
-    return true;
-  } catch {
+  if (href.startsWith("blob:") || href.startsWith("data:")) {
     const link = document.createElement("a");
     link.href = href;
     link.download = name;
-    link.target = "_blank";
-    link.rel = "noopener noreferrer";
     document.body.appendChild(link);
     link.click();
     link.remove();
+    return true;
+  }
+
+  try {
+    triggerBlobDownload(await fetchAsBlob(href, "omit"), name);
+    return true;
+  } catch {
+    /* CORS or host headers blocked a direct download */
+  }
+
+  try {
+    const proxy = `/media-download?url=${encodeURIComponent(href)}&filename=${encodeURIComponent(name)}`;
+    triggerBlobDownload(await fetchAsBlob(proxy, "same-origin"), name);
+    return true;
+  } catch {
     return false;
   }
 }

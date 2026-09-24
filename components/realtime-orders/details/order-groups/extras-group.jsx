@@ -1,6 +1,9 @@
 "use client";
 
-import { BadgeCheck, FileText, Receipt, Undo2 } from "lucide-react";
+import { useState } from "react";
+import { BadgeCheck, Download, FileText, Receipt, Undo2 } from "lucide-react";
+import { toast } from "sonner";
+import { downloadMedia, fileNameFromMediaUrl } from "@/src/lib/media-url";
 import { AccentCard, Field, GroupTitle, Money } from "./primitives";
 
 function hasValue(value) {
@@ -12,18 +15,36 @@ function hasAny(values) {
 }
 
 function FileLink({ label, url, name }) {
+  const [downloading, setDownloading] = useState(false);
+
   if (!url) return null;
+
+  const handleDownload = async () => {
+    if (downloading) return;
+    setDownloading(true);
+    try {
+      const ok = await downloadMedia(url, name || fileNameFromMediaUrl(url));
+      if (ok) toast.success("تم التحميل بنجاح");
+      else toast.error("تعذر تحميل الملف");
+    } catch {
+      toast.error("تعذر تحميل الملف");
+    } finally {
+      setDownloading(false);
+    }
+  };
+
   return (
     <div className="rounded-xl bg-status-neutral-bg dark:bg-white/[0.04] px-3 py-2.5 space-y-1">
       <p className="text-[10.5px] font-bold text-gray-400">{label}</p>
-      <a
-        href={url}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="text-xs font-bold text-brand-dark dark:text-[#6EE7B7] hover:underline truncate block"
+      <button
+        type="button"
+        onClick={handleDownload}
+        disabled={downloading}
+        className="inline-flex max-w-full items-center gap-1.5 text-xs font-bold text-brand-dark hover:underline disabled:opacity-60 dark:text-[#6EE7B7]"
       >
-        {name || "عرض المرفق"}
-      </a>
+        <Download className="size-3.5 shrink-0" />
+        <span className="truncate">{downloading ? "جاري التحميل..." : name || "تحميل المرفق"}</span>
+      </button>
     </div>
   );
 }

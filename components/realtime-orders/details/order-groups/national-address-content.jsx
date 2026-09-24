@@ -163,7 +163,8 @@ function ImageAddressPanel({ address }) {
         imageUrl,
         address.image_name || fileNameFromMediaUrl(imageUrl)
       );
-      toast.success(ok ? "تم التحميل بنجاح" : "تم فتح الملف للتحميل");
+      if (ok) toast.success("تم التحميل بنجاح");
+      else toast.error("تعذر تحميل الصورة");
     } catch {
       toast.error("تعذر تحميل الصورة");
     } finally {
