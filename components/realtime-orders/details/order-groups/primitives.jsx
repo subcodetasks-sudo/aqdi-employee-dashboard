@@ -117,11 +117,12 @@ export function Field({ label, value, empty }) {
 }
 
 export function GridField({ label, value }) {
+  if (value === "" || value == null || value === "—") return null;
   return (
     <div className="min-w-0">
       <p className="text-[10.5px] text-gray-400 font-medium mb-0.5">{label}</p>
       <p className="text-xs font-bold text-gray-900 dark:text-white/90 truncate">
-        {value || "—"}
+        {value}
       </p>
     </div>
   );

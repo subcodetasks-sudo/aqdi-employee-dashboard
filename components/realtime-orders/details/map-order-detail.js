@@ -898,7 +898,7 @@ export function mapOrderDetailView(orderData = {}) {
         unit.unit_number != null && unit.unit_number !== ""
           ? `الوحدة ${unit.unit_number}`
           : `الوحدة ${index + 1}`,
-      badge: pick(unit.unit_type_name, unit.unit_type, unit.badge),
+      badge: pick(unit.unit_usage_name, unit.unit_usage, unit.badge),
       number: unit.unit_number,
       type: pick(unit.unit_type_name, unit.unit_type),
       use: pick(unit.unit_usage_name, unit.unit_usage),

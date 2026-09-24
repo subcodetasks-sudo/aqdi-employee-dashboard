@@ -41,9 +41,11 @@ function UnitCard({ unit, onEdit }) {
           <h5 className="text-13 font-black text-brand-dark dark:text-white">
             {unit.title}
           </h5>
-          <span className="px-2 py-0.5 rounded-full bg-[#E0E7FF] text-[#3730A3] text-[10.5px] font-bold">
-            {unit.badge}
-          </span>
+          {unit.badge ? (
+            <span className="px-2 py-0.5 rounded-full bg-[#E0E7FF] text-[#3730A3] text-[10.5px] font-bold">
+              {unit.badge}
+            </span>
+          ) : null}
         </div>
         <EditBtn onClick={onEdit} />
       </div>

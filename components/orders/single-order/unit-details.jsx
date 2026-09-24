@@ -27,6 +27,14 @@ const ALL_UNIT_FIELDS = [
   ...ADMIN_UNIT_SERVICE_FIELDS,
 ];
 
+const HIDDEN_UNIT_PAYLOAD_KEYS = [
+  "unit_type_id",
+  "The_number_of_halls",
+  "number_of_councils",
+  "Gasmeter",
+  "Number_parking_spaces",
+];
+
 /**
  * The unit endpoint replaces the whole record, so a section save has to resend
  * every field it isn't editing — otherwise rooms/services get wiped.
@@ -37,6 +45,11 @@ function getUnitFullPayload(unit) {
     const value = normalizeFieldValue(unit?.[field.key], field.key);
     if (value === "" || value === null || value === undefined) continue;
     payload[field.key] = value;
+  }
+  for (const key of HIDDEN_UNIT_PAYLOAD_KEYS) {
+    const value = normalizeFieldValue(unit?.[key], key);
+    if (value === "" || value === null || value === undefined) continue;
+    payload[key] = value;
   }
   return payload;
 }

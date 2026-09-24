@@ -232,12 +232,6 @@ export const STEP1_PROPERTY_FIELDS = [
 /** Unit — POST /contract/step5 (legacy single-unit contract fields) */
 export const STEP2_UNIT_FIELDS = [
   {
-    key: "unit_type_id",
-    label: "نوع الوحدة",
-    type: "select",
-    optionsSource: "unit-types",
-  },
-  {
     key: "unit_usage_id",
     label: "استخدام الوحدة",
     type: "select",
@@ -254,13 +248,6 @@ export const STEP2_UNIT_FIELDS = [
  */
 export const ADMIN_UNIT_CORE_FIELDS = [
   {
-    key: "unit_type_id",
-    label: "نوع الوحدة",
-    type: "select",
-    optionsSource: "unit-types",
-    displayKey: "unit_type_name",
-  },
-  {
     key: "unit_usage_id",
     label: "استخدام الوحدة",
     type: "select",
@@ -274,8 +261,6 @@ export const ADMIN_UNIT_CORE_FIELDS = [
 
 export const ADMIN_UNIT_ROOM_FIELDS = [
   { key: "tootal_rooms", label: "إجمالي الغرف", type: "text" },
-  { key: "The_number_of_halls", label: "عدد الصالات", type: "text" },
-  { key: "number_of_councils", label: "عدد المجالس", type: "text" },
   { key: "The_number_of_kitchens", label: "عدد المطابخ", type: "text" },
   { key: "The_number_of_toilets", label: "عدد دورات المياه", type: "text" },
   { key: "window_ac", label: "مكيف شباك", type: "text" },
@@ -321,22 +306,10 @@ export const ADMIN_UNIT_SERVICE_FIELDS = [
       { value: "tenant", label: "المستأجر" },
     ],
   },
-  { key: "Gasmeter", label: "عداد غاز", type: "boolean" },
-  {
-    key: "Number_parking_spaces",
-    label: "عدد مواقف السيارات",
-    type: "text",
-  },
 ];
 
 /** @deprecated use ADMIN_UNIT_* — kept for legacy single-unit fallback callers */
 export const STEP2_PER_UNIT_FIELDS = [
-  {
-    key: "unit_type_id",
-    label: "نوع الوحدة",
-    type: "select",
-    optionsSource: "unit-types",
-  },
   { key: "unit_number", label: "رقم الوحدة", type: "text" },
   { key: "floor_number", label: "رقم الطابق", type: "text" },
   { key: "unit_area", label: "مساحة الوحدة", type: "text" },
@@ -365,7 +338,6 @@ export const STEP2_PER_UNIT_FIELDS = [
 export const STEP2_ROOM_FIELDS = [
   { key: "tootal_rooms", label: "إجمالي الغرف", type: "text" },
   { key: "number_of_rooms", label: "عدد الغرف", type: "text" },
-  { key: "The_number_of_halls", label: "عدد الصالات", type: "text" },
   { key: "The_number_of_kitchens", label: "عدد المطابخ", type: "text" },
   { key: "The_number_of_toilets", label: "عدد دورات المياه", type: "text" },
   { key: "The_number_of_the_toilet", label: "دورة مياه", type: "text" },

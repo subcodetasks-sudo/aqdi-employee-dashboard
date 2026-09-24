@@ -253,7 +253,6 @@ export default function DeedAddressGroup({ order, onEdit }) {
             <Field label="آيبان الوكيل" value={legalAgent.agent_iban} />
             <Field label="رقم الوكالة" value={legalAgent.agency_number} />
             <Field label="تاريخ الوكالة" value={legalAgent.agency_date} />
-            <Field label="المالك متوفى" value={legalAgent.owner_is_deceased} />
           </div>
         </AccentCard>
       ) : null}
