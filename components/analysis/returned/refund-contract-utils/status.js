@@ -240,6 +240,33 @@ export function isOrderPaid(order) {
   return value === true || value === 1 || value === "1" || value === "paid";
 }
 
+/** True when the contract itself is finished, separate from payment. */
+export function isOrderCompleted(order) {
+  if (!order) return false;
+  const summary = order.contract_summary ?? {};
+  const flag =
+    order.is_completed ??
+    summary.is_completed ??
+    order.completed ??
+    summary.completed;
+  if (flag === true || flag === 1 || flag === "1" || flag === "completed") return true;
+
+  const name = String(
+    order.status_name ??
+      order.contract_status_name ??
+      summary.contract_status_name ??
+      order.status?.name ??
+      order.status_label ??
+      ""
+  ).trim();
+  return name.includes("مكتمل") || name.includes("منجز");
+}
+
+/** Refund and Ejar actions are only for a paid or completed contract. */
+export function canOfferClosureActions(...orders) {
+  return orders.some((order) => order && (isOrderPaid(order) || isOrderCompleted(order)));
+}
+
 export const UNPAID_ORDER_RETURN_MESSAGE =
   "لا يمكن رفع طلب استرجاع لطلب غير مدفوع";
 

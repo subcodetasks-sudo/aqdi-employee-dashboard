@@ -44,11 +44,12 @@ import {
   getOrderSmsTemplates,
 } from "@/components/orders/shared/order-sms-templates";
 import { getOrderContractUuid } from "@/components/orders/messages/order-section-message-utils";
+import { openDialogAfterMenuClose } from "@/src/lib/open-dialog-after-menu-close";
 import { fetchContractPaymentLink } from "@/components/orders/shared/payment-gateway";
 import { getSendErrorTitle } from "@/components/orders/messages/order-send-error-utils";
 import {
+  canOfferClosureActions,
   getReturnRequestStatus,
-  isOrderPaid,
   isReturnContractStatus,
 } from "@/components/analysis/returned/refund-contract-utils";
 
@@ -115,6 +116,17 @@ const SECTION_ERROR_CONTEXTS = [
 
 const pillBase =
   "h-7 px-3.5 rounded-lg border bg-white dark:bg-transparent text-[10px] font-semibold inline-flex items-center gap-1.5 transition-colors whitespace-nowrap";
+
+function isDocumentedStatus(status) {
+  const name = String(status?.name ?? status?.label ?? "").trim();
+  return name === "تم التوثيق" || name.includes("تم التوثيق");
+}
+
+function isEjarDocumentationStatus(status) {
+  const name = String(status?.name ?? status?.label ?? "").trim();
+  if (!name) return false;
+  return name.includes("تم التوثيق") || name.includes("توثيق العقد") || name.includes("موثق");
+}
 
 export default function OrderDetailsHeader({
   order,
@@ -306,6 +318,7 @@ export default function OrderDetailsHeader({
           orderData={orderData}
           statuses={statuses}
           onStatusChange={onStatusChange}
+          onEjarDocumentation={onEjarDocumentation}
           disabled={!canChangeStatus || isStatusPending}
         />
 
@@ -496,12 +509,16 @@ export default function OrderDetailsHeader({
 
       <div className="border-t border-[#EEF2F0] dark:border-white/5 pt-3 flex flex-wrap gap-2">
         {ACTION_PILLS.filter((pill) => {
-          if (pill.id === "refund") {
-            return !shouldHideRefundActions(orderData ?? order);
-          }
+          if (pill.id !== "refund" && pill.id !== "ejar_documentation") return true;
+          if (!canOfferClosureActions(order, orderData)) return false;
+          if (pill.id === "refund" && isOrderAlreadyRefunded(orderData ?? order)) return false;
           return true;
         }).map((pill) => {
           const Icon = pill.Icon;
+          const label =
+            pill.id === "ejar_documentation" && isDocumentedStatus({ name: order.status_name })
+              ? "تعديل توثيق ايجار"
+              : pill.label;
           return (
             <button
               key={pill.id}
@@ -510,7 +527,7 @@ export default function OrderDetailsHeader({
               className={cn(pillBase, pill.className)}
             >
               <Icon className="size-3.5 shrink-0" />
-              {pill.label}
+              {label}
             </button>
           );
         })}
@@ -545,18 +562,20 @@ function isOrderAlreadyRefunded(order) {
   return getReturnRequestStatus(order) === "refunded";
 }
 
-/** Hide استرجاع status / refund pill when paid or already refunded. */
-function shouldHideRefundActions(order) {
-  return isOrderPaid(order) || isOrderAlreadyRefunded(order);
-}
-
-function StatusSelect({ order, orderData, statuses = [], onStatusChange, disabled }) {
-  const source = orderData ?? order;
-  const hideReturnStatus = shouldHideRefundActions(source);
+function StatusSelect({
+  order,
+  orderData,
+  statuses = [],
+  onStatusChange,
+  onEjarDocumentation,
+  disabled,
+}) {
+  const allowClosure = canOfferClosureActions(order, orderData);
 
   const selectableStatuses = statuses.filter((status) => {
-    if (!isReturnContractStatus(status)) return true;
-    return !hideReturnStatus;
+    if (allowClosure) return true;
+    if (isReturnContractStatus(status) || isEjarDocumentationStatus(status)) return false;
+    return true;
   });
 
   return (
@@ -581,6 +600,7 @@ function StatusSelect({ order, orderData, statuses = [], onStatusChange, disable
         ) : (
           selectableStatuses.map((status) => {
             const label = status.name ?? status.label;
+            const documentsInEjar = isDocumentedStatus(status);
             const active =
               String(status.id) === String(order.status_id) ||
               label === order.status_name;
@@ -590,6 +610,10 @@ function StatusSelect({ order, orderData, statuses = [], onStatusChange, disable
                 disabled={disabled || active}
                 onSelect={() => {
                   if (active) return;
+                  if (documentsInEjar) {
+                    openDialogAfterMenuClose(() => onEjarDocumentation?.());
+                    return;
+                  }
                   onStatusChange?.(order, status);
                 }}
                 className={cn(

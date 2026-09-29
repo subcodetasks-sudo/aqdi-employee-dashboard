@@ -49,7 +49,14 @@ function FileLink({ label, url, name }) {
   );
 }
 
+function isDocumentedStatus(order) {
+  const name = String(order?.status_name ?? "").trim();
+  return name === "تم التوثيق" || name.includes("تم التوثيق");
+}
+
 export default function ExtrasGroup({ order }) {
+  if (!isDocumentedStatus(order)) return null;
+
   const extras = order?.extras ?? {};
   const statusCase = extras.status_case;
   const invoice = extras.invoice;

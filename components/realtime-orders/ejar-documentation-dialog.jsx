@@ -1,11 +1,17 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { BadgeCheck, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import OrderActionDialogHeader from "@/components/shared/order-action-dialog-header";
-import { useUpdateOrder } from "@/src/hooks/use-update-order";
+import { useContractStatuses } from "@/src/hooks/use-contract-statuses";
 import { useDialogFormSession } from "@/src/hooks/use-dialog-form-session";
+import { axiosInstance } from "@/src/utils/axios";
+import { invalidateOrdersCaches } from "@/src/lib/invalidate-orders-caches";
+import { postOrderStatus } from "@/src/lib/order-status-api";
+import { updateOrderUrl } from "@/src/hooks/use-update-order";
 
 function Tile({ label, value, className = "" }) {
   return (
@@ -31,24 +37,56 @@ export default function EjarDocumentationDialog({
   }, [orderData]);
 
   const session = useDialogFormSession(open, resetForm);
+  const queryClient = useQueryClient();
+  const { activeItems: statuses } = useContractStatuses();
+  const documentedStatus = statuses.find((status) => {
+    const name = String(status?.name ?? status?.label ?? "").trim();
+    return name === "تم التوثيق" || name.includes("تم التوثيق");
+  });
 
-  const { mutate: submit, isPending } = useUpdateOrder({
-    queryKey,
-    successMessage: "تم توثيق الطلب في إيجار بنجاح",
-    onSuccess: () => onOpenChange(false),
+  const { mutate: submit, isPending } = useMutation({
+    mutationFn: async () => {
+      const orderId = orderData?.id;
+      if (orderId == null || orderId === "") {
+        throw new Error("تعذر تحديد الطلب");
+      }
+
+      await axiosInstance.post(updateOrderUrl(orderId), {
+        ejar_contract_number: ejarNumber.trim(),
+        ejar_status_notes: notes.trim() || null,
+      });
+
+      const currentStatusId =
+        orderData?.contract_summary?.contract_status_id ??
+        orderData?.contract_status_id ??
+        orderData?.status_id ??
+        orderData?.status?.id;
+
+      if (
+        documentedStatus?.id != null &&
+        String(documentedStatus.id) !== String(currentStatusId)
+      ) {
+        await postOrderStatus(orderId, { statusId: documentedStatus.id });
+      }
+    },
+    onSuccess: () => {
+      invalidateOrdersCaches(queryClient, {
+        queryKey,
+        orderId: orderData?.id,
+      });
+      toast.success("تم توثيق الطلب في إيجار بنجاح");
+      onOpenChange(false);
+    },
+    onError: (err) => {
+      toast.error(err?.response?.data?.message || err?.message || "حدث خطأ أثناء الحفظ");
+    },
   });
 
   const canSubmit = ejarNumber.trim().length > 0;
 
   const handleSubmit = () => {
     if (!canSubmit || isPending) return;
-    submit({
-      orderId: orderData?.id,
-      body: {
-        ejar_contract_number: ejarNumber.trim(),
-        ejar_status_notes: notes.trim() || null,
-      },
-    });
+    submit();
   };
 
   const handleClose = () => {

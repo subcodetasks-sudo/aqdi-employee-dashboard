@@ -5,9 +5,9 @@ import { toast } from "sonner";
 import { fetchContractPaymentLink } from "@/components/orders/shared/payment-gateway";
 import { getOrderContractUuid } from "@/components/orders/messages/order-section-message-utils";
 import {
+  canOfferClosureActions,
   getReturnRequestExistsMessage,
   hasReturnRequest,
-  isOrderPaid,
   isReturnContractStatus,
   normalizeOrderForReturnRequest,
   UNPAID_ORDER_RETURN_MESSAGE,
@@ -82,7 +82,7 @@ export function useOrderDetailsDialogs({ orderData, id, canReturn, refetch }) {
       return;
     }
     const normalized = normalizeOrderForReturnRequest(source, source?.id ?? id);
-    if (!isOrderPaid(normalized)) {
+    if (!canOfferClosureActions(normalized, source)) {
       toast.error(UNPAID_ORDER_RETURN_MESSAGE);
       return;
     }
