@@ -17,6 +17,10 @@ import {
 import { usePermissions } from "@/src/hooks/use-permissions";
 import { PERMISSION_SECTIONS } from "@/src/lib/permissions";
 import { SYSTEM_CATEGORIES } from "./mock-data";
+import {
+  categorySubtitle,
+  useSettingsCategoryCounts,
+} from "./use-settings-category-counts";
 import "./settings-design.css";
 
 function SiteSwitch({ checked, disabled, onCheckedChange }) {
@@ -49,6 +53,9 @@ export default function GeneralSettingsTab() {
         can(category.section ?? PERMISSION_SECTIONS.settings, "view")
       )
     : [];
+  const categoryCounts = useSettingsCategoryCounts(
+    visibleCategories.map((category) => category.id)
+  );
 
   const { mutate, isPending, variables } = useMutation({
     mutationFn: ({ key, value }) =>
@@ -140,7 +147,9 @@ export default function GeneralSettingsTab() {
               </span>
               <span className="set-cattext">
                 <b>{category.label}</b>
-                <small>{category.subtitle}</small>
+                <small>
+                  {categorySubtitle(category, categoryCounts[category.id])}
+                </small>
               </span>
               <span className="set-catarrow">←</span>
             </Link>
