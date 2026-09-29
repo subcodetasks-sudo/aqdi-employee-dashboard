@@ -23,6 +23,15 @@ const SLA_STYLES = {
   na: "text-gray-400 dark:text-white/45",
 };
 
+function formatReceiveDuration(order) {
+  const label = order?.receive_work_minutes_label;
+  const text = label == null ? "" : String(label).trim();
+  if (text && !/^\d+(?:\.\d+)?$/.test(text)) return text;
+  const minutes = text || order?.receive_work_minutes;
+  if (minutes == null || minutes === "") return "—";
+  return `${minutes} دقيقة`;
+}
+
 function findCard(item, key) {
   return item.cards?.find((c) => c.key === key);
 }
@@ -256,7 +265,7 @@ export default function EmployeeKpisDetails() {
                             {order.received_at_label ?? "—"}
                           </td>
                           <td className="px-4 py-3.5 text-13 text-gray-700 border-b border-[#EEF1F0] whitespace-nowrap dark:text-white/70 dark:border-white/10">
-                            {order.receive_work_minutes_label ?? "—"}
+                            {formatReceiveDuration(order)}
                           </td>
                           <td
                             className={cn(
