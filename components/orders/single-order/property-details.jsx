@@ -9,6 +9,7 @@ import { useImageZoomPan } from "./use-image-zoom-pan";
 import { isEmptyDisplayValue } from "./contract-summary-view";
 import { pickFirst } from "./frontend-contract-fields";
 import { getOrderAddressStep } from "@/src/lib/order-detail-steps";
+import { isPlaceholderCoordinate } from "@/components/realtime-orders/details/national-address-utils";
 import { absolutizeMediaUrl } from "@/src/lib/media-url";
 
 const copy = (value) => {
@@ -51,44 +52,53 @@ function parseCoordsFromUrl(url) {
   return null;
 }
 
+function isImageUrl(url) {
+  if (!url || typeof url !== "string") return false;
+  const path = url.split("?")[0].toLowerCase();
+  return /\.(jpe?g|png|gif|webp|bmp|svg|heic|heif)$/i.test(path);
+}
+
 function resolveMapLocation(data) {
   const address = getOrderAddressStep(data);
+  const summary = data?.contract_summary ?? {};
+  const addressUrl = pickFirst(
+    address.address_url,
+    summary.address_url,
+    data?.step2?.address_url,
+    data?.step1?.address_url,
+    data?.address_url
+  );
+  const locationUrl = addressUrl && !isImageUrl(addressUrl) ? addressUrl : null;
+  const fromUrl = parseCoordsFromUrl(locationUrl);
+
+  // Prefer the saved link. Stored lat/lng are often a default city center
+  // and would hide the link the client actually submitted.
+  if (locationUrl) {
+    return {
+      lat: fromUrl?.lat ?? null,
+      lng: fromUrl?.lng ?? null,
+      addressUrl: locationUrl,
+      mapsUrl: locationUrl,
+      embedUrl: fromUrl
+        ? `https://maps.google.com/maps?q=${fromUrl.lat},${fromUrl.lng}&z=15&output=embed`
+        : null,
+    };
+  }
+
   const lat = parseCoordinate(
-    pickFirst(address.latitude, data?.latitude, address.lat, data?.lat)
+    pickFirst(address.latitude, data?.latitude, summary.latitude, address.lat, data?.lat)
   );
   const lng = parseCoordinate(
-    pickFirst(address.longitude, data?.longitude, address.lng, data?.lng)
+    pickFirst(address.longitude, data?.longitude, summary.longitude, address.lng, data?.lng)
   );
-  const addressUrl = pickFirst(address.address_url, data?.address_url);
-  const fromUrl = parseCoordsFromUrl(addressUrl);
 
-  if (lat != null && lng != null) {
+  if (lat != null && lng != null && !isPlaceholderCoordinate(lat, lng)) {
     return {
       lat,
       lng,
-      addressUrl: addressUrl || null,
+      addressUrl: null,
       mapsUrl: `https://www.google.com/maps?q=${lat},${lng}`,
       embedUrl: `https://maps.google.com/maps?q=${lat},${lng}&z=15&output=embed`,
-    };
-  }
-
-  if (fromUrl) {
-    return {
-      lat: fromUrl.lat,
-      lng: fromUrl.lng,
-      addressUrl: addressUrl || null,
-      mapsUrl: addressUrl || `https://www.google.com/maps?q=${fromUrl.lat},${fromUrl.lng}`,
-      embedUrl: `https://maps.google.com/maps?q=${fromUrl.lat},${fromUrl.lng}&z=15&output=embed`,
-    };
-  }
-
-  if (addressUrl) {
-    return {
-      lat: null,
-      lng: null,
-      addressUrl,
-      mapsUrl: addressUrl,
-      embedUrl: null,
     };
   }
 
@@ -151,7 +161,18 @@ const PropertyLocationMap = ({ location }) => {
           <MapPin size={16} className="text-brand-hover" />
           <div>
             <p className="text-sm font-bold text-gray-800 dark:text-white">رابط الموقع</p>
-            {lat != null && lng != null ? (
+            {addressUrl ? (
+              <a
+                href={addressUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                dir="ltr"
+                title={addressUrl}
+                className="block max-w-[280px] truncate text-11 text-brand-hover underline decoration-brand-hover/30 hover:decoration-brand-hover"
+              >
+                {addressUrl}
+              </a>
+            ) : lat != null && lng != null ? (
               <p className="text-11 text-ink-placeholder dark:text-white/40" dir="ltr">
                 {lat}, {lng}
               </p>

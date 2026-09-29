@@ -72,7 +72,26 @@ export function isMapsUrl(url) {
     text.includes("maps.google") ||
     text.includes("goo.gl/maps") ||
     text.includes("maps.app.goo.gl") ||
+    text.includes("share.google") ||
+    text.includes("g.co/kgs") ||
     text.startsWith("geo:")
+  );
+}
+
+/** Backend default when no real pin was saved (central Riyadh). */
+export function isPlaceholderCoordinate(lat, lng) {
+  if (lat == null || lng == null) return false;
+  return Math.abs(Number(lat) - 24.7136) < 0.00005 && Math.abs(Number(lng) - 46.6753) < 0.00005;
+}
+
+function pickLocationUrl(address = {}, orderData = {}) {
+  const summary = orderData.contract_summary ?? {};
+  return pick(
+    address.address_url,
+    summary.address_url,
+    orderData.address_url,
+    orderData.step2?.address_url,
+    orderData.step1?.address_url
   );
 }
 
@@ -103,15 +122,26 @@ function resolveNationalAddressType(address = {}, orderData = {}) {
 export function resolveNationalAddress(orderData = {}) {
   const address = getOrderAddressStep(orderData);
   const summary = orderData.contract_summary ?? {};
-  const addressUrl = pick(address.address_url, orderData.address_url);
+  const addressUrl = pickLocationUrl(address, orderData);
   const imageUrl =
     resolveImageUrl(pick(address.image_address, orderData.image_address)) ||
     (isLikelyImageUrl(addressUrl) ? addressUrl : null);
 
-  const mapsUrl = addressUrl && isMapsUrl(addressUrl) ? addressUrl : null;
-  const fromUrl = mapsUrl ? parseCoordsFromUrl(mapsUrl) : null;
-  const lat = fromUrl?.lat ?? null;
-  const lng = fromUrl?.lng ?? null;
+  // A saved link is the location. Standalone lat/lng are often the Riyadh
+  // placeholder (24.7136, 46.6753) and must not replace or invent a pin.
+  const locationUrl = addressUrl && !isLikelyImageUrl(addressUrl) ? addressUrl : null;
+  const fromUrl = locationUrl ? parseCoordsFromUrl(locationUrl) : null;
+  const storedLat = locationUrl
+    ? null
+    : parseCoordinate(pick(address.latitude, orderData.latitude, address.lat, orderData.lat));
+  const storedLng = locationUrl
+    ? null
+    : parseCoordinate(pick(address.longitude, orderData.longitude, address.lng, orderData.lng));
+  const lat = fromUrl?.lat ?? (isPlaceholderCoordinate(storedLat, storedLng) ? null : storedLat);
+  const lng = fromUrl?.lng ?? (isPlaceholderCoordinate(storedLat, storedLng) ? null : storedLng);
+  const mapsUrl =
+    locationUrl ||
+    (lat != null && lng != null ? `https://www.google.com/maps?q=${lat},${lng}` : null);
 
   const type = resolveNationalAddressType(address, orderData);
 

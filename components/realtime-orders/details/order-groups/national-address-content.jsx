@@ -10,7 +10,7 @@ import {
   fileNameFromMediaUrl,
 } from "@/src/lib/media-url";
 import { Field } from "./primitives";
-import { isLikelyImageUrl, isMapsUrl } from "../national-address-utils";
+import { isLikelyImageUrl } from "../national-address-utils";
 
 const TAB_DEFS = [
   { id: "text", label: "العنوان النصي" },
@@ -44,7 +44,7 @@ function hasTextAddress(address) {
 function hasMapAddress(address) {
   return (
     hasValue(address?.maps_url) ||
-    (hasValue(address?.address_url) && isMapsUrl(address.address_url))
+    (hasValue(address?.address_url) && !isLikelyImageUrl(address.address_url))
   );
 }
 
@@ -65,7 +65,7 @@ function getImageUrl(address) {
 
 function getMapsUrl(address) {
   if (hasValue(address?.maps_url)) return address.maps_url;
-  if (hasValue(address?.address_url) && isMapsUrl(address.address_url)) {
+  if (hasValue(address?.address_url) && !isLikelyImageUrl(address.address_url)) {
     return address.address_url;
   }
   return null;
@@ -98,8 +98,6 @@ function MapAddressPanel({ address }) {
   const mapsUrl = getMapsUrl(address);
   if (!mapsUrl) return null;
 
-  const hasCoords = address.lat != null && address.lng != null;
-
   return (
     <div className="rounded-xl border border-[#D7E3DE] bg-[#F7FAF8] p-3 dark:border-white/10 dark:bg-white/[0.03]">
       <div className="mb-3 inline-flex items-center gap-1.5 rounded-full bg-[#DCFCE7] px-2.5 py-1 text-[10.5px] font-bold text-[#15803D] dark:bg-emerald-500/15 dark:text-emerald-200">
@@ -119,11 +117,16 @@ function MapAddressPanel({ address }) {
         </div>
       ) : null}
 
-      {hasCoords ? (
-        <p className="mb-3 text-[11px] font-bold text-gray-500 dark:text-white/50" dir="ltr">
-          {address.lat}, {address.lng}
-        </p>
-      ) : null}
+      <a
+        href={mapsUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        dir="ltr"
+        className="mb-3 block truncate text-[11px] font-bold text-brand-dark underline decoration-brand-dark/30 hover:decoration-brand-dark dark:text-[#6EE7B7]"
+        title={mapsUrl}
+      >
+        {mapsUrl}
+      </a>
 
       <div className="flex flex-wrap items-center gap-2">
         <button
