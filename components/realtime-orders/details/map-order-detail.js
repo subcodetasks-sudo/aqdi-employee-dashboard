@@ -16,7 +16,12 @@ import {
   pickAgentRelatedField,
   resolveOrderContractTypeKey,
 } from "@/src/lib/order-detail-steps";
+import {
+  resolveOtherConditionsList,
+  resolveTenantRoleDetails,
+} from "@/components/orders/single-order/frontend-contract-fields";
 import { fileNameFromUrl, resolveImageUrl, resolveNationalAddress } from "./national-address-utils";
+import { hasExistingReturnRequest } from "@/components/analysis/returned/refund-contract-utils/status";
 
 function pick(...values) {
   for (const value of values) {
@@ -54,6 +59,24 @@ function durationLabel(financial = {}) {
     );
   }
   return pick(financial.contract_term_name, financial.duration_preset);
+}
+
+const STATUS_LABELS = {
+  pending: "قيد المراجعة",
+  approved: "تمت الموافقة",
+  rejected: "مرفوض",
+  refunded: "تم الاسترجاع",
+  processing: "قيد المعالجة",
+  paid: "مدفوع",
+  unpaid: "غير مدفوع",
+  cancelled: "ملغى",
+  canceled: "ملغى",
+};
+
+function translateStatus(value) {
+  if (value == null || value === "") return null;
+  const key = String(value).trim().toLowerCase();
+  return STATUS_LABELS[key] || String(value);
 }
 
 function yesNoLabel(value) {
@@ -314,7 +337,7 @@ function mapInvoiceView(invoice) {
   return {
     number: pick(invoice.invoice_number, invoice.invoiceNo, invoice.number, invoice.id),
     amount: pick(invoice.amount, invoice.total, invoice.total_amount),
-    status: pick(invoice.status, invoice.status_label),
+    status: translateStatus(pick(invoice.status_label, invoice.status_name, invoice.status)),
     date: pick(invoice.date, invoice.invoice_date, invoice.created_at),
     reference: pick(invoice.reference_number, invoice.referenceNo, invoice.reference),
   };
@@ -334,10 +357,35 @@ function mapAccountView(account) {
   };
 }
 
+function isAlreadyRefunded(orderData = {}) {
+  const status = String(
+    pick(
+      orderData.return_request_status,
+      orderData.return_status,
+      orderData.contract_summary?.return_request_status
+    ) ?? ""
+  ).toLowerCase();
+  return (
+    status === "refunded" ||
+    orderData.customer_refunded === true ||
+    orderData.customer_refunded === 1 ||
+    orderData.is_refunded === true ||
+    orderData.is_refunded === 1 ||
+    orderData.refunded === true ||
+    orderData.refunded === 1
+  );
+}
+
 function mapRefundView(orderData = {}) {
+  if (!hasExistingReturnRequest(orderData) && !isAlreadyRefunded(orderData)) {
+    return null;
+  }
+
   const refund = orderData.refund ?? orderData.refundable_contract ?? null;
   const mapped = {
-    return_status: pick(orderData.return_request_status, orderData.return_status),
+    return_status: translateStatus(
+      pick(orderData.return_request_status, orderData.return_status, refund?.status)
+    ),
     refund_amount: pick(orderData.refund_amount, refund?.amount, refund?.refund_amount),
     refund_id: pick(orderData.refund_id, refund?.id),
     reference_number: pick(orderData.reference_number, refund?.reference_number),
@@ -863,13 +911,27 @@ export function mapOrderDetailView(orderData = {}) {
       ),
       fees: pick(summary.amount_payment, orderData.amount_payment, orderData.payment_amount),
       fees_paid: paid,
-      daily_fine: pick(financial.daily_fine, orderData.daily_fine),
-      sub_delay: pick(financial.sub_delay, orderData.sub_delay),
-      deposit: pick(financial.deposit, orderData.deposit),
+      daily_fine: pick(
+        financial.daily_fine,
+        orderData.daily_fine,
+        summary.daily_fine
+      ),
+      sub_delay: pick(financial.sub_delay, orderData.sub_delay, summary.sub_delay),
+      deposit: pick(financial.deposit, orderData.deposit, summary.deposit),
       guarantee_amount: pick(
         financial.Guarantee_amount,
         orderData.Guarantee_amount,
-        financial.guarantee_amount
+        financial.guarantee_amount,
+        orderData.guarantee_amount,
+        summary.Guarantee_amount,
+        summary.guarantee_amount
+      ),
+      tenant_roles: resolveTenantRoleDetails(orderData),
+      other_conditions: resolveOtherConditionsList(orderData),
+      additional_terms: pick(
+        financial.text_additional_terms,
+        orderData.text_additional_terms,
+        summary.text_additional_terms
       ),
       premium_membership_for_free: yesNoLabel(
         pick(financial.premium_membership_for_free, orderData.premium_membership_for_free)

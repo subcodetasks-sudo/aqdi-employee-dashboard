@@ -17,7 +17,7 @@ export default function OrderGroupsLayout({
     <div className="space-y-4" dir="rtl">
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
         <DeedAddressGroup order={order} onEdit={onEdit} />
-        <TenantFinancialGroup order={order} onEdit={onEdit} />
+        <TenantFinancialGroup order={order} orderData={orderData} onEdit={onEdit} />
         <UnitsGroup order={order} onEdit={onEdit} />
       </div>
 
