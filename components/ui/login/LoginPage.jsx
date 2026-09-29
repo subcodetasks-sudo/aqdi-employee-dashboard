@@ -15,7 +15,6 @@ import { useMutation } from '@tanstack/react-query';
 import { axiosInstance, AUTH_ENDPOINTS } from '@/src/utils/axios';
 import { useUserStore } from '@/src/stores/user-store';
 import { useRouter } from 'next/navigation';
-import { setAuthCookie } from '@/src/app/actions/auth';
 import { requestFcmToken } from '@/src/lib/firebase/messaging';
 import { toast } from 'sonner';
 import { useIsDark, useToggleTheme } from '@/src/hooks/use-theme-mode';
@@ -71,17 +70,16 @@ export default function LoginPage() {
     retry: (failureCount, error) => !error?.response && failureCount < 2,
     retryDelay: (attemptIndex) => (attemptIndex === 0 ? 800 : 1500),
     onSuccess: async (response, variables) => {
-      if (response?.success && response?.data?.token) {
+      if (response?.success && response?.data) {
         try {
           toast.success(response?.message || "تم تسجيل الدخول بنجاح");
           // Permissions are resolved reactively by usePermissions() once on /home
           // (it fetches the role by role_id if the login payload didn't include them),
           // so we don't block the redirect on an extra round-trip here.
-          // Prefer nested `data.user` when present so tokens aren't stored as the user shape.
+          // Prefer nested `data.user` when present so the login envelope isn't stored as the user.
           const payload = response.data;
           const authUser = payload?.user && typeof payload.user === 'object' ? payload.user : payload;
-          setAuth(authUser, payload?.token, variables.remember, payload?.refresh_token ?? null);
-          await setAuthCookie(payload?.token, variables.remember);
+          setAuth(authUser, variables.remember);
           router.push('/home');
         } catch (error) {
           console.error('Login post-processing error:', error);

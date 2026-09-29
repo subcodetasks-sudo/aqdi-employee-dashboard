@@ -19,7 +19,7 @@ const FCM_CHANNEL_NAME = "aqdi-fcm";
 export function useFirebaseMessaging() {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const token = useUserStore((state) => state.token);
+  const isAuthenticated = useUserStore((state) => state.isAuthenticated);
   const hasHydrated = useUserStore((state) => state._hasHydrated);
   const unsubscribeRef = useRef(() => {});
 
@@ -37,7 +37,7 @@ export function useFirebaseMessaging() {
   );
 
   useEffect(() => {
-    if (!hasHydrated || !token || !isFirebaseConfigured()) return;
+    if (!hasHydrated || !isAuthenticated || !isFirebaseConfigured()) return;
 
     let cancelled = false;
     let broadcastChannel = null;
@@ -103,13 +103,13 @@ export function useFirebaseMessaging() {
 
       broadcastChannel?.close();
     };
-  }, [hasHydrated, token, handlePayload, router]);
+  }, [hasHydrated, isAuthenticated, handlePayload, router]);
 
   useEffect(() => {
-    if (hasHydrated && !token) {
+    if (hasHydrated && !isAuthenticated) {
       unsubscribeRef.current();
       unsubscribeRef.current = () => {};
       void disconnectFcmToken();
     }
-  }, [hasHydrated, token]);
+  }, [hasHydrated, isAuthenticated]);
 }

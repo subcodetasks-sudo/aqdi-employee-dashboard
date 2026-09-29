@@ -1,20 +1,23 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useUserStore } from '@/src/stores/user-store';
 import { bootstrapAuthSession } from '@/src/utils/axios';
 
-export default function StoreHydrator() {
+export default function StoreHydrator({ children }) {
+  const [ready, setReady] = useState(false);
+
   useEffect(() => {
     let cancelled = false;
 
     (async () => {
-      useUserStore.getState().hydrate();
-      await bootstrapAuthSession();
-      // Re-read: bootstrap may have refreshed (or invalidated) the session.
-      if (!cancelled) {
+      try {
+        await bootstrapAuthSession();
+      } finally {
+        if (cancelled) return;
         useUserStore.getState().hydrate();
         useUserStore.setState({ _hasHydrated: true });
+        setReady(true);
       }
     })();
 
@@ -23,5 +26,7 @@ export default function StoreHydrator() {
     };
   }, []);
 
-  return null;
+  if (!ready) return null;
+
+  return children;
 }

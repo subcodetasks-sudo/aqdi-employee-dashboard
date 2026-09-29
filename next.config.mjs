@@ -11,17 +11,6 @@ const nextConfig = {
   experimental: {
     optimizePackageImports: ["lucide-react", "react-icons"],
   },
-  async rewrites() {
-    const apiTarget =
-      process.env.API_PROXY_TARGET || "https://aqid.subcodeco.com/api";
-
-    return [
-      {
-        source: "/api/:path*",
-        destination: `${apiTarget}/:path*`,
-      },
-    ];
-  },
   async headers() {
     return [
       {
@@ -49,6 +38,11 @@ const nextConfig = {
       {
         protocol: "https",
         hostname: "aqid.subcodeco.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "backend.aqdi.sa",
         pathname: "/**",
       },
       {

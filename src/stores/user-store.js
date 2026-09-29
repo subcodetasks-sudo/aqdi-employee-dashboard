@@ -1,33 +1,27 @@
 import { create } from 'zustand';
 import { removeAuthCookie } from '@/src/app/actions/auth';
-import { getAccessToken, getAuthUser, setAuthSession, clearAuthSession } from '@/src/lib/auth-session';
+import { getAuthUser, setAuthSession, clearAuthSession } from '@/src/lib/auth-session';
 import { resetSessionGuard } from '@/src/utils/axios';
 
-// Reactive cache over the auth-session storage module (src/lib/auth-session.js),
-// which is the actual source of truth for tokens — read/written directly by
-// src/utils/axios.js's interceptors, including on silent background refresh.
-// This store exists so components can reactively read `user`/`isAuthenticated`
-// without polling storage.
+// `user` is a UI cache. The session itself is the httpOnly cookie pair the API
+// proxy reads — this store never holds access or refresh tokens.
 export const useUserStore = create((set) => ({
   user: null,
   token: null,
   isAuthenticated: false,
   _hasHydrated: false,
 
-  // Client-only: pulls the current session out of storage into memory. Call
-  // once on mount (see components/auth/StoreHydrator.jsx) — never during SSR.
   hydrate: () => {
     const user = getAuthUser();
-    const token = getAccessToken();
-    set({ user, token, isAuthenticated: !!(user && token) });
+    set({ user, token: null, isAuthenticated: !!user });
   },
 
   setUser: (user) => set({ user, isAuthenticated: !!user }),
 
-  setAuth: (user, token, remember = true, refreshToken = null) => {
-    setAuthSession({ accessToken: token, refreshToken }, user, remember);
+  setAuth: (user, remember = true) => {
+    setAuthSession(user, remember);
     resetSessionGuard();
-    set({ user, token, isAuthenticated: !!(user && token) });
+    set({ user, token: null, isAuthenticated: !!user });
   },
 
   logout: async () => {

@@ -1,7 +1,6 @@
 import { useUserStore } from "../stores/user-store";
 import { useRouter } from "next/navigation";
-import { axiosInstance, AUTH_ENDPOINTS, cancelQueuedRefreshes } from "@/src/utils/axios";
-import { getRefreshToken } from "@/src/lib/auth-session";
+import { axiosInstance, AUTH_ENDPOINTS } from "@/src/utils/axios";
 import { disconnectFcmToken, getStoredFcmToken } from "@/src/lib/firebase/messaging";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -13,12 +12,8 @@ export const useLogout = () => {
 
   const { mutate: logout, isPending: logoutLoading } = useMutation({
     mutationFn: async () => {
-      // Unblock anything queued behind an in-flight silent refresh before we
-      // tear the session down out from under it.
-      cancelQueuedRefreshes(new Error("User logged out"));
-
       const fcmToken = getStoredFcmToken();
-      const payload = { refresh_token: getRefreshToken() };
+      const payload = {};
       if (fcmToken) {
         payload.fcm_token = fcmToken;
       }
@@ -45,7 +40,12 @@ export const useLogout = () => {
       await clearStore();
       queryClient.clear();
       toast.dismiss();
-      toast.error(error.response?.data?.message || "حدث خطأ أثناء تسجيل الخروج");
+      const status = error.response?.status;
+      if (status !== 401) {
+        toast.error(error.response?.data?.message || "حدث خطأ أثناء تسجيل الخروج");
+      } else {
+        toast.success("تم تسجيل الخروج بنجاح");
+      }
       router.push("/login");
     },
   });

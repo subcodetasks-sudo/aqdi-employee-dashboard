@@ -1,8 +1,16 @@
 import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
+import {
+  ACCESS_TOKEN_COOKIE,
+  REFRESH_TOKEN_COOKIE,
+  REMEMBER_ME_COOKIE,
+  TOKEN_EXPIRES_AT_COOKIE,
+  applyAuthCookies,
+} from "@/src/lib/auth-cookies";
+import { refreshAccessToken } from "@/src/lib/api-proxy";
+import { isAccessTokenStale } from "@/src/lib/auth-token";
 
 export const runtime = "nodejs";
-
-const TOKEN_COOKIE = "token";
 
 function getAllowedOrigins() {
   const origins = new Set(["https://aqid.subcodeco.com", "https://b3app.co"]);
@@ -38,7 +46,17 @@ function safeFilename(name) {
 
 export async function GET(request) {
   const cookieStore = await cookies();
-  const token = cookieStore.get(TOKEN_COOKIE)?.value;
+  let token = cookieStore.get(ACCESS_TOKEN_COOKIE)?.value || cookieStore.get("token")?.value;
+  const refreshToken = cookieStore.get(REFRESH_TOKEN_COOKIE)?.value;
+  const expiresAt = cookieStore.get(TOKEN_EXPIRES_AT_COOKIE)?.value;
+  const remember = cookieStore.get(REMEMBER_ME_COOKIE)?.value === "1";
+  let refreshed = null;
+
+  if (refreshToken && (!token || isAccessTokenStale(expiresAt))) {
+    refreshed = await refreshAccessToken(refreshToken);
+    if (refreshed.ok) token = refreshed.tokens.token;
+  }
+
   if (!token) {
     return new Response("Unauthorized", { status: 401 });
   }
@@ -83,7 +101,7 @@ export async function GET(request) {
     upstream.headers.get("content-type") ?? "application/octet-stream";
   const encoded = encodeURIComponent(filename);
 
-  return new Response(upstream.body, {
+  const response = new NextResponse(upstream.body, {
     status: 200,
     headers: {
       "Content-Type": contentType,
@@ -91,4 +109,10 @@ export async function GET(request) {
       "Cache-Control": "private, no-store",
     },
   });
+
+  if (refreshed?.ok) {
+    applyAuthCookies(response.cookies, refreshed.tokens, remember);
+  }
+
+  return response;
 }

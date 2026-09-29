@@ -55,9 +55,10 @@ export default function RootLayout({ children }) {
       <body suppressHydrationWarning={true}>
         <ThemeProvider>
           <ReactQueryProvider>
-            <StoreHydrator />
-            <FirebaseMessagingProvider />
-            {children}
+            <StoreHydrator>
+              <FirebaseMessagingProvider />
+              {children}
+            </StoreHydrator>
             <Toaster
               position="top-center"
               dir="rtl"

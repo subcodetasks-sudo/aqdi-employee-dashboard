@@ -9,15 +9,15 @@ export default function Page(props) {
   useUnwrapPageProps(props?.params, props?.searchParams);
 
   const router = useRouter();
-  const { token } = useUserStore();
+  const isAuthenticated = useUserStore((state) => state.isAuthenticated);
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      router.push(token ? "/home" : "/login");
+      router.push(isAuthenticated ? "/home" : "/login");
     }, 3000);
 
     return () => clearTimeout(timer);
-  }, [router, token]);
+  }, [router, isAuthenticated]);
 
 
   return (
