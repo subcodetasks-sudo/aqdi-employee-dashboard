@@ -162,12 +162,6 @@ export const STEP1_PROPERTY_FIELDS = [
     step: "step1",
   },
   {
-    key: "contract_ownership",
-    label: "ملكية العقد",
-    type: "text",
-    step: "step1",
-  },
-  {
     key: "real_estate_registry_number",
     label: "رقم السجل العقاري",
     type: "text",
@@ -213,7 +207,6 @@ export const STEP1_PROPERTY_FIELDS = [
     ],
     step: "step1",
   },
-  { key: "age_of_the_property", label: "عمر العقار", type: "text", step: "step1" },
   { key: "number_of_floors", label: "عدد الطوابق", type: "text", step: "step1" },
   {
     key: "number_of_units_per_floor",
@@ -265,11 +258,6 @@ export const ADMIN_UNIT_ROOM_FIELDS = [
   { key: "The_number_of_toilets", label: "عدد دورات المياه", type: "text" },
   { key: "window_ac", label: "مكيف شباك", type: "text" },
   { key: "split_ac", label: "مكيف سبليت", type: "text" },
-  {
-    key: "number_of_unit_air_conditioners",
-    label: "عدد مكيفات الوحدة",
-    type: "text",
-  },
 ];
 
 export const ADMIN_UNIT_SERVICE_FIELDS = [
@@ -425,31 +413,6 @@ export const STEP3_TENANT_FIELDS = [
     calendarTypeKey: "type_tenant_dob",
   },
   {
-    key: "tenant_name",
-    label: "اسم المستأجر",
-    type: "text",
-  },
-  {
-    key: "tenant_email",
-    label: "البريد الإلكتروني",
-    type: "text",
-  },
-  {
-    key: "tenant_nationality",
-    label: "الجنسية",
-    type: "text",
-  },
-  {
-    key: "tenant_work",
-    label: "العمل",
-    type: "text",
-  },
-  {
-    key: "tenant_gender",
-    label: "الجنس",
-    type: "text",
-  },
-  {
     key: "is_there_a_legal_representative_of_the_tenant",
     label: "هل يوجد ممثل نظامي للمستأجر؟",
     type: "boolean",
@@ -578,6 +541,25 @@ export const STEP3_CONTRACT_META_FIELDS = [
   },
 ];
 
+function durationPartIsSet(value) {
+  if (value == null || value === "") return false;
+  const numeric = Number(value);
+  if (!Number.isNaN(numeric)) return numeric !== 0;
+  return String(value).trim() !== "";
+}
+
+/** Listed catalog period vs custom years/months. Only one is shown at a time. */
+export function resolveContractDurationMode(values = {}) {
+  const listed =
+    values.contract_term_in_years != null &&
+    String(values.contract_term_in_years).trim() !== "";
+  const custom =
+    durationPartIsSet(values.duration_years) || durationPartIsSet(values.duration_months);
+
+  if (custom && !listed) return "custom";
+  return "listed";
+}
+
 /** Financial / terms — POST /contract/step6 */
 export const STEP4_FINANCIAL_FIELDS = [
   {
@@ -587,10 +569,20 @@ export const STEP4_FINANCIAL_FIELDS = [
     optionsSource: "payment-types",
   },
   {
+    key: "duration_mode",
+    label: "نوع المدة",
+    type: "segmented",
+    options: [
+      { value: "listed", label: "من القائمة" },
+      { value: "custom", label: "مخصصة" },
+    ],
+  },
+  {
     key: "contract_term_in_years",
     label: "مدة العقد",
     type: "select",
     optionsSource: "contract-periods",
+    showWhen: { duration_mode: "listed" },
   },
   {
     key: "duration_years",
@@ -600,6 +592,7 @@ export const STEP4_FINANCIAL_FIELDS = [
       value: String(i),
       label: String(i),
     })),
+    showWhen: { duration_mode: "custom" },
   },
   {
     key: "duration_months",
@@ -609,25 +602,7 @@ export const STEP4_FINANCIAL_FIELDS = [
       value: String(i),
       label: String(i),
     })),
-  },
-  { key: "daily_fine", label: "الغرامة اليومية", type: "text" },
-  { key: "sub_delay", label: "تأخير فرعي", type: "text" },
-  { key: "deposit", label: "التأمين", type: "text" },
-  { key: "Guarantee_amount", label: "مبلغ الضمان", type: "text" },
-  {
-    key: "premium_membership_for_free",
-    label: "عضوية مميزة مجاناً",
-    type: "boolean",
-  },
-  {
-    key: "client_account_holder_name",
-    label: "اسم صاحب الحساب",
-    type: "text",
-  },
-  {
-    key: "bank_account_number",
-    label: "رقم الحساب البنكي",
-    type: "text",
+    showWhen: { duration_mode: "custom" },
   },
   {
     key: "notes_edits",

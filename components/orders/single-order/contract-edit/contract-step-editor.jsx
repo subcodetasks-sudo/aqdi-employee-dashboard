@@ -15,6 +15,7 @@ import {
   validateOtherConditionsList,
   validateTenantRoleSelection,
 } from "@/src/lib/contract-update";
+import { resolveContractDurationMode } from "./contract-field-schemas";
 import { useTenantRoles } from "@/src/hooks/use-tenant-roles";
 import { useSingleOrderContext } from "../single-order-context";
 import { resolveCalendarType } from "./contract-date-picker";
@@ -108,7 +109,10 @@ export const ContractStepEditor = forwardRef(function ContractStepEditor(
     }
     const merged = { ...base, ...extra };
     if (initialValues && typeof initialValues === "object") {
-      return { ...merged, ...initialValues };
+      Object.assign(merged, initialValues);
+    }
+    if (fields.some((field) => field.key === "duration_mode") && !merged.duration_mode) {
+      merged.duration_mode = resolveContractDurationMode(merged);
     }
     return merged;
   }, [orderData, resolvedStep, fields, initialValues, seedFromInitialValuesOnly]);
@@ -148,6 +152,12 @@ export const ContractStepEditor = forwardRef(function ContractStepEditor(
     const formatErrors = {};
     for (const field of fields) {
       if (!isFieldVisible(field, form)) continue;
+      if (field.key === "unit_area" && !isFieldEmpty(form[field.key])) {
+        const area = Number(String(form[field.key]).replace(/,/g, "").trim());
+        if (!Number.isFinite(area) || area <= 0) {
+          formatErrors[field.key] = "يجب أن تكون المساحة أكبر من صفر";
+        }
+      }
       if (!getSaudiContactFieldKind(field)) continue;
       if (isFieldEmpty(form[field.key])) continue;
       const message = getSaudiContactFieldError(field, form[field.key]);
@@ -228,7 +238,23 @@ export const ContractStepEditor = forwardRef(function ContractStepEditor(
       setInitial({ ...form });
       setEditing(false);
     } catch (err) {
-      if (err?.fieldErrors) setFieldErrors(err.fieldErrors);
+      if (err?.fieldErrors) {
+        const resolved = { ...err.fieldErrors };
+        const areaRaw = String(form.unit_area ?? "").replace(/,/g, "").trim();
+        const areaIsZero = areaRaw !== "" && Number(areaRaw) <= 0;
+        for (const [key, message] of Object.entries(err.fieldErrors)) {
+          const leaf = key.split(".").pop();
+          if (!leaf || !fields.some((field) => field.key === leaf)) continue;
+          resolved[leaf] =
+            leaf === "unit_area" && areaIsZero && message === "هذا الحقل مطلوب"
+              ? "يجب أن تكون المساحة أكبر من صفر"
+              : message;
+        }
+        if (areaIsZero && resolved.unit_area === "هذا الحقل مطلوب") {
+          resolved.unit_area = "يجب أن تكون المساحة أكبر من صفر";
+        }
+        setFieldErrors(resolved);
+      }
     }
   };
 
@@ -250,6 +276,24 @@ export const ContractStepEditor = forwardRef(function ContractStepEditor(
   const handleFieldChange = (field, val) => {
     setForm((prev) => {
       const next = { ...prev, [field.key]: val };
+
+      // Listed period and custom years/months are alternate ways to set the same length.
+      // Keep the inactive values so switching back before save restores them, and clear
+      // the active copies so only the chosen mode is submitted.
+      if (field.key === "duration_mode" && val !== prev.duration_mode) {
+        if (val === "custom") {
+          next.__listed_term = prev.contract_term_in_years ?? "";
+          next.contract_term_in_years = "";
+          if (prev.__custom_years !== undefined) next.duration_years = prev.__custom_years;
+          if (prev.__custom_months !== undefined) next.duration_months = prev.__custom_months;
+        } else {
+          next.__custom_years = prev.duration_years ?? "";
+          next.__custom_months = prev.duration_months ?? "";
+          next.duration_years = "";
+          next.duration_months = "";
+          if (prev.__listed_term !== undefined) next.contract_term_in_years = prev.__listed_term;
+        }
+      }
 
       // Region change: reset city so it stays within the selected region.
       if (field.key === "property_place_id" && String(prev.property_place_id ?? "") !== String(val ?? "")) {

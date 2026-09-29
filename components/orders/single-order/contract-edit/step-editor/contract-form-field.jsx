@@ -150,6 +150,41 @@ export default function ContractFormField({
     );
   }
 
+  if (field.type === "segmented") {
+    const selected = value == null || value === "" ? field.options?.[0]?.value : value;
+
+    return (
+      <div className="flex flex-col gap-2">
+        <span className={fieldLabelClass}>{field.label}</span>
+        <div
+          role="radiogroup"
+          aria-label={field.label}
+          className="flex h-12 items-center gap-1 rounded-14 border border-surface-border bg-white p-1 dark:border-white/10 dark:bg-white/[0.04]"
+        >
+          {(field.options ?? []).map((opt) => {
+            const active = String(selected) === String(opt.value);
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                role="radio"
+                aria-checked={active}
+                onClick={() => onChange(opt.value)}
+                className={`flex h-full flex-1 items-center justify-center rounded-[10px] px-2 text-xs font-bold transition-colors ${
+                  active
+                    ? "bg-brand-hover text-white"
+                    : "text-gray-500 hover:bg-neutral-100 dark:text-white/60 dark:hover:bg-white/10"
+                }`}
+              >
+                {opt.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
   if (field.type === "boolean") {
     return (
       <div className="flex flex-col gap-2">
@@ -295,7 +330,7 @@ export default function ContractFormField({
         inputMode={contactKind ? "numeric" : undefined}
         pattern={contactKind ? "[0-9]*" : undefined}
         maxLength={
-          contactKind === "national_id" ? 10 : contactKind === "phone" ? 12 : undefined
+          contactKind === "national_id" ? 10 : contactKind === "phone" ? 10 : undefined
         }
         value={value ?? ""}
         onChange={(e) => {
@@ -305,7 +340,7 @@ export default function ContractFormField({
               : e.target.value
           );
         }}
-        className={inputClass}
+        className={`${inputClass}${error ? " border-[#E24444] focus:border-[#E24444]" : ""}`}
         placeholder={
           field.hint ||
           (contactKind === "national_id"

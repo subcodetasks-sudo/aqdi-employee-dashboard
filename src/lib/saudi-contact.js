@@ -127,8 +127,9 @@ export function sanitizeSaudiContactInput(fieldOrKey, nextValue) {
   if (kind === "national_id") {
     digits = digits.slice(0, 10);
   } else if (kind === "phone") {
-    // Allow typing 05… or pasting +9665… then keep up to 12 digits while editing.
-    digits = digits.slice(0, 12);
+    if (digits.startsWith("966")) digits = `0${digits.slice(3)}`;
+    else if (/^5\d{0,8}$/.test(digits)) digits = `0${digits}`;
+    digits = digits.slice(0, 10);
   }
   return digits;
 }

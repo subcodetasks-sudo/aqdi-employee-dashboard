@@ -33,6 +33,7 @@ const HIDDEN_UNIT_PAYLOAD_KEYS = [
   "number_of_councils",
   "Gasmeter",
   "Number_parking_spaces",
+  "number_of_unit_air_conditioners",
 ];
 
 /**

@@ -26,7 +26,6 @@ const UNIT_FIELDS = [
   { key: "water_meter_number", label: "رقم عداد المياه" },
   { key: "gas_meter", label: "عداد الغاز" },
   { key: "parking_spaces", label: "مواقف السيارات" },
-  { key: "services", label: "الخدمات" },
 ];
 
 function UnitCard({ unit, onEdit }) {

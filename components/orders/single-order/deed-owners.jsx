@@ -84,11 +84,6 @@ const AGENCY_EXTRA_FIELDS = [
     type: "text",
   },
   {
-    key: "property_owner_is_deceased",
-    label: "المالك متوفى",
-    type: "boolean",
-  },
-  {
     key: "copy_power_of_attorney_from_heirs_to_agent",
     label: "توكيل الورثة للوكيل",
     type: "file",
@@ -122,7 +117,6 @@ const DeedOwners = ({ data }) => {
   const instrumentTypeLabel = getInstrumentTypeLabel(
     pick("instrument_type_trans", "instrument_type", "instrument_type_key")
   );
-  const deedNumber = pick("instrument_number", "deed_number");
   const showAgent = hasLegalAgent(data);
   const showNazir = hasEndowmentNazir(data);
 
@@ -139,22 +133,16 @@ const DeedOwners = ({ data }) => {
             displayValue: instrumentTypeLabel,
           },
           {
-            key: "__deed_number_display",
+            key: "instrument_number",
             label: "رقم الصك",
             type: "text",
-            locked: true,
-            displayValue: deedNumber,
+            step: "step1",
           },
         ],
       },
       {
         title: "بيانات المالك",
         fields: [
-          {
-            key: "name_owner",
-            label: "اسم المالك",
-            type: "text",
-          },
           {
             key: "property_owner_id_num",
             label: "رقم الهوية",
@@ -181,11 +169,6 @@ const DeedOwners = ({ data }) => {
             label: "رقم الجوال",
             type: "text",
             inputKind: "phone",
-          },
-          {
-            key: "property_owner_iban",
-            label: "آيبان المالك",
-            type: "text",
           },
           {
             key: "add_legal_agent_of_owner",
@@ -221,7 +204,7 @@ const DeedOwners = ({ data }) => {
     });
 
     return groups;
-  }, [instrumentTypeLabel, deedNumber, showAgent, showNazir]);
+  }, [instrumentTypeLabel, showAgent, showNazir]);
 
   return (
     <div dir="rtl">
