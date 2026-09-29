@@ -61,6 +61,11 @@ export function RoleFormPageHeader({
   );
 }
 
+/** Hide retired permission groups such as "مصاريف (قديم)". */
+export function withoutLegacyPermissionModules(modules = []) {
+  return modules.filter((module) => !String(module?.section_label_ar ?? "").includes("(قديم)"));
+}
+
 export function RoleFormSection({ title, children, className }) {
   return (
     <section

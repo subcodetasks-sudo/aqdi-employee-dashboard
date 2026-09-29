@@ -21,6 +21,7 @@ import {
     RoleFormPageHeader,
     RoleFormSection,
     RolePermissionsSection,
+    withoutLegacyPermissionModules,
 } from '@/components/roles/role-form-page'
 
 const FIELD_LABEL =
@@ -96,7 +97,10 @@ export default function EditRole() {
     });
 
     const role = roleRes?.data ?? roleRes;
-    const modules = useMemo(() => createRes?.data?.permission_modules ?? [], [createRes?.data?.permission_modules]);
+    const modules = useMemo(
+        () => withoutLegacyPermissionModules(createRes?.data?.permission_modules ?? []),
+        [createRes?.data?.permission_modules]
+    );
     const employees = employeesRes?.items ?? [];
 
     const allPermissionNames = useMemo(

@@ -11,6 +11,7 @@ import {
     RoleFormPageHeader,
     RoleFormSection,
     RolePermissionsSection,
+    withoutLegacyPermissionModules,
 } from '@/components/roles/role-form-page'
 
 function buildPermissionMatrix(selectedPermissionNames) {
@@ -48,7 +49,10 @@ export default function AddRole() {
             axiosInstance.get('/admin/roles/create').then((res) => res?.data),
     });
 
-    const modules = useMemo(() => data?.data?.permission_modules ?? [], [data?.data?.permission_modules]);
+    const modules = useMemo(
+        () => withoutLegacyPermissionModules(data?.data?.permission_modules ?? []),
+        [data?.data?.permission_modules]
+    );
 
     const allPermissionNames = useMemo(
         () => modules.flatMap((module) => module.actions.map((action) => action.permission_name)),
