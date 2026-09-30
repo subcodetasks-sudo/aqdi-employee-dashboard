@@ -126,7 +126,7 @@ export async function getFirebaseMessaging() {
   return messagingInstance;
 }
 
-export async function requestFcmToken() {
+export async function requestFcmToken({ prompt = true } = {}) {
   if (typeof window === "undefined") return null;
   if (!isFirebaseConfigured()) return null;
   if (!(await isSupported())) return null;
@@ -134,6 +134,7 @@ export async function requestFcmToken() {
   await ensureFirebaseProjectSync();
 
   if (Notification.permission === "default") {
+    if (!prompt) return null;
     const permission = await Notification.requestPermission();
     if (permission !== "granted") return null;
   } else if (Notification.permission !== "granted") {

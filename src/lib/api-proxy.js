@@ -20,6 +20,24 @@ const REFRESH_PATH = "admin/employees/refresh-token";
 const LOGOUT_PATH = "admin/employees/logout";
 
 const RECENT_REFRESH_MS = 60_000;
+// Below the browser's axios timeout, so a hung backend surfaces as a 504 with a
+// message instead of the browser giving up with no response.
+const UPSTREAM_TIMEOUT_MS = 20_000;
+
+function upstreamSignal(signal) {
+  const timeout = AbortSignal.timeout(UPSTREAM_TIMEOUT_MS);
+  return signal ? AbortSignal.any([signal, timeout]) : timeout;
+}
+
+function upstreamFailureResponse(NextResponse, error) {
+  if (error?.name === "TimeoutError") {
+    return NextResponse.json(
+      { success: false, message: "الخادم لا يستجيب حاليا، حاول مرة أخرى لاحقا" },
+      { status: 504 }
+    );
+  }
+  return NextResponse.json({ success: false, message: "تعذر الاتصال بالخادم" }, { status: 502 });
+}
 
 // Module scope is wiped by dev recompiles. A refresh that already rotated the
 // token then looks like a brand-new login to the next request, which exchanges
@@ -153,7 +171,7 @@ function injectRefreshToken(body, contentType, refreshToken) {
   };
 }
 
-async function forwardUpstream({ targetUrl, method, accessToken, contentType, acceptLanguage, body }) {
+async function forwardUpstream({ targetUrl, method, accessToken, contentType, acceptLanguage, body, signal }) {
   const headers = new Headers();
   headers.set("Accept", "application/json");
   headers.set("Accept-Language", acceptLanguage || "ar");
@@ -165,6 +183,7 @@ async function forwardUpstream({ targetUrl, method, accessToken, contentType, ac
     headers,
     cache: "no-store",
     redirect: "manual",
+    signal: upstreamSignal(signal),
   };
 
   if (body && method !== "GET" && method !== "HEAD") {
@@ -198,6 +217,7 @@ export function refreshAccessToken(refreshToken, apiTarget = getApiTarget()) {
         },
         body: JSON.stringify({ refresh_token: refreshToken }),
         cache: "no-store",
+        signal: upstreamSignal(),
       });
     } catch {
       return { ok: false, terminal: false, status: 0 };
@@ -254,12 +274,19 @@ async function exchangeCredentials(NextResponse, request, path, body) {
       contentType,
       acceptLanguage: request.headers.get("accept-language"),
       body,
+      signal: request.signal,
     });
-  } catch {
-    return NextResponse.json({ success: false, message: "تعذر الاتصال بالخادم" }, { status: 502 });
+  } catch (error) {
+    return upstreamFailureResponse(NextResponse, error);
   }
 
   const rawText = await upstream.text();
+  if (upstream.status >= 500) {
+    console.error(
+      `[api-proxy] ${path} ${upstream.status}`,
+      rawText?.slice(0, 500) || "(empty body)"
+    );
+  }
   let json = null;
   try {
     json = rawText ? JSON.parse(rawText) : null;
@@ -350,13 +377,14 @@ export async function proxyApiRequest(request, pathSegments, NextResponse) {
       contentType: outbound.contentType,
       acceptLanguage: request.headers.get("accept-language"),
       body: outbound.body,
+      signal: request.signal,
     });
 
   let upstream;
   try {
     upstream = await send(accessToken);
-  } catch {
-    return NextResponse.json({ success: false, message: "تعذر الاتصال بالخادم" }, { status: 502 });
+  } catch (error) {
+    return upstreamFailureResponse(NextResponse, error);
   }
 
   if (upstream.status === 401 && !isLogout) {
@@ -389,8 +417,8 @@ export async function proxyApiRequest(request, pathSegments, NextResponse) {
 
       try {
         upstream = await send(nextToken);
-      } catch {
-        return NextResponse.json({ success: false, message: "تعذر الاتصال بالخادم" }, { status: 502 });
+      } catch (error) {
+        return upstreamFailureResponse(NextResponse, error);
       }
     }
   }

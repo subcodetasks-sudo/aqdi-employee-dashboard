@@ -15,7 +15,7 @@ import { useMutation } from '@tanstack/react-query';
 import { axiosInstance, AUTH_ENDPOINTS } from '@/src/utils/axios';
 import { useUserStore } from '@/src/stores/user-store';
 import { useRouter } from 'next/navigation';
-import { requestFcmToken } from '@/src/lib/firebase/messaging';
+import { getStoredFcmToken, requestFcmToken } from '@/src/lib/firebase/messaging';
 import { toast } from 'sonner';
 import { useIsDark, useToggleTheme } from '@/src/hooks/use-theme-mode';
 
@@ -44,12 +44,12 @@ export default function LoginPage() {
 
   const {mutate ,isPending}=useMutation({
     mutationFn:async(data)=>{
-      let fcm_token = null;
-
-      try {
-        fcm_token = await requestFcmToken();
-      } catch (error) {
-        console.warn("[firebase] FCM token unavailable during login:", error);
+      let fcmToken = getStoredFcmToken();
+      if (!fcmToken && typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+        fcmToken = await Promise.race([
+          requestFcmToken({ prompt: false }).catch(() => null),
+          new Promise((resolve) => setTimeout(() => resolve(null), 4000)),
+        ]);
       }
 
       const payload = {
@@ -57,18 +57,12 @@ export default function LoginPage() {
         password: data.password,
         remember_me: !!data.remember,
       };
-
-      if (fcm_token) {
-        payload.fcm_token = fcm_token;
-      }
+      if (fcmToken) payload.fcm_token = fcmToken;
 
       const res = await axiosInstance.post(AUTH_ENDPOINTS.login, payload)
       return res.data
     },
-    // Only auto-retry genuine connection failures (no response received) -
-    // wrong credentials (4xx with a response) should surface immediately, not retry.
-    retry: (failureCount, error) => !error?.response && failureCount < 2,
-    retryDelay: (attemptIndex) => (attemptIndex === 0 ? 800 : 1500),
+    retry: false,
     onSuccess: async (response, variables) => {
       if (response?.success && response?.data) {
         try {
@@ -93,11 +87,13 @@ export default function LoginPage() {
     onError: (error) => {
       const message =
         error?.response?.data?.message ||
-        (error?.message === 'Network Error'
-          ? 'تعذر الاتصال بالخادم، تحقق من اتصالك بالإنترنت'
-          : 'حدث خطأ أثناء تسجيل الدخول');
+        (error?.code === 'ECONNABORTED'
+          ? 'الخادم لا يستجيب حاليا، حاول مرة أخرى لاحقا'
+          : error?.message === 'Network Error'
+            ? 'تعذر الاتصال بالخادم، تحقق من اتصالك بالإنترنت'
+            : 'حدث خطأ أثناء تسجيل الدخول');
       toast.error(message);
-      console.error('Login error:', error);
+      console.error('Login error:', error?.response?.data || error.message);
     }
   })
   const onSubmit = (formdata) => {
