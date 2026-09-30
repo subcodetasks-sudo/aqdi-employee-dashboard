@@ -5,10 +5,10 @@ import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { onMessage } from "firebase/messaging";
 import { useUserStore } from "@/src/stores/user-store";
+import { axiosInstance, AUTH_ENDPOINTS } from "@/src/utils/axios";
 import { useSidebarStore } from "@/src/stores/sidebar-store";
 import { isFirebaseConfigured } from "@/src/lib/firebase/config";
 import {
-  disconnectFcmToken,
   getFirebaseMessaging,
   requestFcmToken,
 } from "@/src/lib/firebase/messaging";
@@ -51,6 +51,12 @@ export function useFirebaseMessaging() {
           console.warn("[firebase] Notification permission denied or token unavailable");
           return;
         }
+
+        void axiosInstance
+          .post(AUTH_ENDPOINTS.fcm, { fcm_token: fcmToken })
+          .catch((error) => {
+            console.warn("[firebase] Failed to register FCM token:", error);
+          });
 
         const messaging = await getFirebaseMessaging();
         if (!messaging || cancelled) return;
@@ -109,7 +115,6 @@ export function useFirebaseMessaging() {
     if (hasHydrated && !isAuthenticated) {
       unsubscribeRef.current();
       unsubscribeRef.current = () => {};
-      void disconnectFcmToken();
     }
   }, [hasHydrated, isAuthenticated]);
 }

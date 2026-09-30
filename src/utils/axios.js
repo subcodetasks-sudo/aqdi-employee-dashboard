@@ -17,6 +17,7 @@ export const AUTH_ENDPOINTS = {
   login: "/admin/employees/login",
   refresh: "/admin/employees/refresh-token",
   logout: "/admin/employees/logout",
+  fcm: "/admin/employees/fcm",
 };
 
 export const axiosInstance = axios.create({
