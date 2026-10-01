@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -12,8 +12,8 @@ import {
 import SettingsFormDialog, {
   SettingsFieldLabel,
   settingsFieldClass,
-} from "@/components/SystemSettings/SettingsFormDialog";
-import { SETTINGS_EDIT_TRIGGER_CLASS, SettingsAddTrigger } from "@/components/SystemSettings/shared";
+} from "@/components/system-settings/settings-form-dialog";
+import { SETTINGS_EDIT_TRIGGER_CLASS, SettingsAddTrigger } from "@/components/system-settings/shared";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { axiosInstance } from "@/src/utils/axios";
 import { toast } from "sonner";
@@ -25,13 +25,15 @@ export default function AddNewSectionItemDialog({ isEdit, item, defaultType }) {
   const [type, setType] = useState(defaultType || item?.type || "client");
   const queryClient = useQueryClient();
 
-  useEffect(() => {
+  const [prevOpen, setPrevOpen] = useState(false);
+  if (open !== prevOpen) {
+    setPrevOpen(open);
     if (open) {
       setNameAr(item?.name_ar || "");
       setSectionId(item?.message_alert_section_id?.toString() || "");
       setType(item?.type || defaultType || "client");
     }
-  }, [open, item, defaultType]);
+  }
 
   const { data: sectionsResponse } = useQuery({
     queryKey: ["message-alert-sections-for-items", type],

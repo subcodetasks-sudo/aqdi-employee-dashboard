@@ -1,17 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/button";
 import { axiosInstance } from "@/src/utils/axios";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import PermissionGate from "@/components/auth/PermissionGate";
+import PermissionGate from "@/components/auth/permission-gate";
 import { PERMISSION_SECTIONS } from "@/src/lib/permissions";
 
 const TextEditor = dynamic(
-  () => import("@/components/analysis/settings/terms/TextEditor"),
+  () => import("@/components/analysis/settings/terms/text-editor"),
   { ssr: false }
 );
 
@@ -35,11 +35,12 @@ export default function ContentPageForm({ content, saveEndpoint, queryKey }) {
   const [descriptionAr, setDescriptionAr] = useState("");
   const [editorKey, setEditorKey] = useState(0);
 
-  useEffect(() => {
-    if (!content) return;
+  const [syncedContent, setSyncedContent] = useState(null);
+  if (content && content !== syncedContent) {
+    setSyncedContent(content);
     setDescriptionAr(content.description_ar || content.description || "");
     setEditorKey((prev) => prev + 1);
-  }, [content]);
+  }
 
   const { mutate: saveContent, isPending } = useMutation({
     mutationFn: (payload) => axiosInstance.post(saveEndpoint, payload),
@@ -61,13 +62,13 @@ export default function ContentPageForm({ content, saveEndpoint, queryKey }) {
   return (
     <div className="space-y-6">
       {updatedAt && (
-        <p className="text-13 text-ink-placeholder">
-          آخر تحديث: <span className="font-medium text-[#616161]">{updatedAt}</span>
+        <p className="text-13 text-ink-placeholder dark:text-white/40">
+          آخر تحديث: <span className="font-medium text-[#616161] dark:text-white/70">{updatedAt}</span>
         </p>
       )}
 
       <div className="space-y-2">
-        <label className="text-sm font-bold text-black block">المحتوى</label>
+        <label className="text-sm font-bold text-black dark:text-white block">المحتوى</label>
         <div className="min-h-[420px]">
           <TextEditor
             key={editorKey}
@@ -77,7 +78,7 @@ export default function ContentPageForm({ content, saveEndpoint, queryKey }) {
         </div>
       </div>
 
-      <div className="flex items-center justify-end pt-4 border-t border-[#F0F0F0]">
+      <div className="flex items-center justify-end pt-4 border-t border-[#F0F0F0] dark:border-white/10">
         <PermissionGate section={PERMISSION_SECTIONS.app_content} action="edit">
           <Button
             type="button"

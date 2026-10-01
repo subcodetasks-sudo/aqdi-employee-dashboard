@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -12,8 +12,8 @@ import {
 import SettingsFormDialog, {
   SettingsFieldLabel,
   settingsFieldClass,
-} from "@/components/SystemSettings/SettingsFormDialog";
-import { SETTINGS_EDIT_TRIGGER_CLASS } from "@/components/SystemSettings/shared";
+} from "@/components/system-settings/settings-form-dialog";
+import { SETTINGS_EDIT_TRIGGER_CLASS } from "@/components/system-settings/shared";
 import { axiosInstance } from "@/src/utils/axios";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -25,12 +25,15 @@ export default function EditPaymentTypeDialog({ paymentType }) {
   const [contractType, setContractType] = useState(paymentType?.contract_type || "housing");
   const queryClient = useQueryClient();
 
-  useEffect(() => {
-    if (!open) return;
-    setNameAr(paymentType?.name_ar || "");
-    setNameEn(paymentType?.name_en || "");
-    setContractType(paymentType?.contract_type || "housing");
-  }, [open, paymentType]);
+  const [prevOpen, setPrevOpen] = useState(false);
+  if (open !== prevOpen) {
+    setPrevOpen(open);
+    if (open) {
+      setNameAr(paymentType?.name_ar || "");
+      setNameEn(paymentType?.name_en || "");
+      setContractType(paymentType?.contract_type || "housing");
+    }
+  }
 
   const { mutate, isPending } = useMutation({
     mutationFn: () =>

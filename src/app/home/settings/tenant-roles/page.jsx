@@ -6,7 +6,7 @@ import {
 import { useEffect, useState } from "react";
 import TenantRoleFormDialog from "@/components/analysis/settings/tenant-roles/tenant-role-form-dialog";
 import DeleteTenantRoleDialog from "@/components/analysis/settings/tenant-roles/delete-tenant-role-dialog";
-import PermissionGate from "@/components/auth/PermissionGate";
+import PermissionGate from "@/components/auth/permission-gate";
 import { PERMISSION_SECTIONS } from "@/src/lib/permissions";
 import {
   SettingsEmptyRow,
@@ -17,7 +17,7 @@ import {
   SettingsTableRow,
   SettingsTd,
   SettingsPageShell,
-} from "@/components/SystemSettings/shared";
+} from "@/components/system-settings/shared";
 import { Input } from "@/components/ui/input";
 import { useAdminTenantRoles } from "@/src/hooks/use-admin-tenant-roles";
 import { Search } from "lucide-react";

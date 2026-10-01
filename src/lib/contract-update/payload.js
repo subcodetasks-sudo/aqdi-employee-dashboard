@@ -47,7 +47,7 @@ export function buildContractUpdatePayload(step, form, initialForm) {
     }
 
     if (
-      ["furnished", "kitchen_tank", "add_legal_agent_of_owner", "is_there_a_legal_representative_of_the_tenant"].includes(
+      ["furnished", "kitchen_tank", "Gasmeter", "add_legal_agent_of_owner", "is_there_a_legal_representative_of_the_tenant"].includes(
         key
       )
     ) {

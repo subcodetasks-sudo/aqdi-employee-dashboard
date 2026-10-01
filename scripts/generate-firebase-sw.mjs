@@ -5,9 +5,10 @@ import { fileURLToPath } from "url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.join(__dirname, "..");
 const outputPath = path.join(rootDir, "public", "firebase-messaging-sw.js");
-const envPath = path.join(rootDir, ".env");
+// Same precedence as Next.js: real env vars (e.g. cPanel app settings) > .env.local > .env.
+const envPaths = [".env.local", ".env"].map((file) => path.join(rootDir, file));
 
-function loadEnvFile() {
+function loadEnvFile(envPath) {
   if (!fs.existsSync(envPath)) return;
 
   const content = fs.readFileSync(envPath, "utf8");
@@ -27,7 +28,7 @@ function loadEnvFile() {
   }
 }
 
-loadEnvFile();
+envPaths.forEach(loadEnvFile);
 
 const firebaseVersion = "11.6.0";
 

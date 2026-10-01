@@ -1,7 +1,7 @@
 "use client"
 import { useUnwrapPageProps } from "@/src/hooks/use-unwrap-page-props";
 import React from 'react'
-import Header from '@/components/home/Header';
+import Header from '@/components/home/header';
 import EmployeeDetailsCard from '@/components/employees/employee-details';
 import SalaryTable from '@/components/employees/salary-table';
 import NotesTable from '@/components/employees/notes-table';
@@ -42,11 +42,11 @@ export default function EmployeeDetailsPage(props) {
     <div>
       <Header
         page='welcome'
-        title={isProfileView ? "الملف الشخصي" : "الموظفين"}
+        title={isProfileView ? "الملف الشخصي" : "الموظفون"}
         isMain={false}
         first="الرئيــسية"
         firstURL="/"
-        second={isProfileView ? "الملف الشخصي" : 'الموظفين والأدوار'}
+        second={isProfileView ? "الملف الشخصي" : "الموظفون والأدوار"}
         secondURL={isProfileView ? `/home/roles-and-employees/employees/${id}?view=profile` : "/home/roles-and-employees?tab=employees"}
         third={isProfileView ? undefined : 'تفاصيل الموظف'}
         thirdURL={isProfileView ? undefined : `/home/roles-and-employees/employees/${id}`}

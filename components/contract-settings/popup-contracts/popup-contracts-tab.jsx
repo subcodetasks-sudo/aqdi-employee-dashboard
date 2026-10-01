@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Loader from "@/components/home/loader";
-import OrdersPagination from "@/components/Orders/shared/orders-pagination";
+import OrdersPagination from "@/components/orders/shared/orders-pagination";
 import { axiosInstance } from "@/src/utils/axios";
 import { useQuery } from "@tanstack/react-query";
 import {

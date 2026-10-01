@@ -1,7 +1,7 @@
 "use client";
 
 import { useUnwrapPageProps } from "@/src/hooks/use-unwrap-page-props";
-import InvoicesWrapper from "@/components/Invoices/InvoicesWrapper";
+import InvoicesWrapper from "@/components/invoices/invoices-wrapper";
 
 export default function InvoicesPage(props) {
   useUnwrapPageProps(props?.params, props?.searchParams);

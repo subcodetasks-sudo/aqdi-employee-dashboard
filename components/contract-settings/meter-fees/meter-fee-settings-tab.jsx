@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Loader from "@/components/home/loader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,11 +29,12 @@ export default function MeterFeeSettingsTab() {
       axiosInstance.get(METER_FEE_SETTINGS_API).then((res) => res?.data),
   });
 
-  useEffect(() => {
-    if (!data) return;
+  const [syncedData, setSyncedData] = useState(null);
+  if (data && data !== syncedData) {
+    setSyncedData(data);
     setForm(extractMeterFeeSettings(data));
     setFieldErrors({});
-  }, [data]);
+  }
 
   const { mutate, isPending } = useMutation({
     mutationFn: () =>

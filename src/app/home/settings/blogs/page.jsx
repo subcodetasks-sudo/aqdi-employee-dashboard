@@ -17,8 +17,8 @@ import {
   SettingsTableRow,
   SettingsTd,
   SettingsPageShell,
-} from "@/components/SystemSettings/shared";
-import PermissionGate from "@/components/auth/PermissionGate";
+} from "@/components/system-settings/shared";
+import PermissionGate from "@/components/auth/permission-gate";
 import { PERMISSION_SECTIONS } from "@/src/lib/permissions";
 import { axiosInstance } from "@/src/utils/axios";
 import { useQuery } from "@tanstack/react-query";

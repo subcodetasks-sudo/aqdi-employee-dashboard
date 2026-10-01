@@ -6,7 +6,7 @@ import {
 import AddNewCityDialog from "@/components/analysis/settings/cities/add-new-city-dialog";
 import DeleteCityDialog from "@/components/analysis/settings/cities/delete-city-dialog";
 import EditCityDialog from "@/components/analysis/settings/cities/edit-city-dialog";
-import PermissionGate from "@/components/auth/PermissionGate";
+import PermissionGate from "@/components/auth/permission-gate";
 import { PERMISSION_SECTIONS } from "@/src/lib/permissions";
 import {
   SettingsEmptyRow,
@@ -16,7 +16,7 @@ import {
   SettingsTableRow,
   SettingsTd,
   SettingsPageShell,
-} from "@/components/SystemSettings/shared";
+} from "@/components/system-settings/shared";
 import { axiosInstance } from "@/src/utils/axios";
 import { useQuery } from "@tanstack/react-query";
 

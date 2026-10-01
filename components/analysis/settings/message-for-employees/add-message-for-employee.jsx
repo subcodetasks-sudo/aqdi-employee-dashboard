@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -17,7 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { SETTINGS_EDIT_TRIGGER_CLASS, SettingsAddTrigger } from "@/components/SystemSettings/shared";
+import { SETTINGS_EDIT_TRIGGER_CLASS, SettingsAddTrigger } from "@/components/system-settings/shared";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { axiosInstance } from "@/src/utils/axios";
 import { ChevronLeft, Loader2, MessageSquareText, X } from "lucide-react";
@@ -35,13 +35,15 @@ export default function AddNewMessageForEmployeeDialog({ isEdit, messageAlert })
 
   const queryClient = useQueryClient();
 
-  useEffect(() => {
+  const [prevOpen, setPrevOpen] = useState(false);
+  if (open !== prevOpen) {
+    setPrevOpen(open);
     if (open) {
       setSelectedSection(messageAlert?.message_alert_section_id?.toString() || "");
       setSelectedItem(messageAlert?.message_alert_section_item_id?.toString() || "");
       setMessage(messageAlert?.message || "");
     }
-  }, [open, messageAlert]);
+  }
 
   const { data: sectionsData, isLoading: sectionsLoading } = useQuery({
     queryKey: ["message-alert-sections-employee"],

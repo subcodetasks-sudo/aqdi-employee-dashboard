@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -13,8 +13,8 @@ import {
 import SettingsFormDialog, {
   SettingsFieldLabel,
   settingsFieldClass,
-} from "@/components/SystemSettings/SettingsFormDialog";
-import { SETTINGS_EDIT_TRIGGER_CLASS, SettingsAddTrigger } from "@/components/SystemSettings/shared";
+} from "@/components/system-settings/settings-form-dialog";
+import { SETTINGS_EDIT_TRIGGER_CLASS, SettingsAddTrigger } from "@/components/system-settings/shared";
 import { axiosInstance } from "@/src/utils/axios";
 import {
   ADMIN_TENANT_ROLES_API,
@@ -27,7 +27,7 @@ import { toast } from "sonner";
 import dynamic from "next/dynamic";
 
 const TextEditor = dynamic(
-  () => import("@/components/analysis/settings/terms/TextEditor"),
+  () => import("@/components/analysis/settings/terms/text-editor"),
   { ssr: false }
 );
 
@@ -60,12 +60,14 @@ export default function TenantRoleFormDialog({ role = null }) {
   const [editorKey, setEditorKey] = useState(0);
   const queryClient = useQueryClient();
 
-  useEffect(() => {
+  const [prevOpen, setPrevOpen] = useState(false);
+  if (open !== prevOpen) {
+    setPrevOpen(open);
     if (open) {
       setForm(isEdit ? roleToForm(role) : { ...EMPTY_FORM });
       setEditorKey((prev) => prev + 1);
     }
-  }, [open, isEdit, role]);
+  }
 
   const setField = (key, value) => {
     setForm((prev) => ({ ...prev, [key]: value }));

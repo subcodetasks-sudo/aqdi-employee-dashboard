@@ -9,15 +9,24 @@ import {
 import { FilePenLine, Plus, X } from 'lucide-react';
 import { useState } from 'react';
 import AddNoteForm from './add-note-form';
-export default function AddNoteDialog({ employee }) {
+import { OutlineActionButton } from '@/components/roles-and-employees/shared';
+
+export default function AddNoteDialog({ employee, variant = "primary" }) {
   const [open, setOpen] = useState(false);
   return (
     <Dialog dir='rtl' open={open} onOpenChange={setOpen}>
-      <DialogTrigger>
-        <Button className="bg-black text-white">
-          <FilePenLine />
-          إضافة ملاحظة
-        </Button>
+      <DialogTrigger asChild>
+        {variant === "outline" ? (
+          <OutlineActionButton className="h-9 gap-1.5 px-4 text-13">
+            <FilePenLine className="size-4" />
+            إضافة ملاحظة
+          </OutlineActionButton>
+        ) : (
+          <Button className="bg-black text-white">
+            <FilePenLine />
+            إضافة ملاحظة
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent closeButton={false} className="max-w-3xl">
         <DialogHeader>

@@ -6,10 +6,11 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { axiosInstance } from '@/src/utils/axios';
 import { isAllOrdersListPath } from '@/src/lib/order-routes';
 import { useSidebarStore } from '@/src/stores/sidebar-store';
+import { useUserStore } from '@/src/stores/user-store';
 
 const POLL_INTERVAL = 30_000;
 
-const fetchUnreceivedOrdersTotal = async () => {
+export const fetchUnreceivedOrdersTotal = async () => {
   const response = await axiosInstance.get('/admin/orders?status_id=1&per_page=1&page=1');
   return response?.data?.data?.pagination?.total ?? 0;
 };
@@ -26,6 +27,9 @@ export function useUnreceivedOrdersWatcher() {
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
   const { setDisplayedPart } = useSidebarStore();
+  const isAuthenticated = useUserStore((state) => state.isAuthenticated);
+  const hasHydrated = useUserStore((state) => state._hasHydrated);
+  const canPoll = hasHydrated && isAuthenticated;
   const previousTotalRef = useRef(null);
   const tab = searchParams.get('tab');
   const isAllOrdersPage = isAllOrdersListPath(pathname) && (!tab || tab === 'all');
@@ -33,7 +37,8 @@ export function useUnreceivedOrdersWatcher() {
   const { data: total } = useQuery({
     queryKey: ['unReceivedOrdersTotal'],
     queryFn: fetchUnreceivedOrdersTotal,
-    refetchInterval: POLL_INTERVAL,
+    enabled: canPoll,
+    refetchInterval: canPoll ? POLL_INTERVAL : false,
     refetchIntervalInBackground: true,
   });
 

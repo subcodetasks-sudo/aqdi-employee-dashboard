@@ -1,17 +1,22 @@
 // `section` matches a PERMISSION_SECTIONS key (or an array of them — visible if the user has
-// `view` on ANY). `content` covers both the services sub-view (analytics.view only) and the
-// articles sub-view (needs blogs.view, gated inside ContentTab.jsx).
+// `view` on ANY). Content tab hosts site pages (app_content / website_images), articles
+// (blogs), and service pages (analytics) — each gated inside ContentTab.jsx.
 export const MARKETING_TABS = [
   { value: "overview", label: "نظرة عامة", section: "analytics" },
   { value: "campaigns", label: "الحملات", section: "analytics" },
   { value: "seo", label: "SEO", section: "seo_crawl" },
-  { value: "content", label: "إدارة المحتوى", section: ["analytics", "blogs"] },
+  {
+    value: "content",
+    label: "إدارة المحتوى",
+    section: ["analytics", "blogs", "app_content", "website_images", "faqs"],
+  },
   { value: "reports", label: "التقارير", section: "analytics" },
   { value: "pixels", label: "الربط والبكسلات", section: "analytics" },
 ];
 
 export const DATE_RANGE_LABEL = "آخر 30 يومًا · حتى 24/07";
-export const SCOPE_BREADCRUMB = "ROI · الحملات · SEO · المدونة · التقارير · البكسلات";
+export const SCOPE_BREADCRUMB =
+  "ROI · الحملات · SEO · المحتوى · التقارير · البكسلات";
 
 /* ---------------- Overview ---------------- */
 

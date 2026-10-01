@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Clock, Loader2 } from "lucide-react";
@@ -36,7 +36,9 @@ export default function RefundContractReviewDialog({
   const [notes, setNotes] = useState("");
   const [refundAmount, setRefundAmount] = useState("");
 
-  useEffect(() => {
+  const [prevOpen, setPrevOpen] = useState(false);
+  if (open !== prevOpen) {
+    setPrevOpen(open);
     if (open) {
       setNotes(refund?.notes?.trim() || "تم التحويل");
       setRefundAmount(
@@ -45,7 +47,7 @@ export default function RefundContractReviewDialog({
           : ""
       );
     }
-  }, [open, refund]);
+  }
 
   const isHousing =
     refund?.contractTypeKey === "housing" ||

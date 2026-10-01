@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -34,11 +34,13 @@ export default function EditPaymentMessageDialog({
   const meta = PAYMENT_MESSAGE_TYPE_META[type];
   const isEdit = Boolean(item?.id);
 
-  useEffect(() => {
+  const [prevOpen, setPrevOpen] = useState(false);
+  if (open !== prevOpen) {
+    setPrevOpen(open);
     if (open) {
       setForm(item ? mapPaymentMessageToForm(item) : emptyPaymentMessageForm);
     }
-  }, [open, item]);
+  }
 
   const { mutate, isPending } = useMutation({
     mutationFn: () => {

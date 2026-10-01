@@ -16,11 +16,11 @@ import {
 import SettingsFormDialog, {
   SettingsFieldLabel,
   settingsFieldClass,
-} from "@/components/SystemSettings/SettingsFormDialog";
-import { SETTINGS_EDIT_TRIGGER_CLASS } from "@/components/SystemSettings/shared";
+} from "@/components/system-settings/settings-form-dialog";
+import { SETTINGS_EDIT_TRIGGER_CLASS } from "@/components/system-settings/shared";
 import { axiosInstance } from "@/src/utils/axios";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 export default function EditPaperworkDialog({ paperwork }) {
@@ -42,16 +42,19 @@ export default function EditPaperworkDialog({ paperwork }) {
     staleTime: 0,
   });
 
-  useEffect(() => {
-    if (!open) return;
-
-    const source = paperworkDetails ?? paperwork;
-    setNameAr(source?.name_ar || "");
-    setNameEn(source?.name_en || "");
-    setContractType(source?.contract_type || "housing");
-    setIconUrl(source?.icon_url || null);
-    setIconFile(null);
-  }, [open, paperwork, paperworkDetails]);
+  // Re-seed on open, and again when the fresh details request lands.
+  const formSource = open ? (paperworkDetails ?? paperwork) : null;
+  const [syncedSource, setSyncedSource] = useState(null);
+  if (formSource !== syncedSource) {
+    setSyncedSource(formSource);
+    if (formSource) {
+      setNameAr(formSource.name_ar || "");
+      setNameEn(formSource.name_en || "");
+      setContractType(formSource.contract_type || "housing");
+      setIconUrl(formSource.icon_url || null);
+      setIconFile(null);
+    }
+  }
 
   const invalidatePaperworks = () => {
     queryClient.invalidateQueries({ queryKey: ["paperworks"] });

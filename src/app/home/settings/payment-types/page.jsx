@@ -5,7 +5,7 @@ import {
 } from "@/src/hooks/use-unwrap-page-props";
 import AddPaymentTypeDialog from "@/components/analysis/settings/payment-types/add-payment-type-dialog";
 import EditPaymentTypeDialog from "@/components/analysis/settings/payment-types/edit-payment-type-dialog";
-import PermissionGate from "@/components/auth/PermissionGate";
+import PermissionGate from "@/components/auth/permission-gate";
 import { PERMISSION_SECTIONS } from "@/src/lib/permissions";
 import {
   SettingsEmptyRow,
@@ -15,12 +15,12 @@ import {
   SettingsTableRow,
   SettingsTd,
   SettingsPageShell,
-} from "@/components/SystemSettings/shared";
+} from "@/components/system-settings/shared";
 import {
   contractTypeLabel,
   extractAlertList,
   fetchBothContractTypes,
-} from "@/components/SystemSettings/settings-list/fetch-contract-type-lists";
+} from "@/components/system-settings/settings-list/fetch-contract-type-lists";
 import { useQuery } from "@tanstack/react-query";
 
 const HEADERS = [

@@ -1,6 +1,6 @@
-export { default as ControllableDataTable } from "./ControllableDataTable";
-export { default as TableSettingsPopover } from "./TableSettingsPopover";
-export { useTablePreferences } from "./useTablePreferences";
+export { default as ControllableDataTable } from "./controllable-data-table";
+export { default as TableSettingsPopover } from "./table-settings-popover";
+export { useTablePreferences } from "./use-table-preferences";
 export {
   TABLE_DENSITIES,
   DEFAULT_TABLE_DENSITY,

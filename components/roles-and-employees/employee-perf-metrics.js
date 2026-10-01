@@ -37,10 +37,19 @@ export function computeEmployeePerfMetrics(item, maxCompleted) {
   const maxDone = Math.max(1, maxCompleted ?? 0);
   const volPct = Math.round((completed / maxDone) * 100);
 
+  // No work in period: don't treat empty SLAs as 100% (that produced a fake 80 score).
+  const hasNoActivity = received === 0 && completed === 0 && openNow === 0;
+  if (hasNoActivity) {
+    pickPct = 0;
+    procPct = 0;
+  }
+
   const score =
     item.score ??
     item.performance_score ??
-    Math.round(pickPct * 0.4 + procPct * 0.4 + volPct * 0.2);
+    (hasNoActivity
+      ? 0
+      : Math.round(pickPct * 0.4 + procPct * 0.4 + volPct * 0.2));
 
   const avgPick = item.avg_receive?.value;
   const pickLabel =

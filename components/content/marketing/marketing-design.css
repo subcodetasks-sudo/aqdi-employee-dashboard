@@ -353,6 +353,16 @@
   color: #c0392b;
 }
 
+.mkt-page .roas-muted {
+  background: #f0f2f1;
+  color: #6b7c76;
+}
+
+.dark .mkt-page .roas-muted {
+  background: rgba(255, 255, 255, 0.08);
+  color: #9fb4ac;
+}
+
 .mkt-page .mk-pos {
   color: #0b7a4c;
   font-weight: 800;

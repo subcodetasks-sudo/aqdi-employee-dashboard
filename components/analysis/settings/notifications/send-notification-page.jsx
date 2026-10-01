@@ -15,11 +15,11 @@ import {
   SettingsContentCard,
   SettingsListHeader,
   SettingsPageShell,
-} from "@/components/SystemSettings/shared";
+} from "@/components/system-settings/shared";
 import {
   SettingsFieldLabel,
   settingsFieldClass,
-} from "@/components/SystemSettings/SettingsFormDialog";
+} from "@/components/system-settings/settings-form-dialog";
 import { Loader2, Send } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -28,7 +28,7 @@ import {
 } from "@/src/hooks/use-send-notification";
 import RecipientPicker from "./recipient-picker";
 import { cn } from "@/lib/utils";
-import PermissionGate from "@/components/auth/PermissionGate";
+import PermissionGate from "@/components/auth/permission-gate";
 import { PERMISSION_SECTIONS } from "@/src/lib/permissions";
 
 const PAGE_TITLE = "الإشعارات";

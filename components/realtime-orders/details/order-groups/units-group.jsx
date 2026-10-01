@@ -1,0 +1,96 @@
+"use client";
+
+import { Building2, Home } from "lucide-react";
+import { RT } from "../../theme";
+import { AccentCard, EditBtn, GridField, GroupTitle } from "./primitives";
+
+const UNIT_FIELDS = [
+  { key: "number", label: "رقم الوحدة" },
+  { key: "type", label: "النوع" },
+  { key: "use", label: "الاستخدام" },
+  { key: "floor", label: "الدور" },
+  { key: "area", label: "المساحة" },
+  { key: "rooms", label: "الغرف" },
+  { key: "halls", label: "الصالات" },
+  { key: "councils", label: "المجالس" },
+  { key: "bathrooms", label: "دورات المياه" },
+  { key: "kitchens", label: "المطابخ" },
+  { key: "ac", label: "المكيفات" },
+  { key: "air_conditioners", label: "عدد المكيفات" },
+  { key: "furnished", label: "مؤثثة" },
+  { key: "kitchen_tank", label: "خزان المطبخ" },
+  { key: "kitchen_cabinets", label: "خزائن المطبخ" },
+  { key: "electricity_meter", label: "عداد الكهرباء" },
+  { key: "electricity_meter_number", label: "رقم عداد الكهرباء" },
+  { key: "water_meter", label: "عداد المياه" },
+  { key: "water_meter_number", label: "رقم عداد المياه" },
+  { key: "gas_meter", label: "عداد الغاز" },
+  { key: "parking_spaces", label: "مواقف السيارات" },
+];
+
+function UnitCard({ unit, onEdit }) {
+  return (
+    <div
+      className="relative rounded-xl border-2 p-3 bg-white dark:bg-[#0F1C16]"
+      style={{ borderColor: RT.brand }}
+    >
+      <div className="flex items-center justify-between gap-2 mb-3">
+        <div className="flex items-center gap-2 min-w-0">
+          <Home className="size-4 text-brand-dark dark:text-[#6EE7B7] shrink-0" />
+          <h5 className="text-13 font-black text-brand-dark dark:text-white">
+            {unit.title}
+          </h5>
+          {unit.badge ? (
+            <span className="px-2 py-0.5 rounded-full bg-[#E0E7FF] text-[#3730A3] text-[10.5px] font-bold">
+              {unit.badge}
+            </span>
+          ) : null}
+        </div>
+        <EditBtn onClick={onEdit} />
+      </div>
+
+      <div className="grid grid-cols-3 gap-x-3 gap-y-2.5">
+        {UNIT_FIELDS.map(({ key, label }) => (
+          <GridField key={key} label={label} value={unit[key]} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export default function UnitsGroup({ order, onEdit }) {
+  const units = order.units ?? [];
+  const unitCount = order.units_count ?? units.length;
+
+  return (
+    <section className="rounded-2xl border border-dashed border-[#E8DFD0] dark:border-white/10 bg-[#FBF8F3] dark:bg-white/[0.02] p-3 sm:p-3.5 space-y-3">
+      <GroupTitle
+        end={
+          <span className="text-11 font-bold px-2.5 py-1 rounded-full bg-[#FEF3C7] text-[#B45309] whitespace-nowrap">
+            عدد الوحدات المضافة من العميل: {unitCount}
+          </span>
+        }
+      >
+        المجموعة 3 - الوحدات
+      </GroupTitle>
+
+      <AccentCard
+        accent="#C4A574"
+        icon={Building2}
+        title="الوحدات"
+      >
+        <div className="space-y-3">
+          {units.length === 0 ? (
+            <p className="text-xs text-gray-400 font-medium py-4 text-center">
+              لا توجد وحدات مرتبطة بهذا الطلب
+            </p>
+          ) : (
+            units.map((unit) => (
+              <UnitCard key={unit.id} unit={unit} onEdit={() => onEdit?.("units")} />
+            ))
+          )}
+        </div>
+      </AccentCard>
+    </section>
+  );
+}

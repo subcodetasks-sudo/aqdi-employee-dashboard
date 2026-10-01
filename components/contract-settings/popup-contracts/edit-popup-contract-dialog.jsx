@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -33,38 +33,46 @@ function mapItemToForm(item) {
   };
 }
 
-export default function EditPopupContractDialog({ item, usedInstrumentTypes = [] }) {
+const NO_USED_INSTRUMENT_TYPES = [];
+
+export default function EditPopupContractDialog({
+  item,
+  usedInstrumentTypes = NO_USED_INSTRUMENT_TYPES,
+}) {
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState(mapItemToForm(item));
+  const [form, setForm] = useState(() => mapItemToForm(item));
   const [contentEditorKey, setContentEditorKey] = useState(0);
+  const [prevOpen, setPrevOpen] = useState(false);
   const queryClient = useQueryClient();
+  const itemInstrumentType = item?.instrument_type;
 
   const instrumentOptions = useMemo(() => {
     const availableOptions = getAvailablePopupInstrumentTypeOptions({
       usedTypes: usedInstrumentTypes,
-      includeType: item?.instrument_type,
+      includeType: itemInstrumentType,
     });
 
     if (availableOptions.length > 0) {
       return availableOptions;
     }
 
-    if (!item?.instrument_type) return [];
+    if (!itemInstrumentType) return [];
 
     return [
       {
-        value: item.instrument_type,
-        label: getPopupInstrumentTypeLabel(item.instrument_type),
+        value: itemInstrumentType,
+        label: getPopupInstrumentTypeLabel(itemInstrumentType),
       },
     ];
-  }, [item?.instrument_type, usedInstrumentTypes]);
+  }, [itemInstrumentType, usedInstrumentTypes]);
 
-  useEffect(() => {
+  if (open !== prevOpen) {
+    setPrevOpen(open);
     if (open) {
       setForm(mapItemToForm(item));
       setContentEditorKey((current) => current + 1);
     }
-  }, [open, item]);
+  }
 
   const { mutate, isPending } = useMutation({
     mutationFn: () =>

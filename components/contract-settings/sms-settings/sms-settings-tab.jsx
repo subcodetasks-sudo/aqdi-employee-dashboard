@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Loader from "@/components/home/loader";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -28,11 +28,12 @@ export default function SmsSettingsTab() {
     queryFn: () => axiosInstance.get(SMS_SETTINGS_API).then((res) => res?.data),
   });
 
-  useEffect(() => {
-    if (!data) return;
+  const [syncedData, setSyncedData] = useState(null);
+  if (data && data !== syncedData) {
+    setSyncedData(data);
     setForm(extractSmsSettings(data));
     setFieldErrors({});
-  }, [data]);
+  }
 
   const { mutate, isPending } = useMutation({
     mutationFn: () =>

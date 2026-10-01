@@ -1,6 +1,8 @@
-import { Image } from 'lucide-react';
+"use client";
+
 import React from 'react'
-import ryal from '@/public/images/greenRial.svg';
+import { StickyNote } from 'lucide-react';
+import { TablePagination, useClientPagination } from '@/components/roles-and-employees/shared';
 
 export default function NotesTable({ notes }) {
   /*-------------------------------------------------------------------------------------*/
@@ -9,6 +11,10 @@ export default function NotesTable({ notes }) {
     "تاريخ الإضافة",
     "الملاحظة",
   ];
+
+  const rows = Array.isArray(notes) ? notes : [];
+  const { pageItems, currentPage, setCurrentPage, pagination, total } =
+    useClientPagination(rows, 8);
 
   const formatDate = (dateString) => {
     if (!dateString) return "---";
@@ -26,8 +32,15 @@ export default function NotesTable({ notes }) {
 
   return (
     <div className='mt-4'>
-      <h2 className="text-lg font-bold">ملاحظات :</h2>
-      < div className="w-full overflow-x-auto bg-white rounded-3xl border border-neutral-200 mt-4 shadow-sm" >
+      <div className="flex items-center gap-2">
+        <h2 className="text-lg font-bold text-brand-main">ملاحظات</h2>
+        {total > 0 && (
+          <span className="rounded-full bg-brand-main/10 px-2 py-0.5 text-11 font-bold text-brand-main">
+            {total}
+          </span>
+        )}
+      </div>
+      <div className="w-full overflow-x-auto bg-white rounded-3xl border border-neutral-200 mt-4 shadow-sm">
         <table className="w-full border-collapse">
           <thead className="bg-neutral-50">
             <tr>
@@ -38,28 +51,37 @@ export default function NotesTable({ notes }) {
               ))}
             </tr>
           </thead>
-          <tbody className='max-h-[50vh]! overflow-y-auto no-scrollbar'>
-            {notes && notes.length > 0 ? (
-              notes.map((note) => (
+          <tbody>
+            {pageItems.length > 0 ? (
+              pageItems.map((note) => (
                 <tr key={note.id} className="border-b border-neutral-100 last:border-0 hover:bg-neutral-50 transition-all">
-                  <td className="p-[15px_20px] whitespace-nowrap">
+                  <td className="p-[15px_20px] whitespace-nowrap align-top">
                     <span className='text-black text-sm'>{formatDate(note.addition_date)}</span>
                   </td>
                   <td className="p-[15px_20px]">
-                    <span className='text-black text-xs'>{note.note}</span>
+                    <span className='text-black text-xs leading-relaxed'>{note.note}</span>
                   </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan={tableHeaders.length} className="text-center p-8 text-ink-placeholder text-sm">
-                  لا يوجد ملاحظات للموظف حالياً.
+                <td colSpan={tableHeaders.length} className="p-10 text-center">
+                  <div className="flex flex-col items-center gap-2 text-ink-placeholder">
+                    <StickyNote className="size-7 opacity-40" />
+                    <span className="text-sm">لا يوجد ملاحظات للموظف حاليًا.</span>
+                  </div>
                 </td>
               </tr>
             )}
           </tbody>
         </table>
-      </div >
-    </div >
+      </div>
+
+      <TablePagination
+        pagination={pagination}
+        currentPage={currentPage}
+        setCurrentPage={setCurrentPage}
+      />
+    </div>
   )
 }

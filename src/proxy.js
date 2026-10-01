@@ -7,7 +7,8 @@ import {
 } from '@/src/lib/server-auth';
 
 export function proxy(request) {
-  const token = request.cookies.get('token')?.value;
+  const token =
+    request.cookies.get('access_token')?.value || request.cookies.get('token')?.value;
   const { pathname } = request.nextUrl;
 
   if (pathname.startsWith('/login')) {

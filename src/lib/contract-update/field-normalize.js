@@ -8,9 +8,11 @@ export const BOOLEAN_FIELD_KEYS = new Set([
   "kitchen_tank",
   "electricity_meter",
   "water_meter",
+  "Gasmeter",
   "conditions",
   "tenant_roles",
   "additional_terms",
+  "premium_membership_for_free",
 ]);
 
 export const REQUIRED_BOOLEAN_DEFAULTS = {
@@ -19,6 +21,7 @@ export const REQUIRED_BOOLEAN_DEFAULTS = {
 
 export const FILE_FIELD_KEYS = new Set([
   "copy_of_the_authorization_or_agency",
+  "copy_of_the_owner_record",
   "image_instrument",
   "image_instrument_from_the_front",
   "image_instrument_from_the_back",

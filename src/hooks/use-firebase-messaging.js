@@ -5,10 +5,10 @@ import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { onMessage } from "firebase/messaging";
 import { useUserStore } from "@/src/stores/user-store";
+import { axiosInstance, AUTH_ENDPOINTS } from "@/src/utils/axios";
 import { useSidebarStore } from "@/src/stores/sidebar-store";
 import { isFirebaseConfigured } from "@/src/lib/firebase/config";
 import {
-  clearStoredFcmToken,
   getFirebaseMessaging,
   requestFcmToken,
 } from "@/src/lib/firebase/messaging";
@@ -19,7 +19,7 @@ const FCM_CHANNEL_NAME = "aqdi-fcm";
 export function useFirebaseMessaging() {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const token = useUserStore((state) => state.token);
+  const isAuthenticated = useUserStore((state) => state.isAuthenticated);
   const hasHydrated = useUserStore((state) => state._hasHydrated);
   const unsubscribeRef = useRef(() => {});
 
@@ -37,7 +37,7 @@ export function useFirebaseMessaging() {
   );
 
   useEffect(() => {
-    if (!hasHydrated || !token || !isFirebaseConfigured()) return;
+    if (!hasHydrated || !isAuthenticated || !isFirebaseConfigured()) return;
 
     let cancelled = false;
     let broadcastChannel = null;
@@ -51,6 +51,12 @@ export function useFirebaseMessaging() {
           console.warn("[firebase] Notification permission denied or token unavailable");
           return;
         }
+
+        void axiosInstance
+          .post(AUTH_ENDPOINTS.fcm, { fcm_token: fcmToken })
+          .catch((error) => {
+            console.warn("[firebase] Failed to register FCM token:", error);
+          });
 
         const messaging = await getFirebaseMessaging();
         if (!messaging || cancelled) return;
@@ -103,13 +109,12 @@ export function useFirebaseMessaging() {
 
       broadcastChannel?.close();
     };
-  }, [hasHydrated, token, handlePayload, router]);
+  }, [hasHydrated, isAuthenticated, handlePayload, router]);
 
   useEffect(() => {
-    if (hasHydrated && !token) {
+    if (hasHydrated && !isAuthenticated) {
       unsubscribeRef.current();
       unsubscribeRef.current = () => {};
-      clearStoredFcmToken();
     }
-  }, [hasHydrated, token]);
+  }, [hasHydrated, isAuthenticated]);
 }

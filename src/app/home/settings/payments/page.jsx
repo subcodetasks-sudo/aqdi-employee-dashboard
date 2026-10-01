@@ -3,7 +3,7 @@
 import {
   useUnwrapPageProps
 } from "@/src/hooks/use-unwrap-page-props";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   SettingsEmptyRow,
   SettingsLoadingRows,
@@ -13,7 +13,7 @@ import {
   SettingsTableRow,
   SettingsTd,
   SettingsPageShell,
-} from "@/components/SystemSettings/shared";
+} from "@/components/system-settings/shared";
 import { axiosInstance } from "@/src/utils/axios";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
@@ -79,9 +79,11 @@ export default function PaymentsPage(props) {
   const [periodFilter, setPeriodFilter] = useState("month");
   const [statusFilter, setStatusFilter] = useState("");
 
-  useEffect(() => {
+  const [pagePeriodFilter, setPagePeriodFilter] = useState(periodFilter);
+  if (pagePeriodFilter !== periodFilter) {
+    setPagePeriodFilter(periodFilter);
     setCurrentPage(1);
-  }, [periodFilter]);
+  }
 
   const { data: responseData, isLoading, isError } = useQuery({
     queryKey: ["payments", currentPage, periodFilter],

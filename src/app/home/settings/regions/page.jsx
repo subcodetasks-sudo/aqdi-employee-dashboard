@@ -4,7 +4,7 @@ import { useUnwrapPageProps } from "@/src/hooks/use-unwrap-page-props";
 import AddNewRegionDialog from "@/components/analysis/settings/regions/add-new-region-dialog";
 import DeleteRegionDialog from "@/components/analysis/settings/regions/delete-region-dialog";
 import EditRegionDialog from "@/components/analysis/settings/regions/edit-region-dialog";
-import PermissionGate from "@/components/auth/PermissionGate";
+import PermissionGate from "@/components/auth/permission-gate";
 import { PERMISSION_SECTIONS } from "@/src/lib/permissions";
 import {
   SettingsActions,
@@ -15,7 +15,7 @@ import {
   SettingsTable,
   SettingsTableRow,
   SettingsTd,
-} from "@/components/SystemSettings/shared";
+} from "@/components/system-settings/shared";
 import { axiosInstance } from "@/src/utils/axios";
 import { useQuery } from "@tanstack/react-query";
 

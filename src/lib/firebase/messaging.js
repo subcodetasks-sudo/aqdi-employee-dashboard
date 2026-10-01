@@ -1,7 +1,7 @@
 "use client";
 
 import { initializeApp, getApps } from "firebase/app";
-import { getMessaging, getToken, isSupported } from "firebase/messaging";
+import { deleteToken, getMessaging, getToken, isSupported } from "firebase/messaging";
 import { getFirebaseConfig, isFirebaseConfigured } from "./config";
 
 const SW_PATH = "/firebase-messaging-sw.js";
@@ -35,6 +35,38 @@ export function clearStoredFcmToken() {
 export function resetFirebaseMessagingState() {
   messagingInstance = null;
   serviceWorkerRegistration = null;
+}
+
+/**
+ * Stops push delivery for this browser: deletes the FCM registration with
+ * Firebase, then clears the locally cached token. Best-effort — never throws.
+ */
+export async function disconnectFcmToken() {
+  if (typeof window === "undefined") return;
+
+  const hadLocalToken = !!getStoredFcmToken();
+  const hadMessaging = !!messagingInstance;
+
+  // Already disconnected — avoid re-registering the service worker just to
+  // discover there is nothing left to delete.
+  if (!hadLocalToken && !hadMessaging) {
+    return;
+  }
+
+  try {
+    if (isFirebaseConfigured() && (await isSupported())) {
+      const messaging =
+        messagingInstance || (await getFirebaseMessaging().catch(() => null));
+      if (messaging) {
+        await deleteToken(messaging);
+      }
+    }
+  } catch (error) {
+    console.warn("[firebase] Failed to delete FCM token:", error);
+  } finally {
+    clearStoredFcmToken();
+    resetFirebaseMessagingState();
+  }
 }
 
 async function ensureFirebaseProjectSync() {
@@ -94,7 +126,7 @@ export async function getFirebaseMessaging() {
   return messagingInstance;
 }
 
-export async function requestFcmToken() {
+export async function requestFcmToken({ prompt = true } = {}) {
   if (typeof window === "undefined") return null;
   if (!isFirebaseConfigured()) return null;
   if (!(await isSupported())) return null;
@@ -102,6 +134,7 @@ export async function requestFcmToken() {
   await ensureFirebaseProjectSync();
 
   if (Notification.permission === "default") {
+    if (!prompt) return null;
     const permission = await Notification.requestPermission();
     if (permission !== "granted") return null;
   } else if (Notification.permission !== "granted") {

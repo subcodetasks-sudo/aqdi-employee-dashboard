@@ -2,15 +2,23 @@
 
 import { useUnwrapPageProps } from "@/src/hooks/use-unwrap-page-props";
 import { useMemo, useState } from "react";
-import Header from "@/components/home/Header";
+import Header from "@/components/home/header";
 import PopupContractsTab from "@/components/contract-settings/popup-contracts/popup-contracts-tab";
 import PaymentMessagesTab from "@/components/contract-settings/payment-messages/payment-messages-tab";
 import InstrumentTypesTab from "@/components/contract-settings/instrument-types/instrument-types-tab";
 import SmsSettingsTab from "@/components/contract-settings/sms-settings/sms-settings-tab";
 import MeterFeeSettingsTab from "@/components/contract-settings/meter-fees/meter-fee-settings-tab";
+import TaxApplicationFeeSettingsTab from "@/components/contract-settings/tax-fees/tax-application-fee-settings-tab";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FileText, Gauge, MessageSquareText, ScrollText, Settings2 } from "lucide-react";
-import { usePermissions } from "@/src/hooks/usePermissions";
+import {
+  FileText,
+  Gauge,
+  MessageSquareText,
+  Percent,
+  ScrollText,
+  Settings2,
+} from "lucide-react";
+import { usePermissions } from "@/src/hooks/use-permissions";
 import { PERMISSION_SECTIONS } from "@/src/lib/permissions";
 
 const CONTRACT_SETTINGS_TABS = [
@@ -40,6 +48,12 @@ const CONTRACT_SETTINGS_TABS = [
     section: null,
   },
   {
+    value: "tax-fees",
+    label: "الضريبة ورسوم التطبيق",
+    icon: Percent,
+    section: PERMISSION_SECTIONS.settings,
+  },
+  {
     value: "payment-messages",
     label: "إعدادات رسايل الدفع",
     icon: Settings2,
@@ -54,7 +68,7 @@ export default function ContractSettingsPage(props) {
   const visibleTabs = useMemo(
     () =>
       CONTRACT_SETTINGS_TABS.filter(
-        (tab) => !isReady || can(tab.section ?? PERMISSION_SECTIONS.settings, "view")
+        (tab) => isReady && can(tab.section ?? PERMISSION_SECTIONS.settings, "view")
       ),
     [can, isReady]
   );
@@ -108,6 +122,10 @@ export default function ContractSettingsPage(props) {
 
         <TabsContent value="meter-fees" className="mt-0">
           <MeterFeeSettingsTab />
+        </TabsContent>
+
+        <TabsContent value="tax-fees" className="mt-0">
+          <TaxApplicationFeeSettingsTab />
         </TabsContent>
 
         <TabsContent value="payment-messages" className="mt-0">

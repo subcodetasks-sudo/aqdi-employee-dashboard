@@ -9,7 +9,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { SETTINGS_VIEW_TRIGGER_CLASS } from "@/components/SystemSettings/shared";
+import { SETTINGS_VIEW_TRIGGER_CLASS } from "@/components/system-settings/shared";
 import { MessageSquareText, X } from "lucide-react";
 
 export default function DisplayMessageForEmployeeDialog({ messageAlert }) {

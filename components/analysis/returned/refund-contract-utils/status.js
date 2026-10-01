@@ -1,4 +1,4 @@
-import { extractRefundContractId } from "./ids";
+import { extractRefundContractId, getOrderAdminApprovalStatus } from "./ids";
 
 /** Contract status id for "استرجاع" — required before submitting a refund request. */
 export const RETURN_CONTRACT_STATUS_ID = 2;
@@ -31,10 +31,52 @@ export function isAdminRefundApproved(value) {
   return value === true || value === 1;
 }
 
+function isCustomerRefundedFlag(row) {
+  const value = row?.customer_refunded ?? row?.is_refunded ?? row?.refunded;
+  return value === true || value === 1;
+}
+
+/**
+ * Bucket a return-order / refund-contract row into toolbar KPI keys.
+ * Matches backend statuses: pending | approved | rejected.
+ * "refunded" / customer-refunded count as approved (تم الاسترجاع = تمت الموافقة).
+ */
+export function getReturnOrderApprovalKpiKey(row) {
+  if (!row) return "pending";
+
+  if (isCustomerRefundedFlag(row)) return "approved";
+
+  const requestStatus = getReturnRequestStatus(row);
+  if (requestStatus === "rejected") return "rejected";
+  if (requestStatus === "approved" || requestStatus === "refunded") return "approved";
+  if (requestStatus === "pending") return "pending";
+
+  const status = getOrderAdminApprovalStatus(row);
+  if (isAdminRefundApproved(status)) return "approved";
+  if (status === false || status === 0) return "rejected";
+  return "pending";
+}
+
+/** Count return-order rows into toolbar KPI buckets. */
+export function countReturnOrdersByApproval(rows = []) {
+  let pending = 0;
+  let approved = 0;
+  let rejected = 0;
+
+  rows.forEach((row) => {
+    const key = getReturnOrderApprovalKpiKey(row);
+    if (key === "approved") approved += 1;
+    else if (key === "rejected") rejected += 1;
+    else pending += 1;
+  });
+
+  return { pending, approved, rejected };
+}
+
 /**
  * Defensive read of `data.summary.management_approval` into KPI counts.
- * Key names vary across API revisions, so several aliases are tried.
- * NOTE: verify the resolved tiles against the live API response.
+ * Backend statuses are pending / approved / rejected; older refunded/processing
+ * aliases fold into approved.
  */
 export function parseManagementApprovalCounts(summary) {
   const source =
@@ -57,17 +99,13 @@ export function parseManagementApprovalCounts(summary) {
   const pending = pick("pending", "waiting", "unconfirmed", "in_review", "under_review", "null");
   const approved = pick("approved", "confirmed", "accepted", "approved_count");
   const rejected = pick("rejected", "not_approved", "declined", "refused", "denied");
+  // Legacy splits still fold into approved (تم الاسترجاع = تمت الموافقة).
   const refunded = pick("refunded", "is_refunded", "customer_refunded", "completed", "done");
   const processing = pick("processing", "in_progress", "pending_refund", "awaiting_refund");
 
-  const hasRefundSplit = refunded > 0 || processing > 0;
-
   return {
     pending,
-    processing: hasRefundSplit
-      ? processing || Math.max(approved - refunded, 0)
-      : 0,
-    completed: hasRefundSplit ? refunded : approved,
+    approved: approved + refunded + processing,
     rejected,
   };
 }
@@ -102,41 +140,139 @@ export function isReturnContractOrder(order) {
   return isReturnContractStatus({ name: statusName });
 }
 
+/** `refund_amount` is `0` / `"0.00"` / `null` on orders with no return request. */
+function hasPositiveRefundAmount(value) {
+  if (value == null || value === "") return false;
+  const amount = Number(value);
+  return Number.isFinite(amount) && amount > 0;
+}
+
+/** A refund record only counts when it carries a real id or amount — not `{}` / `0`. */
+function isMeaningfulRefundRecord(record) {
+  if (record == null) return false;
+  if (typeof record === "number" || typeof record === "string") {
+    const key = String(record).trim();
+    return key !== "" && key !== "0";
+  }
+  if (typeof record !== "object") return false;
+  if (record.id != null && record.id !== "" && String(record.id) !== "0") return true;
+  return hasPositiveRefundAmount(record.refund_amount ?? record.amount);
+}
+
+/**
+ * Authoritative "a return request exists for this order" — from the explicit
+ * backend flag only (top-level or mirrored in `contract_summary`). Never derived.
+ */
+export function hasReturnRequest(order) {
+  return (
+    order?.has_return_request === true ||
+    order?.contract_summary?.has_return_request === true
+  );
+}
+
+/** `pending` | `approved` | `rejected` | `refunded` | null. */
+export function getReturnRequestStatus(order) {
+  return (
+    order?.return_request_status ??
+    order?.contract_summary?.return_request_status ??
+    null
+  );
+}
+
+const RETURN_REQUEST_EXISTS_MESSAGE = {
+  pending: "يوجد طلب استرجاع قيد المراجعة لهذا الطلب",
+  approved: "تمت الموافقة على طلب استرجاع لهذا الطلب",
+  rejected: "يوجد طلب استرجاع مرفوض لهذا الطلب",
+  refunded: "تم استرجاع مبلغ هذا الطلب بالفعل",
+};
+
+/** Toast text for "can't start a return — one already exists", keyed to its status. */
+export function getReturnRequestExistsMessage(order) {
+  return (
+    RETURN_REQUEST_EXISTS_MESSAGE[getReturnRequestStatus(order)] ||
+    "يوجد طلب استرجاع مسبقاً لهذا الطلب"
+  );
+}
+
+/** Refundable-contract record id for approve/reject actions, or null. */
+export function getRefundContractId(order) {
+  return (
+    order?.refund_contract_id ??
+    order?.contract_summary?.refund_contract_id ??
+    null
+  );
+}
+
 export function hasExistingReturnRequest(order) {
   if (!order) return false;
+  // Explicit backend flag wins whenever the row carries it.
+  if (order.has_return_request != null || order.contract_summary?.has_return_request != null) {
+    return hasReturnRequest(order);
+  }
   if (isReturnContractOrder(order)) return true;
   if (order.is_return_order === true) return true;
-  if (extractRefundContractId(order)) return true;
-  if (order.refund_amount != null && order.refund_amount !== "") return true;
+
+  const refundContractId = extractRefundContractId(order);
+  if (refundContractId != null && refundContractId !== "" && String(refundContractId) !== "0") {
+    return true;
+  }
+
+  if (hasPositiveRefundAmount(order.refund_amount)) return true;
 
   const nested =
     order.refundable_contract ??
     order.refund ??
     (Array.isArray(order.refundable_contracts) ? order.refundable_contracts[0] : null);
-  if (nested) return true;
+  if (isMeaningfulRefundRecord(nested)) return true;
 
   return false;
 }
 
-/** Whether the row can still open "طلب إسترجاع" (approval stays on return-orders page). */
-export function canRequestOrderReturn(order) {
+/** True when the order/contract is explicitly marked paid. */
+export function isOrderPaid(order) {
   if (!order) return false;
-  if (hasExistingReturnRequest(order)) return false;
+  const summary = order.contract_summary ?? {};
+  const value =
+    order.is_paid ??
+    summary.is_paid ??
+    order.payment_status ??
+    summary.payment_status;
+  return value === true || value === 1 || value === "1" || value === "paid";
+}
 
-  const customerRefunded = order.customer_refunded ?? order.is_refunded ?? order.refunded;
+/** True when the contract itself is finished, separate from payment. */
+export function isOrderCompleted(order) {
+  if (!order) return false;
+  const summary = order.contract_summary ?? {};
+  const flag =
+    order.is_completed ??
+    summary.is_completed ??
+    order.completed ??
+    summary.completed;
+  if (flag === true || flag === 1 || flag === "1" || flag === "completed") return true;
 
-  // Only block when the customer was actually refunded (true/1).
-  // `false` / `0` must still allow opening the return request dialog.
-  if (
-    customerRefunded === true ||
-    customerRefunded === 1 ||
-    customerRefunded === "1" ||
-    customerRefunded === "true"
-  ) {
-    return false;
-  }
+  const name = String(
+    order.status_name ??
+      order.contract_status_name ??
+      summary.contract_status_name ??
+      order.status?.name ??
+      order.status_label ??
+      ""
+  ).trim();
+  return name.includes("مكتمل") || name.includes("منجز");
+}
 
-  return true;
+/** Refund and Ejar actions are only for a paid or completed contract. */
+export function canOfferClosureActions(...orders) {
+  return orders.some((order) => order && (isOrderPaid(order) || isOrderCompleted(order)));
+}
+
+export const UNPAID_ORDER_RETURN_MESSAGE =
+  "لا يمكن رفع طلب استرجاع لطلب غير مدفوع";
+
+/** Whether "رفع طلب استرجاع" can still be opened — paid + no request yet. */
+export function canRequestOrderReturn(order) {
+  return !!order && isOrderPaid(order) && !hasReturnRequest(order);
 }
 
 export function isCustomerRefundPending(order) {

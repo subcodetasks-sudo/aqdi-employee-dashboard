@@ -3,15 +3,64 @@
 export const CONTENT_PAGE_ENDPOINTS = {
   home: "/admin/content-pages/home",
   about: "/admin/content-pages/about",
+  /** Public blogs index (قائمة كل المقالات) — page-level SEO only. */
+  blogs: "/admin/content-pages/blogs",
+  /** Public services index (قائمة صفحات الخدمات) — page-level SEO only. */
+  services: "/admin/content-pages/services",
+  /** Public FAQs index (قائمة الأسئلة الشائعة) — page-level SEO only. */
+  faqs: "/admin/content-pages/faqs",
 };
+
+/** Page-level SEO fields shared by home / about content pages (Arabic-only site). */
+export const CONTENT_PAGE_META_FIELDS = ["meta_title", "meta_description"];
+
+/** Client-side id for a freshly added card/feature. Merge on the server is by `id`. */
+export function newLocalId() {
+  return `new-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
 
 export function extractContentSections(responseData) {
   const payload = responseData?.data ?? responseData;
   return payload?.sections ?? payload ?? {};
 }
 
+/**
+ * Page-level SEO meta from a content-pages GET payload.
+ * Accepts top-level fields, or a nested `meta` / `seo` object.
+ * Also accepts legacy `meta_title_ar` / `meta_description_ar` if the API still sends them.
+ */
+export function extractPageMeta(responseData) {
+  const payload = responseData?.data ?? responseData ?? {};
+  const meta =
+    payload.meta && typeof payload.meta === "object"
+      ? payload.meta
+      : payload.seo && typeof payload.seo === "object"
+        ? payload.seo
+        : payload;
+
+  return {
+    meta_title: getStringValue(
+      meta.meta_title ?? meta.meta_title_ar
+    ),
+    meta_description: getStringValue(
+      meta.meta_description ?? meta.meta_description_ar
+    ),
+  };
+}
+
+/** Multipart body for saving page-level SEO (top-level keys, not a section prefix). */
+export function buildPageMetaFormData(fields = {}) {
+  const formData = new FormData();
+  CONTENT_PAGE_META_FIELDS.forEach((key) => {
+    formData.append(key, String(fields[key] ?? "").trim());
+  });
+  return formData;
+}
+
 export function getStringValue(value, fallback = "") {
-  return typeof value === "string" ? value : fallback;
+  if (typeof value === "string") return value;
+  if (typeof value === "number" && Number.isFinite(value)) return String(value);
+  return fallback;
 }
 
 export function getFileNameFromUrl(url = "") {

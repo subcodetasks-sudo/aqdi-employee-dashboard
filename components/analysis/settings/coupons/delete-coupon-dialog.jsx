@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { axiosInstance } from "@/src/utils/axios";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2, Trash2 } from "lucide-react";
-import { SETTINGS_DELETE_TRIGGER_CLASS } from "@/components/SystemSettings/shared";
+import { SETTINGS_DELETE_TRIGGER_CLASS } from "@/components/system-settings/shared";
 import { toast } from "sonner";
 
 export default function DeleteCouponDialog({ coupon }) {

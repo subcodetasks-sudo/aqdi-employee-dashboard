@@ -27,6 +27,7 @@ export const PERMISSION_SECTIONS = {
   contract_statuses: 'contract_statuses',
   draft_contract_statuses: 'draft_contract_statuses',
   contract_periods: 'contract_periods',
+  services_pricing: 'services_pricing',
   contract_whatsapp: 'contract_whatsapp',
   instrument_settings: 'instrument_settings',
   coupons: 'coupons',
@@ -42,6 +43,7 @@ export const PERMISSION_SECTIONS = {
   settings: 'settings',
   sms: 'sms',
   seo_crawl: 'seo_crawl',
+  website_images: 'website_images',
 };
 
 export const PERMISSION_ACTIONS = ['view', 'create', 'edit', 'delete', 'retrieve'];
@@ -74,22 +76,43 @@ function extractNamesFromList(list) {
  * fall back to `permission_names`, then derive from `permission_matrix`. Whichever source has
  * data wins outright (no merging across sources) so a fresh login/refresh always fully replaces
  * what was previously known, never adds to it.
+ *
+ * Also unwraps a nested `data.user` when the whole login `data` blob was stored as `user`
+ * (legacy login shape: `{ token, user: { ... } }`).
  */
-export function normalizeUserPermissions(user) {
-  if (!user) return [];
+export function resolveAuthUser(user) {
+  if (!user) return null;
+  const nested = user.user;
+  if (
+    nested &&
+    typeof nested === 'object' &&
+    user.is_system_admin == null &&
+    !user.permissions &&
+    !user.permission_names &&
+    !user.permission_matrix &&
+    (user.token || user.refresh_token || user.role_id == null)
+  ) {
+    return nested;
+  }
+  return user;
+}
 
-  const fromPermissions = extractNamesFromList(user.permissions);
+export function normalizeUserPermissions(user) {
+  const source = resolveAuthUser(user);
+  if (!source) return [];
+
+  const fromPermissions = extractNamesFromList(source.permissions);
   if (fromPermissions.length > 0) return fromPermissions;
 
-  const fromNames = extractNamesFromList(user.permission_names);
+  const fromNames = extractNamesFromList(source.permission_names);
   if (fromNames.length > 0) return fromNames;
 
-  return matrixToPermissionNames(user.permission_matrix);
+  return matrixToPermissionNames(source.permission_matrix);
 }
 
 /** `is_system_admin` from the API is the only thing allowed to grant blanket access — never role name/title. */
 export function isSuperAdmin(user) {
-  return user?.is_system_admin === true;
+  return resolveAuthUser(user)?.is_system_admin === true;
 }
 
 export function hasPermission(permissions, section, action = 'view') {
@@ -143,6 +166,15 @@ const MARKETING_SECTIONS = [
   PERMISSION_SECTIONS.analytics,
   PERMISSION_SECTIONS.blogs,
   PERMISSION_SECTIONS.seo_crawl,
+  PERMISSION_SECTIONS.app_content,
+  PERMISSION_SECTIONS.website_images,
+  PERMISSION_SECTIONS.faqs,
+];
+
+/** Former `/home/content` panels now live under marketing `?tab=content&view=`. */
+const CONTENT_SECTIONS = [
+  PERMISSION_SECTIONS.app_content,
+  PERMISSION_SECTIONS.website_images,
 ];
 
 export const ROUTE_SECTION_RULES = [
@@ -152,13 +184,14 @@ export const ROUTE_SECTION_RULES = [
   { prefix: '/home/settings/property-usage', section: PERMISSION_SECTIONS.property_reference },
   { prefix: '/home/settings/regions', section: PERMISSION_SECTIONS.regions },
   { prefix: '/home/settings/cities', section: PERMISSION_SECTIONS.cities },
-  { prefix: '/home/settings/order-duration', section: PERMISSION_SECTIONS.contract_periods },
   { prefix: '/home/settings/message-sections', section: PERMISSION_SECTIONS.message_alerts },
   { prefix: '/home/settings/message-section-items', section: PERMISSION_SECTIONS.message_alerts },
   { prefix: '/home/settings/message-for-employee', section: PERMISSION_SECTIONS.message_alerts },
   { prefix: '/home/settings/message-for-property', section: PERMISSION_SECTIONS.message_alerts },
   { prefix: '/home/settings/customer-app-messages', section: PERMISSION_SECTIONS.app_content },
   { prefix: '/home/settings/payment-types', section: PERMISSION_SECTIONS.app_content },
+  { prefix: '/home/settings/contract-periods', section: PERMISSION_SECTIONS.contract_periods },
+  { prefix: '/home/settings/services-pricing', section: PERMISSION_SECTIONS.services_pricing },
   { prefix: '/home/settings/terms', section: PERMISSION_SECTIONS.app_content },
   { prefix: '/home/settings/privacy', section: PERMISSION_SECTIONS.app_content },
   { prefix: '/home/settings/coupons', section: PERMISSION_SECTIONS.coupons },
@@ -180,6 +213,8 @@ export const ROUTE_SECTION_RULES = [
   { prefix: '/home/clients', section: null },
   { prefix: '/home/realtime-orders', section: REALTIME_ORDERS_SECTIONS },
   { prefix: '/home/invoices', section: null },
+  // Legacy URL — page redirects into marketing content tab; keep gate for deep links.
+  { prefix: '/home/content', section: CONTENT_SECTIONS },
   { prefix: '/home', section: null },
 ];
 
@@ -232,7 +267,7 @@ export const SIDEBAR_NAV = [
     items: [
       { label: 'الطلبات مباشر', href: '/home/realtime-orders', section: REALTIME_ORDERS_SECTIONS, badge: 'unreceived' },
       { label: 'العملاء', href: '/home/clients', section: null },
-      { label: 'طلبات الاسترجاع', href: '/home/return-orders', section: PERMISSION_SECTIONS.returned_request },
+      { label: 'طلبات الاسترجاع', href: '/home/return-orders', section: PERMISSION_SECTIONS.returned_request, badge: 'returned' },
       { label: 'الموظفون والأدوار', href: '/home/roles-and-employees', section: ROLES_AND_EMPLOYEES_SECTIONS },
       { label: 'التسويق والمحتوى', href: '/home/marketing-and-content', section: MARKETING_SECTIONS },
       { label: 'التقارير', href: '/home/reports', section: PERMISSION_SECTIONS.analytics },

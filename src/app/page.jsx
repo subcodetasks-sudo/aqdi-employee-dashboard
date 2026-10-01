@@ -9,22 +9,12 @@ export default function Page(props) {
   useUnwrapPageProps(props?.params, props?.searchParams);
 
   const router = useRouter();
-  const { token } = useUserStore();
+  const isAuthenticated = useUserStore((state) => state.isAuthenticated);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      router.push(token ? "/home" : "/login");
-    }, 3000);
-
-    return () => clearTimeout(timer);
-  }, [router, token]);
+    router.replace(isAuthenticated ? "/home" : "/login");
+  }, [router, isAuthenticated]);
 
 
-  return (
-    <div className="relative w-full h-screen overflow-hidden">
-      <video autoPlay muted loop className="w-full h-screen object-cover">
-        <source src="/images/aakdi.mp4" type="video/mp4" />
-      </video>
-    </div>
-  );
+  return null;
 }

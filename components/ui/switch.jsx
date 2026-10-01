@@ -12,13 +12,12 @@ const Switch = React.forwardRef(({ className, ...props }, ref) => (
       className
     )}
     {...props}
+    // Keep LTR thumb math: page is RTL, but switches stay off→left / on→right.
+    dir="ltr"
     ref={ref}>
     <SwitchPrimitives.Thumb
       className={cn(
-        "pointer-events-none block h-4 w-4 rounded-full bg-background shadow-lg ring-0 transition-transform",
-        // LTR: off left → on right; RTL: off right → on left (matches html[dir=rtl])
-        "data-[state=unchecked]:translate-x-0 data-[state=checked]:translate-x-4",
-        "rtl:data-[state=unchecked]:translate-x-4 rtl:data-[state=checked]:translate-x-0"
+        "pointer-events-none block h-4 w-4 rounded-full bg-background shadow-lg ring-0 transition-transform data-[state=checked]:translate-x-4 data-[state=unchecked]:translate-x-0"
       )} />
   </SwitchPrimitives.Root>
 ))

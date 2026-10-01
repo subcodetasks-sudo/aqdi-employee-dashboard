@@ -1,8 +1,7 @@
-// Storage layer for the auth session (access/refresh tokens, user, expiry).
-// Single source of truth for src/utils/axios.js's request/refresh interceptors
-// and src/stores/user-store.js's reactive cache.
+// Non-secret session profile. Access and refresh tokens live in httpOnly cookies
+// (see src/lib/auth-cookies.js and src/lib/api-proxy.js), never in web storage.
 
-const KEY_PREFIX = 'aqdi_';
+const KEY_PREFIX = "aqdi_";
 
 const KEYS = {
   accessToken: `${KEY_PREFIX}access_token`,
@@ -12,19 +11,15 @@ const KEYS = {
   rememberMe: `${KEY_PREFIX}remember_me`,
 };
 
-// Matches the backend's actual access-token lifetime (token_expires_in: 900).
-// Client-side only — used to decide when to proactively refresh.
-export const ACCESS_TOKEN_TTL_MS = 15 * 60 * 1000;
+const TOKEN_KEYS = [KEYS.accessToken, KEYS.refreshToken, KEYS.tokenExpiresAt];
 
 function isBrowser() {
-  return typeof window !== 'undefined';
+  return typeof window !== "undefined";
 }
 
-// rememberMe always lives in localStorage, regardless of which storage the
-// rest of the session is currently using.
 function getRememberMe() {
   if (!isBrowser()) return true;
-  return localStorage.getItem(KEYS.rememberMe) !== 'false';
+  return localStorage.getItem(KEYS.rememberMe) !== "false";
 }
 
 function getActiveStorage(rememberMe = getRememberMe()) {
@@ -37,16 +32,16 @@ function getInactiveStorage(rememberMe = getRememberMe()) {
   return rememberMe ? sessionStorage : localStorage;
 }
 
-// Reads from the active storage first, falling back to the other one — so a
-// stale rememberMe flag or a session started under different settings never
-// silently reads back null.
 function getItem(key) {
   if (!isBrowser()) return null;
   return getActiveStorage()?.getItem(key) ?? getInactiveStorage()?.getItem(key) ?? null;
 }
 
 function setItem(key, value, rememberMe = getRememberMe()) {
-  getActiveStorage(rememberMe)?.setItem(key, value);
+  const active = getActiveStorage(rememberMe);
+  const inactive = getInactiveStorage(rememberMe);
+  inactive?.removeItem(key);
+  active?.setItem(key, value);
 }
 
 function removeFromBothStorages(key) {
@@ -55,58 +50,62 @@ function removeFromBothStorages(key) {
   sessionStorage.removeItem(key);
 }
 
-export function getAccessToken() {
-  return getItem(KEYS.accessToken);
-}
-
-export function getRefreshToken() {
-  return getItem(KEYS.refreshToken);
+function sanitizeUser(user) {
+  if (!user || typeof user !== "object") return null;
+  const {
+    token,
+    access_token,
+    refresh_token,
+    token_expires_in,
+    token_expires_at,
+    refresh_token_expires_at,
+    ...rest
+  } = user;
+  return rest;
 }
 
 export function getAuthUser() {
   const raw = getItem(KEYS.authUser);
   if (!raw) return null;
   try {
-    return JSON.parse(raw);
+    return sanitizeUser(JSON.parse(raw));
   } catch {
     return null;
   }
 }
 
-export function isAccessTokenExpired() {
-  const expiresAt = Number(getItem(KEYS.tokenExpiresAt));
-  if (!expiresAt) return true;
-  return Date.now() >= expiresAt;
+/** Tokens left in web storage by the previous client. Moved into httpOnly cookies once, then deleted. */
+export function readLegacyTokens() {
+  if (!isBrowser()) return null;
+
+  const remember = getRememberMe();
+  const primary = remember ? localStorage : sessionStorage;
+  const secondary = remember ? sessionStorage : localStorage;
+  const read = (key) => primary.getItem(key) ?? secondary.getItem(key);
+
+  const accessToken = read(KEYS.accessToken);
+  const refreshToken = read(KEYS.refreshToken);
+  if (!accessToken || !refreshToken) return null;
+
+  return {
+    accessToken,
+    refreshToken,
+    expiresAt: read(KEYS.tokenExpiresAt),
+    remember,
+  };
 }
 
-/** Full login: clears any prior session, then writes tokens/user/expiry to the chosen storage. */
-export function setAuthSession(tokens, user, rememberMe = true) {
+export function clearLegacyTokens() {
+  TOKEN_KEYS.forEach(removeFromBothStorages);
+}
+
+export function setAuthSession(user, rememberMe = true) {
   clearAuthSession();
   if (!isBrowser()) return;
 
-  localStorage.setItem(KEYS.rememberMe, rememberMe ? 'true' : 'false');
-
-  const expiresAt = Date.now() + ACCESS_TOKEN_TTL_MS;
-  setItem(KEYS.accessToken, tokens.accessToken, rememberMe);
-  setItem(KEYS.refreshToken, tokens.refreshToken, rememberMe);
-  setItem(KEYS.tokenExpiresAt, String(expiresAt), rememberMe);
-  if (user) setItem(KEYS.authUser, JSON.stringify(user), rememberMe);
-}
-
-/**
- * Post-refresh update: writes to whichever storage is already active — never
- * re-decides remember-me. Always overwrites the refresh token; it's dead the
- * instant the server issues a new one.
- */
-export function setAuthTokens(accessToken, refreshToken, user) {
-  if (!isBrowser()) return;
-  const rememberMe = getRememberMe();
-  const expiresAt = Date.now() + ACCESS_TOKEN_TTL_MS;
-
-  setItem(KEYS.accessToken, accessToken, rememberMe);
-  setItem(KEYS.refreshToken, refreshToken, rememberMe);
-  setItem(KEYS.tokenExpiresAt, String(expiresAt), rememberMe);
-  if (user) setItem(KEYS.authUser, JSON.stringify(user), rememberMe);
+  localStorage.setItem(KEYS.rememberMe, rememberMe ? "true" : "false");
+  const safeUser = sanitizeUser(user);
+  if (safeUser) setItem(KEYS.authUser, JSON.stringify(safeUser), rememberMe);
 }
 
 export function clearAuthSession() {

@@ -5,7 +5,7 @@ import {
 } from "@/src/hooks/use-unwrap-page-props";
 import AddPaperworkDialog from "@/components/analysis/settings/paperworks/add-paperwork-dialog";
 import EditPaperworkDialog from "@/components/analysis/settings/paperworks/edit-paperwork-dialog";
-import PermissionGate from "@/components/auth/PermissionGate";
+import PermissionGate from "@/components/auth/permission-gate";
 import { PERMISSION_SECTIONS } from "@/src/lib/permissions";
 import {
   SETTINGS_DELETE_TRIGGER_CLASS,
@@ -16,12 +16,12 @@ import {
   SettingsTableRow,
   SettingsTd,
   SettingsPageShell,
-} from "@/components/SystemSettings/shared";
+} from "@/components/system-settings/shared";
 import {
   contractTypeLabel,
   extractAlertList,
   fetchBothContractTypes,
-} from "@/components/SystemSettings/settings-list/fetch-contract-type-lists";
+} from "@/components/system-settings/settings-list/fetch-contract-type-lists";
 import { axiosInstance } from "@/src/utils/axios";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { FileText } from "lucide-react";

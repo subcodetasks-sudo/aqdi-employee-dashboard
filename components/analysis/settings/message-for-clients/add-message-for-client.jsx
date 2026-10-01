@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -12,8 +12,8 @@ import {
 import SettingsFormDialog, {
   SettingsFieldLabel,
   settingsFieldClass,
-} from "@/components/SystemSettings/SettingsFormDialog";
-import { SETTINGS_EDIT_TRIGGER_CLASS, SettingsAddTrigger } from "@/components/SystemSettings/shared";
+} from "@/components/system-settings/settings-form-dialog";
+import { SETTINGS_EDIT_TRIGGER_CLASS, SettingsAddTrigger } from "@/components/system-settings/shared";
 import { useCustomerMessages } from "@/src/hooks/use-customer-messages";
 import { axiosInstance } from "@/src/utils/axios";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -27,12 +27,15 @@ export default function AddNewMessageForClientDialog({ isEdit, messageAlert }) {
   const queryClient = useQueryClient();
   const { sections } = useCustomerMessages("client", open);
 
-  useEffect(() => {
-    if (!open) return;
-    setSelectedSection(messageAlert?.message_alert_section_id?.toString() || "");
-    setSelectedItem(messageAlert?.message_alert_section_item_id?.toString() || "");
-    setMessage(messageAlert?.message || "");
-  }, [open, messageAlert]);
+  const [prevOpen, setPrevOpen] = useState(false);
+  if (open !== prevOpen) {
+    setPrevOpen(open);
+    if (open) {
+      setSelectedSection(messageAlert?.message_alert_section_id?.toString() || "");
+      setSelectedItem(messageAlert?.message_alert_section_item_id?.toString() || "");
+      setMessage(messageAlert?.message || "");
+    }
+  }
 
   const items = useMemo(() => {
     const section = sections.find((entry) => entry.id?.toString() === selectedSection);

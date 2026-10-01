@@ -1,29 +1,29 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { AlertCircle, Ban, CheckCircle2, Undo2 } from "lucide-react";
-import { mapRealtimeTableOrder } from "@/components/RealtimeOrders/map-realtime-order";
+import { mapRealtimeTableOrder } from "@/components/realtime-orders/map-realtime-order";
 import {
-  getStatusCaseFields,
-  statusRequiresExtraFields,
-} from "@/components/RealtimeOrders/ChangeOrderStatusFieldsDialog";
-import {
-  canRequestOrderReturn,
+  getReturnRequestExistsMessage,
+  hasReturnRequest,
+  isOrderPaid,
   isReturnContractStatus,
   normalizeOrderForReturnRequest,
+  UNPAID_ORDER_RETURN_MESSAGE,
 } from "@/components/analysis/returned/refund-contract-utils";
 import { openDialogAfterMenuClose } from "@/src/lib/open-dialog-after-menu-close";
 import {
   exportOrdersToExcel,
   extractStandardOrderPage,
-} from "@/components/Orders/shared/orders-export";
-import { usePaginatedExport } from "@/components/Orders/shared/use-paginated-export";
-import { printOrderContract } from "@/components/Orders/single-order/print-contract";
-import { useIsDark } from "@/src/hooks/useThemeMode";
+} from "@/components/orders/shared/orders-export";
+import { usePaginatedExport } from "@/components/orders/shared/use-paginated-export";
+import { printOrderContract } from "@/components/orders/single-order/print-contract";
+import { useBatchPrintContracts } from "@/src/hooks/use-batch-print-contracts";
+import { useIsDark } from "@/src/hooks/use-theme-mode";
 import { useContractStatuses } from "@/src/hooks/use-contract-statuses";
-import { usePermissions } from "@/src/hooks/usePermissions";
+import { usePermissions } from "@/src/hooks/use-permissions";
 import { PERMISSION_SECTIONS } from "@/src/lib/permissions";
 import {
   ALL_ORDERS_QUERY_KEY,
@@ -33,6 +33,10 @@ import {
 } from "@/src/hooks/use-realtime-new-orders";
 import { axiosInstance } from "@/src/utils/axios";
 import { useChangeOrderStatus } from "@/src/hooks/use-change-order-status";
+import {
+  normalizeOrderMenuStatus,
+  useConfirmOrderStatusChange,
+} from "@/src/hooks/use-confirm-order-status-change";
 import { getAllOrdersExtraFilterStatuses } from "@/src/lib/contract-statuses";
 
 const COMPLETION_FILTERS = ["authenticated", "incomplete"];
@@ -121,9 +125,19 @@ export function useAllOrdersWrapper({
     return () => clearTimeout(handler);
   }, [searchQuery]);
 
-  useEffect(() => {
+  // Any list-param change sends the user back to the first page.
+  const pageResetKey = JSON.stringify([
+    debouncedSearch,
+    activeFilters,
+    extraStatusId,
+    contractType,
+    perPage,
+  ]);
+  const [prevPageResetKey, setPrevPageResetKey] = useState(pageResetKey);
+  if (pageResetKey !== prevPageResetKey) {
+    setPrevPageResetKey(pageResetKey);
     setCurrentPage(1);
-  }, [debouncedSearch, activeFilters, extraStatusId, contractType, perPage]);
+  }
 
   const listParams = useMemo(() => {
     const hasAuthenticated = activeFilters.includes("authenticated");
@@ -175,6 +189,28 @@ export function useAllOrdersWrapper({
     router.push(`/home/orders/${row.id ?? row.uuid}`);
   };
 
+  const changeStatusRef = useRef(null);
+
+  const {
+    confirmOpen: confirmStatusOpen,
+    pendingConfirm: pendingStatusConfirm,
+    requestConfirm,
+    confirmStatusChange,
+    clearConfirm,
+    handleConfirmOpenChange: setConfirmStatusOpen,
+  } = useConfirmOrderStatusChange({
+    onDirectChange: (pending) => {
+      changeStatusRef.current?.({
+        orderId: pending.orderId,
+        statusId: pending.status.id,
+      });
+    },
+    onNeedsFields: (pending) => {
+      setPendingStatusChange({ order: pending.order, status: pending.status });
+      setStatusFieldsOpen(true);
+    },
+  });
+
   const {
     mutate: changeStatus,
     isPending: isChangingStatus,
@@ -184,17 +220,13 @@ export function useAllOrdersWrapper({
     onSuccess: () => {
       setStatusFieldsOpen(false);
       setPendingStatusChange(null);
+      clearConfirm();
     },
   });
+  changeStatusRef.current = changeStatus;
 
   const handleStatusChange = (row, status) => {
-    const menuStatus = {
-      id: status.id,
-      name: status.name ?? status.label,
-      label: status.label ?? status.name,
-      color: status.color,
-      status_case: status.status_case ?? null,
-    };
+    const menuStatus = normalizeOrderMenuStatus(status);
 
     if (isReturnContractStatus(menuStatus)) {
       if (!canReturn) {
@@ -202,8 +234,12 @@ export function useAllOrdersWrapper({
         return;
       }
       const normalized = normalizeOrderForReturnRequest(row, row?.id);
-      if (!canRequestOrderReturn(normalized)) {
-        toast.info("يوجد طلب استرجاع مسبقاً لهذا الطلب");
+      if (!isOrderPaid(normalized)) {
+        toast.error(UNPAID_ORDER_RETURN_MESSAGE);
+        return;
+      }
+      if (hasReturnRequest(normalized)) {
+        toast.info(getReturnRequestExistsMessage(normalized));
         return;
       }
       setReturnOrder(normalized);
@@ -211,14 +247,11 @@ export function useAllOrdersWrapper({
       return;
     }
 
-    if (statusRequiresExtraFields(menuStatus)) {
-      setPendingStatusChange({ order: row, status: menuStatus });
-      openDialogAfterMenuClose(() => setStatusFieldsOpen(true));
-      return;
-    }
-
-    changeStatus({ orderId: row.id, statusId: status.id });
+    requestConfirm({ order: row, orderId: row.id, status: menuStatus });
   };
+
+  const { isBatchPrinting, batchPrint: handleBatchPrint } =
+    useBatchPrintContracts();
 
   const handlePrint = async (row) => {
     if (!row?.id) {
@@ -310,6 +343,10 @@ export function useAllOrdersWrapper({
     setStatusFieldsOpen,
     pendingStatusChange,
     setPendingStatusChange,
+    confirmStatusOpen,
+    setConfirmStatusOpen,
+    pendingStatusConfirm,
+    confirmStatusChange,
     manageStatusesOpen,
     setManageStatusesOpen,
     statusItems,
@@ -323,6 +360,8 @@ export function useAllOrdersWrapper({
     changingStatusId,
     handleStatusChange,
     handlePrint,
+    handleBatchPrint,
+    isBatchPrinting,
     handleToggleFilter,
     handleExtraStatusChange,
     handleExport,
