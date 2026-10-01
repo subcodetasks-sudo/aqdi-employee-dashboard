@@ -49,9 +49,13 @@ import { fetchContractPaymentLink } from "@/components/orders/shared/payment-gat
 import { getSendErrorTitle } from "@/components/orders/messages/order-send-error-utils";
 import {
   canOfferClosureActions,
+  getOrderAdminApprovalStatus,
   getReturnRequestStatus,
+  hasReturnRequest,
+  isAdminRefundApproved,
   isReturnContractStatus,
 } from "@/components/analysis/returned/refund-contract-utils";
+import { isSendContractDraftStatus } from "@/src/lib/order-status-api";
 
 const ACTION_PILLS = [
   {
@@ -310,7 +314,7 @@ export default function OrderDetailsHeader({
 
         <span className="conic-border-badge inline-flex items-center gap-1.5 h-7 px-3 rounded-full text-green-700 dark:text-[#6EE7B7] text-[12.5px] font-bold">
           <FileText className="size-3.5" />
-          عقد {order.contract_type} - {order.instrument_type} - وزارة العدل
+          عقد {order.contract_type} - {order.instrument_type}
         </span>
 
         <StatusSelect
@@ -318,6 +322,7 @@ export default function OrderDetailsHeader({
           orderData={orderData}
           statuses={statuses}
           onStatusChange={onStatusChange}
+          onSendDraft={onSendDraft}
           onEjarDocumentation={onEjarDocumentation}
           disabled={!canChangeStatus || isStatusPending}
         />
@@ -509,16 +514,19 @@ export default function OrderDetailsHeader({
 
       <div className="border-t border-[#EEF2F0] dark:border-white/5 pt-3 flex flex-wrap gap-2">
         {ACTION_PILLS.filter((pill) => {
+          if (pill.id === "pay_link" && !canOfferPaymentLink(order)) return false;
+          if (pill.id === "refund" && isReturnRequestDecided(orderData ?? order)) return false;
           if (pill.id !== "refund" && pill.id !== "ejar_documentation") return true;
           if (!canOfferClosureActions(order, orderData)) return false;
-          if (pill.id === "refund" && isOrderAlreadyRefunded(orderData ?? order)) return false;
           return true;
         }).map((pill) => {
           const Icon = pill.Icon;
           const label =
             pill.id === "ejar_documentation" && isDocumentedStatus({ name: order.status_name })
               ? "تعديل توثيق ايجار"
-              : pill.label;
+              : pill.id === "property_update" && hasPropertyUpdate(order)
+                ? "تعديل تحديث العقار"
+                : pill.label;
           return (
             <button
               key={pill.id}
@@ -548,6 +556,11 @@ export default function OrderDetailsHeader({
   );
 }
 
+function canOfferPaymentLink(order) {
+  if (order?.is_paid) return false;
+  return !isEjarDocumentationStatus({ name: order?.status_name });
+}
+
 function isOrderAlreadyRefunded(order) {
   if (!order) return false;
   const summary = order.contract_summary ?? {};
@@ -562,17 +575,36 @@ function isOrderAlreadyRefunded(order) {
   return getReturnRequestStatus(order) === "refunded";
 }
 
+function isReturnRequestDecided(order) {
+  if (!order) return false;
+  if (isOrderAlreadyRefunded(order)) return true;
+  const status = String(getReturnRequestStatus(order) ?? "").toLowerCase();
+  if (status === "approved" || status === "rejected" || status === "refunded") return true;
+  if (!hasReturnRequest(order)) return false;
+  const approval = getOrderAdminApprovalStatus(order);
+  if (isAdminRefundApproved(approval)) return true;
+  return approval === false || approval === 0;
+}
+
+function hasPropertyUpdate(order) {
+  const method = order?.extras?.deed_addition_method ?? order?.deed_addition_method;
+  return method != null && String(method).trim() !== "";
+}
+
 function StatusSelect({
   order,
   orderData,
   statuses = [],
   onStatusChange,
+  onSendDraft,
   onEjarDocumentation,
   disabled,
 }) {
   const allowClosure = canOfferClosureActions(order, orderData);
+  const hideReturn = isReturnRequestDecided(orderData ?? order);
 
   const selectableStatuses = statuses.filter((status) => {
+    if (hideReturn && isReturnContractStatus(status)) return false;
     if (allowClosure) return true;
     if (isReturnContractStatus(status) || isEjarDocumentationStatus(status)) return false;
     return true;
@@ -612,6 +644,10 @@ function StatusSelect({
                   if (active) return;
                   if (documentsInEjar) {
                     openDialogAfterMenuClose(() => onEjarDocumentation?.());
+                    return;
+                  }
+                  if (isSendContractDraftStatus(status)) {
+                    openDialogAfterMenuClose(() => onSendDraft?.());
                     return;
                   }
                   onStatusChange?.(order, status);

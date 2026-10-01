@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { BadgeCheck, Download, FileText, Receipt, Undo2 } from "lucide-react";
 import { toast } from "sonner";
+import { isReturnContractStatus } from "@/components/analysis/returned/refund-contract-utils/status";
 import { downloadMedia, fileNameFromMediaUrl } from "@/src/lib/media-url";
 import { AccentCard, Field, GroupTitle, Money } from "./primitives";
 
@@ -54,18 +55,33 @@ function isDocumentedStatus(order) {
   return name === "تم التوثيق" || name.includes("تم التوثيق");
 }
 
-export default function ExtrasGroup({ order }) {
-  if (!isDocumentedStatus(order)) return null;
+function isReturnOrderStatus(order) {
+  return isReturnContractStatus({
+    id: order?.status_id,
+    name: order?.status_name,
+  });
+}
 
+export default function ExtrasGroup({ order }) {
   const extras = order?.extras ?? {};
+  const draftSent = hasAny([
+    extras.ejar_contract_draft_number,
+    extras.draft_contact_number,
+    extras.draft_contact_number_mode,
+  ]);
+  const refund = extras.refund;
+  const showRefund = Boolean(refund) || isReturnOrderStatus(order);
+  if (!isDocumentedStatus(order) && !draftSent && !showRefund) return null;
+
   const statusCase = extras.status_case;
   const invoice = extras.invoice;
   const account = extras.account;
-  const refund = extras.refund;
 
   const showEjar = hasAny([
     extras.ejar_contract_number,
     extras.ejar_contract_draft_number,
+    extras.draft_contact_number,
+    extras.draft_contact_number_mode,
     extras.ejar_status_notes,
     extras.deed_type,
     extras.deed_addition_method,
@@ -101,7 +117,7 @@ export default function ExtrasGroup({ order }) {
     ? hasAny([invoice.number, invoice.amount, invoice.status, invoice.date, invoice.reference])
     : false;
 
-  const showRefund = Boolean(refund);
+  const showRefundCard = showRefund && refund;
   const showStatusCase = Boolean(statusCase);
 
   if (
@@ -110,7 +126,7 @@ export default function ExtrasGroup({ order }) {
     !showMeta &&
     !showAccount &&
     !showInvoice &&
-    !showRefund &&
+    !showRefundCard &&
     !showStatusCase
   ) {
     return null;
@@ -128,6 +144,8 @@ export default function ExtrasGroup({ order }) {
               label="رقم مسودة إيجار"
               value={extras.ejar_contract_draft_number}
             />
+            <Field label="أُرسلت على الرقم" value={extras.draft_contact_number} />
+            <Field label="وضع رقم التواصل" value={extras.draft_contact_number_mode} />
             <Field label="ملاحظات إيجار" value={extras.ejar_status_notes} />
             <Field label="نوع الصك" value={extras.deed_type} />
             <Field label="طريقة إضافة الصك" value={extras.deed_addition_method} />
@@ -205,7 +223,7 @@ export default function ExtrasGroup({ order }) {
         </AccentCard>
       ) : null}
 
-      {showRefund ? (
+      {showRefundCard ? (
         <AccentCard accent="#6B7280" icon={Undo2} title="الاسترجاع">
           <div className="space-y-2">
             <Field label="حالة الاسترجاع" value={refund.return_status} />

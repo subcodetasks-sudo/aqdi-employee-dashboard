@@ -16,7 +16,12 @@ export function isFieldVisible(field, formValues) {
     return Object.entries(field.showWhen).every(([key, expected]) => {
       const actual = formValues?.[key];
       if (Array.isArray(expected)) return expected.includes(actual);
-      return actual === expected;
+      if (actual === expected) return true;
+      const isYes = (value) => value === true || value === 1 || value === "1";
+      const isNo = (value) => value === false || value === 0 || value === "0";
+      if (isYes(expected) && isYes(actual)) return true;
+      if (isNo(expected) && isNo(actual)) return true;
+      return false;
     });
   }
 

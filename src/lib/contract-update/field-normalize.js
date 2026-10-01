@@ -30,6 +30,7 @@ export const FILE_FIELD_KEYS = new Set([
   "copy_of_the_endowment_registration_certificate",
   "copy_of_the_trusteeship_deed",
   "copy_of_guardians_power_of_attorney_for_agent",
+  "image_address",
 ]);
 
 function normalizeFileFieldValue(value) {

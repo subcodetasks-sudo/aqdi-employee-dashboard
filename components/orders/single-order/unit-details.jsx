@@ -113,7 +113,7 @@ function isSelectedUnit(unit, data) {
   return Number(unit.id) === Number(selectedId);
 }
 
-function SingleUnitBlock({ unit, data, index, formRef }) {
+function SingleUnitBlock({ unit, data, index, formRef, canDetach }) {
   const { updateUnit, deleteUnit, isSavingUnit, isDeletingUnit } =
     useSingleOrderContext();
   const selected = isSelectedUnit(unit, data);
@@ -174,7 +174,7 @@ function SingleUnitBlock({ unit, data, index, formRef }) {
             </span>
           ) : null}
         </div>
-        {unit?.id != null ? (
+        {canDetach && unit?.id != null ? (
           <button
             type="button"
             onClick={handleDetach}
@@ -258,6 +258,7 @@ const UnitDetailes = ({ data }) => {
                   unit={unit}
                   data={data}
                   index={index}
+                  canDetach={Number(unitsCount) > 1}
                   formRef={(handle) => {
                     const key = unit?.id ?? `unit-${index}`;
                     if (handle) unitRefs.current.set(key, handle);

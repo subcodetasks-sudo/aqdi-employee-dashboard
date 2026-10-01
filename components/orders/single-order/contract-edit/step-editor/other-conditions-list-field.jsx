@@ -8,9 +8,10 @@ import NativeSelect from "./native-select";
 const MAX_OTHER_CONDITIONS = 50;
 
 export default function OtherConditionsListField({ formValues, onPatch, fieldErrors = {} }) {
-  const enabled =
-    formValues?.conditions === true || formValues?.conditions === 1 || formValues?.conditions === "1";
   const items = normalizeOtherConditionsList(formValues?.other_conditions_list);
+  const flagOn =
+    formValues?.conditions === true || formValues?.conditions === 1 || formValues?.conditions === "1";
+  const enabled = flagOn || items.some((item) => String(item).trim() !== "");
   const displayItems = enabled && items.length === 0 ? [""] : items;
 
   const setEnabled = (nextEnabled) => {

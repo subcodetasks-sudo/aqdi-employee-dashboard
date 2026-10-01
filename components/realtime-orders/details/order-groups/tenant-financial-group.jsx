@@ -27,23 +27,19 @@ function paymentMethodLabel(value) {
   return PAYMENT_METHOD_LABELS[key] || value;
 }
 
-function displayText(value) {
-  if (value == null) return "";
-  const raw = String(value).trim();
-  if (!raw) return "";
-  if (!/<[a-z][\s\S]*>/i.test(raw)) return raw;
-  return raw
-    .replace(/<br\s*\/?>/gi, "\n")
-    .replace(/<\/p>/gi, "\n")
-    .replace(/<[^>]+>/g, "")
-    .trim();
-}
-
 function paymentStatusLabel(status) {
   if (status === "success" || status === "paid") return "ناجح";
   if (status === "pending") return "قيد الانتظار";
   if (status === "failed") return "فشل";
   return status || null;
+}
+
+function roleInputLabel(label) {
+  const text = String(label ?? "").replace(/\s+/g, " ").trim();
+  if (!text) return "";
+  const compact = text.replace(/[أإآا]/g, "ا").replace(/ة/g, "ه");
+  if (compact.includes("غرامه") && compact.includes("يومي")) return "مبلغ الغرامة اليومية";
+  return text;
 }
 
 function isHiddenAmount(value) {
@@ -170,18 +166,12 @@ function SavedTerms({ order, orderData }) {
   const otherConditions = orderData
     ? resolveOtherConditionsList(orderData)
     : financial.other_conditions ?? [];
-  const additionalTerms = displayText(
-    financial.additional_terms || step.text_additional_terms
-  );
-  const dailyFine = financial.daily_fine || step.daily_fine;
   const guarantee =
     financial.guarantee_amount || step.Guarantee_amount || step.guarantee_amount;
 
   const hasContent =
     roles.length > 0 ||
     otherConditions.length > 0 ||
-    additionalTerms ||
-    dailyFine ||
     guarantee;
 
   if (!hasContent) return null;
@@ -194,7 +184,9 @@ function SavedTerms({ order, orderData }) {
         <div className="space-y-1.5">
           <p className="text-[10.5px] font-bold text-gray-400">صلاحيات المستأجر</p>
           <ul className="space-y-1.5">
-            {roles.map((role) => (
+            {roles.map((role) => {
+              const inputLabel = roleInputLabel(role.inputLabel);
+              return (
               <li
                 key={role.id ?? role.label}
                 className="rounded-xl bg-status-neutral-bg px-3 py-2 text-xs dark:bg-white/[0.04]"
@@ -202,17 +194,16 @@ function SavedTerms({ order, orderData }) {
                 <p className="font-bold text-gray-900 dark:text-white/90">{role.label}</p>
                 {role.value ? (
                   <p className="mt-0.5 text-[11px] font-medium text-[#4B5563] dark:text-white/60">
-                    {role.inputLabel ? `${role.inputLabel}: ` : ""}
-                    {role.value}
+                    {inputLabel ? `${inputLabel}: ${role.value}` : role.value}
                   </p>
                 ) : null}
               </li>
-            ))}
+              );
+            })}
           </ul>
         </div>
       ) : null}
 
-      <Field label="الغرامة اليومية" value={dailyFine} />
       <Field label="مبلغ الضمان" value={guarantee} />
 
       {otherConditions.length > 0 ? (
@@ -225,15 +216,6 @@ function SavedTerms({ order, orderData }) {
               </li>
             ))}
           </ol>
-        </div>
-      ) : null}
-
-      {additionalTerms ? (
-        <div className="space-y-1">
-          <p className="text-[10.5px] font-bold text-gray-400">الشروط الإضافية</p>
-          <p className="whitespace-pre-wrap text-xs font-bold leading-relaxed text-gray-900 dark:text-white/90">
-            {additionalTerms}
-          </p>
         </div>
       ) : null}
     </div>
@@ -297,6 +279,10 @@ export default function TenantFinancialGroup({ order, orderData, onEdit }) {
             label="ممثل نظامي للمستأجر"
             value={order.tenant?.has_legal_representative}
           />
+          <Field label="رقم هوية الوكيل" value={order.tenant?.legal_agent_id} />
+          <Field label="جوال الوكيل" value={order.tenant?.legal_agent_phone} />
+          <Field label="نوع تاريخ ميلاد الوكيل" value={order.tenant?.legal_agent_dob_type} />
+          <Field label="تاريخ ميلاد الوكيل" value={order.tenant?.legal_agent_dob} />
           {order.tenant?.owner_record_url ? (
             <OwnerRecordDownload
               url={order.tenant.owner_record_url}
@@ -365,8 +351,6 @@ export default function TenantFinancialGroup({ order, orderData, onEdit }) {
           <Field label="ملاحظات التعديل" value={financial.notes_edits} />
         </div>
 
-        <SavedTerms order={order} orderData={orderData} />
-
         {quote ? (
           <ServicePriceBreakdown quote={quote} details={quoteDetails} detailKeys={quoteDetailKeys} />
         ) : totalPrice?.items?.length ? (
@@ -396,6 +380,8 @@ export default function TenantFinancialGroup({ order, orderData, onEdit }) {
             </div>
           </div>
         ) : null}
+
+        <SavedTerms order={order} orderData={orderData} />
 
         {quote ? null : (
           <div className="pt-2 border-t border-[#EEF1F0] dark:border-white/10 flex items-center justify-between gap-2">

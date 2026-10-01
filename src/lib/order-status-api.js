@@ -4,6 +4,19 @@ export function orderStatusUpdateUrl(orderId) {
   return `/admin/orders/${orderId}/status`;
 }
 
+/** إرسال مسودة العقد لكم عبر واتساب — POST /admin/orders/{id}/status */
+export const SEND_CONTRACT_DRAFT_STATUS_ID = 8;
+export const SEND_CONTRACT_DRAFT_STATUS_NAME = "إرسال مسودة العقد لكم عبر واتساب";
+
+export function isSendContractDraftStatus(status) {
+  const id = status?.id ?? status?.status_id;
+  if (id != null && String(id) === String(SEND_CONTRACT_DRAFT_STATUS_ID)) {
+    return true;
+  }
+  const name = String(status?.name ?? status?.label ?? "").trim();
+  return name === SEND_CONTRACT_DRAFT_STATUS_NAME;
+}
+
 export function orderReturnContractStatusUrl(orderId) {
   return `/admin/orders/${orderId}/return-contract-status`;
 }

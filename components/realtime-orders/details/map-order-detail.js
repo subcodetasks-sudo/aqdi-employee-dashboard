@@ -21,7 +21,10 @@ import {
   resolveTenantRoleDetails,
 } from "@/components/orders/single-order/frontend-contract-fields";
 import { fileNameFromUrl, resolveImageUrl, resolveNationalAddress } from "./national-address-utils";
-import { hasExistingReturnRequest } from "@/components/analysis/returned/refund-contract-utils/status";
+import {
+  hasExistingReturnRequest,
+  isReturnContractStatus,
+} from "@/components/analysis/returned/refund-contract-utils/status";
 
 function pick(...values) {
   for (const value of values) {
@@ -82,6 +85,12 @@ function translateStatus(value) {
 function yesNoLabel(value) {
   if (value === true || value === 1 || value === "1") return "نعم";
   if (value === false || value === 0 || value === "0") return "لا";
+  return value == null || value === "" ? null : String(value);
+}
+
+function meterOwnershipLabel(value) {
+  if (value === "owner") return "المالك";
+  if (value === "tenant") return "المستأجر";
   return value == null || value === "" ? null : String(value);
 }
 
@@ -376,8 +385,31 @@ function isAlreadyRefunded(orderData = {}) {
   );
 }
 
+function isReturnStatusOrderData(orderData = {}) {
+  const summary = orderData.contract_summary ?? {};
+  return isReturnContractStatus({
+    id: pick(
+      summary.contract_status_id,
+      orderData.contract_status_id,
+      orderData.status_id,
+      orderData.status?.id
+    ),
+    name: pick(
+      summary.contract_status_name,
+      orderData.status_label,
+      orderData.status?.name,
+      orderData.contract_status_name
+    ),
+  });
+}
+
 function mapRefundView(orderData = {}) {
-  if (!hasExistingReturnRequest(orderData) && !isAlreadyRefunded(orderData)) {
+  const inReturnStatus = isReturnStatusOrderData(orderData);
+  if (
+    !hasExistingReturnRequest(orderData) &&
+    !isAlreadyRefunded(orderData) &&
+    !inReturnStatus
+  ) {
     return null;
   }
 
@@ -396,8 +428,17 @@ function mapRefundView(orderData = {}) {
       orderData.accept_retrun_contract_employee_id
     ),
   };
+  if (inReturnStatus && !mapped.return_status) {
+    mapped.return_status = "استرجاع";
+  }
   const hasAny = Object.values(mapped).some((value) => value != null && value !== "");
   return hasAny ? mapped : null;
+}
+
+function draftContactModeLabel(mode) {
+  if (mode === "same") return "نفس الرقم المسجّل";
+  if (mode === "another") return "رقم آخر";
+  return mode || null;
 }
 
 function mapExtrasView(orderData = {}) {
@@ -422,7 +463,18 @@ function mapExtrasView(orderData = {}) {
     ),
     ejar_contract_draft_number: pick(
       orderData.ejar_contract_draft_number,
+      orderData.draft_sent?.ejar_contract_draft_number,
       statusCase?.ejar_contract_draft_number
+    ),
+    draft_contact_number: pick(
+      orderData.draft_contact_number,
+      orderData.draft_sent?.draft_contact_number
+    ),
+    draft_contact_number_mode: draftContactModeLabel(
+      pick(
+        orderData.draft_contact_number_mode,
+        orderData.draft_sent?.draft_contact_number_mode
+      )
     ),
     ejar_status_notes: pick(orderData.ejar_status_notes, statusCase?.ejar_status_notes),
     deed_type: pick(orderData.deed_type, statusCase?.deed_type),
@@ -879,6 +931,22 @@ export function mapOrderDetailView(orderData = {}) {
           orderData.is_there_a_legal_representative_of_the_tenant
         )
       ),
+      legal_agent_id: pick(
+        tenant.id_num_of_property_tenant_agent,
+        tenant.id_number_of_property_tenant_agent,
+        orderData.id_num_of_property_tenant_agent,
+        orderData.id_number_of_property_tenant_agent
+      ),
+      legal_agent_phone: pick(
+        tenant.mobile_of_property_tenant_agent,
+        orderData.mobile_of_property_tenant_agent
+      ),
+      legal_agent_dob:
+        composePartsDob(tenant, "dob_of_property_tenant_agent") ??
+        composePartsDob(orderData, "dob_of_property_tenant_agent"),
+      legal_agent_dob_type: calendarTypeLabel(
+        pick(tenant.type_dob_tenant_agent, orderData.type_dob_tenant_agent)
+      ),
       owner_record_url: resolveImageUrl(
         pick(
           tenant.copy_of_the_owner_record,
@@ -971,26 +1039,18 @@ export function mapOrderDetailView(orderData = {}) {
       councils: unit.number_of_councils,
       bathrooms: pick(unit.The_number_of_toilets, unit.The_number_of_the_toilet),
       kitchens: unit.The_number_of_kitchens,
-      ac:
-        unit.split_ac || unit.window_ac || unit.number_of_unit_air_conditioners
-          ? [
-              unit.split_ac ? "سبليت" : null,
-              unit.window_ac ? "شباك" : null,
-              unit.number_of_unit_air_conditioners
-                ? `${unit.number_of_unit_air_conditioners} مكيف`
-                : null,
-            ]
-              .filter(Boolean)
-              .join(" / ")
-          : null,
+      window_ac: unit.window_ac,
+      split_ac: unit.split_ac,
       air_conditioners: unit.number_of_unit_air_conditioners,
       furnished: yesNoLabel(unit.furnished),
       kitchen_tank: yesNoLabel(unit.kitchen_tank),
       kitchen_cabinets: yesNoLabel(unit.kitchen_cabinets),
       electricity_meter: yesNoLabel(unit.electricity_meter),
       electricity_meter_number: unit.electricity_meter_number,
+      electricity_meter_ownership: meterOwnershipLabel(unit.electricity_meter_ownership),
       water_meter: yesNoLabel(unit.water_meter),
       water_meter_number: unit.water_meter_number,
+      water_meter_ownership: meterOwnershipLabel(unit.water_meter_ownership),
       gas_meter: yesNoLabel(unit.Gasmeter),
       parking_spaces: unit.Number_parking_spaces,
       services: Array.isArray(unit.Services)

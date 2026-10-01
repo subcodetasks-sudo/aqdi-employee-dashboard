@@ -1,16 +1,24 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2, Send } from "lucide-react";
+import { toast } from "sonner";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import OrderActionDialogHeader from "@/components/shared/order-action-dialog-header";
-import { useUpdateOrder } from "@/src/hooks/use-update-order";
 import { useDialogFormSession } from "@/src/hooks/use-dialog-form-session";
+import { useContractStatuses } from "@/src/hooks/use-contract-statuses";
+import { axiosInstance } from "@/src/utils/axios";
+import { invalidateOrdersCaches } from "@/src/lib/invalidate-orders-caches";
+import {
+  SEND_CONTRACT_DRAFT_STATUS_ID,
+  isSendContractDraftStatus,
+  orderStatusUpdateUrl,
+} from "@/src/lib/order-status-api";
 import {
   getSaudiMobileError,
   sanitizeSaudiContactInput,
 } from "@/src/lib/saudi-contact";
-import { toast } from "sonner";
 import { getOrderTenantStep } from "@/src/lib/order-detail-steps";
 
 export default function SendDraftDialog({
@@ -38,10 +46,40 @@ export default function SendDraftDialog({
 
   const session = useDialogFormSession(open, resetForm);
 
-  const { mutate: submit, isPending } = useUpdateOrder({
-    queryKey,
-    successMessage: "تم إرسال المسودة للعميل",
-    onSuccess: () => onOpenChange(false),
+  const queryClient = useQueryClient();
+  const { activeItems: statuses } = useContractStatuses();
+  const sendDraftStatus = statuses.find((status) => isSendContractDraftStatus(status));
+
+  const { mutate: submit, isPending } = useMutation({
+    mutationFn: async () => {
+      const orderId = orderData?.id;
+      if (orderId == null || orderId === "") {
+        throw new Error("تعذر تحديد الطلب");
+      }
+
+      const statusId = sendDraftStatus?.id ?? SEND_CONTRACT_DRAFT_STATUS_ID;
+      const body = {
+        status_id: Number(statusId),
+        ejar_contract_draft_number: draftNumber.trim(),
+        contact_number_mode: contactMode,
+      };
+      if (contactMode === "another") {
+        body.contact_number = otherNumber.trim();
+      }
+
+      return axiosInstance.post(orderStatusUpdateUrl(orderId), body);
+    },
+    onSuccess: (res) => {
+      invalidateOrdersCaches(queryClient, {
+        queryKey,
+        orderId: orderData?.id,
+      });
+      toast.success(res?.data?.message || "تم إرسال مسودة العقد للعميل");
+      onOpenChange(false);
+    },
+    onError: (err) => {
+      toast.error(err?.response?.data?.message || err?.message || "حدث خطأ أثناء الإرسال");
+    },
   });
 
   const canSubmit =
@@ -50,22 +88,14 @@ export default function SendDraftDialog({
 
   const handleSubmit = () => {
     if (!canSubmit || isPending) return;
-    if (contactMode === "other") {
+    if (contactMode === "another") {
       const phoneError = getSaudiMobileError(otherNumber, { required: true });
       if (phoneError) {
         toast.error(phoneError);
         return;
       }
     }
-    submit({
-      orderId: orderData?.id,
-      body: {
-        ejar_contract_draft_number: draftNumber.trim(),
-        draft_contact_number_mode: contactMode,
-        draft_contact_number:
-          contactMode === "same" ? registeredMobile || null : otherNumber.trim(),
-      },
-    });
+    submit();
   };
 
   const handleClose = () => {
@@ -135,27 +165,27 @@ export default function SendDraftDialog({
 
             <button
               type="button"
-              onClick={() => setContactMode("other")}
+              onClick={() => setContactMode("another")}
               disabled={isPending}
               className={`w-full rounded-2xl border px-4 py-3 flex items-center gap-3 text-right transition-all ${
-                contactMode === "other"
+                contactMode === "another"
                   ? "border-brand-hover bg-brand-hover/5"
                   : "border-surface-border bg-surface-input"
               }`}
             >
               <span
                 className={`size-4 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                  contactMode === "other" ? "border-brand-hover" : "border-[#D0D5DD]"
+                  contactMode === "another" ? "border-brand-hover" : "border-[#D0D5DD]"
                 }`}
               >
-                {contactMode === "other" ? (
+                {contactMode === "another" ? (
                   <span className="size-2 rounded-full bg-brand-hover" />
                 ) : null}
               </span>
               <span className="text-[13.5px] font-bold text-black">تواصل معنا برقم آخر</span>
             </button>
 
-            {contactMode === "other" ? (
+            {contactMode === "another" ? (
               <input
                 type="text"
                 value={otherNumber}

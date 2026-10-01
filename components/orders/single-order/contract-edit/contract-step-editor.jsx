@@ -62,6 +62,8 @@ export const ContractStepEditor = forwardRef(function ContractStepEditor(
     formOnly = false,
     /** When true (with formOnly), suppresses the internal Save/Cancel footer — an external control drives save() via ref. */
     hideFooter = false,
+    /** Called whenever form values change. Used so a preview outside the form stays in sync. */
+    onFormChange = null,
   },
   ref
 ) {
@@ -271,7 +273,15 @@ export const ContractStepEditor = forwardRef(function ContractStepEditor(
   useImperativeHandle(ref, () => ({
     save: handleSave,
     cancel: handleCancel,
+    setField(key, value) {
+      const field = fields.find((item) => item.key === key) ?? { key };
+      handleFieldChange(field, value);
+    },
   }));
+
+  useEffect(() => {
+    onFormChange?.(form);
+  }, [form, onFormChange]);
 
   const handleFieldChange = (field, val) => {
     setForm((prev) => {

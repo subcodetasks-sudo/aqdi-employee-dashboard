@@ -42,6 +42,21 @@ export default function ClientProfileCard({ client }) {
                 {client.platformLabel}
               </span>
             ) : null}
+            <span
+              className={cn(
+                "inline-flex items-center px-2 py-0.5 rounded-md text-11 font-bold",
+                client.verified
+                  ? "bg-[#DBEAFE] text-[#1D4ED8] dark:bg-sky-500/20 dark:text-sky-300"
+                  : "bg-[#F3F4F6] text-[#4B5563] dark:bg-white/10 dark:text-white/60"
+              )}
+            >
+              {client.verified ? "موثّق" : "غير موثّق"}
+            </span>
+            {!client.isActive && !client.blocked ? (
+              <span className="inline-flex items-center px-2 py-0.5 rounded-md text-11 font-bold bg-[#FEF3C7] text-[#B45309] dark:bg-amber-500/20 dark:text-amber-300">
+                موقوف
+              </span>
+            ) : null}
             {client.blocked ? (
               <span className="inline-flex items-center px-2 py-0.5 rounded-md text-11 font-bold bg-[#FEE2E2] text-red-600 dark:bg-rose-500/20 dark:text-rose-300">
                 محظور

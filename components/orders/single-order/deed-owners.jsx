@@ -13,7 +13,6 @@ import {
   getOrderDeedStep,
   getOrderOwnerStep,
   hasEndowmentNazir,
-  hasLegalAgent,
   pickAgentRelatedField,
 } from "@/src/lib/order-detail-steps";
 
@@ -99,6 +98,12 @@ const AGENCY_EXTRA_FIELDS = [
   },
 ];
 
+const OWNER_AGENT_SHOW_WHEN = { add_legal_agent_of_owner: 1 };
+
+function withOwnerAgentGate(fields) {
+  return fields.map((field) => ({ ...field, showWhen: OWNER_AGENT_SHOW_WHEN }));
+}
+
 const DeedOwners = ({ data }) => {
   const summary = data?.contract_summary ?? {};
   const deed = getOrderDeedStep(data);
@@ -117,7 +122,6 @@ const DeedOwners = ({ data }) => {
   const instrumentTypeLabel = getInstrumentTypeLabel(
     pick("instrument_type_trans", "instrument_type", "instrument_type_key")
   );
-  const showAgent = hasLegalAgent(data);
   const showNazir = hasEndowmentNazir(data);
 
   const fieldGroups = useMemo(() => {
@@ -179,12 +183,10 @@ const DeedOwners = ({ data }) => {
       },
     ];
 
-    if (showAgent) {
-      groups.push({
-        title: "الوكيل / المالك بوكالة",
-        fields: [...SUMMARY_AGENT_FIELDS, ...AGENCY_EXTRA_FIELDS],
-      });
-    }
+    groups.push({
+      title: "الوكيل / المالك بوكالة",
+      fields: withOwnerAgentGate([...SUMMARY_AGENT_FIELDS, ...AGENCY_EXTRA_FIELDS]),
+    });
 
     if (showNazir) {
       groups.push({
@@ -204,7 +206,7 @@ const DeedOwners = ({ data }) => {
     });
 
     return groups;
-  }, [instrumentTypeLabel, showAgent, showNazir]);
+  }, [instrumentTypeLabel, showNazir]);
 
   return (
     <div dir="rtl">

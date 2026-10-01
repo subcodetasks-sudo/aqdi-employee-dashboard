@@ -43,24 +43,29 @@ export function formatMoney(value) {
   return n.toLocaleString("en-US");
 }
 
+/** API sends `joined_at` as `YYYY-MM-DD HH:mm` (no timezone). */
+export function splitJoinedDateTime(value) {
+  if (!value) return { time: "—", date: "—" };
+  const match = String(value).trim().match(/^(\d{4}-\d{2}-\d{2})[ T](\d{2}:\d{2})/);
+  if (match) return { date: match[1], time: match[2] };
+
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return { time: "—", date: String(value) };
+  return {
+    time: d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false }),
+    date: d.toLocaleDateString("en-CA"),
+  };
+}
+
 export function formatJoinedLabel(iso) {
-  if (!iso) return "—";
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return String(iso);
-  const date = d.toLocaleDateString("en-GB").replace(/\//g, "-");
-  const time = d.toLocaleTimeString("en-GB", {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  });
+  const { date, time } = splitJoinedDateTime(iso);
+  if (date === "—" && time === "—") return "—";
+  if (time === "—") return date;
   return `${date} · ${time}`;
 }
 
 export function formatJoinedShort(iso) {
-  if (!iso) return "—";
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return String(iso);
-  return d.toLocaleDateString("en-GB").replace(/\//g, "-");
+  return splitJoinedDateTime(iso).date;
 }
 
 export function whatsappHref(phone) {

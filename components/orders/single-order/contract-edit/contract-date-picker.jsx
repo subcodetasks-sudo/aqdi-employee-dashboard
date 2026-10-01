@@ -4,12 +4,16 @@ import { useMemo, useState } from "react";
 import DatePicker from "react-multi-date-picker";
 import arabic from "react-date-object/calendars/arabic";
 import gregorian from "react-date-object/calendars/gregorian";
-import arabic_ar from "react-date-object/locales/arabic_ar";
-import gregorian_ar from "react-date-object/locales/gregorian_ar";
-import DateObject from "react-date-object";
 import { CalendarIcon } from "lucide-react";
-
-const DATE_FORMAT = "DD-MM-YYYY";
+import {
+  DATE_FORMAT,
+  formatContractDate,
+  gregorianLocale,
+  hijriLocale,
+  normalizeDateInput,
+  parseContractDate,
+  storedDateFormat,
+} from "./step-editor/date-calendar-utils";
 
 export function normalizeCalendarType(value) {
   const raw = String(value || "").trim().toLowerCase();
@@ -22,10 +26,11 @@ export function normalizeCalendarType(value) {
 
 /** Infer calendar when type is missing: Hijri years are typically < 1700. */
 export function inferCalendarTypeFromDate(dateString) {
-  if (!dateString) return "gregorian";
-  const parts = String(dateString).match(/\d+/g);
-  if (!parts?.length) return "gregorian";
-  const year = Number(parts[parts.length - 1]);
+  const normalized = normalizeDateInput(dateString);
+  if (!normalized) return "gregorian";
+  const parts = normalized.split("-").map((part) => Number(part));
+  const year =
+    storedDateFormat(normalized) === "YYYY-MM-DD" ? parts[0] : parts[parts.length - 1];
   if (!Number.isFinite(year)) return "gregorian";
   return year > 1700 ? "gregorian" : "hijri";
 }
@@ -35,37 +40,7 @@ export function resolveCalendarType(typeValue, dateValue) {
 }
 
 function parseStoredDate(value, calendarType) {
-  if (!value) return null;
-  const calendar = calendarType === "hijri" ? arabic : gregorian;
-  const locale = calendarType === "hijri" ? arabic_ar : gregorian_ar;
-
-  try {
-    const parsed = new DateObject({
-      date: String(value).trim(),
-      format: DATE_FORMAT,
-      calendar,
-      locale,
-    });
-    if (parsed.isValid) return parsed;
-  } catch {
-    // fall through
-  }
-
-  try {
-    const parsed = new DateObject({
-      date: String(value).trim(),
-      format: DATE_FORMAT,
-      calendar: calendarType === "hijri" ? gregorian : arabic,
-      locale: calendarType === "hijri" ? gregorian_ar : arabic_ar,
-    });
-    if (parsed.isValid) {
-      return parsed.convert(calendar, locale);
-    }
-  } catch {
-    // fall through
-  }
-
-  return null;
+  return parseContractDate(value, calendarType);
 }
 
 export default function ContractDatePicker({
@@ -81,7 +56,7 @@ export default function ContractDatePicker({
   const [open, setOpen] = useState(false);
 
   const calendar = isHijri ? arabic : gregorian;
-  const locale = isHijri ? arabic_ar : gregorian_ar;
+  const locale = isHijri ? hijriLocale : gregorianLocale;
 
   const selected = useMemo(
     () => parseStoredDate(value, resolvedType),
@@ -100,7 +75,7 @@ export default function ContractDatePicker({
             return;
           }
           const next = Array.isArray(date) ? date[0] : date;
-          onChange(next?.format?.(DATE_FORMAT) || "");
+          onChange(formatContractDate(next));
           setOpen(false);
         }}
         calendar={calendar}

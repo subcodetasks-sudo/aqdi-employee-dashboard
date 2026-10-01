@@ -140,6 +140,13 @@ export const STEP1_ADDRESS_FIELDS = [
   { key: "latitude", label: "خط العرض", type: "text" },
   { key: "longitude", label: "خط الطول", type: "text" },
   { key: "address_url", label: "رابط العنوان", type: "text" },
+  {
+    key: "image_address",
+    label: "صورة العنوان",
+    type: "file",
+    accept: "image/*",
+    colSpan: 3,
+  },
 ];
 
 /** Deed / property details — POST /admin/orders (step1 keys) */
@@ -416,6 +423,50 @@ export const STEP3_TENANT_FIELDS = [
     key: "is_there_a_legal_representative_of_the_tenant",
     label: "هل يوجد ممثل نظامي للمستأجر؟",
     type: "boolean",
+  },
+  {
+    key: "id_num_of_property_tenant_agent",
+    label: "رقم هوية الوكيل",
+    type: "text",
+    entity: "person",
+    inputKind: "national_id",
+    showWhen: { is_there_a_legal_representative_of_the_tenant: 1 },
+  },
+  {
+    key: "mobile_of_property_tenant_agent",
+    label: "جوال الوكيل",
+    type: "text",
+    entity: "person",
+    inputKind: "phone",
+    showWhen: { is_there_a_legal_representative_of_the_tenant: 1 },
+  },
+  {
+    key: "type_dob_tenant_agent",
+    label: "نوع تاريخ ميلاد الوكيل",
+    type: "select",
+    entity: "person",
+    options: [
+      { value: "hijri", label: "هجري" },
+      { value: "gregorian", label: "ميلادي" },
+    ],
+    showWhen: { is_there_a_legal_representative_of_the_tenant: 1 },
+  },
+  {
+    key: "dob_of_property_tenant_agent",
+    label: "تاريخ ميلاد الوكيل",
+    type: "date",
+    entity: "person",
+    calendarTypeKey: "type_dob_tenant_agent",
+    showWhen: { is_there_a_legal_representative_of_the_tenant: 1 },
+  },
+  {
+    key: "copy_of_the_authorization_or_agency",
+    label: "صورة الوكالة",
+    type: "file",
+    entity: "person",
+    colSpan: 3,
+    accept: "image/*,application/pdf",
+    showWhen: { is_there_a_legal_representative_of_the_tenant: 1 },
   },
   {
     key: "copy_of_the_owner_record",

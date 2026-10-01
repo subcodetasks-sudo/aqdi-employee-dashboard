@@ -15,8 +15,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSidebarStore } from "@/src/stores/sidebar-store";
-import { useClientsList } from "@/src/hooks/use-clients";
-import { exportClientsCsv } from "./clients-csv";
+import { useClientsList, useExportClients } from "@/src/hooks/use-clients";
+import { splitJoinedDateTime } from "./client-details/client-details-format";
 import {
   Select,
   SelectContent,
@@ -25,7 +25,29 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-const PAGE_SIZE_OPTIONS = [10, 25, 50];
+const PAGE_SIZE_OPTIONS = [25, 50, 100];
+
+const PLATFORM_FILTERS = [
+  { id: "all", label: "كل المصادر" },
+  { id: "website", label: "عملاء الموقع" },
+  { id: "google_play", label: "جوجل بلاي" },
+  { id: "apple_store", label: "آبل" },
+];
+
+const CREATED_AT_FILTERS = [
+  { id: "all", label: "كل الفترات" },
+  { id: "today", label: "اليوم" },
+  { id: "week", label: "هذا الأسبوع" },
+  { id: "month", label: "هذا الشهر" },
+  { id: "year", label: "هذه السنة" },
+];
+
+const STATUS_FILTERS = [
+  { id: "all", label: "كل الحالات" },
+  { id: "active", label: "نشط" },
+  { id: "inactive", label: "موقوف" },
+  { id: "banned", label: "محظور" },
+];
 
 const TH =
   "px-3 py-3.5 text-xs font-semibold text-gray-400 dark:text-white/45 border-b border-[#EEF1F0] dark:border-white/[0.08] whitespace-nowrap";
@@ -38,17 +60,10 @@ function formatMoney(value) {
   });
 }
 
-function splitDateTime(iso) {
-  if (!iso) return { time: "—", date: "—" };
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return { time: "—", date: String(iso) };
-  const time = d.toLocaleTimeString("en-GB", {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  });
-  const date = d.toLocaleDateString("en-CA");
-  return { time, date };
+function joinedSortKey(value) {
+  const { date, time } = splitJoinedDateTime(value);
+  if (date === "—") return "";
+  return time === "—" ? date : `${date} ${time}`;
 }
 
 function CountBadge({ value, tone = "muted" }) {
@@ -100,45 +115,81 @@ function MoneyPill({ value }) {
   );
 }
 
+const FILTER_TRIGGER = cn(
+  "h-[44px] min-w-[140px] rounded-xl border px-3 text-13 font-semibold shadow-none focus:ring-1 focus:ring-offset-0",
+  "bg-white border-[#E5E7EB] text-gray-900 focus:border-brand-dark focus:ring-brand-dark/20",
+  "dark:bg-[#0F1C16] dark:border-white/[0.1] dark:text-white dark:focus:border-emerald-500/50 dark:focus:ring-emerald-500/20"
+);
+
+function FilterSelect({ value, onChange, options }) {
+  return (
+    <Select value={value} onValueChange={onChange}>
+      <SelectTrigger className={FILTER_TRIGGER}>
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent dir="rtl" className="dark:bg-[#0F1C16] dark:border-white/[0.1]">
+        {options.map((option) => (
+          <SelectItem
+            key={option.id}
+            value={option.id}
+            className="text-13 font-semibold dark:focus:bg-white/[0.06]"
+          >
+            {option.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+}
+
 export default function ClientsWrapper() {
   const router = useRouter();
   const { isSidebarOpen, toggleSidebar } = useSidebarStore();
   const [searchInput, setSearchInput] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [platform, setPlatform] = useState("all");
+  const [createdAt, setCreatedAt] = useState("all");
+  const [status, setStatus] = useState("all");
   const [pageSize, setPageSize] = useState(25);
   const [currentPage, setCurrentPage] = useState(1);
-  // Matches design.html custSort default: newest join first
   const [joinedSortDir, setJoinedSortDir] = useState("desc");
+  const { mutate: exportClients, isPending: isExporting } = useExportClients();
 
   useEffect(() => {
     const handler = setTimeout(() => setSearchQuery(searchInput.trim()), 500);
     return () => clearTimeout(handler);
   }, [searchInput]);
 
-  const pageResetKey = JSON.stringify([searchQuery, pageSize]);
+  const pageResetKey = JSON.stringify([searchQuery, pageSize, platform, createdAt, status]);
   const [prevPageResetKey, setPrevPageResetKey] = useState(pageResetKey);
   if (pageResetKey !== prevPageResetKey) {
     setPrevPageResetKey(pageResetKey);
     setCurrentPage(1);
   }
 
+  const listFilters = {
+    search: searchQuery,
+    platform,
+    createdAt,
+    isActive: status === "active" ? 1 : status === "inactive" ? 0 : undefined,
+    banned: status === "banned" ? 1 : undefined,
+  };
+
   const { rows, meta, summary, isLoading, isFetching, isError } = useClientsList({
     page: currentPage,
     perPage: pageSize,
-    search: searchQuery,
+    ...listFilters,
   });
 
   const sortedRows = useMemo(() => {
     const dir = joinedSortDir === "asc" ? 1 : -1;
     return [...rows].sort((a, b) => {
-      const at = a?.joinedAt ? new Date(a.joinedAt).getTime() : NaN;
-      const bt = b?.joinedAt ? new Date(b.joinedAt).getTime() : NaN;
-      const aMissing = !Number.isFinite(at);
-      const bMissing = !Number.isFinite(bt);
-      if (aMissing && bMissing) return 0;
-      if (aMissing) return 1;
-      if (bMissing) return -1;
-      return (at - bt) * dir;
+      const at = joinedSortKey(a?.joinedAt);
+      const bt = joinedSortKey(b?.joinedAt);
+      if (!at && !bt) return 0;
+      if (!at) return 1;
+      if (!bt) return -1;
+      return at < bt ? -dir : at > bt ? dir : 0;
     });
   }, [rows, joinedSortDir]);
 
@@ -146,11 +197,11 @@ export default function ClientsWrapper() {
 
   const statCards = summary
     ? [
-        { key: "total", value: summary.total_customers, label: summary.total_customers_label, bar: "#10B981" },
-        { key: "website", value: summary.website_customers, label: summary.website_customers_label, bar: "#0B5345" },
-        { key: "google_play", value: summary.google_play_customers, label: summary.google_play_customers_label, bar: "#3B82F6" },
-        { key: "apple_store", value: summary.apple_store_customers, label: summary.apple_store_customers_label, bar: "#6B7280" },
-        { key: "banned", value: summary.banned, label: summary.banned_label, bar: "#F97316" },
+        { key: "total", value: summary.total_customers, label: summary.labels?.total_customers, bar: "#10B981" },
+        { key: "website", value: summary.website_customers, label: summary.labels?.website_customers, bar: "#0B5345" },
+        { key: "google_play", value: summary.google_play_customers, label: summary.labels?.google_play_customers, bar: "#3B82F6" },
+        { key: "apple_store", value: summary.apple_store_customers, label: summary.labels?.apple_store_customers, bar: "#6B7280" },
+        { key: "banned", value: summary.banned, label: summary.labels?.banned, bar: "#F97316" },
       ]
     : [];
 
@@ -161,7 +212,8 @@ export default function ClientsWrapper() {
   const end = Math.min(page * pageSize, total);
 
   const handleExport = () => {
-    exportClientsCsv(rows);
+    if (isExporting) return;
+    exportClients(listFilters);
   };
 
   return (
@@ -241,7 +293,7 @@ export default function ClientsWrapper() {
             type="text"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            placeholder="بحث بالاسم أو الجوال..."
+            placeholder="بحث بالاسم أو الجوال أو الإيميل أو رقم العميل"
             className={cn(
               "w-full h-[44px] rounded-xl border pr-11 pl-4 text-13 transition-all",
               "bg-white border-[#E5E7EB] text-gray-900 placeholder:text-gray-400",
@@ -255,15 +307,22 @@ export default function ClientsWrapper() {
         <button
           type="button"
           onClick={handleExport}
+          disabled={isExporting}
           className={cn(
-            "h-[44px] px-4 rounded-xl border text-13 font-bold inline-flex items-center justify-center gap-2 transition-colors shrink-0",
+            "h-[44px] px-4 rounded-xl border text-13 font-bold inline-flex items-center justify-center gap-2 transition-colors shrink-0 disabled:opacity-60",
             "bg-white border-[#E5E7EB] text-gray-700 hover:bg-[#F9FAFB]",
             "dark:bg-card dark:border-white/[0.1] dark:text-white/80 dark:hover:bg-white/[0.06]"
           )}
         >
-          <Download className="size-4" />
-          <span>تصدير الصفحة الحالية</span>
+          {isExporting ? <Loader2 className="size-4 animate-spin" /> : <Download className="size-4" />}
+          <span>{isExporting ? "جارٍ التصدير..." : "تصدير"}</span>
         </button>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2.5">
+        <FilterSelect value={platform} onChange={setPlatform} options={PLATFORM_FILTERS} />
+        <FilterSelect value={createdAt} onChange={setCreatedAt} options={CREATED_AT_FILTERS} />
+        <FilterSelect value={status} onChange={setStatus} options={STATUS_FILTERS} />
       </div>
 
       {/* Pagination bar */}
@@ -366,7 +425,7 @@ export default function ClientsWrapper() {
               <th className={cn(TH, "text-right")}>اسم العميل</th>
               <th className={cn(TH, "text-right")}>رقم الجوال</th>
               <th className={cn(TH, "text-center px-2.5")}>مكتمل</th>
-              <th className={cn(TH, "text-center px-2.5")}>مسودة</th>
+              <th className={cn(TH, "text-center px-2.5")}>غير مكتمل</th>
               <th className={cn(TH, "text-center px-2.5")}>عقارات</th>
               <th className={cn(TH, "text-center px-2.5")}>وحدات</th>
               <th className={cn(TH, "text-center px-2.5")}>مسترجع</th>
@@ -415,7 +474,7 @@ export default function ClientsWrapper() {
               </tr>
             ) : (
               sortedRows.map((row) => {
-                const { time, date } = splitDateTime(row.joinedAt);
+                const { time, date } = splitJoinedDateTime(row.joinedAt);
 
                 return (
                   <tr
@@ -447,6 +506,21 @@ export default function ClientsWrapper() {
                             {row.platformLabel}
                           </span>
                         ) : null}
+                        <span
+                          className={cn(
+                            "inline-flex items-center px-1.5 py-0.5 rounded-md text-10 font-bold",
+                            row.verified
+                              ? "bg-[#DBEAFE] text-[#1D4ED8] dark:bg-sky-500/20 dark:text-sky-300"
+                              : "bg-[#F3F4F6] text-[#4B5563] dark:bg-white/10 dark:text-white/55"
+                          )}
+                        >
+                          {row.verified ? "موثّق" : "غير موثّق"}
+                        </span>
+                        {!row.isActive && !row.blocked ? (
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-[#FEF3C7] text-[#B45309] dark:bg-amber-500/20 dark:text-amber-300 text-10 font-bold">
+                            موقوف
+                          </span>
+                        ) : null}
                         {row.blocked ? (
                           <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-[#FEE2E2] text-red-600 dark:bg-rose-500/20 dark:text-rose-300 text-10 font-bold">
                             محظور
@@ -466,7 +540,7 @@ export default function ClientsWrapper() {
                       <CountBadge value={row.completed} tone="completed" />
                     </td>
                     <td className="px-2.5 py-3.5 text-center">
-                      <CountBadge value={row.draft} tone="draft" />
+                      <CountBadge value={row.incomplete} tone="draft" />
                     </td>
                     <td className="px-2.5 py-3.5 text-center">
                       <CountBadge value={row.properties} tone="property" />

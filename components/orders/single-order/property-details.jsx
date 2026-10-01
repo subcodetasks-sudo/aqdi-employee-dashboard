@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useMemo } from "react";
-import { Copy, ExternalLink, Link2, MapPin } from "lucide-react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Copy, ExternalLink, ImagePlus, Link2, MapPin } from "lucide-react";
 import { toast } from "sonner";
 import { ContractStepEditor } from "./contract-edit/contract-step-editor";
 import { STEP1_ADDRESS_FIELDS } from "./contract-edit/contract-field-schemas";
@@ -107,7 +107,25 @@ function resolveMapLocation(data) {
 
 const resolveImageUrl = (value) => absolutizeMediaUrl(value);
 
-const AddressImageViewer = ({ src }) => {
+function usePreviewUrl(source) {
+  const isFile = typeof File !== "undefined" && source instanceof File;
+  const [objectPreview, setObjectPreview] = useState(null);
+
+  useEffect(() => {
+    if (!isFile) return undefined;
+    const url = URL.createObjectURL(source);
+    // An object URL is an external resource: it must be created and revoked in the same effect.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setObjectPreview({ file: source, url });
+    return () => URL.revokeObjectURL(url);
+  }, [isFile, source]);
+
+  if (isFile) return objectPreview?.file === source ? objectPreview.url : null;
+  return typeof source === "string" && source.trim() ? source : null;
+}
+
+const AddressImageViewer = ({ source, onReplace }) => {
+  const src = usePreviewUrl(source);
   const {
     scale,
     position,
@@ -121,30 +139,48 @@ const AddressImageViewer = ({ src }) => {
   });
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-[#E8E8E8]">
+    <div className="relative overflow-hidden rounded-2xl border border-gray-200 bg-[#E8E8E8]">
       <div
         ref={containerRef}
         className={`flex min-h-[320px] items-center justify-center p-4 ${cursorClass}`}
         onMouseDown={handleMouseDown}
         onDoubleClick={resetTransform}
       >
-        <div
-          className="relative will-change-transform"
-          style={{
-            transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
-            transformOrigin: "center center",
-            transition:
-              cursorClass === "cursor-grabbing" ? "none" : "transform 0.15s ease-out",
-          }}
-        >
-          <img
-            src={src}
-            alt="صورة العنوان"
-            className="h-auto max-h-[min(56vh,480px)] w-auto max-w-full select-none object-contain"
-            draggable={false}
-          />
-        </div>
+        {src ? (
+          <div
+            className="relative will-change-transform"
+            style={{
+              transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
+              transformOrigin: "center center",
+              transition:
+                cursorClass === "cursor-grabbing" ? "none" : "transform 0.15s ease-out",
+            }}
+          >
+            <img
+              src={src}
+              alt="صورة العنوان"
+              className="h-auto max-h-[min(56vh,480px)] w-auto max-w-full select-none object-contain"
+              draggable={false}
+            />
+          </div>
+        ) : null}
       </div>
+      {onReplace ? (
+        <label className="absolute top-3 start-3 z-10 inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-white/95 px-3 py-1.5 text-xs font-bold text-gray-800 shadow-sm hover:bg-white">
+          <ImagePlus className="size-3.5" />
+          تغيير الصورة
+          <input
+            type="file"
+            accept="image/*"
+            className="sr-only"
+            onChange={(event) => {
+              const file = event.target.files?.[0] || null;
+              event.target.value = "";
+              if (file) onReplace(file);
+            }}
+          />
+        </label>
+      ) : null}
     </div>
   );
 };
@@ -210,21 +246,41 @@ const PropertyLocationMap = ({ location }) => {
 };
 
 export default function PropertyDetails({ data }) {
+  const editorRef = useRef(null);
+  const [addressImage, setAddressImage] = useState(undefined);
   const address = getOrderAddressStep(data);
 
   const imageAddress = resolveImageUrl(
     pickFirst(address.image_address, data?.image_address)
   );
+  const previewSource =
+    addressImage instanceof File || (typeof addressImage === "string" && addressImage.trim())
+      ? addressImage
+      : imageAddress;
 
   const location = useMemo(() => resolveMapLocation(data), [data]);
 
-  const hasImageAddress = Boolean(imageAddress);
+  const hasImageAddress = Boolean(previewSource);
+
+  const handleFormChange = useCallback((next) => {
+    if (!next || !Object.prototype.hasOwnProperty.call(next, "image_address")) return;
+    setAddressImage((current) =>
+      Object.is(current, next.image_address) ? current : next.image_address
+    );
+  }, []);
+
+  const handleReplaceImage = (file) => {
+    setAddressImage(file);
+    editorRef.current?.setField("image_address", file);
+  };
 
   return (
     <div dir="rtl" className="space-y-6">
       {hasImageAddress || location ? (
         <div className="space-y-5 rounded-[28px] border border-gray-100 bg-gray-100/50 p-6">
-          {hasImageAddress ? <AddressImageViewer src={imageAddress} /> : null}
+          {hasImageAddress ? (
+            <AddressImageViewer source={previewSource} onReplace={handleReplaceImage} />
+          ) : null}
 
           {location ? (
             <div className="space-y-2">
@@ -239,11 +295,13 @@ export default function PropertyDetails({ data }) {
       ) : null}
 
       <ContractStepEditor
+        ref={editorRef}
         title="العنوان الوطني للعقار"
         step="step2"
         fields={STEP1_ADDRESS_FIELDS}
         startInEditing
         formOnly
+        onFormChange={handleFormChange}
       />
     </div>
   );

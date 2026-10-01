@@ -1,17 +1,37 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useState } from "react";
 import { Loader2, Upload } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import OrderActionDialogHeader from "@/components/shared/order-action-dialog-header";
 import { useUpdateOrder } from "@/src/hooks/use-update-order";
-import { useDialogFormSession } from "@/src/hooks/use-dialog-form-session";
 
 const METHODS = [
   { value: "electronic", label: "إلكتروني" },
   { value: "paper", label: "ورقي" },
   { value: "other", label: "أخرى" },
 ];
+
+function firstText(...values) {
+  for (const value of values) {
+    if (value == null) continue;
+    const text = String(value).trim();
+    if (text) return text;
+  }
+  return "";
+}
+
+function resolveDeedNumber(orderData) {
+  return firstText(
+    orderData?.status_case?.deed_number,
+    orderData?.deed_number,
+    orderData?.real_estate?.instrument_number,
+    orderData?.real_estate?.deed_number,
+    orderData?.instrument_number,
+    orderData?.contract_summary?.instrument_number,
+    orderData?.contract_summary?.deed_number
+  );
+}
 
 export default function PropertyUpdateDialog({
   open,
@@ -21,13 +41,15 @@ export default function PropertyUpdateDialog({
 }) {
   const [method, setMethod] = useState("");
   const [deedNumber, setDeedNumber] = useState("");
+  const [prevOpen, setPrevOpen] = useState(open);
 
-  const resetForm = useCallback(() => {
-    setMethod("");
-    setDeedNumber(orderData?.instrument_number ?? orderData?.deed_number ?? "");
-  }, [orderData]);
-
-  const session = useDialogFormSession(open, resetForm);
+  if (open !== prevOpen) {
+    setPrevOpen(open);
+    if (open) {
+      setMethod("");
+      setDeedNumber(resolveDeedNumber(orderData));
+    }
+  }
 
   const { mutate: submit, isPending } = useUpdateOrder({
     queryKey,
@@ -56,7 +78,6 @@ export default function PropertyUpdateDialog({
   return (
     <Dialog open={open} onOpenChange={(next) => !isPending && onOpenChange(next)}>
       <DialogContent
-        key={session}
         className="sm:max-w-[520px] p-8 rounded-32 border-0 gap-0"
         dir="rtl"
         closeButton={false}
